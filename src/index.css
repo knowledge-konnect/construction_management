@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-navy: #0B2857;
+    --color-dark-navy: #071C3F;
+    --color-gold: #F4B72B;
+    --color-bg: #F7F9FC;
+    --color-text: #0B234A;
+    --color-muted: #64748B;
+    --color-border: #E2E8F0;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-navy);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .animate-in {
+    animation-duration: 0.2s;
+    animation-fill-mode: both;
+  }
+  .slide-in-from-top-2 {
+    animation-name: slide-in-top;
+  }
+  @keyframes slide-in-top {
+    from {
+      transform: translateY(-8px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
