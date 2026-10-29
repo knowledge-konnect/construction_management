@@ -1,4 +1,4 @@
-export function isNonEmptyString(v: unknown): v is string {
+﻿export function isNonEmptyString(v: unknown): v is string {
     return typeof v === 'string' && v.trim().length > 0;
 }
 
@@ -68,7 +68,7 @@ export function validateFlatBillingPayload(billing: any): string | null {
 }
 
 /**
- * Backend safety net behind the existing frontend BOQ/commercial validation —
+ * Backend safety net behind the existing frontend BOQ/commercial validation â€”
  * does not change the calculation logic itself, only rejects payloads with
  * clearly invalid figures before they're persisted.
  * Returns an error message, or null if the payload is valid.
@@ -106,7 +106,6 @@ export function validateQuotationPayload(quotation: any): string | null {
 
     return null;
 }
-<<<<<<< HEAD
 
 export function validateProjectPayload(body: any): string | null {
     if (!body || typeof body !== 'object') return 'Project payload is required.';
@@ -128,5 +127,3 @@ export function validateProjectPayload(body: any): string | null {
     }
     return null;
 }
-=======
->>>>>>> origin/main

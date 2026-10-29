@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+﻿import { type ReactNode } from 'react';
 import { Check } from 'lucide-react';
 
 export interface StepDef {
@@ -26,11 +26,7 @@ export default function StepNav({ steps, current, onStepClick, children }: Props
               onClick={() => onStepClick(idx)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 isActive
-<<<<<<< HEAD
                   ? 'bg-[#1D4ED8] text-white'
-=======
-                  ? 'bg-[#0B2857] text-white'
->>>>>>> origin/main
                   : isDone
                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                     : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
@@ -39,11 +35,7 @@ export default function StepNav({ steps, current, onStepClick, children }: Props
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
                   isActive
-<<<<<<< HEAD
                     ? 'bg-[#F4B72B] text-[#17243A]'
-=======
-                    ? 'bg-[#F4B72B] text-[#071C3F]'
->>>>>>> origin/main
                     : isDone
                       ? 'bg-emerald-500 text-white'
                       : 'bg-slate-100 text-slate-500'

@@ -1,4 +1,4 @@
-// Default values and factory functions — simplified for MVP.
+﻿// Default values and factory functions â€” simplified for MVP.
 
 import { v4 as uuid } from 'uuid';
 import {
@@ -155,12 +155,9 @@ export function createEmptyQuotation(): Quotation {
     id: uuid(),
     quotationNumber: '',
     status: 'DRAFT',
-<<<<<<< HEAD
     projectTypeId: null,
     areaUnitId: null,
     taxRateId: null,
-=======
->>>>>>> origin/main
     quotationDate: todayISODate(),
     validUntil: '',
     validity: '30 Days',
@@ -227,7 +224,7 @@ export function defaultTemplates(): Template[] {
 
   return [
     mk(
-      'Individual House – Standard',
+      'Individual House â€“ Standard',
       'Standard BOQ structure for a residential individual house.',
       'Individual House',
       [
@@ -252,7 +249,7 @@ export function defaultTemplates(): Template[] {
       ],
     ),
     mk(
-      'Villa – Standard',
+      'Villa â€“ Standard',
       'Premium villa construction BOQ with enhanced finishes.',
       'Villa',
       [
@@ -292,3 +289,4 @@ export function defaultTemplates(): Template[] {
     ),
   ];
 }
+

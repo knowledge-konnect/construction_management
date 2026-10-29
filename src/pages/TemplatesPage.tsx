@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import { AppButton, PageHeader, PremiumCard } from '@/components/ui/DesignSystem';
+﻿import { AppButton, PageHeader, PremiumCard } from '@/components/ui/DesignSystem';
 import { useAuth } from '@/context/AuthContext';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
@@ -11,19 +10,6 @@ import { nextSequence, saveDocument } from '@/services/document.service';
 import { ArrowRight, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
-=======
-import { useNavigate } from 'react-router-dom';
-import { templateRepo } from '@/lib/storage';
-import { useCompany } from '@/context/CompanyContext';
-import { useAuth } from '@/context/AuthContext';
-import { saveDocument, nextSequence } from '@/services/document.service';
-import { useToast } from '@/context/ToastContext';
-import { v4 as uuid } from 'uuid';
-import type { Quotation } from '@/lib/models';
-import { createEmptyQuotation } from '@/lib/defaults';
-import { calcValidUntil } from '@/lib/utils';
-import { FileText, ArrowRight } from 'lucide-react';
->>>>>>> origin/main
 
 export default function TemplatesPage() {
   const navigate = useNavigate();
@@ -58,7 +44,6 @@ export default function TemplatesPage() {
   };
 
   return (
-<<<<<<< HEAD
     <div className="space-y-6">
       <PageHeader
         title="BOQ Templates"
@@ -74,33 +59,14 @@ export default function TemplatesPage() {
             <h3 className="text-base font-semibold text-[#17243A]">{t.name}</h3>
             <p className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-[#667085]">{t.projectType}</p>
             <p className="mt-2 flex-1 text-sm leading-6 text-[#475467]">{t.description}</p>
-            <div className="mt-4 text-xs text-[#667085]">{t.boqSections.length} sections · {t.boqSections.reduce((s, sec) => s + sec.items.length, 0)} items · {t.specifications.length} specs</div>
+            <div className="mt-4 text-xs text-[#667085]">{t.boqSections.length} sections Â· {t.boqSections.reduce((s, sec) => s + sec.items.length, 0)} items Â· {t.specifications.length} specs</div>
             <AppButton onClick={() => createFromTemplate(t.id)} className="mt-4 w-full justify-center">
               Use Template <ArrowRight className="h-4 w-4" />
             </AppButton>
           </PremiumCard>
-=======
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#0B234A]">BOQ Templates</h1>
-        <p className="text-sm text-slate-500">Start a new quotation from a pre-built structure.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {templates.map((t) => (
-          <div key={t.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col">
-            <div className="w-10 h-10 rounded-lg bg-[#0B2857]/10 flex items-center justify-center mb-3"><FileText className="w-5 h-5 text-[#0B2857]" /></div>
-            <h3 className="font-semibold text-[#0B234A]">{t.name}</h3>
-            <p className="text-xs text-slate-500 mt-0.5 mb-2">{t.projectType}</p>
-            <p className="text-sm text-slate-600 mb-3 flex-1">{t.description}</p>
-            <div className="text-xs text-slate-400 mb-4">{t.boqSections.length} sections · {t.boqSections.reduce((s, sec) => s + sec.items.length, 0)} items · {t.specifications.length} specs</div>
-            <button onClick={() => createFromTemplate(t.id)} className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg w-full">
-              Use Template <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
->>>>>>> origin/main
         ))}
       </div>
     </div>
   );
 }
+

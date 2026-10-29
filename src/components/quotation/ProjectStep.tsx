@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import { Field, SectionCard, Select, TextArea, TextInput } from '@/components/ui/Form';
+﻿import { Field, SectionCard, Select, TextArea, TextInput } from '@/components/ui/Form';
 import { useAuth } from '@/context/AuthContext';
 import { useBuilder } from '@/context/BuilderContext';
 import { useCompany } from '@/context/CompanyContext';
@@ -19,19 +18,6 @@ export default function ProjectStep() {
   const [areaUnits, setAreaUnits] = useState<MasterItem[]>([]);
 
   const storageScope = { userId: user?.id ?? 'local', companyId: company?.companyId ?? 'local-company' };
-=======
-import { useMemo } from 'react';
-import { useBuilder } from '@/context/BuilderContext';
-import { Field, TextInput, Select, TextArea, SectionCard } from '@/components/ui/Form';
-import { VALIDITY_OPTIONS, PROJECT_TYPES, AREA_UNITS, FLOOR_OPTIONS, INDIAN_STATES } from '@/lib/constants';
-import { calcValidUntil, isValidMobile, isValidEmail, isValidPincode } from '@/lib/utils';
-import { quotationRepo } from '@/lib/storage';
-import { UserCheck } from 'lucide-react';
-import type { Quotation } from '@/lib/models';
-
-export default function ProjectStep() {
-  const { quotation, setQuotation, isExisting } = useBuilder();
->>>>>>> origin/main
 
   // Look up an existing customer by mobile number so repeat customers don't need
   // to be re-typed. Only offered while creating a new quotation, and only once
@@ -42,16 +28,11 @@ export default function ProjectStep() {
   const matchedCustomer = useMemo(() => {
     if (!quotation || isExisting || !isValidMobile(quotation.customer.mobile) || quotation.customer.name) return null;
     const match = quotationRepo
-<<<<<<< HEAD
       .list(storageScope)
-=======
-      .list()
->>>>>>> origin/main
       .find((other) => other.id !== quotation.id && other.customer.mobile === quotation.customer.mobile && other.customer.name);
     return match ? match.customer : null;
   }, [quotation?.id, quotation?.customer.mobile, quotation?.customer.name, isExisting]);
 
-<<<<<<< HEAD
   useEffect(() => {
     if (!company) {
       setProjectTypes([]);
@@ -75,8 +56,6 @@ export default function ProjectStep() {
     return () => { active = false; };
   }, [company?.companyId]);
 
-=======
->>>>>>> origin/main
   if (!quotation) return null;
   const q = quotation;
 
@@ -91,7 +70,6 @@ export default function ProjectStep() {
 
   const onValidityChange = (validity: string) => update({ validity, validUntil: calcValidUntil(q.quotationDate, validity) });
   const onDateChange = (date: string) => update({ quotationDate: date, validUntil: calcValidUntil(date, q.validity) });
-<<<<<<< HEAD
   const projectTypeOptions = projectTypes.length > 0 ? projectTypes : PROJECT_TYPES.map((name) => ({ id: name, name, code: name, companyId: null, isActive: true } as MasterItem));
   const areaUnitOptions = areaUnits.length > 0 ? areaUnits : AREA_UNITS.map((name) => ({ id: name, name, code: name, symbol: name, companyId: null, isActive: true } as MasterItem));
 
@@ -106,8 +84,6 @@ export default function ProjectStep() {
     update({ areaUnitId: selected?.id ?? null });
     updateProject({ builtupAreaUnit: selected?.symbol || selected?.name || value });
   };
-=======
->>>>>>> origin/main
 
   return (
     <div className="space-y-6">
@@ -136,22 +112,14 @@ export default function ProjectStep() {
             <TextInput value={q.customer.name} onChange={(e) => updateCustomer({ name: e.target.value })} placeholder="e.g. Ramesh Kumar" />
           </Field>
           <Field label="Mobile Number" required error={q.customer.mobile && !isValidMobile(q.customer.mobile) ? 'Enter valid 10-digit number' : ''}>
-<<<<<<< HEAD
             <TextInput type="tel" inputMode="numeric" value={q.customer.mobile} onChange={(e) => updateCustomer({ mobile: e.target.value })} maxLength={10} placeholder="10-digit number" />
-=======
-            <TextInput value={q.customer.mobile} onChange={(e) => updateCustomer({ mobile: e.target.value })} maxLength={10} placeholder="10-digit number" />
->>>>>>> origin/main
             {matchedCustomer && (
               <button
                 type="button"
                 onClick={useMatchedCustomer}
-<<<<<<< HEAD
                 className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-medium text-[#1D4ED8] bg-[#1D4ED8]/5 hover:bg-[#1D4ED8]/10 px-2 py-1 rounded-md"
-=======
-                className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-medium text-[#0B2857] bg-[#0B2857]/5 hover:bg-[#0B2857]/10 px-2 py-1 rounded-md"
->>>>>>> origin/main
               >
-                <UserCheck className="w-3.5 h-3.5" /> Existing customer found: {matchedCustomer.name} — use their details
+                <UserCheck className="w-3.5 h-3.5" /> Existing customer found: {matchedCustomer.name} â€” use their details
               </button>
             )}
           </Field>
@@ -181,13 +149,8 @@ export default function ProjectStep() {
             <TextInput value={q.project.name} onChange={(e) => updateProject({ name: e.target.value })} placeholder="e.g. G+1 House at Visakhapatnam" />
           </Field>
           <Field label="Project Type">
-<<<<<<< HEAD
             <Select value={q.projectTypeId ?? q.project.projectType} onChange={(e) => onProjectTypeChange(e.target.value)}>
               {projectTypeOptions.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-=======
-            <Select value={q.project.projectType} onChange={(e) => updateProject({ projectType: e.target.value })}>
-              {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
->>>>>>> origin/main
             </Select>
           </Field>
           <Field label="Floors">
@@ -203,16 +166,11 @@ export default function ProjectStep() {
           <Field label="Built-up Area">
             <div className="flex flex-col sm:flex-row gap-2">
               <TextInput type="number" value={q.project.builtupArea} onChange={(e) => updateProject({ builtupArea: e.target.value })} />
-<<<<<<< HEAD
               <Select className="sm:w-28" value={q.areaUnitId ?? q.project.builtupAreaUnit} onChange={(e) => onAreaUnitChange(e.target.value)}>
                 {areaUnitOptions.map((u) => {
                   const label = u.symbol ? `${u.name} (${u.symbol})` : u.name;
                   return <option key={u.id} value={u.id}>{label}</option>;
                 })}
-=======
-              <Select className="sm:w-28" value={q.project.builtupAreaUnit} onChange={(e) => updateProject({ builtupAreaUnit: e.target.value })}>
-                {AREA_UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
->>>>>>> origin/main
               </Select>
             </div>
           </Field>

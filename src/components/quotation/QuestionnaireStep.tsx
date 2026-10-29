@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useBuilder } from '@/context/BuilderContext';
 import { Field, Select, TextArea, SectionCard } from '@/components/ui/Form';
 import { ChevronDown } from 'lucide-react';
@@ -48,11 +48,7 @@ export default function QuestionnaireStep() {
 
   return (
     <div className="space-y-4">
-<<<<<<< HEAD
       <div className="bg-[#1D4ED8]/5 border border-[#1D4ED8]/10 rounded-lg p-4">
-=======
-      <div className="bg-[#0B2857]/5 border border-[#0B2857]/10 rounded-lg p-4">
->>>>>>> origin/main
         <p className="text-sm text-slate-700">
           Capture the client's material and finish preferences. These answers feed the
           Material &amp; Work Specifications section of the PDF. Leave any field blank if
@@ -64,13 +60,13 @@ export default function QuestionnaireStep() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <Field label="Structure Type">
             <Select value={quotation.questionnaire.structureType} onChange={(e) => update({ structureType: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_STRUCTURE_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Foundation Type">
             <Select value={quotation.questionnaire.foundationType} onChange={(e) => update({ foundationType: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_FOUNDATION_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
@@ -80,11 +76,7 @@ export default function QuestionnaireStep() {
               value={quotation.questionnaire.floorsPlanned}
               onChange={(e) => update({ floorsPlanned: e.target.value })}
               placeholder="e.g. G+1"
-<<<<<<< HEAD
               className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
-=======
-              className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
->>>>>>> origin/main
             />
           </Field>
           <Field label="Plot Size">
@@ -93,11 +85,7 @@ export default function QuestionnaireStep() {
               value={quotation.questionnaire.plotSize}
               onChange={(e) => update({ plotSize: e.target.value })}
               placeholder="e.g. 30x40 ft"
-<<<<<<< HEAD
               className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
-=======
-              className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
->>>>>>> origin/main
             />
           </Field>
         </div>
@@ -107,25 +95,25 @@ export default function QuestionnaireStep() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <Field label="Cement Brand">
             <Select value={quotation.questionnaire.cementBrand} onChange={(e) => update({ cementBrand: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_CEMENT_BRANDS.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Concrete Mix Grade">
             <Select value={quotation.questionnaire.concreteMix} onChange={(e) => update({ concreteMix: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_CONCRETE_MIXES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Steel Brand">
             <Select value={quotation.questionnaire.steelBrand} onChange={(e) => update({ steelBrand: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_STEEL_BRANDS.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Steel Grade">
             <Select value={quotation.questionnaire.steelGrade} onChange={(e) => update({ steelGrade: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_STEEL_GRADES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
@@ -136,31 +124,31 @@ export default function QuestionnaireStep() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <Field label="Flooring Type">
             <Select value={quotation.questionnaire.flooringType} onChange={(e) => update({ flooringType: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_FLOORING_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Flooring Brand">
             <Select value={quotation.questionnaire.flooringBrand} onChange={(e) => update({ flooringBrand: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_FLOORING_BRANDS.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Wall Finish">
             <Select value={quotation.questionnaire.wallFinish} onChange={(e) => update({ wallFinish: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_WALL_FINISHES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Paint Brand">
             <Select value={quotation.questionnaire.paintBrand} onChange={(e) => update({ paintBrand: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_PAINT_BRANDS.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Paint Type">
             <Select value={quotation.questionnaire.paintType} onChange={(e) => update({ paintType: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_PAINT_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
@@ -171,13 +159,13 @@ export default function QuestionnaireStep() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <Field label="Doors Type">
             <Select value={quotation.questionnaire.doorsType} onChange={(e) => update({ doorsType: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_DOORS_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Windows Type">
             <Select value={quotation.questionnaire.windowsType} onChange={(e) => update({ windowsType: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_WINDOWS_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
@@ -188,25 +176,25 @@ export default function QuestionnaireStep() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <Field label="Wiring Brand">
             <Select value={quotation.questionnaire.wiringBrand} onChange={(e) => update({ wiringBrand: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_WIRING_BRANDS.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Switches Brand">
             <Select value={quotation.questionnaire.switchesBrand} onChange={(e) => update({ switchesBrand: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_SWITCHES_BRANDS.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Plumbing Pipes">
             <Select value={quotation.questionnaire.plumbingPipes} onChange={(e) => update({ plumbingPipes: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_PLUMBING_PIPES.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>
           <Field label="Sanitaryware Brand">
             <Select value={quotation.questionnaire.sanitaryBrand} onChange={(e) => update({ sanitaryBrand: e.target.value })}>
-              <option value="">— Select —</option>
+              <option value="">â€” Select â€”</option>
               {Q_SANITARY_BRANDS.map((v) => <option key={v} value={v}>{v}</option>)}
             </Select>
           </Field>

@@ -1,4 +1,4 @@
-import cors from '@fastify/cors';
+﻿import cors from '@fastify/cors';
 import Fastify from 'fastify';
 import {
     comparePassword,
@@ -25,10 +25,7 @@ import {
     getPrimaryMembership,
     QUOTATION_ROLES,
     requireAuth,
-<<<<<<< HEAD
     resolveProjectScopedAccess,
-=======
->>>>>>> origin/main
 } from './authz.js';
 import {
     createCompany,
@@ -46,7 +43,6 @@ import {
     updateCustomerRow,
 } from './customers.js';
 import {
-<<<<<<< HEAD
     getFlatBillingRow,
     listFlatBillingsForCompany,
     saveFlatBillingToDatabase,
@@ -103,13 +99,6 @@ import {
     voidProjectExpenseRow,
     voidProjectReceiptRow
 } from './projects.js';
-=======
-    listFlatBillingsForCompany,
-    getFlatBillingRow,
-    saveFlatBillingToDatabase,
-    softDeleteFlatBilling,
-} from './flatBilling.js';
->>>>>>> origin/main
 import { allocateDocumentNumber, peekNextDocumentNumber } from './sequence.js';
 import {
     applySuccessfulPayment,
@@ -139,22 +128,15 @@ import {
     validateCompanyPayload,
     validateCustomerPayload,
     validateFlatBillingPayload,
-<<<<<<< HEAD
     validateProjectPayload,
     validateQuotationPayload,
 } from './validation.js';
 
-const app = Fastify({ logger: true, bodyLimit: 10 * 1024 * 1024 }); // 10 MB — safer headroom for base64-encoded logo/signature payloads
-=======
-    validateQuotationPayload,
-} from './validation.js';
-
-const app = Fastify({ logger: true, bodyLimit: 5 * 1024 * 1024 }); // 5 MB — accommodates base64-encoded logo + signature images
->>>>>>> origin/main
+const app = Fastify({ logger: true, bodyLimit: 10 * 1024 * 1024 }); // 10 MB â€” safer headroom for base64-encoded logo/signature payloads
 
 // Captures the raw request body alongside the normally-parsed JSON. Needed
 // ONLY for the Razorpay webhook (POST /api/webhooks/razorpay), whose
-// signature is computed over the exact raw bytes Razorpay sent — re-stringifying
+// signature is computed over the exact raw bytes Razorpay sent â€” re-stringifying
 // the parsed object would not reliably reproduce the same bytes. Every other
 // route is unaffected: request.body is still the parsed JSON object exactly
 // as before.
@@ -177,7 +159,6 @@ function parseNumber(value: unknown): number {
     return 0;
 }
 
-<<<<<<< HEAD
 function parseDateOrNull(value: unknown): Date | null {
     if (!value || typeof value !== 'string') return null;
     const parsed = new Date(value);
@@ -261,8 +242,6 @@ async function getOutstandingByExpenseId(companyId: string, projectId?: string |
     return outstanding;
 }
 
-=======
->>>>>>> origin/main
 function getRequestMeta(request: any): { userAgent: string | null; ip: string | null } {
     return {
         userAgent: (request.headers['user-agent'] as string | undefined) ?? null,
@@ -271,7 +250,6 @@ function getRequestMeta(request: any): { userAgent: string | null; ip: string | 
 }
 
 function mapStatusToDb(status: string): string {
-<<<<<<< HEAD
     switch (status) {
         case 'DRAFT':
             return 'Draft';
@@ -288,9 +266,6 @@ function mapStatusToDb(status: string): string {
         default:
             return 'Draft';
     }
-=======
-    return status === 'DRAFT' ? 'Draft' : 'Completed';
->>>>>>> origin/main
 }
 
 function buildDocumentPayload(quotation: any, companyId: string, documentNumber: string, customerId: string | null) {
@@ -308,28 +283,19 @@ function buildDocumentPayload(quotation: any, companyId: string, documentNumber:
         status: mapStatusToDb(quotation.status),
         quotation_date: quotation.quotationDate || null,
         valid_until: quotation.validUntil || null,
-<<<<<<< HEAD
         project_type_id: quotation.projectTypeId ?? quotation.project_type_id ?? null,
         project_name: quotation.project?.name ?? '',
         project_type: quotation.project?.projectType ?? '',
         project_location: quotation.project?.address ?? '',
         area_unit_id: quotation.areaUnitId ?? quotation.area_unit_id ?? null,
-=======
-        project_name: quotation.project?.name ?? '',
-        project_type: quotation.project?.projectType ?? '',
-        project_location: quotation.project?.address ?? '',
->>>>>>> origin/main
         builtup_area: parseNumber(quotation.project?.builtupArea),
         area_unit: quotation.project?.builtupAreaUnit ?? '',
         floors: quotation.project?.floors ?? '',
         subtotal: quotation.subtotal ?? 0,
         additional_charges: additionalCharges,
         discount: quotation.discount?.value ?? 0,
-<<<<<<< HEAD
         tax_rate_id: quotation.taxRateId ?? quotation.tax_rate_id ?? null,
         tax_name: quotation.tax?.name ?? null,
-=======
->>>>>>> origin/main
         tax_percentage: quotation.tax?.rate ?? 0,
         tax_amount: taxAmount,
         grand_total: quotation.grandTotal ?? 0,
@@ -383,9 +349,9 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
     }
 
     // The row may already exist (an autosave/draft update). Load it first to
-    // find (a) whether it already belongs to a DIFFERENT company — which
+    // find (a) whether it already belongs to a DIFFERENT company â€” which
     // would mean this request is trying to hijack another company's document
-    // by reusing its id, and must be rejected — (b) its existing
+    // by reusing its id, and must be rejected â€” (b) its existing
     // document_number, which is preserved rather than re-derived from
     // whatever the client sent, and (c) any customer_id already linked to it.
     const { data: existingDoc, error: existingDocError } = await supabaseAdmin
@@ -411,10 +377,10 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
     const isNewQuotation = !existingDoc;
 
     if (isNewQuotation) {
-        // Existing quotations (edits/autosaves) are never subject to this —
+        // Existing quotations (edits/autosaves) are never subject to this â€”
         // only genuinely new documents count against the monthly limit. This
         // reservation is atomic (compare-and-swap against
-        // company_quotation_usage — see subscription.ts) and happens BEFORE
+        // company_quotation_usage â€” see subscription.ts) and happens BEFORE
         // anything is written, so a rejected request never creates a
         // partial row that would need cleaning up, and two concurrent
         // requests can never both succeed past the limit.
@@ -429,7 +395,7 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
         // Resolve/keep-in-sync a customers-table row backing this quotation's
         // embedded customer info, and link it via documents.customer_id. The
         // quotation's own customer fields (used for PDF/display) are left
-        // completely untouched — this only adds a structural link, scoped
+        // completely untouched â€” this only adds a structural link, scoped
         // strictly to `companyId` (never a client-supplied customer id), so a
         // quotation can never end up linked to another company's customer.
         let customerId: string | null = existingDoc?.customer_id ?? null;
@@ -451,7 +417,7 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
                     await updateCustomerRow(customerId, customerFields);
                 } else {
                     // Linked row is missing or (shouldn't happen) belongs to a
-                    // different company — re-create under the correct company
+                    // different company â€” re-create under the correct company
                     // rather than ever link across a company boundary.
                     const created = await createCustomerForCompany(companyId, customerFields);
                     customerId = created.id;
@@ -478,7 +444,7 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
 
         // Delete existing child rows before re-inserting the current state.
         // Order matters: document_items reference document_sections via
-        // section_id, so items must be deleted BEFORE their parent sections —
+        // section_id, so items must be deleted BEFORE their parent sections â€”
         // deleting a section while its items still reference it would either
         // fail on a foreign-key constraint or (if no FK exists) leave orphaned
         // item rows pointing at a section_id that no longer exists. Every step
@@ -608,7 +574,7 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
     } catch (err) {
         if (isNewQuotation) {
             // The slot was reserved but this new quotation failed to
-            // actually get created (an unrelated DB error) — give the slot
+            // actually get created (an unrelated DB error) â€” give the slot
             // back rather than charging the company's monthly limit for a
             // request that never produced a document.
             await releaseQuotationSlot(companyId);
@@ -622,13 +588,13 @@ await app.register(cors, {
     credentials: true,
 });
 
-// ─── Auth helper ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Auth helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // requireAuth (JWT verification) and the company-level authorization helpers
 // (authorizeCompany, authorizeOwnedResource, getMembership, getPrimaryMembership,
 // ensureCompanyMembership) now live in ./authz.ts so they can be reused across
 // every company-scoped route below instead of being duplicated per-route.
 
-// ─── POST /api/signup ──────────────────────────────────────────────────────────
+// â”€â”€â”€ POST /api/signup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.post('/api/signup', async (request, reply) => {
     const body = request.body as { email?: string; password?: string; fullName?: string };
@@ -637,7 +603,6 @@ app.post('/api/signup', async (request, reply) => {
         return reply.status(400).send({ error: 'Email and password are required.' });
     }
 
-<<<<<<< HEAD
     try {
         // Check duplicate
         const existing = await findUserByEmail(body.email);
@@ -659,7 +624,7 @@ app.post('/api/signup', async (request, reply) => {
         try {
             await createUserProfile(user.id, body.fullName ?? null);
         } catch (err: any) {
-            // Profile creation failed — log but don't block the response.
+            // Profile creation failed â€” log but don't block the response.
             // User can update profile later.
             app.log.warn(err, 'Failed to create user profile for user %s', user.id);
         }
@@ -694,58 +659,9 @@ app.post('/api/signup', async (request, reply) => {
         }
         return reply.status(500).send({ error: 'Failed to create account. Please try again.' });
     }
-=======
-    // Check duplicate
-    const existing = await findUserByEmail(body.email);
-    if (existing) {
-        return reply.status(409).send({ error: 'An account with this email already exists.' });
-    }
-
-    // Create user row in public.users
-    const passwordHash = await hashPassword(body.password);
-    let user: Awaited<ReturnType<typeof createUser>>;
-    try {
-        user = await createUser(body.email, passwordHash);
-    } catch (err: any) {
-        app.log.error(err, 'Failed to create user');
-        return reply.status(500).send({ error: 'Failed to create account. Please try again.' });
-    }
-
-    // Create profile row in public.user_profiles (non-fatal if it fails)
-    try {
-        await createUserProfile(user.id, body.fullName ?? null);
-    } catch (err: any) {
-        // Profile creation failed — log but don't block the response.
-        // User can update profile later.
-        app.log.warn(err, 'Failed to create user profile for user %s', user.id);
-    }
-
-    const token = signJwt({ sub: user.id, email: user.email, role: user.role });
-
-    let refreshToken: string | null = null;
-    try {
-        refreshToken = await issueRefreshToken(user.id, getRequestMeta(request));
-    } catch (err: any) {
-        // Non-fatal: the access token still works, just without silent renewal
-        // until the next successful login/refresh.
-        app.log.warn(err, 'Failed to issue refresh token for user %s', user.id);
-    }
-
-    return reply.status(201).send({
-        token,
-        refreshToken,
-        user: {
-            id: user.id,
-            email: user.email,
-            fullName: body.fullName ?? null,
-            role: user.role,
-            mustChangePassword: false,
-        },
-    });
->>>>>>> origin/main
 });
 
-// ─── POST /api/login ───────────────────────────────────────────────────────────
+// â”€â”€â”€ POST /api/login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.post('/api/login', async (request, reply) => {
     const body = request.body as { email?: string; password?: string };
@@ -754,11 +670,10 @@ app.post('/api/login', async (request, reply) => {
         return reply.status(400).send({ error: 'Email and password are required.' });
     }
 
-<<<<<<< HEAD
     try {
         const user = await findUserByEmail(body.email);
 
-        // Use same error message for missing user and wrong password — prevents email enumeration
+        // Use same error message for missing user and wrong password â€” prevents email enumeration
         if (!user) {
             return reply.status(401).send({ error: 'Invalid email or password.' });
         }
@@ -809,56 +724,9 @@ app.post('/api/login', async (request, reply) => {
         }
         return reply.status(500).send({ error: 'Login failed. Please try again.' });
     }
-=======
-    const user = await findUserByEmail(body.email);
-
-    // Use same error message for missing user and wrong password — prevents email enumeration
-    if (!user) {
-        return reply.status(401).send({ error: 'Invalid email or password.' });
-    }
-
-    // Check account is active
-    if (!user.is_active) {
-        return reply.status(403).send({ error: 'This account has been deactivated. Please contact support.' });
-    }
-
-    const valid = await comparePassword(body.password, user.password_hash);
-    if (!valid) {
-        return reply.status(401).send({ error: 'Invalid email or password.' });
-    }
-
-    // Update last_login_at (non-fatal)
-    updateLastLogin(user.id).catch((err) =>
-        app.log.warn(err, 'Failed to update last_login_at for user %s', user.id)
-    );
-
-    // Fetch full_name from user_profiles
-    const profile = await getUserProfile(user.id).catch(() => null);
-
-    const token = signJwt({ sub: user.id, email: user.email, role: user.role });
-
-    let refreshToken: string | null = null;
-    try {
-        refreshToken = await issueRefreshToken(user.id, getRequestMeta(request));
-    } catch (err: any) {
-        app.log.warn(err, 'Failed to issue refresh token for user %s', user.id);
-    }
-
-    return reply.send({
-        token,
-        refreshToken,
-        user: {
-            id: user.id,
-            email: user.email,
-            fullName: profile?.full_name ?? null,
-            role: user.role,
-            mustChangePassword: !!user.must_change_password,
-        },
-    });
->>>>>>> origin/main
 });
 
-// ─── POST /api/refresh ─────────────────────────────────────────────────────────
+// â”€â”€â”€ POST /api/refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Exchanges a still-valid refresh token for a new short-lived access token.
 // The refresh token itself is rotated (old one revoked, new one issued) on
 // every use, so a leaked-and-reused old token is immediately detectable as
@@ -893,9 +761,9 @@ app.post('/api/refresh', async (request, reply) => {
     }
 });
 
-// ─── POST /api/logout ──────────────────────────────────────────────────────────
+// â”€â”€â”€ POST /api/logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Revokes the presented refresh token so it can never be used again. The
-// short-lived access token isn't separately revocable (by design — it just
+// short-lived access token isn't separately revocable (by design â€” it just
 // expires within 15 minutes), but without a valid refresh token it can no
 // longer be silently renewed.
 
@@ -911,7 +779,7 @@ app.post('/api/logout', async (request, reply) => {
     return reply.send({ ok: true });
 });
 
-// ─── Password reset ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Password reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.post('/api/password-reset/request', async (request, reply) => {
     const body = request.body as { email?: string };
@@ -920,7 +788,7 @@ app.post('/api/password-reset/request', async (request, reply) => {
     }
 
     // Always return the same generic response whether or not the account
-    // exists — this prevents the endpoint being used to enumerate emails.
+    // exists â€” this prevents the endpoint being used to enumerate emails.
     const genericResponse = { ok: true, message: 'If an account exists for that email, a reset link has been generated.' };
 
     try {
@@ -934,7 +802,7 @@ app.post('/api/password-reset/request', async (request, reply) => {
         // NOTE: there is no outbound email provider configured in this
         // project (no SMTP/email-API env vars). Delivering the reset token
         // to the user's inbox requires wiring up a real email service before
-        // production — the token is intentionally NEVER written to logs
+        // production â€” the token is intentionally NEVER written to logs
         // (see requirement 5 / 14).
         //
         // As a development-only convenience so the flow is testable
@@ -943,7 +811,7 @@ app.post('/api/password-reset/request', async (request, reply) => {
         // ALLOW_DEV_PASSWORD_RESET_TOKEN=true in the backend's .env. This is
         // deliberately an explicit opt-in (not "NODE_ENV !== 'production'")
         // so a deployment that simply forgets to set NODE_ENV can never leak
-        // a reset token by default — the safe default is "never expose".
+        // a reset token by default â€” the safe default is "never expose".
         // Remove this block entirely once a real email send is wired up.
         const devTokenEnabled = process.env.ALLOW_DEV_PASSWORD_RESET_TOKEN === 'true';
         const devToken = devTokenEnabled ? token : undefined;
@@ -951,7 +819,7 @@ app.post('/api/password-reset/request', async (request, reply) => {
         return reply.send({ ...genericResponse, ...(devToken ? { devToken } : {}) });
     } catch (err: any) {
         app.log.error(err, 'Failed to process password reset request');
-        // Still return the generic response — don't leak internal state via errors either.
+        // Still return the generic response â€” don't leak internal state via errors either.
         return reply.send(genericResponse);
     }
 });
@@ -974,7 +842,7 @@ app.post('/api/password-reset/confirm', async (request, reply) => {
         const passwordHash = await hashPassword(body.newPassword);
         await updateUserPassword(reset.userId, passwordHash);
         await markPasswordResetUsed(reset.id);
-        // Force re-login everywhere — a password reset should invalidate any
+        // Force re-login everywhere â€” a password reset should invalidate any
         // sessions started before the account owner regained control.
         await revokeAllRefreshTokensForUser(reset.userId);
 
@@ -985,7 +853,7 @@ app.post('/api/password-reset/confirm', async (request, reply) => {
     }
 });
 
-// ─── GET /api/me ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ GET /api/me â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.get('/api/me', async (request, reply) => {
     const authHeader = request.headers.authorization;
@@ -1021,12 +889,12 @@ app.get('/api/me', async (request, reply) => {
     });
 });
 
-// ─── POST /api/change-password ─────────────────────────────────────────────────
+// â”€â”€â”€ POST /api/change-password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Self-service password change for the authenticated user. Used both for the
 // forced first-login flow (an admin-created teammate must set their own
-// password before doing anything else — see must_change_password) and as a
+// password before doing anything else â€” see must_change_password) and as a
 // general "change my password" action. Unlike the forgot-password flow, this
-// does NOT revoke other sessions — a user proactively changing their own
+// does NOT revoke other sessions â€” a user proactively changing their own
 // password from an active, already-authenticated session isn't a signal of
 // compromise the way a password-reset-token flow is.
 
@@ -1067,14 +935,14 @@ app.post('/api/change-password', async (request, reply) => {
     }
 });
 
-// ─── GET /api/company ──────────────────────────────────────────────────────────
+// â”€â”€â”€ GET /api/company â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.get('/api/company', async (request, reply) => {
     const userId = requireAuth(request, reply);
     if (!userId) return;
 
     try {
-        // No explicit companyId is supplied here — resolve the caller's own
+        // No explicit companyId is supplied here â€” resolve the caller's own
         // company via their company_users membership. No company yet is a
         // normal state (new user), not an authorization failure.
         const membership = await getPrimaryMembership(userId);
@@ -1090,7 +958,7 @@ app.get('/api/company', async (request, reply) => {
     }
 });
 
-// ─── POST /api/company ─────────────────────────────────────────────────────────
+// â”€â”€â”€ POST /api/company â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.post('/api/company', async (request, reply) => {
     const userId = requireAuth(request, reply);
@@ -1127,13 +995,8 @@ app.post('/api/company', async (request, reply) => {
             ifsc: body.ifsc ?? null,
             branch: body.branch ?? null,
             upi_id: body.upi_id ?? null,
-<<<<<<< HEAD
             quotation_prefix: body.quotation_prefix || 'QTN',
             booking_prefix: body.booking_prefix || 'BR',
-=======
-            quotation_prefix: body.quotation_prefix ?? null,
-            booking_prefix: body.booking_prefix ?? null,
->>>>>>> origin/main
             default_validity_days: body.default_validity_days ?? 30,
             default_terms: body.default_terms ?? null,
         });
@@ -1156,12 +1019,12 @@ app.post('/api/company', async (request, reply) => {
     }
 });
 
-// ─── GET /api/company/:companyId ──────────────────────────────────────────────
+// â”€â”€â”€ GET /api/company/:companyId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.get('/api/company/:companyId', async (request, reply) => {
     const { companyId } = request.params as { companyId: string };
 
-    // companyId comes from the frontend — treat it only as a requested
+    // companyId comes from the frontend â€” treat it only as a requested
     // context and verify it against company_users before trusting it.
     const membership = await authorizeCompany(request, reply, {
         requestedCompanyId: companyId,
@@ -1178,7 +1041,7 @@ app.get('/api/company/:companyId', async (request, reply) => {
     }
 });
 
-// ─── PUT /api/company/:companyId ───────────────────────────────────────────────
+// â”€â”€â”€ PUT /api/company/:companyId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.put('/api/company/:companyId', async (request, reply) => {
     const { companyId } = request.params as { companyId: string };
@@ -1189,7 +1052,7 @@ app.put('/api/company/:companyId', async (request, reply) => {
         return reply.status(400).send({ error: validationError });
     }
 
-    // companyId comes from the frontend — treat it only as a requested
+    // companyId comes from the frontend â€” treat it only as a requested
     // context and verify it against company_users before trusting it.
     // Only owner/admin members may update company management data.
     const membership = await authorizeCompany(request, reply, {
@@ -1222,13 +1085,8 @@ app.put('/api/company/:companyId', async (request, reply) => {
             ifsc: body.ifsc ?? null,
             branch: body.branch ?? null,
             upi_id: body.upi_id ?? null,
-<<<<<<< HEAD
             quotation_prefix: body.quotation_prefix || 'QTN',
             booking_prefix: body.booking_prefix || 'BR',
-=======
-            quotation_prefix: body.quotation_prefix ?? null,
-            booking_prefix: body.booking_prefix ?? null,
->>>>>>> origin/main
             default_validity_days: body.default_validity_days ?? 30,
             default_terms: body.default_terms ?? null,
         });
@@ -1241,14 +1099,14 @@ app.put('/api/company/:companyId', async (request, reply) => {
     }
 });
 
-// ─── Customers ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Customers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Previously the frontend queried the `customers` table directly via
 // Supabase with the anon key (see src/services/customer.service.ts). These
 // routes move that behind the authorized backend so every customer
 // operation goes through the same company_users check as everything else.
 
 app.get('/api/customers', async (request, reply) => {
-    // No explicit companyId — list the caller's own company's customers.
+    // No explicit companyId â€” list the caller's own company's customers.
     const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
     if (!membership) return;
 
@@ -1265,7 +1123,7 @@ app.get('/api/customers/:id', async (request, reply) => {
     const { id } = request.params as { id: string };
     let customer: any = null;
 
-    // Identified only by id — load it first to find its owning company, then verify membership.
+    // Identified only by id â€” load it first to find its owning company, then verify membership.
     const membership = await authorizeOwnedResource(
         request,
         reply,
@@ -1356,8 +1214,7 @@ app.delete('/api/customers/:id', async (request, reply) => {
     }
 });
 
-<<<<<<< HEAD
-// ─── Projects ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Projects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.get('/api/projects', async (request, reply) => {
     const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
@@ -2901,10 +2758,8 @@ app.get('/api/reports/company-summary', async (request, reply) => {
     }
 });
 
-=======
->>>>>>> origin/main
-// ─── Team management ────────────────────────────────────────────────────────
-// Owner/admin only for adding/editing members — companyId is always the
+// â”€â”€â”€ Team management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Owner/admin only for adding/editing members â€” companyId is always the
 // requested-and-verified company via authorizeCompany, never trusted from
 // the frontend directly. Backs the Team page: an admin creates a login
 // (typing the password themselves) for a teammate who doesn't have an
@@ -2990,8 +2845,8 @@ app.put('/api/company/:companyId/users/:userId', async (request, reply) => {
     }
 });
 
-// ─── Subscription / Billing ─────────────────────────────────────────────────
-// Billing belongs to the COMPANY, never an individual user — every route here
+// â”€â”€â”€ Subscription / Billing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Billing belongs to the COMPANY, never an individual user â€” every route here
 // resolves companyId the same way as everywhere else (JWT -> company_users),
 // never from anything the client claims. Status is readable by any active
 // member; checkout/verify/cancel are owner/admin only, same tier as company
@@ -3028,13 +2883,10 @@ app.post('/api/subscription/checkout', async (request, reply) => {
         });
     } catch (err: any) {
         app.log.error(err, 'Failed to create checkout order');
-<<<<<<< HEAD
         const message = err instanceof Error ? err.message : '';
         if (/Razorpay checkout is temporarily unavailable|ECONNRESET|fetch failed|TLS/i.test(message)) {
             return reply.status(503).send({ error: 'Payment gateway is temporarily unavailable. Please try again in a moment.' });
         }
-=======
->>>>>>> origin/main
         return reply.status(500).send({ error: 'Failed to start checkout.' });
     }
 });
@@ -3059,7 +2911,7 @@ app.post('/api/subscription/verify', async (request, reply) => {
     if (!membership) return;
 
     try {
-        // The ONLY thing that determines whether this payment is real —
+        // The ONLY thing that determines whether this payment is real â€”
         // never trust a frontend claim of "payment succeeded" on its own.
         const valid = verifyRazorpaySignature(body.razorpayOrderId!, body.razorpayPaymentId!, body.razorpaySignature!);
         if (!valid) {
@@ -3087,13 +2939,13 @@ app.post('/api/subscription/cancel', async (request, reply) => {
     }
 });
 
-// Razorpay webhook — the authoritative, server-to-server confirmation that a
+// Razorpay webhook â€” the authoritative, server-to-server confirmation that a
 // payment succeeded, independent of whether the customer's browser stayed
 // open long enough for the Checkout success callback to fire (a closed tab
 // or dropped connection right after paying would otherwise leave the
 // company stuck on the free plan despite a completed charge). Configure
 // this URL in the Razorpay dashboard, subscribed to "payment.captured".
-// No JWT here — Razorpay calls this directly — so the ONLY trust boundary
+// No JWT here â€” Razorpay calls this directly â€” so the ONLY trust boundary
 // is the webhook signature, verified against the raw request body.
 app.post('/api/webhooks/razorpay', async (request, reply) => {
     const signature = request.headers['x-razorpay-signature'] as string | undefined;
@@ -3123,7 +2975,7 @@ app.post('/api/webhooks/razorpay', async (request, reply) => {
                 await confirmPaymentFromWebhook(payment.order_id, payment.id);
             }
         }
-        // 2xx for anything verified, whether or not we acted on it — an
+        // 2xx for anything verified, whether or not we acted on it â€” an
         // event type we don't handle isn't a delivery failure and shouldn't
         // trigger Razorpay's retry schedule.
         return reply.send({ received: true });
@@ -3135,12 +2987,12 @@ app.post('/api/webhooks/razorpay', async (request, reply) => {
     }
 });
 
-// ─── Flat Billing / Booking Receipts ────────────────────────────────────────
+// â”€â”€â”€ Flat Billing / Booking Receipts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Same persistence architecture as quotations (documents + payment_schedules
 // + document_terms + customers, document_type = 'BookingReceipt'), plus the
 // dedicated booking_receipt_details table for receipt-only fields. Previously
 // this data lived only in browser localStorage (see src/lib/flatBilling.ts on
-// the frontend) — these routes move it behind the authorized backend so it's
+// the frontend) â€” these routes move it behind the authorized backend so it's
 // company-scoped, backed up, and available across devices like quotations.
 
 app.get('/api/flat-billings', async (request, reply) => {
@@ -3280,7 +3132,7 @@ app.get('/api/flat-billings/next-sequence', async (request, reply) => {
     }
 });
 
-// ─── Quotation persistence ─────────────────────────────────────────────────
+// â”€â”€â”€ Quotation persistence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.post('/api/quotations', async (request, reply) => {
     const userId = requireAuth(request, reply);
@@ -3297,7 +3149,7 @@ app.post('/api/quotations', async (request, reply) => {
     }
 
     // body.companyId (and the old body.userId) are frontend-supplied context
-    // ONLY — never trusted directly. If a specific companyId was requested it
+    // ONLY â€” never trusted directly. If a specific companyId was requested it
     // must be verified against company_users; the authenticated user_id from
     // the JWT is always used, never a client-supplied one.
     const requestedCompanyId = body.companyId && body.companyId !== 'local-company' ? body.companyId : null;
@@ -3339,7 +3191,7 @@ app.get('/api/quotations', async (request, reply) => {
     if (!userId) return;
 
     try {
-        // No explicit companyId here — use the caller's own membership.
+        // No explicit companyId here â€” use the caller's own membership.
         // Any active role (owner/admin/staff) may list their company's quotations.
         const membership = await getPrimaryMembership(userId);
         if (!membership) {
@@ -3357,7 +3209,7 @@ app.get('/api/quotations', async (request, reply) => {
 app.get('/api/quotations/:id', async (request, reply) => {
     const { id } = request.params as { id: string };
 
-    // This resource is identified only by its own id — load the row first to
+    // This resource is identified only by its own id â€” load the row first to
     // find which company owns it, THEN verify the authenticated user belongs
     // to that company. A client-supplied company is never trusted; here there
     // isn't even one to trust, the id alone determines the owning company.
@@ -3379,7 +3231,7 @@ app.get('/api/quotations/:id', async (request, reply) => {
 app.delete('/api/quotations/:id', async (request, reply) => {
     const { id } = request.params as { id: string };
 
-    // This resource is identified only by its own id — load the row first to
+    // This resource is identified only by its own id â€” load the row first to
     // find which company owns it, THEN verify the authenticated user belongs
     // to that company (and, being a delete, keep it open to any of the
     // existing quotation roles rather than restricting it further). Already
@@ -3405,7 +3257,7 @@ app.delete('/api/quotations/:id', async (request, reply) => {
     try {
         // Soft delete: preserve the quotation and all of its BOQ/child data
         // (document_sections, document_items, specifications, inclusions,
-        // exclusions, payment_schedules, terms) for history — only flag it
+        // exclusions, payment_schedules, terms) for history â€” only flag it
         // as deleted and hide it from normal list/get queries (see
         // getQuotationRowsForCompany / getQuotationRowById above).
         const { error } = await supabaseAdmin
@@ -3429,7 +3281,7 @@ app.get('/api/quotations/next-sequence', async (request, reply) => {
     const userId = requireAuth(request, reply);
     if (!userId) return;
 
-    // The query-string companyId is frontend-supplied context ONLY — it is
+    // The query-string companyId is frontend-supplied context ONLY â€” it is
     // never used directly as a filter. It must first be verified against
     // company_users, exactly like every other companyId in this file.
     const queryCompanyId = (request.query as { companyId?: string }).companyId;
@@ -3447,12 +3299,12 @@ app.get('/api/quotations/next-sequence', async (request, reply) => {
         }
 
         if (!membership) {
-            // No company yet — mirrors the previous 'local-company' behaviour
+            // No company yet â€” mirrors the previous 'local-company' behaviour
             // of starting numbering at 1 rather than treating this as an error.
             return reply.send({ nextSequence: 1 });
         }
 
-        // Preview only — does not consume/reserve a number. The real,
+        // Preview only â€” does not consume/reserve a number. The real,
         // race-free allocation happens in allocateDocumentNumber (sequence.ts)
         // when the document is actually first saved.
         const preview = await peekNextDocumentNumber(membership.companyId, 'Quotation');
@@ -3464,7 +3316,6 @@ app.get('/api/quotations/next-sequence', async (request, reply) => {
     }
 });
 
-<<<<<<< HEAD
 app.get('/api/reports/summary', async (request, reply) => {
     const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
     if (!membership) return;
@@ -3559,9 +3410,7 @@ app.get('/api/reports/summary', async (request, reply) => {
     }
 });
 
-=======
->>>>>>> origin/main
-// ─── Server start ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Server start â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Health endpoint for load balancers and Render
 app.get('/api/health', async () => ({ ok: true, time: new Date().toISOString(), uptime: process.uptime() }));

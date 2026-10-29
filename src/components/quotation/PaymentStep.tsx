@@ -1,4 +1,4 @@
-import { useBuilder } from '@/context/BuilderContext';
+﻿import { useBuilder } from '@/context/BuilderContext';
 import { SectionCard, TextInput } from '@/components/ui/Form';
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { v4 as uuid } from 'uuid';
@@ -33,14 +33,10 @@ export default function PaymentStep() {
       <SectionCard title="Payment Schedule" description="Percentage-based payment milestones.">
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <select onChange={(e) => { if (e.target.value) { addStage(e.target.value); e.target.value = ''; } }} className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white" defaultValue="">
-            <option value="">Add suggested stage…</option>
+            <option value="">Add suggested stageâ€¦</option>
             {PAYMENT_STAGE_SUGGESTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-<<<<<<< HEAD
           <button onClick={() => addStage()} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg"><Plus className="w-4 h-4" /> Add Stage</button>
-=======
-          <button onClick={() => addStage()} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg"><Plus className="w-4 h-4" /> Add Stage</button>
->>>>>>> origin/main
         </div>
 
         {q.paymentSchedule.length === 0 ? (
@@ -64,17 +60,10 @@ export default function PaymentStep() {
                   {q.paymentSchedule.map((stage, idx) => (
                     <tr key={stage.id} className="border-t border-slate-100">
                       <td className="px-3 py-2 text-slate-500">{idx + 1}</td>
-<<<<<<< HEAD
                       <td className="px-3 py-2"><input value={stage.name} onChange={(e) => updateStage(stage.id, { name: e.target.value })} placeholder="Stage name" className="w-full px-2 py-1 text-sm border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30" /></td>
                       <td className="px-3 py-2"><input type="number" value={stage.percentage} onChange={(e) => updateStage(stage.id, { percentage: Number(e.target.value) })} className="w-full px-2 py-1 text-sm text-right border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30" /></td>
                       <td className="px-3 py-2 text-right font-medium text-[#1D4ED8]">{formatINR(calcPaymentAmount(stage, commercial.grandTotal))}</td>
                       <td className="px-3 py-2"><input value={stage.notes} onChange={(e) => updateStage(stage.id, { notes: e.target.value })} placeholder="Optional" className="w-full px-2 py-1 text-sm border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30" /></td>
-=======
-                      <td className="px-3 py-2"><input value={stage.name} onChange={(e) => updateStage(stage.id, { name: e.target.value })} placeholder="Stage name" className="w-full px-2 py-1 text-sm border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#0B2857]/30" /></td>
-                      <td className="px-3 py-2"><input type="number" value={stage.percentage} onChange={(e) => updateStage(stage.id, { percentage: Number(e.target.value) })} className="w-full px-2 py-1 text-sm text-right border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#0B2857]/30" /></td>
-                      <td className="px-3 py-2 text-right font-medium text-[#0B2857]">{formatINR(calcPaymentAmount(stage, commercial.grandTotal))}</td>
-                      <td className="px-3 py-2"><input value={stage.notes} onChange={(e) => updateStage(stage.id, { notes: e.target.value })} placeholder="Optional" className="w-full px-2 py-1 text-sm border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#0B2857]/30" /></td>
->>>>>>> origin/main
                       <td className="px-3 py-2"><div className="flex items-center justify-center gap-0.5">
                         <button onClick={() => moveStage(stage.id, -1)} disabled={idx === 0} className="p-1 text-slate-400 disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
                         <button onClick={() => moveStage(stage.id, 1)} disabled={idx === q.paymentSchedule.length - 1} className="p-1 text-slate-400 disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
@@ -86,13 +75,8 @@ export default function PaymentStep() {
                 <tfoot>
                   <tr className="border-t-2 border-slate-200 bg-slate-50">
                     <td colSpan={2} className="px-3 py-2 text-right text-sm font-semibold text-slate-600">Total:</td>
-<<<<<<< HEAD
                     <td className="px-3 py-2 text-right text-sm font-bold text-[#1D4ED8]">{formatNumber(pctTotal)}%</td>
                     <td className="px-3 py-2 text-right text-sm font-bold text-[#1D4ED8]">{formatINR(totalAmount)}</td>
-=======
-                    <td className="px-3 py-2 text-right text-sm font-bold text-[#0B2857]">{formatNumber(pctTotal)}%</td>
-                    <td className="px-3 py-2 text-right text-sm font-bold text-[#0B2857]">{formatINR(totalAmount)}</td>
->>>>>>> origin/main
                     <td colSpan={2}></td>
                   </tr>
                 </tfoot>
@@ -128,19 +112,11 @@ export default function PaymentStep() {
                       <input value={stage.notes} onChange={(e) => updateStage(stage.id, { notes: e.target.value })} placeholder="Optional" aria-label={`Notes, row ${idx + 1}`} className="w-full px-2 py-1 text-sm border border-slate-200 rounded" />
                     </div>
                   </div>
-<<<<<<< HEAD
                   <div className="flex justify-end"><span className="text-sm font-semibold text-[#1D4ED8]">{formatINR(calcPaymentAmount(stage, commercial.grandTotal))}</span></div>
                 </div>
               ))}
               <div className="flex justify-between px-3 py-2 bg-slate-50 text-sm font-semibold">
                 <span>Total: {formatNumber(pctTotal)}%</span><span className="text-[#1D4ED8]">{formatINR(totalAmount)}</span>
-=======
-                  <div className="flex justify-end"><span className="text-sm font-semibold text-[#0B2857]">{formatINR(calcPaymentAmount(stage, commercial.grandTotal))}</span></div>
-                </div>
-              ))}
-              <div className="flex justify-between px-3 py-2 bg-slate-50 text-sm font-semibold">
-                <span>Total: {formatNumber(pctTotal)}%</span><span className="text-[#0B2857]">{formatINR(totalAmount)}</span>
->>>>>>> origin/main
               </div>
             </div>
           </>
@@ -148,7 +124,7 @@ export default function PaymentStep() {
 
         {q.paymentSchedule.length > 0 && (
           <div className={`mt-3 px-4 py-2 rounded-lg text-sm ${pctComplete ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
-            {pctComplete ? 'Total: 100% — Payment schedule is complete.' : `Total: ${formatNumber(pctTotal)}% — Remaining: ${formatNumber(100 - pctTotal)}%. A complete schedule is recommended before generating the PDF.`}
+            {pctComplete ? 'Total: 100% â€” Payment schedule is complete.' : `Total: ${formatNumber(pctTotal)}% â€” Remaining: ${formatNumber(100 - pctTotal)}%. A complete schedule is recommended before generating the PDF.`}
           </div>
         )}
       </SectionCard>

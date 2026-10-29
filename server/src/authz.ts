@@ -1,6 +1,6 @@
-import { supabaseAdmin, verifyJwt } from './auth.js';
+﻿import { supabaseAdmin, verifyJwt } from './auth.js';
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type CompanyRole = 'owner' | 'admin' | 'staff';
 
@@ -19,12 +19,12 @@ function normalizeRole(role: unknown): CompanyRole {
     return role === 'owner' || role === 'admin' || role === 'staff' ? role : 'staff';
 }
 
-// ─── JWT extraction ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ JWT extraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Reads and verifies the Bearer JWT on the request, returning the authenticated
  * user_id (the token's `sub` claim). Sends 401 and returns null if the token is
- * missing/invalid — callers must return immediately when this returns null.
+ * missing/invalid â€” callers must return immediately when this returns null.
  */
 export function requireAuth(request: any, reply: any): string | null {
     const authHeader = request.headers.authorization as string | undefined;
@@ -41,7 +41,7 @@ export function requireAuth(request: any, reply: any): string | null {
     return payload.sub;
 }
 
-// ─── company_users lookups ─────────────────────────────────────────────────────
+// â”€â”€â”€ company_users lookups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Looks up whether `userId` is an active member of `companyId` via company_users.
@@ -66,7 +66,7 @@ export async function getMembership(userId: string, companyId: string): Promise<
         return { companyId: data.company_id, userId: data.user_id, role: normalizeRole(data.role) };
     }
 
-    // Legacy fallback — no company_users row yet.
+    // Legacy fallback â€” no company_users row yet.
     const { data: company, error: companyError } = await supabaseAdmin
         .from('companies')
         .select('id, owner_id')
@@ -85,13 +85,13 @@ export async function getMembership(userId: string, companyId: string): Promise<
  * Finds the company a user belongs to when the caller has NOT supplied an
  * explicit companyId (e.g. GET /api/company, GET /api/quotations). A user
  * may legitimately belong to more than one company (multiple company_users
- * rows) — this deterministically picks their OLDEST active membership
+ * rows) â€” this deterministically picks their OLDEST active membership
  * (ordered by created_at) as the "primary" one, rather than an arbitrary
  * row order, so the same user always lands on the same company across
  * requests. Falls back to direct `companies.owner_id` ownership for legacy
  * rows with no company_users entry.
  *
- * Returns null if the user has no company yet — callers must treat this as a
+ * Returns null if the user has no company yet â€” callers must treat this as a
  * normal "no company" state, not an authorization failure.
  */
 export async function getPrimaryMembership(userId: string): Promise<CompanyMembership | null> {
@@ -109,7 +109,7 @@ export async function getPrimaryMembership(userId: string): Promise<CompanyMembe
         return { companyId: data.company_id, userId: data.user_id, role: normalizeRole(data.role) };
     }
 
-    // Legacy fallback — user may own a company created before company_users existed.
+    // Legacy fallback â€” user may own a company created before company_users existed.
     const { data: company, error: companyError } = await supabaseAdmin
         .from('companies')
         .select('id, owner_id')
@@ -124,7 +124,6 @@ export async function getPrimaryMembership(userId: string): Promise<CompanyMembe
     return null;
 }
 
-<<<<<<< HEAD
 export interface ProjectScopedAccess {
     authorizedProjectIds: string[];
     investorFinancialAccess: boolean;
@@ -204,13 +203,11 @@ export async function resolveProjectScopedAccess(userId: string): Promise<Projec
     };
 }
 
-=======
->>>>>>> origin/main
 /**
  * Ensures the given user_id is recorded as an active member of a company.
  * Used right after a company is created so future authorization checks can
  * rely on company_users instead of the legacy-fallback path. Non-fatal by
- * design — the legacy fallback in getMembership/getPrimaryMembership covers
+ * design â€” the legacy fallback in getMembership/getPrimaryMembership covers
  * the case where this insert doesn't happen for any reason.
  */
 export async function ensureCompanyMembership(
@@ -228,12 +225,12 @@ export async function ensureCompanyMembership(
     if (error) throw error;
 }
 
-// ─── Route-level authorization helper ──────────────────────────────────────────
+// â”€â”€â”€ Route-level authorization helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface AuthorizeOptions {
     /**
      * The companyId the request is asking to act on (from a path param, query
-     * string, or request body). Treated ONLY as a requested context — it is
+     * string, or request body). Treated ONLY as a requested context â€” it is
      * always verified against company_users before being trusted. Omit this
      * for endpoints that don't take an explicit companyId; the caller's
      * primary membership is used instead.
@@ -250,11 +247,11 @@ export interface AuthorizeOptions {
  * 2. Resolves the target company: the verified `requestedCompanyId` if one was
  *    supplied, otherwise the caller's own primary company membership.
  * 3. Confirms the user is an ACTIVE company_users member of that company
- *    (403 if not — a client-supplied companyId is NEVER trusted directly).
+ *    (403 if not â€” a client-supplied companyId is NEVER trusted directly).
  * 4. Optionally enforces a role allow-list (403 if the member's role isn't in it).
  *
  * On success returns { userId, companyId, role }. On failure it has already
- * written the error response — callers must `return` immediately when this
+ * written the error response â€” callers must `return` immediately when this
  * resolves to null.
  */
 export async function authorizeCompany(

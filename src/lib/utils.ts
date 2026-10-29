@@ -1,4 +1,4 @@
-// Formatting, calculation, and helper utilities — simplified for MVP.
+﻿// Formatting, calculation, and helper utilities â€” simplified for MVP.
 
 import { v4 as uuid } from 'uuid';
 import type {
@@ -21,7 +21,7 @@ const inrFormatter = new Intl.NumberFormat('en-IN', {
 });
 
 export function formatINR(amount: number): string {
-  if (!isFinite(amount)) return '₹0';
+  if (!isFinite(amount)) return 'â‚¹0';
   return inrFormatter.format(round2(amount));
 }
 
@@ -158,7 +158,6 @@ export function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9-_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
-<<<<<<< HEAD
 export function getSafeRedirectPath(
   location: {
     pathname?: string;
@@ -179,8 +178,6 @@ export function getSafeRedirectPath(
   return fallback;
 }
 
-=======
->>>>>>> origin/main
 // Convert questionnaire answers into Specification entries for the PDF.
 export function questionnaireToSpecs(q: Questionnaire): Specification[] {
   const specs: Specification[] = [];
@@ -395,3 +392,4 @@ export function calcValidUntil(dateISO: string, validity: string): string {
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
+

@@ -1,8 +1,5 @@
-import Logo from '@/components/Logo';
-<<<<<<< HEAD
+﻿import Logo from '@/components/Logo';
 import { AppButton } from '@/components/ui/DesignSystem';
-=======
->>>>>>> origin/main
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { Eye, EyeOff, Lock } from 'lucide-react';
@@ -20,7 +17,7 @@ export default function ChangePasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If the account doesn't actually require this, there's nothing to force —
+  // If the account doesn't actually require this, there's nothing to force â€”
   // send them back to their dashboard rather than showing a dead-end page.
   if (user && !user.mustChangePassword) {
     return <Navigate to="/dashboard" replace />;
@@ -54,11 +51,7 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="min-h-screen flex">
-<<<<<<< HEAD
       <div className="hidden lg:flex lg:w-1/2 bg-[#17243A] relative overflow-hidden flex-col justify-between p-12">
-=======
-      <div className="hidden lg:flex lg:w-1/2 bg-[#071C3F] relative overflow-hidden flex-col justify-between p-12">
->>>>>>> origin/main
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #F4B72B 0, #F4B72B 1px, transparent 1px, transparent 30px)' }} />
         <div className="relative z-10 flex flex-col gap-8">
           <div className="flex flex-col items-start">
@@ -68,18 +61,14 @@ export default function ChangePasswordPage() {
         </div>
         <div className="relative z-10 flex items-center justify-between text-sm text-slate-400 border-t border-white/10 pt-4 mt-8">
           <span>BuilderDocs v1.0</span>
-          <span>© 2026 BuilderDocs</span>
+          <span>Â© 2026 BuilderDocs</span>
         </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6 bg-[#F7F9FC]">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex flex-col items-center mb-8">
-<<<<<<< HEAD
             <Logo className="h-14 w-auto" size="lg" onDark={false} />
-=======
-            <Logo className="h-14 w-auto" size="lg" />
->>>>>>> origin/main
           </div>
           <h2 className="text-2xl font-bold text-[#0B234A] mb-2">Set a New Password</h2>
           <p className="text-sm text-slate-500 mb-7">
@@ -95,11 +84,7 @@ export default function ChangePasswordPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-<<<<<<< HEAD
                   className="w-full pl-10 pr-10 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
-=======
-                  className="w-full pl-10 pr-10 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
->>>>>>> origin/main
                   placeholder="Password your admin gave you"
                   required
                 />
@@ -121,11 +106,7 @@ export default function ChangePasswordPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-<<<<<<< HEAD
                   className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
-=======
-                  className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
->>>>>>> origin/main
                   placeholder="At least 8 characters"
                   minLength={8}
                   required
@@ -140,30 +121,16 @@ export default function ChangePasswordPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-<<<<<<< HEAD
                   className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
-=======
-                  className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
->>>>>>> origin/main
                   placeholder="Re-enter new password"
                   minLength={8}
                   required
                 />
               </div>
             </div>
-<<<<<<< HEAD
             <AppButton type="submit" disabled={isSubmitting} className="w-full justify-center py-3 text-sm">
-              {isSubmitting ? 'Updating…' : 'Set Password & Continue'}
+              {isSubmitting ? 'Updatingâ€¦' : 'Set Password & Continue'}
             </AppButton>
-=======
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 text-sm font-semibold text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg transition-all duration-200 ease-out shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-70"
-            >
-              {isSubmitting ? 'Updating…' : 'Set Password & Continue'}
-            </button>
->>>>>>> origin/main
           </form>
 
           <div className="mt-5 text-center">
@@ -176,3 +143,4 @@ export default function ChangePasswordPage() {
     </div>
   );
 }
+

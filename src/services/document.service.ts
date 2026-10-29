@@ -1,11 +1,11 @@
-/**
- * Document (quotation) service — talks to the Fastify backend
+﻿/**
+ * Document (quotation) service â€” talks to the Fastify backend
  * (/api/quotations/*) exclusively. There is no direct Supabase fallback here
  * anymore: business/company data must always go through the authorized
  * backend (see server/src/index.ts + server/src/authz.ts), never straight
  * from the browser with the anon key.
  *
- * localStorage is used ONLY as a client-side recovery/autosave cache — it
+ * localStorage is used ONLY as a client-side recovery/autosave cache â€” it
  * is written on every successful save and read only if the backend request
  * itself fails (offline, network error, server down), never as a silent
  * substitute data source when the user is simply not the owner of something.
@@ -13,18 +13,11 @@
  * person's cached drafts never leak into another person's session on a
  * shared browser.
  */
-<<<<<<< HEAD
-=======
-import { getCurrentUserIdFromToken } from '@/services/auth.service';
->>>>>>> origin/main
 import { defaultQuestionnaire } from '@/lib/defaults';
 import type { Quotation, Term } from '@/lib/models';
 import { quotationRepo } from '@/lib/storage';
 import { apiDelete, apiGet, apiPost } from '@/services/apiClient';
-<<<<<<< HEAD
 import { getCurrentUserIdFromToken } from '@/services/auth.service';
-=======
->>>>>>> origin/main
 
 function currentStorageScope(companyId: string) {
     return { userId: getCurrentUserIdFromToken() ?? 'anonymous', companyId };
@@ -63,7 +56,6 @@ function parseTerms(value: unknown): Term[] {
 }
 
 function mapStatusToDb(status: Quotation['status']): string {
-<<<<<<< HEAD
     switch (status) {
         case 'DRAFT':
             return 'Draft';
@@ -99,13 +91,6 @@ function mapStatusFromDb(status: string): Quotation['status'] {
         default:
             return 'DRAFT';
     }
-=======
-    return status === 'DRAFT' ? 'Draft' : 'Completed';
-}
-
-function mapStatusFromDb(status: string): Quotation['status'] {
-    return status === 'Draft' ? 'DRAFT' : 'GENERATED';
->>>>>>> origin/main
 }
 
 function parseDocumentRow(row: any): Quotation | null {
@@ -145,12 +130,9 @@ function parseDocumentRow(row: any): Quotation | null {
         id: row.id,
         quotationNumber: row.document_number ?? '',
         status: mapStatusFromDb(row.status ?? ''),
-<<<<<<< HEAD
         projectTypeId: row.project_type_id ?? null,
         areaUnitId: row.area_unit_id ?? null,
         taxRateId: row.tax_rate_id ?? null,
-=======
->>>>>>> origin/main
         quotationDate: row.quotation_date ? String(row.quotation_date) : '',
         validUntil: row.valid_until ? String(row.valid_until) : '',
         validity: '30 Days',
@@ -193,11 +175,7 @@ function parseDocumentRow(row: any): Quotation | null {
         },
         tax: {
             applicable: parseNumber(row.tax_percentage) > 0,
-<<<<<<< HEAD
             name: row.tax_name ?? 'GST',
-=======
-            name: 'GST',
->>>>>>> origin/main
             rate: parseNumber(row.tax_percentage),
         },
         paymentSchedule: Array.isArray(row.payment_schedules)
@@ -256,7 +234,7 @@ export interface SaveDocumentResult {
 }
 
 export async function saveDocument(quotation: Quotation, companyId: string, userId: string): Promise<SaveDocumentResult> {
-    // Always cache the draft locally first — if the network request below
+    // Always cache the draft locally first â€” if the network request below
     // fails, the user's edits aren't lost and can be recovered on retry.
     quotationRepo.save(currentStorageScope(companyId), quotation);
 
@@ -293,3 +271,4 @@ export async function nextSequence(companyId: string): Promise<number> {
     console.warn('Failed to get sequence from the server, falling back to a local counter', error);
     return quotationRepo.nextSequence(currentStorageScope(companyId));
 }
+

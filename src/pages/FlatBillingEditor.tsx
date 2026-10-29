@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import { AppButton } from '@/components/ui/DesignSystem';
+﻿import { AppButton } from '@/components/ui/DesignSystem';
 import { Field, SectionCard } from '@/components/ui/Form';
 import { useAuth } from '@/context/AuthContext';
 import { useCompany } from '@/context/CompanyContext';
@@ -8,15 +7,6 @@ import { DEFAULT_SETTINGS } from '@/lib/defaults';
 import type { FlatBilling, FlatPaymentRow } from '@/lib/flatBilling';
 import { calcFlatTotal, defaultFlatBilling } from '@/lib/flatBilling';
 import type { CompanySettings } from '@/lib/models';
-=======
-import { Field, SectionCard } from '@/components/ui/Form';
-import { useToast } from '@/context/ToastContext';
-import type { FlatBilling, FlatPaymentRow } from '@/lib/flatBilling';
-import { calcFlatTotal, defaultFlatBilling } from '@/lib/flatBilling';
-import type { CompanySettings } from '@/lib/models';
-import { useAuth } from '@/context/AuthContext';
-import { useCompany } from '@/context/CompanyContext';
->>>>>>> origin/main
 import { formatINR } from '@/lib/utils';
 import { getFlatBilling, nextFlatBillingSequence, saveFlatBilling } from '@/services/flatBilling.service';
 import { ArrowLeft, Building2, Download, Plus, Save, Trash2 } from 'lucide-react';
@@ -24,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 
-// ── Dropdown option lists ─────────────────────────────────────────────────────
+// â”€â”€ Dropdown option lists â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const FLOOR_OPTIONS = [
   'Ground Floor', '1st Floor', '2nd Floor', '3rd Floor', '4th Floor',
   '5th Floor', '6th Floor', '7th Floor', '8th Floor', '9th Floor', '10th Floor',
@@ -46,8 +36,7 @@ const PAYMENT_STAGE_OPTIONS = [
 
 const STATUS_OPTIONS = ['Pending', 'Partially Paid', 'Paid'];
 
-// ── Small UI helpers ───────────────────────────────────────────────────────────
-<<<<<<< HEAD
+// â”€â”€ Small UI helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TextInput({ value, onChange, placeholder, type = 'text', className = '', maxLength }: {
   value: string; onChange: (v: string) => void; placeholder?: string; type?: string; className?: string; maxLength?: number;
 }) {
@@ -59,26 +48,15 @@ function TextInput({ value, onChange, placeholder, type = 'text', className = ''
     onChange(nextValue);
   };
 
-=======
-function TextInput({ value, onChange, placeholder, type = 'text', className = '' }: {
-  value: string; onChange: (v: string) => void; placeholder?: string; type?: string; className?: string;
-}) {
->>>>>>> origin/main
   return (
     <input
       type={type}
       value={value}
-<<<<<<< HEAD
       maxLength={maxLength ?? (type === 'tel' ? 10 : undefined)}
       inputMode={type === 'tel' ? 'numeric' : undefined}
       onChange={(e) => handleChange(e.target.value)}
       placeholder={placeholder}
       className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8] ${className}`}
-=======
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857] ${className}`}
->>>>>>> origin/main
     />
   );
 }
@@ -90,11 +68,7 @@ function Select({ value, onChange, options, placeholder, className = '' }: {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-<<<<<<< HEAD
       className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8] ${className}`}
-=======
-      className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857] ${className}`}
->>>>>>> origin/main
     >
       <option value="">{placeholder || '-- Select --'}</option>
       {options.map((opt) => (
@@ -104,7 +78,7 @@ function Select({ value, onChange, options, placeholder, className = '' }: {
   );
 }
 
-// ── Validation ─────────────────────────────────────────────────────────────────
+// â”€â”€ Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface ValidationErrors {
   receiptNumber?: string;
   buyerName?: string;
@@ -150,7 +124,7 @@ function validate(b: BillingDraft): ValidationErrors {
   return e;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function FlatBillingEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -169,21 +143,13 @@ export default function FlatBillingEditor() {
 
   useEffect(() => {
     if (!company || !user) return;
-<<<<<<< HEAD
     const activeSettings = company.settings ?? DEFAULT_SETTINGS;
     setSettings(activeSettings);
-=======
-    setSettings(company.settings);
->>>>>>> origin/main
 
     (async () => {
       if (!id) {
         const seq = await nextFlatBillingSequence(company.companyId);
-<<<<<<< HEAD
         const s = activeSettings;
-=======
-        const s = company.settings;
->>>>>>> origin/main
         // Use bookingPrefix if set, else fallback to prefix. Strip any trailing /RCP or -RCP
         // to avoid double "RCP" in the generated number (e.g. "DOC/RCP-RCP-00001").
         const rawPrefix = (s.bookingPrefix || s.prefix || 'DOC').replace(/[-/]RCP$/i, '').replace(/\//g, '-');
@@ -250,14 +216,10 @@ export default function FlatBillingEditor() {
     const result = await saveFlatBilling(rec, company.companyId, user.id);
     setIsSaving(false);
     if (!result.ok) {
-      push('error', 'Could not save the receipt. It has been cached locally — please retry.');
+      push('error', 'Could not save the receipt. It has been cached locally â€” please retry.');
       return;
     }
-<<<<<<< HEAD
     push('success', 'Booking receipt saved.');
-=======
-    push('success', 'Flat billing receipt saved.');
->>>>>>> origin/main
     navigate('/flat-billing');
   };
 
@@ -271,16 +233,11 @@ export default function FlatBillingEditor() {
   };
 
   const flatTotal = calcFlatTotal(billing);
-<<<<<<< HEAD
   const scheduledAmount = billing.payments.reduce((s, p) => s + (p.amount || 0), 0);
   const outstandingBalance = flatTotal - scheduledAmount;
-=======
-  const totalPaid = billing.payments.reduce((s, p) => s + (p.amount || 0), 0);
-  const balance = flatTotal - totalPaid;
->>>>>>> origin/main
 
   if (!settings) {
-    return <div className="py-20 text-center text-slate-500">Loading company settings…</div>;
+    return <div className="py-20 text-center text-slate-500">Loading company settingsâ€¦</div>;
   }
 
   return (
@@ -288,7 +245,6 @@ export default function FlatBillingEditor() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#0B234A]">
-<<<<<<< HEAD
             {isExisting ? 'Edit Booking Receipt' : 'Create Booking Receipt'}
           </h1>
           <p className="text-sm text-slate-500">Capture the booking agreement and planned installment schedule.</p>
@@ -301,7 +257,7 @@ export default function FlatBillingEditor() {
             <Download className="w-4 h-4" /> Download PDF
           </AppButton>
           <AppButton onClick={handleSave} disabled={isSaving}>
-            <Save className="w-4 h-4" /> {isSaving ? 'Saving…' : 'Save'}
+            <Save className="w-4 h-4" /> {isSaving ? 'Savingâ€¦' : 'Save'}
           </AppButton>
         </div>
       </div>
@@ -322,17 +278,17 @@ export default function FlatBillingEditor() {
               <div>
                 <p className="text-[#F4B72B] text-xs font-medium uppercase tracking-wide mb-0.5">Office Address</p>
                 <p className="text-white/90">
-                  {[settings.address, settings.city, [settings.state, settings.pincode].filter(Boolean).join(' - ')].filter(Boolean).join(', ') || '—'}
+                  {[settings.address, settings.city, [settings.state, settings.pincode].filter(Boolean).join(' - ')].filter(Boolean).join(', ') || 'â€”'}
                 </p>
               </div>
               <div>
                 <p className="text-[#F4B72B] text-xs font-medium uppercase tracking-wide mb-0.5">Contact</p>
-                <p className="text-white/90">{settings.mobile || '—'}</p>
+                <p className="text-white/90">{settings.mobile || 'â€”'}</p>
                 <p className="text-white/70 text-xs">{settings.email}</p>
               </div>
               <div>
                 <p className="text-[#F4B72B] text-xs font-medium uppercase tracking-wide mb-0.5">GST / Registration</p>
-                <p className="text-white/90">{settings.gstin || '—'}</p>
+                <p className="text-white/90">{settings.gstin || 'â€”'}</p>
                 <p className="text-white/70 text-xs">{settings.website}</p>
               </div>
             </div>
@@ -340,53 +296,6 @@ export default function FlatBillingEditor() {
               These details come from Settings and appear on every receipt. To change them, edit the Settings page.
             </p>
           </div>
-=======
-            {isExisting ? 'Edit Flat Billing Receipt' : 'New Flat Billing Receipt'}
-          </h1>
-          <p className="text-sm text-slate-500">Fill in details to generate a Flat Booking Receipt PDF.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900">
-            <ArrowLeft className="w-4 h-4 inline mr-1" /> Back
-          </button>
-          <button onClick={handleDownload} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#0B2857] border border-[#0B2857]/40 hover:bg-[#0B2857]/5 rounded-lg">
-            <Download className="w-4 h-4" /> Download PDF
-          </button>
-          <button onClick={handleSave} disabled={isSaving} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg disabled:opacity-60">
-            <Save className="w-4 h-4" /> {isSaving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        {/* Company Details (static, from settings) */}
-        <div className="bg-gradient-to-br from-[#0B2857] to-[#071C3F] rounded-xl p-5 text-white">
-          <div className="flex items-center gap-2 mb-3">
-            <Building2 className="w-5 h-5 text-[#F4B72B]" />
-            <h2 className="text-lg font-bold">{settings.companyName || 'Construction Documents'}</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div>
-              <p className="text-[#F4B72B] text-xs font-medium uppercase tracking-wide mb-0.5">Office Address</p>
-              <p className="text-white/90">
-                {[settings.address, settings.city, [settings.state, settings.pincode].filter(Boolean).join(' - ')].filter(Boolean).join(', ') || '—'}
-              </p>
-            </div>
-            <div>
-              <p className="text-[#F4B72B] text-xs font-medium uppercase tracking-wide mb-0.5">Contact</p>
-              <p className="text-white/90">{settings.mobile || '—'}</p>
-              <p className="text-white/70 text-xs">{settings.email}</p>
-            </div>
-            <div>
-              <p className="text-[#F4B72B] text-xs font-medium uppercase tracking-wide mb-0.5">GST / Registration</p>
-              <p className="text-white/90">{settings.gstin || '—'}</p>
-              <p className="text-white/70 text-xs">{settings.website}</p>
-            </div>
-          </div>
-          <p className="text-white/50 text-xs mt-3">
-            These details come from Settings and appear on every receipt. To change them, edit the Settings page.
-          </p>
->>>>>>> origin/main
         </div>
 
         {/* Receipt Details */}
@@ -411,11 +320,7 @@ export default function FlatBillingEditor() {
               <TextInput value={billing.buyerName} onChange={(v) => update({ buyerName: v })} placeholder="e.g. Mr. Ramesh Sharma" />
             </Field>
             <Field label="Phone" error={errors.buyerPhone}>
-<<<<<<< HEAD
               <TextInput type="tel" maxLength={10} value={billing.buyerPhone} onChange={(v) => update({ buyerPhone: v })} placeholder="e.g. 98765 43210" />
-=======
-              <TextInput value={billing.buyerPhone} onChange={(v) => update({ buyerPhone: v })} placeholder="e.g. 98765 43210" />
->>>>>>> origin/main
             </Field>
             <Field label="Address">
               <TextInput value={billing.buyerAddress} onChange={(v) => update({ buyerAddress: v })} placeholder="e.g. 12, MG Road, Pune" />
@@ -444,24 +349,18 @@ export default function FlatBillingEditor() {
             <Field label="Rate per Sq. Ft. (Rs.)" error={errors.ratePerSqft}>
               <TextInput type="number" value={billing.ratePerSqft} onChange={(v) => update({ ratePerSqft: v })} placeholder="e.g. 5000" />
             </Field>
-<<<<<<< HEAD
             <Field label="Booking Cost">
               <div className="px-3 py-2 text-sm border rounded-lg bg-[#1D4ED8]/5 text-[#1D4ED8] font-bold">
-=======
-            <Field label="Total Cost">
-              <div className="px-3 py-2 text-sm border rounded-lg bg-[#0B2857]/5 text-[#0B2857] font-bold">
->>>>>>> origin/main
-                {flatTotal > 0 ? formatINR(flatTotal) : '—'}
+                {flatTotal > 0 ? formatINR(flatTotal) : 'â€”'}
               </div>
             </Field>
           </div>
         </SectionCard>
 
-<<<<<<< HEAD
         <SectionCard title="Total Booking Cost">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Agreed booking value</p>
-            <p className="mt-2 text-2xl font-bold text-[#0B234A]">{flatTotal > 0 ? formatINR(flatTotal) : '—'}</p>
+            <p className="mt-2 text-2xl font-bold text-[#0B234A]">{flatTotal > 0 ? formatINR(flatTotal) : 'â€”'}</p>
           </div>
         </SectionCard>
 
@@ -474,14 +373,6 @@ export default function FlatBillingEditor() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-[#1D4ED8] text-white">
-=======
-        {/* Payment Schedule */}
-        <SectionCard title="Payment Schedule">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-[#0B2857] text-white">
->>>>>>> origin/main
                   <th className="px-3 py-2 text-left font-medium">Payment Stage</th>
                   <th className="px-3 py-2 text-right font-medium">Amount (Rs.)</th>
                   <th className="px-3 py-2 text-center font-medium">Due Date</th>
@@ -506,11 +397,7 @@ export default function FlatBillingEditor() {
                         value={row.amount || ''}
                         onChange={(e) => updatePayment(row.id, { amount: Math.max(0, parseFloat(e.target.value) || 0) })}
                         placeholder="0"
-<<<<<<< HEAD
                         className="w-full px-3 py-2 text-sm border rounded-lg text-right bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
-=======
-                        className="w-full px-3 py-2 text-sm border rounded-lg text-right bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
->>>>>>> origin/main
                       />
                     </td>
                     <td className="px-2 py-1.5">
@@ -535,7 +422,6 @@ export default function FlatBillingEditor() {
             </table>
           </div>
 
-<<<<<<< HEAD
           {flatTotal > 0 && (
             <div className="mt-4 flex flex-wrap gap-4 text-sm">
               <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
@@ -551,24 +437,6 @@ export default function FlatBillingEditor() {
               <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="text-slate-500">Booking Amount:</span>
                 <span className="font-semibold text-[#1D4ED8]">{formatINR(flatTotal)}</span>
-=======
-          {/* Payment summary */}
-          {flatTotal > 0 && (
-            <div className="mt-4 flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-slate-500">Total Paid:</span>
-                <span className="font-semibold text-green-600">{formatINR(totalPaid)}</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-slate-500">Balance:</span>
-                <span className={`font-semibold ${balance > 0 ? 'text-amber-600' : 'text-green-600'}`}>
-                  {formatINR(Math.max(balance, 0))}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-slate-500">Flat Total:</span>
-                <span className="font-semibold text-[#0B2857]">{formatINR(flatTotal)}</span>
->>>>>>> origin/main
               </div>
             </div>
           )}
@@ -577,11 +445,7 @@ export default function FlatBillingEditor() {
             <p className="mt-2 text-xs text-red-600">{errors.payments}</p>
           )}
 
-<<<<<<< HEAD
           <button onClick={addPaymentRow} className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#1D4ED8] hover:underline">
-=======
-          <button onClick={addPaymentRow} className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#0B2857] hover:underline">
->>>>>>> origin/main
             <Plus className="w-4 h-4" /> Add Row
           </button>
         </SectionCard>
@@ -597,11 +461,7 @@ export default function FlatBillingEditor() {
                   value={term}
                   onChange={(e) => updateTerm(i, e.target.value)}
                   placeholder="Enter term..."
-<<<<<<< HEAD
                   className="flex-1 px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
-=======
-                  className="flex-1 px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
->>>>>>> origin/main
                 />
                 <button onClick={() => removeTerm(i)} className="p-1 text-red-400 hover:text-red-600 shrink-0">
                   <Trash2 className="w-4 h-4" />
@@ -609,11 +469,7 @@ export default function FlatBillingEditor() {
               </div>
             ))}
           </div>
-<<<<<<< HEAD
           <button onClick={addTerm} className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#1D4ED8] hover:underline">
-=======
-          <button onClick={addTerm} className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#0B2857] hover:underline">
->>>>>>> origin/main
             <Plus className="w-4 h-4" /> Add Term
           </button>
         </SectionCard>
@@ -621,3 +477,4 @@ export default function FlatBillingEditor() {
     </div>
   );
 }
+

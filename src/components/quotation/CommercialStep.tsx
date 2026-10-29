@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import { SectionCard, Select, TextInput } from '@/components/ui/Form';
+﻿import { SectionCard, Select, TextInput } from '@/components/ui/Form';
 import { useBuilder } from '@/context/BuilderContext';
 import { DISCOUNT_TYPES } from '@/lib/constants';
 import type { AdditionalCharge, Discount, Tax } from '@/lib/models';
@@ -12,21 +11,6 @@ import { v4 as uuid } from 'uuid';
 export default function CommercialStep() {
   const { quotation, setQuotation } = useBuilder();
   const [taxRates, setTaxRates] = useState<MasterItem[]>([]);
-=======
-import { useBuilder } from '@/context/BuilderContext';
-import { SectionCard, TextInput, Select } from '@/components/ui/Form';
-import { Plus, Trash2 } from 'lucide-react';
-import { v4 as uuid } from 'uuid';
-import type { AdditionalCharge, Discount, Tax, Quotation } from '@/lib/models';
-import { DISCOUNT_TYPES } from '@/lib/constants';
-import { calcCommercial, formatINR } from '@/lib/utils';
-
-export default function CommercialStep() {
-  const { quotation, setQuotation } = useBuilder();
-  if (!quotation) return null;
-  const q = quotation;
-  const commercial = calcCommercial(q);
->>>>>>> origin/main
 
   const addCharge = () => setQuotation((prev) => ({ ...prev, additionalCharges: [...prev.additionalCharges, { id: uuid(), description: '', amount: 0 }] }));
   const updateCharge = (id: string, patch: Partial<AdditionalCharge>) => setQuotation((prev) => ({ ...prev, additionalCharges: prev.additionalCharges.map((c) => c.id === id ? { ...c, ...patch } : c) }));
@@ -34,7 +18,6 @@ export default function CommercialStep() {
   const updateDiscount = (patch: Partial<Discount>) => setQuotation((prev) => ({ ...prev, discount: { ...prev.discount, ...patch } }));
   const updateTax = (patch: Partial<Tax>) => setQuotation((prev) => ({ ...prev, tax: { ...prev.tax, ...patch } }));
 
-<<<<<<< HEAD
   useEffect(() => {
     let active = true;
     listMasterData('taxRates')
@@ -76,12 +59,6 @@ export default function CommercialStep() {
     <div className="space-y-6">
       <SectionCard title="Additional Charges" description="Transportation, site setup, equipment, etc."
         actions={<button onClick={addCharge} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg"><Plus className="w-4 h-4" /> Add</button>}>
-=======
-  return (
-    <div className="space-y-6">
-      <SectionCard title="Additional Charges" description="Transportation, site setup, equipment, etc."
-        actions={<button onClick={addCharge} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg"><Plus className="w-4 h-4" /> Add</button>}>
->>>>>>> origin/main
         {q.additionalCharges.length === 0 ? (
           <p className="text-sm text-slate-500 py-4 text-center">No additional charges.</p>
         ) : (
@@ -109,7 +86,7 @@ export default function CommercialStep() {
           </div>
           {q.discount.type !== 'None' && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{q.discount.type === 'Percentage' ? 'Percentage (%)' : 'Amount (₹)'}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{q.discount.type === 'Percentage' ? 'Percentage (%)' : 'Amount (â‚¹)'}</label>
               <TextInput type="number" value={q.discount.value} onChange={(e) => updateDiscount({ value: Number(e.target.value) })} />
             </div>
           )}
@@ -118,16 +95,11 @@ export default function CommercialStep() {
 
       <SectionCard title="Tax">
         <label className="flex items-center gap-2 mb-4">
-<<<<<<< HEAD
           <input type="checkbox" checked={q.tax.applicable} onChange={(e) => updateTax({ applicable: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-[#1D4ED8] focus:ring-[#1D4ED8]" />
-=======
-          <input type="checkbox" checked={q.tax.applicable} onChange={(e) => updateTax({ applicable: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-[#0B2857] focus:ring-[#0B2857]" />
->>>>>>> origin/main
           <span className="text-sm font-medium text-slate-700">Tax Applicable</span>
         </label>
         {q.tax.applicable && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<<<<<<< HEAD
             {taxRates.length > 0 && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">Tax Rate</label>
@@ -139,8 +111,6 @@ export default function CommercialStep() {
                 </Select>
               </div>
             )}
-=======
->>>>>>> origin/main
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Tax Name</label>
               <TextInput value={q.tax.name} onChange={(e) => updateTax({ name: e.target.value })} />
@@ -160,11 +130,7 @@ export default function CommercialStep() {
           {commercial.discountAmount > 0 && <Row label="Discount" value={`- ${formatINR(commercial.discountAmount)}`} />}
           <Row label="Taxable Amount" value={formatINR(commercial.taxableAmount)} />
           {commercial.taxAmount > 0 && <Row label={q.tax.name || 'Tax'} value={formatINR(commercial.taxAmount)} />}
-<<<<<<< HEAD
           <div className="flex justify-between items-center px-4 py-3 bg-[#1D4ED8] text-white rounded-lg">
-=======
-          <div className="flex justify-between items-center px-4 py-3 bg-[#0B2857] text-white rounded-lg">
->>>>>>> origin/main
             <span className="text-sm font-semibold">Grand Total</span>
             <span className="text-lg font-bold text-[#F4B72B]">{formatINR(commercial.grandTotal)}</span>
           </div>
@@ -175,9 +141,5 @@ export default function CommercialStep() {
 }
 
 function Row({ label, value }: { label: string; value: string }) {
-<<<<<<< HEAD
   return <div className="flex justify-between items-center px-4 py-2 border border-slate-100 rounded-lg bg-slate-50"><span className="text-sm text-slate-600">{label}</span><span className="text-sm font-semibold text-[#1D4ED8]">{value}</span></div>;
-=======
-  return <div className="flex justify-between items-center px-4 py-2 border border-slate-100 rounded-lg bg-slate-50"><span className="text-sm text-slate-600">{label}</span><span className="text-sm font-semibold text-[#0B2857]">{value}</span></div>;
->>>>>>> origin/main
 }
