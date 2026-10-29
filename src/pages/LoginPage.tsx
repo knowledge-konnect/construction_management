@@ -177,7 +177,7 @@ export default function LoginPage() {
                   </div>
 
                   <AppButton type="submit" disabled={isSubmitting} className="w-full justify-center py-3 text-sm">
-                    {isSubmitting ? (mode === 'register' ? 'Creating accountâ€¦' : 'Signing inâ€¦') : (mode === 'register' ? 'Create Account' : 'Sign In')}
+                    {isSubmitting ? (mode === 'register' ? 'Creating account…' : 'Signing in…') : (mode === 'register' ? 'Create Account' : 'Sign In')}
                   </AppButton>
                 </form>
 

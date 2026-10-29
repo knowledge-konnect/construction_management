@@ -86,7 +86,7 @@ export default function CommercialStep() {
           </div>
           {q.discount.type !== 'None' && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{q.discount.type === 'Percentage' ? 'Percentage (%)' : 'Amount (â‚¹)'}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{q.discount.type === 'Percentage' ? 'Percentage (%)' : 'Amount (₹)'}</label>
               <TextInput type="number" value={q.discount.value} onChange={(e) => updateDiscount({ value: Number(e.target.value) })} />
             </div>
           )}

@@ -50,7 +50,7 @@ export default function TermsStep() {
                   <button onClick={() => moveTerm(term.id, 1)} disabled={idx === quotation.terms.length - 1} aria-label="Move term down" className="p-0.5 text-slate-400 disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
                 </div>
                 <span className="text-sm font-bold text-slate-400 mt-1">{idx + 1}.</span>
-                <TextArea rows={2} value={term.text} onChange={(e) => updateTerm(term.id, { text: e.target.value })} placeholder="Enter the term textâ€¦" className="flex-1" />
+                <TextArea rows={2} value={term.text} onChange={(e) => updateTerm(term.id, { text: e.target.value })} placeholder="Enter the term text…" className="flex-1" />
                 <button onClick={() => deleteTerm(term.id)} aria-label="Delete term" className="p-2 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
@@ -59,11 +59,11 @@ export default function TermsStep() {
       </SectionCard>
 
       <SectionCard title="Customer Notes" description="These notes will appear on the PDF.">
-        <TextArea rows={3} value={quotation.customerNotes} onChange={(e) => update({ customerNotes: e.target.value })} placeholder="Notes visible to the customer on the quotation PDFâ€¦" />
+        <TextArea rows={3} value={quotation.customerNotes} onChange={(e) => update({ customerNotes: e.target.value })} placeholder="Notes visible to the customer on the quotation PDF…" />
       </SectionCard>
 
-      <SectionCard title="Internal Notes" description="Private notes â€” never included in the PDF.">
-        <TextArea rows={3} value={quotation.internalNotes} onChange={(e) => update({ internalNotes: e.target.value })} placeholder="Internal notes for your reference onlyâ€¦" />
+      <SectionCard title="Internal Notes" description="Private notes — never included in the PDF.">
+        <TextArea rows={3} value={quotation.internalNotes} onChange={(e) => update({ internalNotes: e.target.value })} placeholder="Internal notes for your reference only…" />
       </SectionCard>
     </div>
   );

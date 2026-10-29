@@ -11,7 +11,7 @@ import { v4 as uuid } from 'uuid';
 
 type Tab = 'company' | 'defaults';
 
-// â”€â”€ Image compression helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Image compression helper ──────────────────────────────────────────────────
 // Draws the image onto a canvas, resizes it to maxDim, and returns a base64
 // data URL. Logo uses JPEG (smaller), signature uses PNG (preserves transparency).
 function compressImage(file: File, maxDim: number, quality: number, outputMime: 'image/jpeg' | 'image/png'): Promise<string> {
@@ -65,14 +65,14 @@ function formatBytes(n: number): string {
   return n < 1024 ? `${n} B` : `${Math.round(n / 1024)} KB`;
 }
 
-// â”€â”€ ImageUploadField â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── ImageUploadField ──────────────────────────────────────────────────────────
 
 interface ImageUploadFieldProps {
   label: string;
   hint: string;
   /** base64 data URL currently saved in settings, or undefined */
   currentUrl: string | undefined;
-  /** logo â†’ max 400 px / JPEG 0.82 Â· signature â†’ max 600 px / PNG 0.92 */
+  /** logo → max 400 px / JPEG 0.82 · signature → max 600 px / PNG 0.92 */
   type: 'logo' | 'signature';
   onProcessed: (dataUrl: string) => void;
   onRemoved: () => void;
@@ -157,7 +157,7 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#1D4ED8] border border-[#1D4ED8]/30 hover:bg-[#1D4ED8]/5 rounded-lg disabled:opacity-60"
         >
           {processing
-            ? <><Loader2 className="w-4 h-4 animate-spin" /> Compressingâ€¦</>
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Compressing…</>
             : <><Upload className="w-4 h-4" /> {hasImage ? 'Replace image' : 'Choose image'}</>
           }
         </button>
@@ -179,7 +179,7 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
   );
 }
 
-// â”€â”€ Main SettingsPage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Main SettingsPage ─────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
   const { push } = useToast();
@@ -200,7 +200,7 @@ export default function SettingsPage() {
       <div className="py-20 text-center text-slate-500">
         <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
           <Loader2 className="h-4 w-4 animate-spin text-[#1D4ED8]" />
-          <span>Loading settingsâ€¦</span>
+          <span>Loading settings…</span>
         </div>
       </div>
     );
@@ -238,7 +238,7 @@ export default function SettingsPage() {
         actions={
           <AppButton onClick={handleSave} disabled={saving}>
             <Save className="h-4 w-4" />
-            {saving ? 'Savingâ€¦' : 'Save Settings'}
+            {saving ? 'Saving…' : 'Save Settings'}
           </AppButton>
         }
       />
@@ -262,7 +262,7 @@ export default function SettingsPage() {
         })}
       </div>
 
-      {/* â”€â”€ Company Profile tab â”€â”€ */}
+      {/* ── Company Profile tab ── */}
       {tab === 'company' && (
         <div className="space-y-6">
 
@@ -331,7 +331,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ImageUploadField
                 label="Company Logo"
-                hint="PNG or JPEG â€” resized to 400 px wide"
+                hint="PNG or JPEG — resized to 400 px wide"
                 currentUrl={settings.logoUrl}
                 type="logo"
                 onProcessed={(url) => update({ logoUrl: url })}
@@ -392,7 +392,7 @@ export default function SettingsPage() {
             </div>
             <ImageUploadField
               label="Signature Image"
-              hint="PNG with transparent background â€” resized to 600 px wide"
+              hint="PNG with transparent background — resized to 600 px wide"
               currentUrl={settings.signatureImage}
               type="signature"
               onProcessed={(url) => update({ signatureImage: url })}
@@ -438,7 +438,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* â”€â”€ Quotation Defaults tab â”€â”€ */}
+      {/* ── Quotation Defaults tab ── */}
       {tab === 'defaults' && (
         <div className="space-y-6">
           <SectionCard title="Quotation Defaults" description="Default values applied when creating a new quotation.">

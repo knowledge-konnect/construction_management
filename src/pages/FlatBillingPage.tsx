@@ -66,7 +66,7 @@ export default function FlatBillingPage() {
       />
 
       {loading ? (
-        <div className="rounded-2xl border border-[#E6E8EC] bg-white p-10 text-center text-sm text-[#667085] shadow-[0_6px_18px_rgba(15,23,42,0.03)]">Loading receiptsâ€¦</div>
+        <div className="rounded-2xl border border-[#E6E8EC] bg-white p-10 text-center text-sm text-[#667085] shadow-[0_6px_18px_rgba(15,23,42,0.03)]">Loading receipts…</div>
       ) : records.length === 0 ? (
         <EmptyState
           icon={<Building2 className="h-6 w-6 text-[#F4B72B]" />}
@@ -98,7 +98,7 @@ export default function FlatBillingPage() {
                     </h3>
                     <p className="text-xs text-slate-500 truncate">
                       {rec.receiptNumber}
-                      {rec.flatNo ? ` Â· Flat ${rec.flatNo}` : ''}
+                      {rec.flatNo ? ` · Flat ${rec.flatNo}` : ''}
                       {rec.blockTower ? `, ${rec.blockTower}` : ''}
                     </p>
                   </div>

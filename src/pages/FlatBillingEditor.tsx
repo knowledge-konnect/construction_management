@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 
-// â”€â”€ Dropdown option lists â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Dropdown option lists ─────────────────────────────────────────────────────
 const FLOOR_OPTIONS = [
   'Ground Floor', '1st Floor', '2nd Floor', '3rd Floor', '4th Floor',
   '5th Floor', '6th Floor', '7th Floor', '8th Floor', '9th Floor', '10th Floor',
@@ -36,7 +36,7 @@ const PAYMENT_STAGE_OPTIONS = [
 
 const STATUS_OPTIONS = ['Pending', 'Partially Paid', 'Paid'];
 
-// â”€â”€ Small UI helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Small UI helpers ───────────────────────────────────────────────────────────
 function TextInput({ value, onChange, placeholder, type = 'text', className = '', maxLength }: {
   value: string; onChange: (v: string) => void; placeholder?: string; type?: string; className?: string; maxLength?: number;
 }) {
@@ -78,7 +78,7 @@ function Select({ value, onChange, options, placeholder, className = '' }: {
   );
 }
 
-// â”€â”€ Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Validation ─────────────────────────────────────────────────────────────────
 interface ValidationErrors {
   receiptNumber?: string;
   buyerName?: string;
@@ -124,7 +124,7 @@ function validate(b: BillingDraft): ValidationErrors {
   return e;
 }
 
-// â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function FlatBillingEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -216,7 +216,7 @@ export default function FlatBillingEditor() {
     const result = await saveFlatBilling(rec, company.companyId, user.id);
     setIsSaving(false);
     if (!result.ok) {
-      push('error', 'Could not save the receipt. It has been cached locally â€” please retry.');
+      push('error', 'Could not save the receipt. It has been cached locally — please retry.');
       return;
     }
     push('success', 'Booking receipt saved.');
@@ -237,7 +237,7 @@ export default function FlatBillingEditor() {
   const outstandingBalance = flatTotal - scheduledAmount;
 
   if (!settings) {
-    return <div className="py-20 text-center text-slate-500">Loading company settingsâ€¦</div>;
+    return <div className="py-20 text-center text-slate-500">Loading company settings…</div>;
   }
 
   return (
@@ -257,7 +257,7 @@ export default function FlatBillingEditor() {
             <Download className="w-4 h-4" /> Download PDF
           </AppButton>
           <AppButton onClick={handleSave} disabled={isSaving}>
-            <Save className="w-4 h-4" /> {isSaving ? 'Savingâ€¦' : 'Save'}
+            <Save className="w-4 h-4" /> {isSaving ? 'Saving…' : 'Save'}
           </AppButton>
         </div>
       </div>
@@ -278,17 +278,17 @@ export default function FlatBillingEditor() {
               <div>
                 <p className="text-[#F4B72B] text-xs font-medium uppercase tracking-wide mb-0.5">Office Address</p>
                 <p className="text-white/90">
-                  {[settings.address, settings.city, [settings.state, settings.pincode].filter(Boolean).join(' - ')].filter(Boolean).join(', ') || 'â€”'}
+                  {[settings.address, settings.city, [settings.state, settings.pincode].filter(Boolean).join(' - ')].filter(Boolean).join(', ') || '—'}
                 </p>
               </div>
               <div>
                 <p className="text-[#F4B72B] text-xs font-medium uppercase tracking-wide mb-0.5">Contact</p>
-                <p className="text-white/90">{settings.mobile || 'â€”'}</p>
+                <p className="text-white/90">{settings.mobile || '—'}</p>
                 <p className="text-white/70 text-xs">{settings.email}</p>
               </div>
               <div>
                 <p className="text-[#F4B72B] text-xs font-medium uppercase tracking-wide mb-0.5">GST / Registration</p>
-                <p className="text-white/90">{settings.gstin || 'â€”'}</p>
+                <p className="text-white/90">{settings.gstin || '—'}</p>
                 <p className="text-white/70 text-xs">{settings.website}</p>
               </div>
             </div>
@@ -351,7 +351,7 @@ export default function FlatBillingEditor() {
             </Field>
             <Field label="Booking Cost">
               <div className="px-3 py-2 text-sm border rounded-lg bg-[#1D4ED8]/5 text-[#1D4ED8] font-bold">
-                {flatTotal > 0 ? formatINR(flatTotal) : 'â€”'}
+                {flatTotal > 0 ? formatINR(flatTotal) : '—'}
               </div>
             </Field>
           </div>
@@ -360,7 +360,7 @@ export default function FlatBillingEditor() {
         <SectionCard title="Total Booking Cost">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Agreed booking value</p>
-            <p className="mt-2 text-2xl font-bold text-[#0B234A]">{flatTotal > 0 ? formatINR(flatTotal) : 'â€”'}</p>
+            <p className="mt-2 text-2xl font-bold text-[#0B234A]">{flatTotal > 0 ? formatINR(flatTotal) : '—'}</p>
           </div>
         </SectionCard>
 

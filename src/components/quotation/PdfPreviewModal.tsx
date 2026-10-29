@@ -60,7 +60,7 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
   const whatsappHref = useMemo(() => {
     const mobile = quotation.customer.mobile ? quotation.customer.mobile.replace(/\D/g, '') : '';
     const text = encodeURIComponent(
-      `Hi ${quotation.customer.name || ''}, please find the quotation ${quotation.quotationNumber} from ${settings.companyName || 'us'} attached. Since WhatsApp links can't attach files directly, we'll send the PDF separately â€” just confirming this chat is open.`,
+      `Hi ${quotation.customer.name || ''}, please find the quotation ${quotation.quotationNumber} from ${settings.companyName || 'us'} attached. Since WhatsApp links can't attach files directly, we'll send the PDF separately — just confirming this chat is open.`,
     );
     // If we have a 10-digit Indian mobile, prefill the chat with that number; otherwise open the share sheet.
     const number = mobile.length === 10 ? `91${mobile}` : mobile;
@@ -68,9 +68,9 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
   }, [quotation, settings]);
 
   const mailtoHref = useMemo(() => {
-    const subject = encodeURIComponent(`Quotation ${quotation.quotationNumber} â€” ${settings.companyName || ''}`);
+    const subject = encodeURIComponent(`Quotation ${quotation.quotationNumber} — ${settings.companyName || ''}`);
     const body = encodeURIComponent(
-      `Hi ${quotation.customer.name || ''},\n\nPlease find attached the quotation ${quotation.quotationNumber} for ${quotation.project.name || 'your project'}.\n\nThe PDF has been downloaded to your device â€” please attach it to this email before sending.\n\nRegards,\n${settings.contactPerson || settings.companyName || ''}`,
+      `Hi ${quotation.customer.name || ''},\n\nPlease find attached the quotation ${quotation.quotationNumber} for ${quotation.project.name || 'your project'}.\n\nThe PDF has been downloaded to your device — please attach it to this email before sending.\n\nRegards,\n${settings.contactPerson || settings.companyName || ''}`,
     );
     return `mailto:${quotation.customer.email || ''}?subject=${subject}&body=${body}`;
   }, [quotation, settings]);
@@ -81,7 +81,7 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
       <div role="dialog" aria-modal="true" aria-label="PDF preview" className="relative flex max-h-[100dvh] w-full max-w-3xl flex-col rounded-t-2xl border border-[#E6E8EC] bg-white shadow-xl sm:max-h-[90vh] sm:rounded-2xl">
         <div className="flex items-center justify-between gap-3 border-b border-[#E6E8EC] px-5 py-4">
           <div className="min-w-0">
-            <h3 className="truncate text-base font-semibold text-[#17243A]">PDF Preview â€” {quotation.quotationNumber}</h3>
+            <h3 className="truncate text-base font-semibold text-[#17243A]">PDF Preview — {quotation.quotationNumber}</h3>
             <p className="truncate text-xs text-[#667085]">{filename}</p>
           </div>
           <button onClick={onClose} className="flex-shrink-0 rounded-lg p-2 text-[#667085] hover:bg-slate-100 hover:text-[#17243A]" aria-label="Close preview">

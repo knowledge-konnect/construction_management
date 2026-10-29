@@ -1,11 +1,11 @@
 ﻿/**
- * Document (quotation) service â€” talks to the Fastify backend
+ * Document (quotation) service — talks to the Fastify backend
  * (/api/quotations/*) exclusively. There is no direct Supabase fallback here
  * anymore: business/company data must always go through the authorized
  * backend (see server/src/index.ts + server/src/authz.ts), never straight
  * from the browser with the anon key.
  *
- * localStorage is used ONLY as a client-side recovery/autosave cache â€” it
+ * localStorage is used ONLY as a client-side recovery/autosave cache — it
  * is written on every successful save and read only if the backend request
  * itself fails (offline, network error, server down), never as a silent
  * substitute data source when the user is simply not the owner of something.
@@ -234,7 +234,7 @@ export interface SaveDocumentResult {
 }
 
 export async function saveDocument(quotation: Quotation, companyId: string, userId: string): Promise<SaveDocumentResult> {
-    // Always cache the draft locally first â€” if the network request below
+    // Always cache the draft locally first — if the network request below
     // fails, the user's edits aren't lost and can be recovered on retry.
     quotationRepo.save(currentStorageScope(companyId), quotation);
 

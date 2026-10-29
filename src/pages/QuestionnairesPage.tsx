@@ -68,7 +68,7 @@ export default function QuestionnairesPage() {
               </div>
               <h3 className="font-semibold text-[#17243A]">{rec.title || 'Untitled Requirements'}</h3>
               <p className="mt-0.5 text-xs text-[#667085]">
-                {rec.customerName || 'â€”'}{rec.projectName ? ` Â· ${rec.projectName}` : ''}
+                {rec.customerName || '—'}{rec.projectName ? ` · ${rec.projectName}` : ''}
               </p>
               <p className="mt-2 text-xs text-[#98A2B3]">Updated {formatDate(rec.updatedAt.slice(0, 10))}</p>
               <div className="mt-4 flex items-center gap-2 pt-3">

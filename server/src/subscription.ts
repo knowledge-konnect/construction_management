@@ -2,8 +2,8 @@
 import { supabaseAdmin } from './auth.js';
 
 export const FREE_MONTHLY_QUOTATION_LIMIT = 3;
-export const PAID_MONTHLY_PRICE_PAISE = 49900; // â‚¹499.00
-export const PAID_YEARLY_PRICE_PAISE = 499900; // â‚¹4,999.00
+export const PAID_MONTHLY_PRICE_PAISE = 49900; // ₹499.00
+export const PAID_YEARLY_PRICE_PAISE = 499900; // ₹4,999.00
 
 export type Plan = 'free' | 'paid';
 export type BillingCycle = 'monthly' | 'yearly';
@@ -36,7 +36,7 @@ function mapSubscriptionRow(row: any): CompanySubscription {
  * if one doesn't exist yet (e.g. companies created before this feature
  * shipped). A paid subscription whose current_period_end has passed is
  * treated as expired (and persisted as such) rather than silently still
- * granting unlimited quotations â€” expiry is enforced here, not just at
+ * granting unlimited quotations — expiry is enforced here, not just at
  * checkout time.
  */
 export async function getCompanySubscription(companyId: string): Promise<CompanySubscription> {
@@ -55,7 +55,7 @@ export async function getCompanySubscription(companyId: string): Promise<Company
             .select('company_id, plan, billing_cycle, status, current_period_end')
             .single();
 
-        // A concurrent request may have created it first (unique PK) â€” that's
+        // A concurrent request may have created it first (unique PK) — that's
         // fine, just re-read rather than treating it as a real failure.
         if (insertError) {
             const { data: existing, error: reReadError } = await supabaseAdmin
@@ -87,7 +87,7 @@ function currentUsagePeriod(): { year: number; month: number } {
     return { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 };
 }
 
-/** Read-only usage count for the current calendar month â€” does not mutate anything. */
+/** Read-only usage count for the current calendar month — does not mutate anything. */
 export async function getCurrentMonthUsage(companyId: string): Promise<number> {
     const { year, month } = currentUsagePeriod();
     const { data, error } = await supabaseAdmin
@@ -113,15 +113,15 @@ export class QuotationLimitReachedError extends Error {
 /**
  * Atomically reserves one "new quotation" slot for the current calendar
  * month, IF the company's plan allows it. This is the actual enforcement
- * point â€” call it once, immediately before creating a new quotation (never
+ * point — call it once, immediately before creating a new quotation (never
  * on edits to an existing one). Uses the same compare-and-swap retry
  * pattern as document_sequences.ts: two concurrent requests racing at
- * count=2 can only ever have ONE of them successfully claim slot #3 â€” the
+ * count=2 can only ever have ONE of them successfully claim slot #3 — the
  * loser is correctly rejected rather than both succeeding and exceeding
  * the limit. Paid (and non-expired) companies skip the check entirely.
  *
  * Throws QuotationLimitReachedError (403) if the free plan's monthly limit
- * has already been reached. Never decremented on delete â€” a deleted
+ * has already been reached. Never decremented on delete — a deleted
  * quotation still occupied a slot the month it was created.
  */
 export async function reserveQuotationSlot(companyId: string): Promise<void> {
@@ -144,14 +144,14 @@ export async function reserveQuotationSlot(companyId: string): Promise<void> {
         if (selectError) throw selectError;
 
         if (!existing) {
-            // First quotation this month for this company â€” try to create
+            // First quotation this month for this company — try to create
             // the row already at count=1.
             const { error: insertError } = await supabaseAdmin
                 .from('company_quotation_usage')
                 .insert({ company_id: companyId, usage_year: year, usage_month: month, quotation_count: 1 });
 
             if (!insertError) return;
-            // Concurrent request created the row first â€” fall through and retry via the update branch.
+            // Concurrent request created the row first — fall through and retry via the update branch.
             continue;
         }
 
@@ -171,7 +171,7 @@ export async function reserveQuotationSlot(companyId: string): Promise<void> {
 
         if (updateError) throw updateError;
         if (updated) return; // slot successfully reserved
-        // Someone else updated between our SELECT and UPDATE â€” retry.
+        // Someone else updated between our SELECT and UPDATE — retry.
     }
 
     throw new Error('Could not reserve a quotation slot after several attempts (high contention).');
@@ -182,7 +182,7 @@ export async function reserveQuotationSlot(companyId: string): Promise<void> {
  * reserveQuotationSlot() but the quotation itself then failed to actually
  * get created (an unrelated DB error), give the slot back rather than
  * charging the company's monthly limit for a request that never produced a
- * document. Never throws â€” a failure here shouldn't mask the original error.
+ * document. Never throws — a failure here shouldn't mask the original error.
  */
 export async function releaseQuotationSlot(companyId: string): Promise<void> {
     try {
@@ -207,7 +207,7 @@ export async function releaseQuotationSlot(companyId: string): Promise<void> {
     }
 }
 
-/** Convenience combined read for GET /api/subscription â€” plan + this month's usage in one call. */
+/** Convenience combined read for GET /api/subscription — plan + this month's usage in one call. */
 export async function getSubscriptionSummary(companyId: string) {
     const subscription = await getCompanySubscription(companyId);
     const used = await getCurrentMonthUsage(companyId);
@@ -223,8 +223,8 @@ export async function getSubscriptionSummary(companyId: string) {
     };
 }
 
-// â”€â”€â”€ Razorpay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Plain REST calls (Basic Auth with key_id:key_secret) â€” no SDK dependency
+// ─── Razorpay ────────────────────────────────────────────────────────────────
+// Plain REST calls (Basic Auth with key_id:key_secret) — no SDK dependency
 // needed. key_secret is read from a backend-only env var and NEVER sent to
 // the frontend; key_id is not a secret (Razorpay's own Checkout.js requires
 // it client-side to open the payment sheet).
@@ -245,7 +245,7 @@ export function priceForCycle(billingCycle: BillingCycle): number {
 /**
  * Creates a Razorpay order for a company's plan purchase and records a
  * pending row in subscription_payments (status='created') so the later
- * verification step has something authoritative to check against â€” the
+ * verification step has something authoritative to check against — the
  * frontend can never just claim "payment succeeded" on its own.
  */
 export async function createRazorpayOrder(companyId: string, billingCycle: BillingCycle): Promise<{ orderId: string; amount: number; currency: string }> {
@@ -287,7 +287,7 @@ export async function createRazorpayOrder(companyId: string, billingCycle: Billi
 }
 
 /**
- * Verifies a Razorpay Checkout payment signature server-side â€” this is the
+ * Verifies a Razorpay Checkout payment signature server-side — this is the
  * ONLY thing that determines whether a payment is treated as real.
  * expected_signature = HMAC_SHA256(order_id + "|" + payment_id, key_secret);
  * this is Razorpay's documented verification formula.
@@ -305,7 +305,7 @@ export function verifyRazorpaySignature(orderId: string, paymentId: string, sign
 /**
  * Called ONLY after verifyRazorpaySignature() has returned true. Marks the
  * matching subscription_payments row 'paid' and activates the company's
- * subscription for the billing cycle purchased â€” this is the single place
+ * subscription for the billing cycle purchased — this is the single place
  * a company's plan actually changes from 'free' to 'paid'.
  */
 export async function applySuccessfulPayment(
@@ -338,7 +338,7 @@ export async function applySuccessfulPayment(
 }
 
 /**
- * Verifies a Razorpay WEBHOOK payload signature â€” different formula from
+ * Verifies a Razorpay WEBHOOK payload signature — different formula from
  * Checkout's (HMAC over the raw request body, not "order_id|payment_id"),
  * and signed with the separate webhook secret configured in the Razorpay
  * dashboard, not the API key secret.
@@ -356,7 +356,7 @@ export function verifyRazorpayWebhookSignature(rawBody: Buffer, signature: strin
  * The webhook's counterpart to applySuccessfulPayment(): looks up which
  * company/billing-cycle a given order belongs to from our own
  * subscription_payments record (never trusts anything about the company
- * from the webhook payload itself), and is idempotent â€” safe to call
+ * from the webhook payload itself), and is idempotent — safe to call
  * whether the browser's Checkout callback already applied this same
  * payment, the webhook arrives first, or Razorpay retries the webhook
  * delivery.
@@ -369,10 +369,10 @@ export async function confirmPaymentFromWebhook(razorpayOrderId: string, razorpa
         .maybeSingle();
     if (error) throw error;
 
-    // An order we have no record of creating â€” ignore rather than throw, so
+    // An order we have no record of creating — ignore rather than throw, so
     // an unrelated/test webhook event can't cause Razorpay retry-storms.
     if (!payment) return;
-    // Already applied (the Checkout callback got there first) â€” no-op.
+    // Already applied (the Checkout callback got there first) — no-op.
     if (payment.status === 'paid') return;
 
     await applySuccessfulPayment(payment.company_id, payment.billing_cycle as BillingCycle, razorpayOrderId, razorpayPaymentId);

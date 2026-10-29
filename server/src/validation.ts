@@ -68,7 +68,7 @@ export function validateFlatBillingPayload(billing: any): string | null {
 }
 
 /**
- * Backend safety net behind the existing frontend BOQ/commercial validation â€”
+ * Backend safety net behind the existing frontend BOQ/commercial validation —
  * does not change the calculation logic itself, only rejects payloads with
  * clearly invalid figures before they're persisted.
  * Returns an error message, or null if the payload is valid.

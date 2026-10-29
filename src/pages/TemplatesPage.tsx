@@ -59,7 +59,7 @@ export default function TemplatesPage() {
             <h3 className="text-base font-semibold text-[#17243A]">{t.name}</h3>
             <p className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-[#667085]">{t.projectType}</p>
             <p className="mt-2 flex-1 text-sm leading-6 text-[#475467]">{t.description}</p>
-            <div className="mt-4 text-xs text-[#667085]">{t.boqSections.length} sections Â· {t.boqSections.reduce((s, sec) => s + sec.items.length, 0)} items Â· {t.specifications.length} specs</div>
+            <div className="mt-4 text-xs text-[#667085]">{t.boqSections.length} sections · {t.boqSections.reduce((s, sec) => s + sec.items.length, 0)} items · {t.specifications.length} specs</div>
             <AppButton onClick={() => createFromTemplate(t.id)} className="mt-4 w-full justify-center">
               Use Template <ArrowRight className="h-4 w-4" />
             </AppButton>

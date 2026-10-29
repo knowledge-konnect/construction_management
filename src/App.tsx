@@ -26,7 +26,7 @@ import TemplatesPage from '@/pages/TemplatesPage';
 import { getSafeRedirectPath } from '@/lib/utils';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
-// Shown at "/" â€” the public landing page for logged-out visitors.
+// Shown at "/" — the public landing page for logged-out visitors.
 // Signed-in users are sent straight to their dashboard instead.
 function PublicHome() {
   const { user, loading } = useAuth();

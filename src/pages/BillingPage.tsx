@@ -47,7 +47,7 @@ export default function BillingPage() {
     const result = await startCheckout(billingCycle, company?.settings.companyName || 'Your company');
     setBusy(null);
     if (result.ok) {
-      push('success', 'Payment successful â€” youâ€™re now on the BuilderDocs plan.');
+      push('success', 'Payment successful — you’re now on the BuilderDocs plan.');
       void refresh();
     } else if (result.error && result.error !== 'Payment cancelled.') {
       push('error', result.error);
@@ -69,7 +69,7 @@ export default function BillingPage() {
   };
 
   if (loading) {
-    return <div className="rounded-2xl border border-[#E6E8EC] bg-white p-10 text-center text-sm text-[#667085] shadow-[0_6px_18px_rgba(15,23,42,0.03)]">Loading billing detailsâ€¦</div>;
+    return <div className="rounded-2xl border border-[#E6E8EC] bg-white p-10 text-center text-sm text-[#667085] shadow-[0_6px_18px_rgba(15,23,42,0.03)]">Loading billing details…</div>;
   }
 
   const isPaid = sub?.plan === 'paid' && sub.status === 'active';
@@ -78,7 +78,7 @@ export default function BillingPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader
         title="Billing"
-        description="Manage your companyâ€™s BuilderDocs plan and renewal status."
+        description="Manage your company’s BuilderDocs plan and renewal status."
       />
 
       <PremiumCard className="p-6">
@@ -101,7 +101,7 @@ export default function BillingPage() {
             </p>
             {canManage && (
               <AppButton variant="ghost" onClick={() => setConfirmCancel(true)} disabled={busy === 'cancel'} className="mt-4 text-red-600 hover:bg-red-50 hover:text-red-700">
-                {busy === 'cancel' ? 'Cancellingâ€¦' : 'Cancel subscription'}
+                {busy === 'cancel' ? 'Cancelling…' : 'Cancel subscription'}
               </AppButton>
             )}
           </>
@@ -130,10 +130,10 @@ export default function BillingPage() {
           ) : (
             <div className="flex flex-col gap-3 sm:flex-row">
               <AppButton onClick={() => handleUpgrade('monthly')} disabled={busy !== null} className="flex-1 justify-center">
-                <CreditCard className="h-4 w-4" /> {busy === 'monthly' ? 'Openingâ€¦' : 'â‚¹499 / month'}
+                <CreditCard className="h-4 w-4" /> {busy === 'monthly' ? 'Opening…' : '₹499 / month'}
               </AppButton>
               <AppButton variant="secondary" onClick={() => handleUpgrade('yearly')} disabled={busy !== null} className="flex-1 justify-center border-[#F4B72B] bg-[#F4B72B] text-[#17243A] hover:bg-[#e0a520]">
-                <CreditCard className="h-4 w-4" /> {busy === 'yearly' ? 'Openingâ€¦' : 'â‚¹4,999 / year'}
+                <CreditCard className="h-4 w-4" /> {busy === 'yearly' ? 'Opening…' : '₹4,999 / year'}
               </AppButton>
             </div>
           )}

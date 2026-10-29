@@ -1,4 +1,4 @@
-﻿// Core domain models â€” simplified for MVP.
+﻿// Core domain models — simplified for MVP.
 
 export type QuotationStatus =
   | 'DRAFT'

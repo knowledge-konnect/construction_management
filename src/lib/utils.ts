@@ -1,4 +1,4 @@
-﻿// Formatting, calculation, and helper utilities â€” simplified for MVP.
+﻿// Formatting, calculation, and helper utilities — simplified for MVP.
 
 import { v4 as uuid } from 'uuid';
 import type {
@@ -21,7 +21,7 @@ const inrFormatter = new Intl.NumberFormat('en-IN', {
 });
 
 export function formatINR(amount: number): string {
-  if (!isFinite(amount)) return 'â‚¹0';
+  if (!isFinite(amount)) return '₹0';
   return inrFormatter.format(round2(amount));
 }
 

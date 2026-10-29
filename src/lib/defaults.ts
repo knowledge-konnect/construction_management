@@ -1,4 +1,4 @@
-﻿// Default values and factory functions â€” simplified for MVP.
+﻿// Default values and factory functions — simplified for MVP.
 
 import { v4 as uuid } from 'uuid';
 import {
@@ -224,7 +224,7 @@ export function defaultTemplates(): Template[] {
 
   return [
     mk(
-      'Individual House â€“ Standard',
+      'Individual House – Standard',
       'Standard BOQ structure for a residential individual house.',
       'Individual House',
       [
@@ -249,7 +249,7 @@ export function defaultTemplates(): Template[] {
       ],
     ),
     mk(
-      'Villa â€“ Standard',
+      'Villa – Standard',
       'Premium villa construction BOQ with enhanced finishes.',
       'Villa',
       [

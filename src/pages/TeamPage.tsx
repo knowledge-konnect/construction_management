@@ -82,7 +82,7 @@ export default function TeamPage() {
       return;
     }
     push('success', result.isNewAccount
-      ? 'Account created. Share the password with them directly â€” they\u2019ll be asked to change it on first login.'
+      ? 'Account created. Share the password with them directly — they\u2019ll be asked to change it on first login.'
       : 'Existing account added to your company.');
     resetForm();
     void refresh();
@@ -144,9 +144,9 @@ export default function TeamPage() {
         <Modal eyebrow="Team" title="Add team member" onClose={resetForm} size="lg">
           <form onSubmit={handleAdd} className="space-y-5">
             <p className="text-xs text-slate-500">
-              If this email already has an account, theyâ€™ll simply be added to your company â€” their existing
+              If this email already has an account, they’ll simply be added to your company — their existing
               password stays unchanged. Otherwise a new account is created with the password you set below, and
-              theyâ€™ll be asked to change it the first time they log in.
+              they’ll be asked to change it the first time they log in.
             </p>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Email" required>
@@ -160,15 +160,15 @@ export default function TeamPage() {
               </Field>
               <Field label="Role" required>
                 <Select value={role} onChange={(e) => setRole(e.target.value as 'admin' | 'staff')}>
-                  <option value="staff">Staff â€” quotations &amp; customers</option>
-                  <option value="admin">Admin â€” company management too</option>
+                  <option value="staff">Staff — quotations &amp; customers</option>
+                  <option value="admin">Admin — company management too</option>
                 </Select>
               </Field>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <AppButton variant="secondary" onClick={resetForm}>Cancel</AppButton>
               <AppButton type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Addingâ€¦' : 'Add team member'}
+                {isSubmitting ? 'Adding…' : 'Add team member'}
               </AppButton>
             </div>
           </form>
@@ -176,7 +176,7 @@ export default function TeamPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-20 text-slate-400 text-sm">Loading teamâ€¦</div>
+        <div className="text-center py-20 text-slate-400 text-sm">Loading team…</div>
       ) : (
         <>
           {/* Desktop table */}

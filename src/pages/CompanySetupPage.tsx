@@ -87,7 +87,7 @@ export default function CompanySetupPage() {
             <div className="py-20 text-center text-slate-500">
                 <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
                     <Loader2 className="h-4 w-4 animate-spin text-[#1D4ED8]" />
-                    <span>Loading company detailsâ€¦</span>
+                    <span>Loading company details…</span>
                 </div>
             </div>
         );
@@ -110,7 +110,7 @@ export default function CompanySetupPage() {
                         <p className="text-sm text-slate-500">Complete your company profile before using the quotation manager.</p>
                     </div>
                     <AppButton onClick={handleSave} disabled={saving}>
-                        <Save className="w-4 h-4" /> {saving ? 'Savingâ€¦' : 'Save Company'}
+                        <Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save Company'}
                     </AppButton>
                 </div>
 

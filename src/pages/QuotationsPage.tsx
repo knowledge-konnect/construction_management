@@ -54,7 +54,7 @@ export default function QuotationsPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-slate-400 py-16 text-center">Loading quotationsâ€¦</p>
+        <p className="text-sm text-slate-400 py-16 text-center">Loading quotations…</p>
       ) : (
         <QuotationTable quotations={quotations} onRefresh={refresh} />
       )}

@@ -8,7 +8,7 @@ export default function RequireCompany({ children }: { children: JSX.Element }) 
     const location = useLocation();
 
     if (loading || companyLoading) {
-        return <div className="py-20 text-center text-slate-500">Loading company detailsâ€¦</div>;
+        return <div className="py-20 text-center text-slate-500">Loading company details…</div>;
     }
 
     if (!user) {

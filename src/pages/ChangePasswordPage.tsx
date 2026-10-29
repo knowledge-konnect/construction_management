@@ -17,7 +17,7 @@ export default function ChangePasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If the account doesn't actually require this, there's nothing to force â€”
+  // If the account doesn't actually require this, there's nothing to force —
   // send them back to their dashboard rather than showing a dead-end page.
   if (user && !user.mustChangePassword) {
     return <Navigate to="/dashboard" replace />;
@@ -61,7 +61,7 @@ export default function ChangePasswordPage() {
         </div>
         <div className="relative z-10 flex items-center justify-between text-sm text-slate-400 border-t border-white/10 pt-4 mt-8">
           <span>BuilderDocs v1.0</span>
-          <span>Â© 2026 BuilderDocs</span>
+          <span>© 2026 BuilderDocs</span>
         </div>
       </div>
 
@@ -129,7 +129,7 @@ export default function ChangePasswordPage() {
               </div>
             </div>
             <AppButton type="submit" disabled={isSubmitting} className="w-full justify-center py-3 text-sm">
-              {isSubmitting ? 'Updatingâ€¦' : 'Set Password & Continue'}
+              {isSubmitting ? 'Updating…' : 'Set Password & Continue'}
             </AppButton>
           </form>
 

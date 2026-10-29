@@ -208,7 +208,7 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
               type="text"
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search quotation, customer, project, or mobileâ€¦"
+              placeholder="Search quotation, customer, project, or mobile…"
               className="w-full rounded-xl border border-[#D0D5DD] bg-white py-2.5 pl-9 pr-3 text-sm text-[#17243A] placeholder-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/25"
             />
           </label>

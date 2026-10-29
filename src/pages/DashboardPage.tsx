@@ -51,9 +51,9 @@ export default function DashboardPage() {
         return [...projects].sort((a, b) => Number(b.contractAmount ?? 0) - Number(a.contractAmount ?? 0)).slice(0, 5);
     }, [projects]);
 
-    // null = loading skeleton; 'â€”' when the report failed to load (avoids a misleading zero).
-    const money = (value: number | undefined) => (loading ? null : dashboard ? formatINR(value ?? 0) : 'â€”');
-    const count = (value: number | undefined) => (loading ? null : dashboard ? String(value ?? 0) : 'â€”');
+    // null = loading skeleton; '—' when the report failed to load (avoids a misleading zero).
+    const money = (value: number | undefined) => (loading ? null : dashboard ? formatINR(value ?? 0) : '—');
+    const count = (value: number | undefined) => (loading ? null : dashboard ? String(value ?? 0) : '—');
 
     const openCreateProject = () => navigate('/projects', { state: { openCreate: true } });
 
@@ -184,7 +184,7 @@ export default function DashboardPage() {
                                         </span>
                                         <div className="min-w-0 flex-1">
                                             <p className="truncate text-sm font-semibold text-[#17243A]">{project.name}</p>
-                                            <p className="mt-0.5 truncate text-xs text-[#667085]">{project.projectNumber} â€¢ {project.customer?.name || 'Customer pending'}</p>
+                                            <p className="mt-0.5 truncate text-xs text-[#667085]">{project.projectNumber} • {project.customer?.name || 'Customer pending'}</p>
                                         </div>
                                         <div className="flex shrink-0 flex-col items-end gap-1">
                                             <p className="text-sm font-semibold tabular-nums text-[#17243A]">{formatINR(project.contractAmount)}</p>
@@ -206,7 +206,7 @@ export default function DashboardPage() {
                         <SnapshotRow
                             icon={<Wallet className="h-4 w-4 text-amber-600" />}
                             label="Net cash position"
-                            value={loading ? null : dashboard ? formatINR((dashboard.totalCollections ?? 0) - (dashboard.totalCost ?? 0)) : 'â€”'}
+                            value={loading ? null : dashboard ? formatINR((dashboard.totalCollections ?? 0) - (dashboard.totalCost ?? 0)) : '—'}
                         />
                     </div>
                     <p className="mt-3 text-xs text-[#667085]">Net cash position = collections received minus total supplier cost.</p>

@@ -129,7 +129,7 @@ export default function BOQStep() {
     }));
   };
 
-  // Enter on rate input â†’ add new item and focus it
+  // Enter on rate input → add new item and focus it
   const handleItemKeyDown = (e: React.KeyboardEvent, sectionId: string, isLastInput: boolean) => {
     if (e.key === 'Enter' && isLastInput) {
       e.preventDefault();
@@ -141,7 +141,7 @@ export default function BOQStep() {
     <div className="space-y-4">
       <SectionCard
         title="Bill of Quantities"
-        description="Add sections and items. Amount = Quantity Ã— Rate. Press Enter on the rate field to add a new row."
+        description="Add sections and items. Amount = Quantity × Rate. Press Enter on the rate field to add a new row."
         actions={<span className="text-sm font-semibold text-[#1D4ED8]">Subtotal: {formatINR(calcBOQSubtotal(sections))}</span>}
       >
         <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -149,7 +149,7 @@ export default function BOQStep() {
             <Plus className="w-4 h-4" /> Add Section
           </button>
           <select onChange={(e) => { if (e.target.value) { addSection(e.target.value); e.target.value = ''; } }} className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white" defaultValue="" aria-label="Add section from preset">
-            <option value="">Add from presetâ€¦</option>
+            <option value="">Add from preset…</option>
             {DEFAULT_BOQ_SECTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>

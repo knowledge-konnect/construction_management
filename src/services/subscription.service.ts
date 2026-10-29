@@ -56,7 +56,7 @@ export interface StartCheckoutResult {
 
 /**
  * Opens Razorpay Checkout for the given billing cycle. On success, sends the
- * payment details to the backend for signature verification â€” the backend
+ * payment details to the backend for signature verification — the backend
  * (never this function, never the browser) is what actually activates the
  * paid plan. Resolves once the flow is fully settled (verified, failed, or
  * dismissed).
@@ -75,7 +75,7 @@ export async function startCheckout(billingCycle: BillingCycle, companyName: str
       currency: order.currency,
       order_id: order.orderId,
       name: 'SOPAN',
-      description: billingCycle === 'yearly' ? 'SOPAN â€” Yearly Plan' : 'SOPAN â€” Monthly Plan',
+      description: billingCycle === 'yearly' ? 'SOPAN — Yearly Plan' : 'SOPAN — Monthly Plan',
       prefill: { name: companyName },
       handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
         const { data, error } = await apiPost<{ ok: boolean }>('/api/subscription/verify', {

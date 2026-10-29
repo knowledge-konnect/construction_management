@@ -33,7 +33,7 @@ export default function PaymentStep() {
       <SectionCard title="Payment Schedule" description="Percentage-based payment milestones.">
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <select onChange={(e) => { if (e.target.value) { addStage(e.target.value); e.target.value = ''; } }} className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white" defaultValue="">
-            <option value="">Add suggested stageâ€¦</option>
+            <option value="">Add suggested stage…</option>
             {PAYMENT_STAGE_SUGGESTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
           <button onClick={() => addStage()} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg"><Plus className="w-4 h-4" /> Add Stage</button>
@@ -124,7 +124,7 @@ export default function PaymentStep() {
 
         {q.paymentSchedule.length > 0 && (
           <div className={`mt-3 px-4 py-2 rounded-lg text-sm ${pctComplete ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
-            {pctComplete ? 'Total: 100% â€” Payment schedule is complete.' : `Total: ${formatNumber(pctTotal)}% â€” Remaining: ${formatNumber(100 - pctTotal)}%. A complete schedule is recommended before generating the PDF.`}
+            {pctComplete ? 'Total: 100% — Payment schedule is complete.' : `Total: ${formatNumber(pctTotal)}% — Remaining: ${formatNumber(100 - pctTotal)}%. A complete schedule is recommended before generating the PDF.`}
           </div>
         )}
       </SectionCard>

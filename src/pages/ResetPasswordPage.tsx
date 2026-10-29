@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
         </div>
         <div className="relative z-10 flex items-center justify-between text-sm text-slate-400 border-t border-white/10 pt-4 mt-8">
           <span>BuilderDocs v1.0</span>
-          <span>Â© 2026 BuilderDocs</span>
+          <span>© 2026 BuilderDocs</span>
         </div>
       </div>
 
@@ -122,7 +122,7 @@ export default function ResetPasswordPage() {
                 </div>
               </div>
               <AppButton type="submit" disabled={isSubmitting || !token} className="w-full justify-center py-3 text-sm">
-                {isSubmitting ? 'Resettingâ€¦' : 'Reset Password'}
+                {isSubmitting ? 'Resetting…' : 'Reset Password'}
               </AppButton>
             </form>
           )}

@@ -1,4 +1,4 @@
-﻿// Flat Booking Receipt PDF â€” professional design with logo & signature support.
+﻿// Flat Booking Receipt PDF — professional design with logo & signature support.
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -7,13 +7,13 @@ import { calcFlatTotal } from './flatBilling';
 import type { CompanySettings } from './models';
 import { amountToWords, formatDate } from './utils';
 
-// â”€â”€ Layout constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Layout constants ──────────────────────────────────────────────────────────
 const PAGE_W = 210;
 const PAGE_H = 297;
 const MARGIN = 14;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
-// â”€â”€ Colour palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Colour palette ────────────────────────────────────────────────────────────
 type RGB = [number, number, number];
 const NAVY: RGB = [11, 40, 87];
 const GOLD: RGB = [244, 183, 43];
@@ -24,7 +24,7 @@ const WHITE: RGB = [255, 255, 255];
 const ORANGE: RGB = [200, 80, 30];
 const LIGHT_BG: RGB = [245, 248, 255];
 
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtAmt(n: number): string {
   if (!isFinite(n) || n === 0) return '-';
   return `Rs. ${new Intl.NumberFormat('en-IN').format(Math.round(n))}`;
@@ -35,7 +35,7 @@ function fmtAmtShort(n: number): string {
   return new Intl.NumberFormat('en-IN').format(Math.round(n));
 }
 
-// â”€â”€ Fallback logo mark (geometric) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Fallback logo mark (geometric) ───────────────────────────────────────────
 function drawLogoMark(doc: jsPDF, x: number, y: number) {
   doc.setFillColor(220, 90, 30);
   doc.rect(x, y, 8, 10, 'F');
@@ -50,14 +50,14 @@ function drawLogoMark(doc: jsPDF, x: number, y: number) {
   doc.rect(x + 4, y + 5, 2, 2, 'F');
 }
 
-// â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Header ────────────────────────────────────────────────────────────────────
 // Returns the y position of the separator line (dynamic based on address length).
 function drawHeader(doc: jsPDF, settings: CompanySettings): number {
   // Gold top accent bar
   doc.setFillColor(...GOLD);
   doc.rect(0, 0, PAGE_W, 1.5, 'F');
 
-  // â”€â”€ Left: Logo + Company Info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Left: Logo + Company Info ──────────────────────────────────────────────
   const logoX = MARGIN;
   const logoY = 5;
   const logoW = 16;
@@ -100,7 +100,7 @@ function drawHeader(doc: jsPDF, settings: CompanySettings): number {
     doc.text(`GSTIN: ${settings.gstin}`, textStartX, leftY);
   }
 
-  // â”€â”€ Right: Contact block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Right: Contact block ───────────────────────────────────────────────────
   // Limit right column width so it doesn't overflow
   const rightColX = PAGE_W / 2 + 8;
   const rightColW = PAGE_W - MARGIN - rightColX;
@@ -144,7 +144,7 @@ function drawHeader(doc: jsPDF, settings: CompanySettings): number {
     });
   }
 
-  // Dynamic separator â€” leave at least 2mm gap below the tallest column
+  // Dynamic separator — leave at least 2mm gap below the tallest column
   const separatorY = Math.max(leftY + 7, ry + 2, 27);
   doc.setDrawColor(...BORDER);
   doc.setLineWidth(0.3);
@@ -166,7 +166,7 @@ function ensurePageSpace(doc: jsPDF, y: number, minHeight: number, settings: Com
   return y;
 }
 
-// â”€â”€ Title banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Title banner ──────────────────────────────────────────────────────────────
 function drawTitleBanner(doc: jsPDF, y: number): number {
   doc.setFillColor(...NAVY);
   doc.rect(MARGIN, y, CONTENT_W, 12, 'F');
@@ -177,7 +177,7 @@ function drawTitleBanner(doc: jsPDF, y: number): number {
   return y + 12;
 }
 
-// â”€â”€ Meta block: Receipt No / Booking ID / Date / Flat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Meta block: Receipt No / Booking ID / Date / Flat ─────────────────────────
 // Fixed: right column now shows Date + Flat No instead of duplicating Booking ID.
 function drawMetaBlock(doc: jsPDF, billing: FlatBilling, y: number): number {
   y += 5;
@@ -229,7 +229,7 @@ function drawMetaBlock(doc: jsPDF, billing: FlatBilling, y: number): number {
   return y + Math.max(leftItems.length, rightItems.length) * 7 + 4;
 }
 
-// â”€â”€ Buyer details â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Buyer details ─────────────────────────────────────────────────────────────
 function drawBuyerDetails(doc: jsPDF, billing: FlatBilling, y: number, settings: CompanySettings): number {
   y = ensurePageSpace(doc, y, 30, settings);
 
@@ -278,7 +278,7 @@ function drawBuyerDetails(doc: jsPDF, billing: FlatBilling, y: number, settings:
   return y + 2;
 }
 
-// â”€â”€ Flat details table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Flat details table ────────────────────────────────────────────────────────
 function drawFlatDetails(doc: jsPDF, billing: FlatBilling, y: number, settings: CompanySettings): number {
   y = ensurePageSpace(doc, y, 34, settings);
 
@@ -324,7 +324,7 @@ function drawFlatDetails(doc: jsPDF, billing: FlatBilling, y: number, settings: 
   return ensurePageSpace(doc, nextY, 0, settings);
 }
 
-// â”€â”€ Payment schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Payment schedule ──────────────────────────────────────────────────────────
 function drawPaymentSchedule(doc: jsPDF, billing: FlatBilling, y: number, settings: CompanySettings): number {
   y = ensurePageSpace(doc, y, 40, settings);
 
@@ -381,7 +381,7 @@ function drawPaymentSchedule(doc: jsPDF, billing: FlatBilling, y: number, settin
   return (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5;
 }
 
-// â”€â”€ Amount summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Amount summary ────────────────────────────────────────────────────────────
 function drawAmountSummary(doc: jsPDF, billing: FlatBilling, y: number): number {
   const total = calcFlatTotal(billing);
   if (!total) return y;
@@ -437,7 +437,7 @@ function drawAmountSummary(doc: jsPDF, billing: FlatBilling, y: number): number 
   return y;
 }
 
-// â”€â”€ Terms & conditions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Terms & conditions ────────────────────────────────────────────────────────
 function drawTerms(doc: jsPDF, billing: FlatBilling, y: number, settings: CompanySettings): number {
   if (!billing.terms.some((t) => t.trim())) return y;
 
@@ -468,7 +468,7 @@ function drawTerms(doc: jsPDF, billing: FlatBilling, y: number, settings: Compan
   return y + 4;
 }
 
-// â”€â”€ Signature block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Signature block ───────────────────────────────────────────────────────────
 // Now supports signature image on the company side.
 function drawSignatureBlock(doc: jsPDF, billing: FlatBilling, settings: CompanySettings, y: number) {
   doc.setDrawColor(...BORDER);
@@ -479,24 +479,24 @@ function drawSignatureBlock(doc: jsPDF, billing: FlatBilling, settings: CompanyS
   const colW = (CONTENT_W / 2) - 8;
   const rx = MARGIN + colW + 16;
 
-  // â”€â”€ Left: Company side â”€â”€
+  // ── Left: Company side ──
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   doc.text(`For ${settings.companyName || 'Construction Documents'}`, MARGIN, y);
 
-  // Signature image (if provided) â€” shown above the signature line
+  // Signature image (if provided) — shown above the signature line
   if (settings.signatureImage) {
     try {
       const fmt = settings.signatureImage.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
-      // Draw image above the line: 35mm wide Ã— 18mm tall, positioned so bottom aligns with line
+      // Draw image above the line: 35mm wide × 18mm tall, positioned so bottom aligns with line
       doc.addImage(settings.signatureImage, fmt, MARGIN, y + 2, 35, 18);
     } catch {
       // silently fall back to blank space
     }
   }
 
-  // â”€â”€ Right: Buyer side â”€â”€
+  // ── Right: Buyer side ──
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...MUTED);
@@ -535,7 +535,7 @@ function drawSignatureBlock(doc: jsPDF, billing: FlatBilling, settings: CompanyS
   }
 }
 
-// â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Footer ────────────────────────────────────────────────────────────────────
 function drawFooter(doc: jsPDF, settings: CompanySettings) {
   doc.setFillColor(...NAVY);
   doc.rect(0, PAGE_H - 9, PAGE_W, 9, 'F');
@@ -547,12 +547,12 @@ function drawFooter(doc: jsPDF, settings: CompanySettings) {
   doc.text(txt, PAGE_W / 2, PAGE_H - 3.5, { align: 'center' });
 }
 
-// â”€â”€ Image loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Image loader ──────────────────────────────────────────────────────────────
 // Fetches a remote URL and returns a base64 data URL for jsPDF.
 // Returns null on any failure so callers can gracefully fall back.
 async function loadImageAsDataUrl(url: string): Promise<string | null> {
   if (!url) return null;
-  // Already a data URL â€” use directly
+  // Already a data URL — use directly
   if (url.startsWith('data:')) return url;
   try {
     const res = await fetch(url);
@@ -569,7 +569,7 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
   }
 }
 
-// â”€â”€ Public entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Public entry point ────────────────────────────────────────────────────────
 export async function generateFlatBillingPDFImpl(billing: FlatBilling, settings: CompanySettings): Promise<void> {
   // Pre-load images concurrently before building the PDF
   const [logoData, signatureData] = await Promise.all([
@@ -597,7 +597,7 @@ export async function generateFlatBillingPDFImpl(billing: FlatBilling, settings:
   y = drawAmountSummary(doc, billing, y);
   y = drawTerms(doc, billing, y, resolvedSettings);
 
-  // Ensure enough room for signature block (â‰ˆ 42mm)
+  // Ensure enough room for signature block (≈ 42mm)
   if (y > PAGE_H - 52) {
     y = newPage(doc, resolvedSettings);
   }

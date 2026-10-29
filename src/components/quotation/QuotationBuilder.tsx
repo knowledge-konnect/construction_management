@@ -93,7 +93,7 @@ function BuilderInner() {
               {quotation.status === 'DRAFT' ? 'Draft' : 'In progress'}
             </span>
             <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-              {saveStatus === 'saving' ? 'Savingâ€¦' : saveStatus === 'saved' ? 'Saved' : saveStatus === 'error' ? 'Needs attention' : 'Ready to save'}
+              {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved' : saveStatus === 'error' ? 'Needs attention' : 'Ready to save'}
             </span>
           </div>
         </div>
@@ -106,7 +106,7 @@ function BuilderInner() {
             {quotation.quotationNumber}
             {lastSaved && (
               <span className="ml-3">
-                {saveStatus === 'saving' ? <span className="text-amber-600">Savingâ€¦</span>
+                {saveStatus === 'saving' ? <span className="text-amber-600">Saving…</span>
                   : saveStatus === 'saved' ? <span className="text-emerald-600">Saved</span>
                     : saveStatus === 'error' ? <span className="text-red-600">Save error</span>
                       : <span>Saved at {formatTime(lastSaved)}</span>}

@@ -127,7 +127,7 @@ const faqs = [
   },
   {
     question: 'Can I upgrade to annual billing?',
-    answer: 'Yes. The current billing implementation supports both monthly and yearly subscriptions, and the yearly Pro option is shown as â‚¹4,999 / year.',
+    answer: 'Yes. The current billing implementation supports both monthly and yearly subscriptions, and the yearly Pro option is shown as ₹4,999 / year.',
   },
 ];
 
@@ -151,8 +151,8 @@ const previewNav = [
 const previewMetrics = [
   { label: 'Projects', value: '24', icon: FolderKanban, tone: 'bg-[#EAF1FF] text-[#1D4ED8]' },
   { label: 'Active', value: '18', icon: CalendarClock, tone: 'bg-[#EAF1FF] text-[#1D4ED8]' },
-  { label: 'Contract value', value: 'â‚¹48.2L', icon: IndianRupee, tone: 'bg-[#ECFDF5] text-[#0F766E]' },
-  { label: 'Supplier cost', value: 'â‚¹21.6L', icon: WalletCards, tone: 'bg-[#ECFDF5] text-[#0F766E]' },
+  { label: 'Contract value', value: '₹48.2L', icon: IndianRupee, tone: 'bg-[#ECFDF5] text-[#0F766E]' },
+  { label: 'Supplier cost', value: '₹21.6L', icon: WalletCards, tone: 'bg-[#ECFDF5] text-[#0F766E]' },
 ];
 
 const previewProjects = [
@@ -245,7 +245,7 @@ function DashboardPreviewCard() {
             <ReceiptText className="h-3.5 w-3.5 shrink-0 text-[#0F766E]" />
             <span className="truncate">Payments received</span>
           </div>
-          <p className="mt-1.5 text-lg font-semibold text-[#17243A]">â‚¹26.4L</p>
+          <p className="mt-1.5 text-lg font-semibold text-[#17243A]">₹26.4L</p>
           <p className="truncate text-[11px] text-[#667085]">Receipts received</p>
         </div>
         <div className="min-w-0 rounded-xl border border-[#E6E8EC] bg-white p-3 shadow-[0_12px_28px_rgba(23,36,58,0.10)]">
@@ -253,7 +253,7 @@ function DashboardPreviewCard() {
             <WalletCards className="h-3.5 w-3.5 shrink-0 text-[#1D4ED8]" />
             <span className="truncate">Supplier outstanding</span>
           </div>
-          <p className="mt-1.5 text-lg font-semibold text-[#17243A]">â‚¹4.8L</p>
+          <p className="mt-1.5 text-lg font-semibold text-[#17243A]">₹4.8L</p>
           <p className="truncate text-[11px] text-[#667085]">Unpaid supplier balance</p>
         </div>
       </div>
@@ -368,7 +368,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="mt-5 max-w-xl text-base leading-7 text-[#475467] sm:text-lg">
-                Manage construction quotations, projects, expenses, supplier payments and customer receipts â€” all from one workspace.
+                Manage construction quotations, projects, expenses, supplier payments and customer receipts — all from one workspace.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -503,7 +503,7 @@ export default function LandingPage() {
               <div className="rounded-3xl border border-[#E6E8EC] bg-white p-8 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#667085]">Free</p>
                 <div className="mt-5 flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-[#17243A]">â‚¹0</span>
+                  <span className="text-4xl font-bold text-[#17243A]">₹0</span>
                   <span className="text-sm text-[#667085]">/ month</span>
                 </div>
 
@@ -530,13 +530,13 @@ export default function LandingPage() {
                 </div>
 
                 <div className="mt-5 flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-[#17243A]">â‚¹499</span>
+                  <span className="text-4xl font-bold text-[#17243A]">₹499</span>
                   <span className="text-sm text-[#667085]">/ month</span>
                 </div>
 
                 <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#F5F7FA] px-3 py-1.5 text-xs text-[#475467]">
                   <IndianRupee className="h-3.5 w-3.5 text-[#1D4ED8]" />
-                  Annual Pro: â‚¹4,999 / year
+                  Annual Pro: ₹4,999 / year
                 </div>
 
                 <ul className="mt-7 space-y-3">
