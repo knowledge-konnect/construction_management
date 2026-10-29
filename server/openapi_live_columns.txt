@@ -1,0 +1,114 @@
+### booking_receipt_details
+block_tower, booking_id, buyer_pan_aadhar, document_id, flat_no, floor, rate_per_sqft
+
+### companies
+address, created_at, email, gst_number, id, is_active, logo_url, name, owner_id, pan_number, phone, primary_color, secondary_color, updated_at, website
+
+### company_quotation_usage
+company_id, created_at, id, quotation_count, updated_at, usage_month, usage_year
+
+### company_settings
+account_name, account_number, authorized_person, bank_name, booking_prefix, branch, company_id, created_at, default_tax_name, default_tax_rate, default_terms, default_validity_days, designation, ifsc, quotation_prefix, signature_url, updated_at, upi_id
+
+### company_subscriptions
+billing_cycle, company_id, created_at, current_period_end, plan, status, updated_at
+
+### company_users
+company_id, created_at, id, is_active, role, updated_at, user_id
+
+### customers
+address, city, company_id, created_at, deleted_at, deleted_by, email, id, is_deleted, mobile, name, pincode, state, updated_at
+
+### document_exclusions
+description, document_id, id
+
+### document_inclusions
+description, document_id, id
+
+### document_items
+amount, description, display_order, id, quantity, rate, section_id, unit, unit_id
+
+### document_sections
+display_order, document_id, id, section_name
+
+### document_sequences
+company_id, created_at, document_type, financial_year, id, next_number, prefix, updated_at
+
+### document_specifications
+description, display_order, document_id, id, specification_type
+
+### document_terms
+description, display_order, document_id, id
+
+### documents
+additional_charges, area_unit, area_unit_id, builtup_area, cgst_amount, cgst_percentage, company_id, created_at, customer_id, deleted_at, deleted_by, discount, document_number, document_type, floors, grand_total, id, igst_amount, igst_percentage, is_deleted, notes, project_location, project_name, project_type, project_type_id, quotation_date, sgst_amount, sgst_percentage, status, subtotal, tax_amount, tax_breakup, tax_name, tax_percentage, tax_rate_id, updated_at, valid_until
+
+### expense_categories
+code, company_id, created_at, description, id, is_active, name, sort_order, updated_at
+
+### password_resets
+created_at, expires_at, id, token_hash, used_at, user_id
+
+### payment_methods
+code, company_id, created_at, id, is_active, name, sort_order, updated_at
+
+### payment_schedules
+amount, display_order, document_id, due_date, id, percentage, stage_name, status
+
+### profiles
+created_at, full_name, id, phone, updated_at
+
+### project_attachments
+created_at, deleted_at, expense_id, file_size_bytes, id, mime_type, original_filename, progress_update_id, project_id, storage_path, uploaded_by, visibility_status
+
+### project_client_access
+accepted_at, created_at, email, id, invitation_expires_at, invitation_status, invitation_token_hash, invited_at, invited_by, project_id, revoked_at, updated_at, user_id
+
+### project_expense_payments
+amount, created_at, created_by, id, notes, payment_date, payment_method, payment_method_id, project_expense_id, reference_number, voided_at
+
+### project_expenses
+bill_amount, bill_date, category, category_id, created_at, created_by, description, due_date, id, project_id, status, supplier_bill_number, supplier_name, updated_at, visibility_status, voided_at
+
+### project_investor_contributions
+amount, company_id, contribution_date, created_at, created_by, id, notes, project_id, project_investor_id, reference_number
+
+### project_investors
+can_approve_payments, can_view_client_receipts, can_view_financials, company_id, created_at, created_by, email, id, investment_percentage, is_active, name, phone, project_id, updated_at, user_id
+
+### project_progress_updates
+created_at, created_by, description, id, progress_percentage, project_id, published_at, published_by, stage_id, title, update_date, updated_at, visibility_status
+
+### project_receipts
+amount, created_at, created_by, id, notes, payment_method, payment_method_id, project_id, receipt_number, received_date, reference_number, updated_at, visibility_status, voided_at
+
+### project_stage_templates
+company_id, created_at, default_completion_percentage, id, is_active, name, project_type_id, sequence_number, template_code, updated_at
+
+### project_stages
+actual_end_date, actual_start_date, completion_percentage, created_at, created_by, id, name, planned_end_date, planned_start_date, project_id, sequence_number, status, updated_at
+
+### project_types
+code, company_id, created_at, description, id, is_active, name, sort_order, updated_at
+
+### projects
+actual_end_date, company_id, contract_amount, created_at, created_by, customer_id, deleted_at, description, expected_end_date, id, name, project_number, project_type_id, project_type_snapshot, site_address, source_document_id, start_date, status, updated_at
+
+### refresh_tokens
+created_at, expires_at, id, ip_address, revoked_at, token_hash, user_agent, user_id
+
+### subscription_payments
+amount_paise, billing_cycle, company_id, created_at, id, razorpay_order_id, razorpay_payment_id, status, updated_at
+
+### tax_rates
+code, company_id, created_at, effective_from, effective_to, id, is_active, name, rate_percentage, updated_at
+
+### units_of_measure
+code, company_id, created_at, id, is_active, name, sort_order, symbol, updated_at
+
+### user_profiles
+avatar_url, company_name, created_at, full_name, id, metadata, phone, updated_at, user_id
+
+### users
+created_at, email, email_verified, id, is_active, last_login_at, must_change_password, password_hash, role, updated_at
+

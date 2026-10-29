@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" role="img" aria-label="BuilderDocs logo" fill="none">
+  <rect width="64" height="64" rx="18" fill="#F5F7FA"/>
+  <path d="M5 25L17 18V52H5V25Z" fill="#1D4ED8"/>
+  <path d="M19 17L31 10V52H19V17Z" fill="#17243A"/>
+  <path d="M33 22L42 17V29H33V22Z" fill="#17243A"/>
+  <path d="M28 25H45L57 37V54C57 56.2 55.2 58 53 58H28C25.8 58 24 56.2 24 54V29C24 26.8 25.8 25 28 25Z" fill="#FFFFFF" stroke="#1D4ED8" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M45 25V34C45 35.7 46.3 37 48 37H57" fill="#0F766E" stroke="#0F766E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M32 40H43M32 46H47M32 52H41" stroke="#1D4ED8" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

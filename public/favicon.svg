@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="BuilderDocs favicon" fill="none">
+  <rect width="64" height="64" rx="18" fill="#F5F7FA"/>
+
+  <path d="M6 24V52H17V24H6Z" fill="#17243A"/>
+  <path d="M18 14V52H30V14H18Z" fill="#1D4ED8"/>
+  <path d="M33 20V52H45V20H33Z" fill="#17243A"/>
+  <path d="M38 23V29H41V23H38Z" fill="#0F766E"/>
+
+  <path d="M10 32H14V37H10V32Z" fill="#EAF3FF"/>
+  <path d="M22 23H26V28H22V23Z" fill="#DCEBFF"/>
+  <path d="M22 31H26V36H22V31Z" fill="#DCEBFF"/>
+  <path d="M22 39H26V44H22V39Z" fill="#DCEBFF"/>
+  <path d="M36 31H40V36H36V31Z" fill="#EAF3FF"/>
+  <path d="M36 39H40V44H36V39Z" fill="#EAF3FF"/>
+
+  <path d="M28 25H45L57 37V54C57 56.2 55.2 58 53 58H28C25.8 58 24 56.2 24 54V29C24 26.8 25.8 25 28 25Z" fill="#FFFFFF" stroke="#1D4ED8" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M45 25V34C45 35.7 46.3 37 48 37H57" fill="#0F766E" stroke="#0F766E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M32 40H43M32 46H47M32 52H41" stroke="#1D4ED8" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
