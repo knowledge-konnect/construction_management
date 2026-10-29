@@ -13,11 +13,18 @@
  * person's cached drafts never leak into another person's session on a
  * shared browser.
  */
+<<<<<<< HEAD
+=======
+import { getCurrentUserIdFromToken } from '@/services/auth.service';
+>>>>>>> origin/main
 import { defaultQuestionnaire } from '@/lib/defaults';
 import type { Quotation, Term } from '@/lib/models';
 import { quotationRepo } from '@/lib/storage';
 import { apiDelete, apiGet, apiPost } from '@/services/apiClient';
+<<<<<<< HEAD
 import { getCurrentUserIdFromToken } from '@/services/auth.service';
+=======
+>>>>>>> origin/main
 
 function currentStorageScope(companyId: string) {
     return { userId: getCurrentUserIdFromToken() ?? 'anonymous', companyId };
@@ -56,6 +63,7 @@ function parseTerms(value: unknown): Term[] {
 }
 
 function mapStatusToDb(status: Quotation['status']): string {
+<<<<<<< HEAD
     switch (status) {
         case 'DRAFT':
             return 'Draft';
@@ -91,6 +99,13 @@ function mapStatusFromDb(status: string): Quotation['status'] {
         default:
             return 'DRAFT';
     }
+=======
+    return status === 'DRAFT' ? 'Draft' : 'Completed';
+}
+
+function mapStatusFromDb(status: string): Quotation['status'] {
+    return status === 'Draft' ? 'DRAFT' : 'GENERATED';
+>>>>>>> origin/main
 }
 
 function parseDocumentRow(row: any): Quotation | null {
@@ -130,9 +145,12 @@ function parseDocumentRow(row: any): Quotation | null {
         id: row.id,
         quotationNumber: row.document_number ?? '',
         status: mapStatusFromDb(row.status ?? ''),
+<<<<<<< HEAD
         projectTypeId: row.project_type_id ?? null,
         areaUnitId: row.area_unit_id ?? null,
         taxRateId: row.tax_rate_id ?? null,
+=======
+>>>>>>> origin/main
         quotationDate: row.quotation_date ? String(row.quotation_date) : '',
         validUntil: row.valid_until ? String(row.valid_until) : '',
         validity: '30 Days',
@@ -175,7 +193,11 @@ function parseDocumentRow(row: any): Quotation | null {
         },
         tax: {
             applicable: parseNumber(row.tax_percentage) > 0,
+<<<<<<< HEAD
             name: row.tax_name ?? 'GST',
+=======
+            name: 'GST',
+>>>>>>> origin/main
             rate: parseNumber(row.tax_percentage),
         },
         paymentSchedule: Array.isArray(row.payment_schedules)

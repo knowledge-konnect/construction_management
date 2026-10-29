@@ -11,7 +11,11 @@ interface FieldProps {
 export function Field({ label, required, error, children, className = '' }: FieldProps) {
   return (
     <div className={className}>
+<<<<<<< HEAD
       <label className="block text-sm font-medium text-[#344054] mb-1">
+=======
+      <label className="block text-sm font-medium text-slate-700 mb-1">
+>>>>>>> origin/main
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
@@ -22,11 +26,16 @@ export function Field({ label, required, error, children, className = '' }: Fiel
 }
 
 const inputBase =
+<<<<<<< HEAD
   'w-full px-3 py-2 text-sm border border-[#D0D5DD] rounded-lg bg-white text-[#17243A] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/25 focus:border-[#1D4ED8] disabled:bg-slate-50';
+=======
+  'w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857] disabled:bg-slate-50';
+>>>>>>> origin/main
 
 const composeInputClassName = (className?: string) => `${inputBase} ${className || ''}`.trim();
 
 export const TextInput = memo(function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+<<<<<<< HEAD
   const { className, onChange, type, maxLength, inputMode, ...rest } = props;
   const restrictToDigits = type === 'tel' || inputMode === 'numeric';
 
@@ -54,6 +63,10 @@ export const TextInput = memo(function TextInput(props: React.InputHTMLAttribute
       className={composeInputClassName(className)}
     />
   );
+=======
+  const { className, ...rest } = props;
+  return <input {...rest} className={composeInputClassName(className)} />;
+>>>>>>> origin/main
 });
 
 export const Select = memo(function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
@@ -82,12 +95,21 @@ export function SectionCard({
   actions?: ReactNode;
 }) {
   return (
+<<<<<<< HEAD
     <div className="bg-white border border-[#E6E8EC] rounded-2xl shadow-[0_6px_18px_rgba(15,23,42,0.03)]">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 px-5 py-4 border-b border-[#E6E8EC]">
         <div>
           <h3 className="text-base font-semibold text-[#17243A]">{title}</h3>
           {description && (
             <p className="text-sm text-[#667085] mt-0.5">{description}</p>
+=======
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 px-5 py-4 border-b border-slate-100">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+          {description && (
+            <p className="text-sm text-slate-500 mt-0.5">{description}</p>
+>>>>>>> origin/main
           )}
         </div>
         {actions && <div className="flex-shrink-0">{actions}</div>}

@@ -76,6 +76,7 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
   }, [quotation, settings]);
 
   return (
+<<<<<<< HEAD
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-[#17243A]/50" onClick={onClose} />
       <div role="dialog" aria-modal="true" aria-label="PDF preview" className="relative flex max-h-[100dvh] w-full max-w-3xl flex-col rounded-t-2xl border border-[#E6E8EC] bg-white shadow-xl sm:max-h-[90vh] sm:rounded-2xl">
@@ -85,6 +86,17 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
             <p className="truncate text-xs text-[#667085]">{filename}</p>
           </div>
           <button onClick={onClose} className="flex-shrink-0 rounded-lg p-2 text-[#667085] hover:bg-slate-100 hover:text-[#17243A]" aria-label="Close preview">
+=======
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-3xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200">
+          <div className="min-w-0">
+            <h3 className="text-base font-semibold text-slate-900 truncate">PDF Preview — {quotation.quotationNumber}</h3>
+            <p className="text-xs text-slate-500 truncate">{filename}</p>
+          </div>
+          <button onClick={onClose} className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg flex-shrink-0" aria-label="Close preview">
+>>>>>>> origin/main
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -103,16 +115,28 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
             </div>
           )}
           {!error && blobUrl && (
+<<<<<<< HEAD
             <iframe title="Quotation PDF preview" src={blobUrl} className="w-full h-full min-h-[40vh] border-0" />
           )}
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[#E6E8EC] px-5 py-4">
+=======
+            <iframe title="Quotation PDF preview" src={blobUrl} className="w-full h-full min-h-[60vh] border-0" />
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-2 px-5 py-4 border-t border-slate-200">
+>>>>>>> origin/main
           <a
             href={blobUrl ? whatsappHref : undefined}
             target="_blank"
             rel="noopener noreferrer"
+<<<<<<< HEAD
             className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border ${blobUrl ? 'text-[#0F766E] border-[#0F766E]/30 hover:bg-[#ECFDF5]' : 'text-slate-400 border-slate-200 cursor-not-allowed'}`}
+=======
+            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border ${blobUrl ? 'text-emerald-700 border-emerald-300 hover:bg-emerald-50' : 'text-slate-400 border-slate-200 cursor-not-allowed'}`}
+>>>>>>> origin/main
             onClick={(e) => {
               if (!blobUrl) e.preventDefault();
             }}
@@ -122,7 +146,11 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
           </a>
           <a
             href={blobUrl ? mailtoHref : undefined}
+<<<<<<< HEAD
             className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border ${blobUrl ? 'text-[#1D4ED8] border-[#1D4ED8]/30 hover:bg-[#EAF1FF]' : 'text-slate-400 border-slate-200 cursor-not-allowed'}`}
+=======
+            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border ${blobUrl ? 'text-blue-700 border-blue-300 hover:bg-blue-50' : 'text-slate-400 border-slate-200 cursor-not-allowed'}`}
+>>>>>>> origin/main
             onClick={(e) => {
               if (!blobUrl) e.preventDefault();
             }}
@@ -133,7 +161,11 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
           <button
             onClick={handleDownload}
             disabled={!blobUrl}
+<<<<<<< HEAD
             className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] disabled:opacity-50 rounded-lg"
+=======
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] disabled:opacity-50 rounded-lg"
+>>>>>>> origin/main
           >
             <Download className="w-4 h-4" /> Download PDF
           </button>

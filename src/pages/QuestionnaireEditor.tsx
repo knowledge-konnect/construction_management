@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { AppButton } from '@/components/ui/DesignSystem';
 import { Field, SectionCard, Select, TextArea } from '@/components/ui/Form';
 import { useAuth } from '@/context/AuthContext';
@@ -26,6 +27,29 @@ import { ArrowLeft, ChevronDown, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
+=======
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { questionnaireRepo } from '@/lib/storage';
+import { defaultQuestionnaire } from '@/lib/defaults';
+import { useToast } from '@/context/ToastContext';
+import { useAuth } from '@/context/AuthContext';
+import { useCompany } from '@/context/CompanyContext';
+import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { v4 as uuid } from 'uuid';
+import { Field, Select, TextArea, SectionCard } from '@/components/ui/Form';
+import { ChevronDown } from 'lucide-react';
+import type { Questionnaire, QuestionnaireRecord } from '@/lib/models';
+import {
+  Q_STRUCTURE_TYPES, Q_FOUNDATION_TYPES,
+  Q_CEMENT_BRANDS, Q_STEEL_BRANDS, Q_STEEL_GRADES, Q_CONCRETE_MIXES,
+  Q_FLOORING_TYPES, Q_FLOORING_BRANDS, Q_WALL_FINISHES,
+  Q_PAINT_BRANDS, Q_PAINT_TYPES,
+  Q_DOORS_TYPES, Q_WINDOWS_TYPES,
+  Q_WIRING_BRANDS, Q_SWITCHES_BRANDS,
+  Q_PLUMBING_PIPES, Q_SANITARY_BRANDS,
+} from '@/lib/constants';
+>>>>>>> origin/main
 
 function Collapsible({
   title, description, children, defaultOpen = false,
@@ -104,20 +128,38 @@ export default function QuestionnaireEditor() {
           <p className="text-sm text-slate-500">Capture client material and finish preferences.</p>
         </div>
         <div className="flex items-center gap-2">
+<<<<<<< HEAD
           <AppButton variant="secondary" onClick={() => navigate(-1)} className="!px-3 !py-2">
             <ArrowLeft className="w-4 h-4" /> Back
           </AppButton>
           <AppButton onClick={handleSave}>
             <Save className="w-4 h-4" /> Save
           </AppButton>
+=======
+          <button onClick={() => navigate(-1)} className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">
+            <ArrowLeft className="w-4 h-4 inline mr-1" /> Back
+          </button>
+          <button
+            onClick={handleSave}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg"
+          >
+            <Save className="w-4 h-4" /> Save
+          </button>
+>>>>>>> origin/main
         </div>
       </div>
 
       <SectionCard title="Requirements Details" description="Identify this requirements sheet for future reference.">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+<<<<<<< HEAD
           <Field label="Title"><input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Sharma House Preferences" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]" /></Field>
           <Field label="Customer Name"><input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="e.g. Mr. Sharma" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]" /></Field>
           <Field label="Project Name"><input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Sharma Residence" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]" /></Field>
+=======
+          <Field label="Title"><input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Sharma House Preferences" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]" /></Field>
+          <Field label="Customer Name"><input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="e.g. Mr. Sharma" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]" /></Field>
+          <Field label="Project Name"><input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="e.g. Sharma Residence" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]" /></Field>
+>>>>>>> origin/main
         </div>
       </SectionCard>
 
@@ -126,8 +168,13 @@ export default function QuestionnaireEditor() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <Field label="Structure Type"><Select value={q.structureType} onChange={(e) => update({ structureType: e.target.value })}><option value="">— Select —</option>{Q_STRUCTURE_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}</Select></Field>
             <Field label="Foundation Type"><Select value={q.foundationType} onChange={(e) => update({ foundationType: e.target.value })}><option value="">— Select —</option>{Q_FOUNDATION_TYPES.map((v) => <option key={v} value={v}>{v}</option>)}</Select></Field>
+<<<<<<< HEAD
             <Field label="Floors Planned"><input type="text" value={q.floorsPlanned} onChange={(e) => update({ floorsPlanned: e.target.value })} placeholder="e.g. G+1" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]" /></Field>
             <Field label="Plot Size"><input type="text" value={q.plotSize} onChange={(e) => update({ plotSize: e.target.value })} placeholder="e.g. 30x40 ft" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]" /></Field>
+=======
+            <Field label="Floors Planned"><input type="text" value={q.floorsPlanned} onChange={(e) => update({ floorsPlanned: e.target.value })} placeholder="e.g. G+1" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]" /></Field>
+            <Field label="Plot Size"><input type="text" value={q.plotSize} onChange={(e) => update({ plotSize: e.target.value })} placeholder="e.g. 30x40 ft" className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]" /></Field>
+>>>>>>> origin/main
           </div>
         </Collapsible>
 

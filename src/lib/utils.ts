@@ -158,6 +158,7 @@ export function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9-_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
+<<<<<<< HEAD
 export function getSafeRedirectPath(
   location: {
     pathname?: string;
@@ -178,6 +179,8 @@ export function getSafeRedirectPath(
   return fallback;
 }
 
+=======
+>>>>>>> origin/main
 // Convert questionnaire answers into Specification entries for the PDF.
 export function questionnaireToSpecs(q: Questionnaire): Specification[] {
   const specs: Specification[] = [];

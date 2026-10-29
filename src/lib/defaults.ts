@@ -155,9 +155,12 @@ export function createEmptyQuotation(): Quotation {
     id: uuid(),
     quotationNumber: '',
     status: 'DRAFT',
+<<<<<<< HEAD
     projectTypeId: null,
     areaUnitId: null,
     taxRateId: null,
+=======
+>>>>>>> origin/main
     quotationDate: todayISODate(),
     validUntil: '',
     validity: '30 Days',

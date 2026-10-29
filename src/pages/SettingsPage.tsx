@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { AppButton, PageHeader } from '@/components/ui/DesignSystem';
+=======
+>>>>>>> origin/main
 import { Field, SectionCard, Select, TextArea, TextInput } from '@/components/ui/Form';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
@@ -14,6 +17,7 @@ type Tab = 'company' | 'defaults';
 // ── Image compression helper ──────────────────────────────────────────────────
 // Draws the image onto a canvas, resizes it to maxDim, and returns a base64
 // data URL. Logo uses JPEG (smaller), signature uses PNG (preserves transparency).
+<<<<<<< HEAD
 function compressImage(file: File, maxDim: number, quality: number, outputMime: 'image/jpeg' | 'image/png'): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -21,6 +25,15 @@ function compressImage(file: File, maxDim: number, quality: number, outputMime: 
     reader.onload = (ev) => {
       const img = new Image();
       img.onerror = () => reject(new Error('Unable to process the selected image.'));
+=======
+function compressImage(file: File, maxDim: number, quality: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read file.'));
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Could not decode image.'));
+>>>>>>> origin/main
       img.onload = () => {
         let { width, height } = img;
 
@@ -40,6 +53,7 @@ function compressImage(file: File, maxDim: number, quality: number, outputMime: 
         canvas.height = height;
         const ctx = canvas.getContext('2d')!;
 
+<<<<<<< HEAD
         // Fill a white canvas only for JPEG outputs.
         if (outputMime === 'image/jpeg') {
           ctx.fillStyle = '#ffffff';
@@ -48,6 +62,16 @@ function compressImage(file: File, maxDim: number, quality: number, outputMime: 
         ctx.drawImage(img, 0, 0, width, height);
 
         resolve(canvas.toDataURL(outputMime, quality));
+=======
+        // Fill white background so transparent PNGs become white in JPEG mode
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Signatures stay PNG to keep transparency; logos become JPEG
+        const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        resolve(canvas.toDataURL(mime, quality));
+>>>>>>> origin/main
       };
       img.src = ev.target?.result as string;
     };
@@ -88,7 +112,11 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
+<<<<<<< HEAD
       push('error', 'Please upload a valid image file (PNG, JPEG, or WebP).');
+=======
+      push('error', 'Please select a PNG, JPEG, or WebP image.');
+>>>>>>> origin/main
       return;
     }
 
@@ -96,6 +124,7 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
     try {
       const maxDim = type === 'logo' ? 400 : 600;
       const quality = type === 'logo' ? 0.82 : 0.92;
+<<<<<<< HEAD
       const outputMime = type === 'logo' ? 'image/jpeg' : 'image/png';
       const dataUrl = await compressImage(file, maxDim, quality, outputMime);
       const kb = Math.round(dataUrlBytes(dataUrl) / 1024);
@@ -103,6 +132,14 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
       push('success', `${label} is ready (${kb} KB). Please click "Save Settings" to apply it.`);
     } catch (err) {
       push('error', err instanceof Error ? err.message : 'Unable to process image right now. Please try again.');
+=======
+      const dataUrl = await compressImage(file, maxDim, quality);
+      const kb = Math.round(dataUrlBytes(dataUrl) / 1024);
+      onProcessed(dataUrl);
+      push('success', `${label} compressed to ${kb} KB. Click "Save Settings" to store it.`);
+    } catch (err) {
+      push('error', err instanceof Error ? err.message : 'Could not process image.');
+>>>>>>> origin/main
     } finally {
       setProcessing(false);
       // Reset input so the same file can be picked again
@@ -117,6 +154,7 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
       {/* Preview thumbnail */}
       {hasImage && (
         <div className="mb-3 relative inline-block">
+<<<<<<< HEAD
           {type === 'logo' ? (
             <div className="flex h-20 w-20 items-center justify-center rounded-full border border-slate-200 bg-white p-2 shadow-sm">
               <img
@@ -132,6 +170,13 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
               className="h-16 max-w-[200px] object-contain rounded border border-slate-200 bg-slate-50 p-1.5"
             />
           )}
+=======
+          <img
+            src={currentUrl}
+            alt={label}
+            className="h-16 max-w-[200px] object-contain rounded border border-slate-200 bg-slate-50 p-1.5"
+          />
+>>>>>>> origin/main
           {sizeLabel && (
             <span className="absolute bottom-1 right-1 bg-black/50 text-white text-[9px] px-1 rounded leading-4">
               {sizeLabel}
@@ -154,7 +199,11 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={processing}
+<<<<<<< HEAD
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#1D4ED8] border border-[#1D4ED8]/30 hover:bg-[#1D4ED8]/5 rounded-lg disabled:opacity-60"
+=======
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#0B2857] border border-[#0B2857]/30 hover:bg-[#0B2857]/5 rounded-lg disabled:opacity-60"
+>>>>>>> origin/main
         >
           {processing
             ? <><Loader2 className="w-4 h-4 animate-spin" /> Compressing…</>
@@ -196,6 +245,7 @@ export default function SettingsPage() {
   const validateSettings = validateCompanySettings;
 
   if (loading || !settings) {
+<<<<<<< HEAD
     return (
       <div className="py-20 text-center text-slate-500">
         <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
@@ -204,6 +254,9 @@ export default function SettingsPage() {
         </div>
       </div>
     );
+=======
+    return <div className="py-20 text-center text-slate-500">Loading settings…</div>;
+>>>>>>> origin/main
   }
 
   const update = (patch: Partial<CompanySettings>) => {
@@ -216,14 +269,23 @@ export default function SettingsPage() {
     const nextErrors = validateSettings(settings);
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+<<<<<<< HEAD
       push('error', 'Please fix the highlighted fields and save again.');
+=======
+      push('error', 'Please fix the highlighted errors before saving.');
+>>>>>>> origin/main
       return;
     }
     setSaving(true);
     const ok = await updateSettings(settings);
     setSaving(false);
+<<<<<<< HEAD
     if (ok) push('success', 'Settings updated successfully.');
     else push('error', 'Unable to save settings now. Please try again.');
+=======
+    if (ok) push('success', 'Settings saved.');
+    else push('error', 'Could not save settings. Please try again.');
+>>>>>>> origin/main
   };
 
   const tabs: { key: Tab; label: string; icon: typeof Building2 }[] = [
@@ -232,6 +294,7 @@ export default function SettingsPage() {
   ];
 
   return (
+<<<<<<< HEAD
     <div className="space-y-6">
       <PageHeader
         title="Settings"
@@ -242,6 +305,23 @@ export default function SettingsPage() {
           </AppButton>
         }
       />
+=======
+    <div>
+      {/* Page header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#0B234A]">Settings</h1>
+          <p className="text-sm text-slate-500">Configure company profile and defaults.</p>
+        </div>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg disabled:opacity-70"
+        >
+          <Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save Settings'}
+        </button>
+      </div>
+>>>>>>> origin/main
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-1 mb-6 border-b border-slate-200">
@@ -252,7 +332,11 @@ export default function SettingsPage() {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t.key
+<<<<<<< HEAD
                 ? 'border-[#1D4ED8] text-[#1D4ED8]'
+=======
+                ? 'border-[#0B2857] text-[#0B2857]'
+>>>>>>> origin/main
                 : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
             >
@@ -269,7 +353,11 @@ export default function SettingsPage() {
           {/* Basic info */}
           <SectionCard
             title="Company Profile"
+<<<<<<< HEAD
             description="Appears on all quotations and payment receipts."
+=======
+            description="Appears on all quotations and flat billing receipts."
+>>>>>>> origin/main
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="Company Name" error={errors.companyName}>
@@ -282,7 +370,11 @@ export default function SettingsPage() {
                 <TextInput value={settings.contactPerson} onChange={(e) => update({ contactPerson: e.target.value })} />
               </Field>
               <Field label="Mobile" error={errors.mobile}>
+<<<<<<< HEAD
                 <TextInput type="tel" inputMode="numeric" maxLength={10} value={settings.mobile} onChange={(e) => update({ mobile: e.target.value })} />
+=======
+                <TextInput value={settings.mobile} onChange={(e) => update({ mobile: e.target.value })} />
+>>>>>>> origin/main
               </Field>
               <Field label="Email" error={errors.email}>
                 <TextInput type="email" value={settings.email} onChange={(e) => update({ email: e.target.value })} />
@@ -344,13 +436,21 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
+<<<<<<< HEAD
                         value={settings.primaryColor ?? '#1D4ED8'}
+=======
+                        value={settings.primaryColor ?? '#0B2857'}
+>>>>>>> origin/main
                         onChange={(e) => update({ primaryColor: e.target.value })}
                         className="w-9 h-9 p-0.5 border border-slate-200 rounded cursor-pointer"
                       />
                       <div>
                         <p className="text-xs font-medium text-slate-600">Primary</p>
+<<<<<<< HEAD
                         <p className="text-xs text-slate-400">{settings.primaryColor ?? '#1D4ED8'}</p>
+=======
+                        <p className="text-xs text-slate-400">{settings.primaryColor ?? '#0B2857'}</p>
+>>>>>>> origin/main
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -430,7 +530,11 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={settings.showBankOnPdf}
                 onChange={(e) => update({ showBankOnPdf: e.target.checked })}
+<<<<<<< HEAD
                 className="w-4 h-4 rounded border-slate-300 text-[#1D4ED8]"
+=======
+                className="w-4 h-4 rounded border-slate-300 text-[#0B2857]"
+>>>>>>> origin/main
               />
               <span className="text-sm text-slate-700">Show bank details on quotation PDFs</span>
             </label>
@@ -488,7 +592,11 @@ export default function SettingsPage() {
                     ],
                   })
                 }
+<<<<<<< HEAD
                 className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-[#1D4ED8] rounded-lg"
+=======
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-[#0B2857] rounded-lg"
+>>>>>>> origin/main
               >
                 <Plus className="w-4 h-4" /> Add
               </button>

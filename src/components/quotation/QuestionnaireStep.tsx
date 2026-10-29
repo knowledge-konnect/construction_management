@@ -48,7 +48,11 @@ export default function QuestionnaireStep() {
 
   return (
     <div className="space-y-4">
+<<<<<<< HEAD
       <div className="bg-[#1D4ED8]/5 border border-[#1D4ED8]/10 rounded-lg p-4">
+=======
+      <div className="bg-[#0B2857]/5 border border-[#0B2857]/10 rounded-lg p-4">
+>>>>>>> origin/main
         <p className="text-sm text-slate-700">
           Capture the client's material and finish preferences. These answers feed the
           Material &amp; Work Specifications section of the PDF. Leave any field blank if
@@ -76,7 +80,11 @@ export default function QuestionnaireStep() {
               value={quotation.questionnaire.floorsPlanned}
               onChange={(e) => update({ floorsPlanned: e.target.value })}
               placeholder="e.g. G+1"
+<<<<<<< HEAD
               className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
+=======
+              className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
+>>>>>>> origin/main
             />
           </Field>
           <Field label="Plot Size">
@@ -85,7 +93,11 @@ export default function QuestionnaireStep() {
               value={quotation.questionnaire.plotSize}
               onChange={(e) => update({ plotSize: e.target.value })}
               placeholder="e.g. 30x40 ft"
+<<<<<<< HEAD
               className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
+=======
+              className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
+>>>>>>> origin/main
             />
           </Field>
         </div>

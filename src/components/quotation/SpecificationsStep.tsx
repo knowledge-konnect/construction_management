@@ -33,7 +33,11 @@ export default function SpecificationsStep() {
   return (
     <div className="space-y-6">
       <SectionCard title="Material & Work Specifications" description="Describe the quality and materials included."
+<<<<<<< HEAD
         actions={<button onClick={addSpec} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg"><Plus className="w-4 h-4" /> Add</button>}>
+=======
+        actions={<button onClick={addSpec} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg"><Plus className="w-4 h-4" /> Add</button>}>
+>>>>>>> origin/main
         {quotation.specifications.length === 0 ? (
           <div className="text-center py-8 text-slate-500 text-sm border-2 border-dashed border-slate-200 rounded-lg">No specifications added yet.</div>
         ) : (
@@ -42,11 +46,19 @@ export default function SpecificationsStep() {
               <div key={spec.id} className="border border-slate-200 rounded-lg p-3">
                 <div className="flex items-start gap-2 mb-2">
                   <div className="flex flex-col gap-0.5">
+<<<<<<< HEAD
                     <button onClick={() => moveSpec(spec.id, -1)} disabled={idx === 0} aria-label="Move specification up" className="p-0.5 text-slate-400 disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
                     <button onClick={() => moveSpec(spec.id, 1)} disabled={idx === quotation.specifications.length - 1} aria-label="Move specification down" className="p-0.5 text-slate-400 disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
                   </div>
                   <TextInput value={spec.title} onChange={(e) => updateSpec(spec.id, { title: e.target.value })} placeholder="Title (e.g. Structural System)" className="flex-1" />
                   <button onClick={() => deleteSpec(spec.id)} aria-label="Delete specification" className="p-2 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+=======
+                    <button onClick={() => moveSpec(spec.id, -1)} disabled={idx === 0} className="p-0.5 text-slate-400 disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
+                    <button onClick={() => moveSpec(spec.id, 1)} disabled={idx === quotation.specifications.length - 1} className="p-0.5 text-slate-400 disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
+                  </div>
+                  <TextInput value={spec.title} onChange={(e) => updateSpec(spec.id, { title: e.target.value })} placeholder="Title (e.g. Structural System)" className="flex-1" />
+                  <button onClick={() => deleteSpec(spec.id)} className="p-2 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+>>>>>>> origin/main
                 </div>
                 <TextArea rows={2} value={spec.description} onChange={(e) => updateSpec(spec.id, { description: e.target.value })} placeholder="Description (e.g. RCC framed structure as per approved drawings.)" />
               </div>
@@ -59,7 +71,11 @@ export default function SpecificationsStep() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {INCLUSION_SUGGESTIONS.map((s) => (
             <label key={s} className="flex items-center gap-2 p-2 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+<<<<<<< HEAD
               <input type="checkbox" checked={quotation.inclusions.includes(s)} onChange={() => toggleInclusion(s)} className="w-4 h-4 rounded border-slate-300 text-[#1D4ED8] focus:ring-[#1D4ED8]" />
+=======
+              <input type="checkbox" checked={quotation.inclusions.includes(s)} onChange={() => toggleInclusion(s)} className="w-4 h-4 rounded border-slate-300 text-[#0B2857] focus:ring-[#0B2857]" />
+>>>>>>> origin/main
               <span className="text-sm text-slate-700">{s}</span>
             </label>
           ))}
@@ -70,7 +86,11 @@ export default function SpecificationsStep() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {EXCLUSION_SUGGESTIONS.map((s) => (
             <label key={s} className="flex items-center gap-2 p-2 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+<<<<<<< HEAD
               <input type="checkbox" checked={quotation.exclusions.includes(s)} onChange={() => toggleExclusion(s)} className="w-4 h-4 rounded border-slate-300 text-[#1D4ED8] focus:ring-[#1D4ED8]" />
+=======
+              <input type="checkbox" checked={quotation.exclusions.includes(s)} onChange={() => toggleExclusion(s)} className="w-4 h-4 rounded border-slate-300 text-[#0B2857] focus:ring-[#0B2857]" />
+>>>>>>> origin/main
               <span className="text-sm text-slate-700">{s}</span>
             </label>
           ))}

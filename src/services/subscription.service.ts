@@ -74,8 +74,13 @@ export async function startCheckout(billingCycle: BillingCycle, companyName: str
       amount: order.amount,
       currency: order.currency,
       order_id: order.orderId,
+<<<<<<< HEAD
       name: 'SOPAN',
       description: billingCycle === 'yearly' ? 'SOPAN — Yearly Plan' : 'SOPAN — Monthly Plan',
+=======
+      name: 'BuilderDocs',
+      description: billingCycle === 'yearly' ? 'BuilderDocs — Yearly Plan' : 'BuilderDocs — Monthly Plan',
+>>>>>>> origin/main
       prefill: { name: companyName },
       handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
         const { data, error } = await apiPost<{ ok: boolean }>('/api/subscription/verify', {

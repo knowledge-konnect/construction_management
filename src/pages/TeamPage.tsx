@@ -1,9 +1,13 @@
+<<<<<<< HEAD
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { AppButton, Modal, PageHeader, TablePagination } from '@/components/ui/DesignSystem';
+=======
+>>>>>>> origin/main
 import { Field, Select, TextInput } from '@/components/ui/Form';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
 import { addTeamMember, listTeamMembers, updateTeamMember, type TeamMember } from '@/services/team.service';
+<<<<<<< HEAD
 import { Plus, ShieldCheck, User, UserX } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -12,6 +16,14 @@ const TEAM_TABLE_PAGE_SIZE = 10;
 function RoleBadge({ role }: { role: TeamMember['role'] }) {
   const styles: Record<TeamMember['role'], string> = {
     owner: 'bg-[#1D4ED8]/10 text-[#1D4ED8]',
+=======
+import { Plus, ShieldCheck, User, UserX, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+function RoleBadge({ role }: { role: TeamMember['role'] }) {
+  const styles: Record<TeamMember['role'], string> = {
+    owner: 'bg-[#0B2857]/10 text-[#0B2857]',
+>>>>>>> origin/main
     admin: 'bg-blue-50 text-blue-700',
     staff: 'bg-slate-100 text-slate-600',
   };
@@ -30,8 +42,11 @@ export default function TeamPage() {
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'admin' | 'staff'>('staff');
+<<<<<<< HEAD
   const [pendingDeactivate, setPendingDeactivate] = useState<TeamMember | null>(null);
   const [page, setPage] = useState(1);
+=======
+>>>>>>> origin/main
 
   const canManage = company?.callerRole === 'owner' || company?.callerRole === 'admin';
 
@@ -44,6 +59,7 @@ export default function TeamPage() {
 
   useEffect(() => { void refresh(); }, [company?.companyId]);
 
+<<<<<<< HEAD
   const pagedMembers = useMemo(() => {
     const start = (page - 1) * TEAM_TABLE_PAGE_SIZE;
     return members.slice(start, start + TEAM_TABLE_PAGE_SIZE);
@@ -54,6 +70,8 @@ export default function TeamPage() {
     if (page > totalPages) setPage(totalPages);
   }, [members.length, page]);
 
+=======
+>>>>>>> origin/main
   const resetForm = () => {
     setEmail('');
     setFullName('');
@@ -90,15 +108,20 @@ export default function TeamPage() {
 
   const handleToggleActive = async (member: TeamMember) => {
     if (!company) return;
+<<<<<<< HEAD
     if (member.isActive) {
       setPendingDeactivate(member);
       return;
     }
     const result = await updateTeamMember(company.companyId, member.userId, { isActive: true });
+=======
+    const result = await updateTeamMember(company.companyId, member.userId, { isActive: !member.isActive });
+>>>>>>> origin/main
     if (!result.ok) {
       push('error', result.error || 'Could not update team member.');
       return;
     }
+<<<<<<< HEAD
     push('success', 'Team member reactivated.');
     void refresh();
   };
@@ -113,6 +136,9 @@ export default function TeamPage() {
       return;
     }
     push('success', 'Team member deactivated.');
+=======
+    push('success', member.isActive ? 'Team member deactivated.' : 'Team member reactivated.');
+>>>>>>> origin/main
     void refresh();
   };
 
@@ -128,6 +154,7 @@ export default function TeamPage() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="space-y-6">
       <PageHeader
         title="Team"
@@ -173,6 +200,63 @@ export default function TeamPage() {
             </div>
           </form>
         </Modal>
+=======
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-[#0B234A]">Team</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Everyone with access to {company?.settings.companyName || 'your company'}.</p>
+        </div>
+        {canManage && !showAddForm && (
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg"
+          >
+            <Plus className="w-4 h-4" /> Add Team Member
+          </button>
+        )}
+      </div>
+
+      {showAddForm && (
+        <form onSubmit={handleAdd} className="bg-white border border-slate-200 rounded-xl p-5 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-[#0B234A]">Add Team Member</h2>
+            <button type="button" onClick={resetForm} className="p-1 text-slate-400 hover:text-slate-600" aria-label="Close">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-xs text-slate-500 mb-4">
+            If this email already has an account, they\u2019ll simply be added to your company — their existing
+            password stays unchanged. Otherwise a new account is created with the password you set below, and
+            they\u2019ll be asked to change it the first time they log in.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Email" required>
+              <TextInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teammate@example.com" required />
+            </Field>
+            <Field label="Full Name">
+              <TextInput value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Optional" />
+            </Field>
+            <Field label="Password" required>
+              <TextInput type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" minLength={8} required />
+            </Field>
+            <Field label="Role" required>
+              <Select value={role} onChange={(e) => setRole(e.target.value as 'admin' | 'staff')}>
+                <option value="staff">Staff — quotations &amp; customers</option>
+                <option value="admin">Admin — company management too</option>
+              </Select>
+            </Field>
+          </div>
+          <div className="flex justify-end gap-2 mt-5">
+            <button type="button" onClick={resetForm} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">
+              Cancel
+            </button>
+            <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg disabled:opacity-60">
+              {isSubmitting ? 'Adding…' : 'Add Team Member'}
+            </button>
+          </div>
+        </form>
+>>>>>>> origin/main
       )}
 
       {loading ? (
@@ -180,6 +264,7 @@ export default function TeamPage() {
       ) : (
         <>
           {/* Desktop table */}
+<<<<<<< HEAD
           <div className="hidden overflow-x-auto rounded-2xl border border-[#E6E8EC] bg-white shadow-[0_6px_18px_rgba(15,23,42,0.03)] md:block">
             <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
               <thead className="bg-[#1D4ED8] text-[11px] uppercase tracking-[0.12em] text-white">
@@ -197,11 +282,34 @@ export default function TeamPage() {
                     <td className="px-4 py-3.5 text-[#17243A]">{m.fullName || '\u2014'}</td>
                     <td className="px-4 py-3.5 text-[#344054]">{m.email}</td>
                     <td className="px-4 py-3.5">
+=======
+          <div className="hidden md:block overflow-x-auto bg-white border border-slate-200 rounded-xl">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-xs text-slate-600 uppercase">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium">Name</th>
+                  <th className="px-4 py-3 text-left font-medium">Email</th>
+                  <th className="px-4 py-3 text-left font-medium">Role</th>
+                  <th className="px-4 py-3 text-left font-medium">Status</th>
+                  {canManage && <th className="px-4 py-3 text-center font-medium">Actions</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {members.map((m) => (
+                  <tr key={m.userId} className="border-t border-slate-100">
+                    <td className="px-4 py-3 text-slate-700">{m.fullName || '\u2014'}</td>
+                    <td className="px-4 py-3 text-slate-700">{m.email}</td>
+                    <td className="px-4 py-3">
+>>>>>>> origin/main
                       {canManage && m.role !== 'owner' ? (
                         <select
                           value={m.role}
                           onChange={(e) => handleRoleChange(m, e.target.value as 'admin' | 'staff')}
+<<<<<<< HEAD
                           className="rounded-lg border border-[#D0D5DD] bg-white px-2.5 py-1.5 text-xs capitalize text-[#17243A] focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/25"
+=======
+                          className="text-xs border border-slate-200 rounded px-2 py-1 capitalize"
+>>>>>>> origin/main
                         >
                           <option value="staff">Staff</option>
                           <option value="admin">Admin</option>
@@ -210,18 +318,30 @@ export default function TeamPage() {
                         <RoleBadge role={m.role} />
                       )}
                     </td>
+<<<<<<< HEAD
                     <td className="px-4 py-3.5">
+=======
+                    <td className="px-4 py-3">
+>>>>>>> origin/main
                       <span className={`inline-flex items-center gap-1 text-xs font-medium ${m.isActive ? 'text-emerald-600' : 'text-slate-400'}`}>
                         {m.isActive ? <ShieldCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
                         {m.isActive ? 'Active' : 'Deactivated'}
                       </span>
                     </td>
                     {canManage && (
+<<<<<<< HEAD
                       <td className="px-4 py-3.5 text-center">
                         {m.role !== 'owner' && (
                           <button
                             onClick={() => handleToggleActive(m)}
                             className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${m.isActive ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
+=======
+                      <td className="px-4 py-3 text-center">
+                        {m.role !== 'owner' && (
+                          <button
+                            onClick={() => handleToggleActive(m)}
+                            className={`text-xs font-medium px-2.5 py-1 rounded-lg ${m.isActive ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
+>>>>>>> origin/main
                           >
                             {m.isActive ? 'Deactivate' : 'Reactivate'}
                           </button>
@@ -232,6 +352,7 @@ export default function TeamPage() {
                 ))}
               </tbody>
             </table>
+<<<<<<< HEAD
             <div className="p-3">
               <TablePagination
                 page={page}
@@ -240,11 +361,17 @@ export default function TeamPage() {
                 onPageChange={setPage}
               />
             </div>
+=======
+>>>>>>> origin/main
           </div>
 
           {/* Mobile cards */}
           <div className="md:hidden space-y-3">
+<<<<<<< HEAD
             {pagedMembers.map((m) => (
+=======
+            {members.map((m) => (
+>>>>>>> origin/main
               <div key={m.userId} className="bg-white border border-slate-200 rounded-xl p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2 min-w-0">
@@ -285,6 +412,7 @@ export default function TeamPage() {
           </div>
         </>
       )}
+<<<<<<< HEAD
 
       <ConfirmDialog
         open={!!pendingDeactivate}
@@ -295,6 +423,8 @@ export default function TeamPage() {
         onConfirm={confirmDeactivate}
         onCancel={() => setPendingDeactivate(null)}
       />
+=======
+>>>>>>> origin/main
     </div>
   );
 }

@@ -124,6 +124,7 @@ export async function getPrimaryMembership(userId: string): Promise<CompanyMembe
     return null;
 }
 
+<<<<<<< HEAD
 export interface ProjectScopedAccess {
     authorizedProjectIds: string[];
     investorFinancialAccess: boolean;
@@ -203,6 +204,8 @@ export async function resolveProjectScopedAccess(userId: string): Promise<Projec
     };
 }
 
+=======
+>>>>>>> origin/main
 /**
  * Ensures the given user_id is recorded as an active member of a company.
  * Used right after a company is created so future authorization checks can

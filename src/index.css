@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+<<<<<<< HEAD
     --bg: #F5F7FA;
     --surface: #FFFFFF;
     --surface-soft: #F8FAFC;
@@ -28,16 +29,36 @@
     font-family: 'Inter', 'Segoe UI', sans-serif;
     background: var(--bg);
     color: var(--text);
+=======
+    --color-navy: #0B2857;
+    --color-dark-navy: #071C3F;
+    --color-gold: #F4B72B;
+    --color-bg: #F7F9FC;
+    --color-text: #0B234A;
+    --color-muted: #64748B;
+    --color-border: #E2E8F0;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+>>>>>>> origin/main
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
+<<<<<<< HEAD
   * {
     box-sizing: border-box;
   }
 
   *:focus-visible {
     outline: 2px solid rgba(29, 78, 216, 0.65);
+=======
+  *:focus-visible {
+    outline: 2px solid var(--color-navy);
+>>>>>>> origin/main
     outline-offset: 2px;
   }
 }
@@ -47,6 +68,7 @@
     animation-duration: 0.2s;
     animation-fill-mode: both;
   }
+<<<<<<< HEAD
 
   .slide-in-from-top-2 {
     animation-name: slide-in-top;
@@ -61,18 +83,29 @@
     display: none;
   }
 
+=======
+  .slide-in-from-top-2 {
+    animation-name: slide-in-top;
+  }
+>>>>>>> origin/main
   @keyframes slide-in-top {
     from {
       transform: translateY(-8px);
       opacity: 0;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
     to {
       transform: translateY(0);
       opacity: 1;
     }
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;

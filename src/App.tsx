@@ -6,16 +6,23 @@ import ToastViewport from '@/components/ToastViewport';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { CompanyProvider } from '@/context/CompanyContext';
 import { ToastProvider } from '@/context/ToastContext';
+<<<<<<< HEAD
 import BillingPage from '@/pages/BillingPage';
 import ChangePasswordPage from '@/pages/ChangePasswordPage';
 import CompanySetupPage from '@/pages/CompanySetupPage';
 import CustomersPage from '@/pages/CustomersPage';
 import DashboardPage from '@/pages/DashboardPage';
 import ExpensesPage from '@/pages/ExpensesPage';
+=======
+import CompanySetupPage from '@/pages/CompanySetupPage';
+import ChangePasswordPage from '@/pages/ChangePasswordPage';
+import DashboardPage from '@/pages/DashboardPage';
+>>>>>>> origin/main
 import FlatBillingEditor from '@/pages/FlatBillingEditor';
 import FlatBillingPage from '@/pages/FlatBillingPage';
 import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/LoginPage';
+<<<<<<< HEAD
 import ProjectsPage, { ProjectDetailPage } from '@/pages/ProjectsPage';
 import QuotationsPage from '@/pages/QuotationsPage';
 import ReportsPage from '@/pages/ReportsPage';
@@ -25,15 +32,29 @@ import TeamPage from '@/pages/TeamPage';
 import TemplatesPage from '@/pages/TemplatesPage';
 import { getSafeRedirectPath } from '@/lib/utils';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+=======
+import QuotationsPage from '@/pages/QuotationsPage';
+import ResetPasswordPage from '@/pages/ResetPasswordPage';
+import SettingsPage from '@/pages/SettingsPage';
+import TeamPage from '@/pages/TeamPage';
+import BillingPage from '@/pages/BillingPage';
+import TemplatesPage from '@/pages/TemplatesPage';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+>>>>>>> origin/main
 
 // Shown at "/" — the public landing page for logged-out visitors.
 // Signed-in users are sent straight to their dashboard instead.
 function PublicHome() {
   const { user, loading } = useAuth();
+<<<<<<< HEAD
   const location = useLocation();
 
   if (loading) return null;
   if (user) return <Navigate to={getSafeRedirectPath(location, '/dashboard')} replace />;
+=======
+  if (loading) return null;
+  if (user) return <Navigate to="/dashboard" replace />;
+>>>>>>> origin/main
   return <LandingPage />;
 }
 
@@ -75,6 +96,7 @@ export default function App() {
                 }
               />
               <Route
+<<<<<<< HEAD
                 path="/projects"
                 element={
                   <ProtectedRoute>
@@ -99,6 +121,8 @@ export default function App() {
                 }
               />
               <Route
+=======
+>>>>>>> origin/main
                 path="/quotations"
                 element={
                   <ProtectedRoute>
@@ -135,6 +159,7 @@ export default function App() {
                 }
               />
               <Route
+<<<<<<< HEAD
                 path="/customers"
                 element={
                   <ProtectedRoute>
@@ -195,6 +220,8 @@ export default function App() {
                 }
               />
               <Route
+=======
+>>>>>>> origin/main
                 path="/flat-billing"
                 element={
                   <ProtectedRoute>
@@ -266,6 +293,21 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+<<<<<<< HEAD
+=======
+              <Route
+                path="/billing"
+                element={
+                  <ProtectedRoute>
+                    <RequireCompany>
+                      <Layout>
+                        <BillingPage />
+                      </Layout>
+                    </RequireCompany>
+                  </ProtectedRoute>
+                }
+              />
+>>>>>>> origin/main
               <Route path="/" element={<PublicHome />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

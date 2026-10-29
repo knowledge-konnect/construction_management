@@ -1,5 +1,8 @@
 import Logo from '@/components/Logo';
+<<<<<<< HEAD
 import { AppButton } from '@/components/ui/DesignSystem';
+=======
+>>>>>>> origin/main
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { Eye, EyeOff, Lock } from 'lucide-react';
@@ -46,7 +49,11 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex">
+<<<<<<< HEAD
       <div className="hidden lg:flex lg:w-1/2 bg-[#17243A] relative overflow-hidden flex-col justify-between p-12">
+=======
+      <div className="hidden lg:flex lg:w-1/2 bg-[#071C3F] relative overflow-hidden flex-col justify-between p-12">
+>>>>>>> origin/main
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #F4B72B 0, #F4B72B 1px, transparent 1px, transparent 30px)' }} />
         <div className="relative z-10 flex flex-col gap-8">
           <div className="flex flex-col items-start">
@@ -66,16 +73,30 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex flex-col items-center mb-8">
             <button onClick={() => navigate('/')} aria-label="Back to home" className="cursor-pointer">
+<<<<<<< HEAD
               <Logo className="h-14 w-auto" size="lg" onDark={false} />
+=======
+              <Logo className="h-14 w-auto" size="lg" />
+>>>>>>> origin/main
             </button>
           </div>
           <h2 className="text-2xl font-bold text-[#0B234A] mb-2">Reset Password</h2>
           <p className="text-sm text-slate-500 mb-7">Choose a new password for your account.</p>
 
           {done ? (
+<<<<<<< HEAD
             <AppButton onClick={() => navigate('/login')} className="w-full justify-center py-3 text-sm">
               Go to Sign In
             </AppButton>
+=======
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="w-full py-3 text-sm font-semibold text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg transition-all duration-200 ease-out shadow-sm hover:shadow-md hover:-translate-y-0.5"
+            >
+              Go to Sign In
+            </button>
+>>>>>>> origin/main
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {!token && (
@@ -91,7 +112,11 @@ export default function ResetPasswordPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+<<<<<<< HEAD
                     className="w-full pl-10 pr-10 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
+=======
+                    className="w-full pl-10 pr-10 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
+>>>>>>> origin/main
                     placeholder="Enter new password"
                     minLength={8}
                     required
@@ -114,21 +139,39 @@ export default function ResetPasswordPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+<<<<<<< HEAD
                     className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
+=======
+                    className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2857]/30 focus:border-[#0B2857]"
+>>>>>>> origin/main
                     placeholder="Re-enter new password"
                     minLength={8}
                     required
                   />
                 </div>
               </div>
+<<<<<<< HEAD
               <AppButton type="submit" disabled={isSubmitting || !token} className="w-full justify-center py-3 text-sm">
                 {isSubmitting ? 'Resetting…' : 'Reset Password'}
               </AppButton>
+=======
+              <button
+                type="submit"
+                disabled={isSubmitting || !token}
+                className="w-full py-3 text-sm font-semibold text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg transition-all duration-200 ease-out shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-70"
+              >
+                {isSubmitting ? 'Resetting…' : 'Reset Password'}
+              </button>
+>>>>>>> origin/main
             </form>
           )}
 
           <div className="mt-4 text-sm text-slate-500 text-center">
+<<<<<<< HEAD
             <button type="button" onClick={() => navigate('/login')} className="text-[#1D4ED8] hover:text-[#1E40AF]">
+=======
+            <button type="button" onClick={() => navigate('/login')} className="text-[#0B2857] hover:text-[#071C3F]">
+>>>>>>> origin/main
               Back to sign in
             </button>
           </div>

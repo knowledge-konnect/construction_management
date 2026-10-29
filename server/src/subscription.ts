@@ -2,8 +2,13 @@ import crypto from 'node:crypto';
 import { supabaseAdmin } from './auth.js';
 
 export const FREE_MONTHLY_QUOTATION_LIMIT = 3;
+<<<<<<< HEAD
 export const PAID_MONTHLY_PRICE_PAISE = 49900; // ₹499.00
 export const PAID_YEARLY_PRICE_PAISE = 499900; // ₹4,999.00
+=======
+export const PAID_MONTHLY_PRICE_PAISE = 34900; // ₹349.00
+export const PAID_YEARLY_PRICE_PAISE = 349900; // ₹3,499.00
+>>>>>>> origin/main
 
 export type Plan = 'free' | 'paid';
 export type BillingCycle = 'monthly' | 'yearly';
@@ -106,7 +111,11 @@ export class QuotationLimitReachedError extends Error {
     statusCode = 403;
     code = 'QUOTATION_LIMIT_REACHED';
     constructor() {
+<<<<<<< HEAD
         super('You\u2019ve reached your 3 quotation limit for this month. Upgrade to SOPAN for unlimited quotations.');
+=======
+        super('You\u2019ve reached your 3 quotation limit for this month. Upgrade to BuilderDocs for unlimited quotations.');
+>>>>>>> origin/main
     }
 }
 
@@ -251,6 +260,7 @@ export function priceForCycle(billingCycle: BillingCycle): number {
 export async function createRazorpayOrder(companyId: string, billingCycle: BillingCycle): Promise<{ orderId: string; amount: number; currency: string }> {
     const amount = priceForCycle(billingCycle);
 
+<<<<<<< HEAD
     try {
         const res = await fetch('https://api.razorpay.com/v1/orders', {
             method: 'POST',
@@ -284,6 +294,33 @@ export async function createRazorpayOrder(companyId: string, billingCycle: Billi
         }
         throw err;
     }
+=======
+    const res = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: razorpayAuthHeader() },
+        body: JSON.stringify({
+            amount,
+            currency: 'INR',
+            notes: { companyId, billingCycle },
+        }),
+    });
+    if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(`Razorpay order creation failed (${res.status}): ${body}`);
+    }
+    const order = (await res.json()) as { id: string; amount: number; currency: string };
+
+    const { error } = await supabaseAdmin.from('subscription_payments').insert({
+        company_id: companyId,
+        billing_cycle: billingCycle,
+        amount_paise: amount,
+        razorpay_order_id: order.id,
+        status: 'created',
+    });
+    if (error) throw error;
+
+    return { orderId: order.id, amount: order.amount, currency: order.currency };
+>>>>>>> origin/main
 }
 
 /**

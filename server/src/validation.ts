@@ -106,6 +106,7 @@ export function validateQuotationPayload(quotation: any): string | null {
 
     return null;
 }
+<<<<<<< HEAD
 
 export function validateProjectPayload(body: any): string | null {
     if (!body || typeof body !== 'object') return 'Project payload is required.';
@@ -127,3 +128,5 @@ export function validateProjectPayload(body: any): string | null {
     }
     return null;
 }
+=======
+>>>>>>> origin/main

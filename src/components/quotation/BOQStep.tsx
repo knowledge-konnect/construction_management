@@ -142,10 +142,17 @@ export default function BOQStep() {
       <SectionCard
         title="Bill of Quantities"
         description="Add sections and items. Amount = Quantity × Rate. Press Enter on the rate field to add a new row."
+<<<<<<< HEAD
         actions={<span className="text-sm font-semibold text-[#1D4ED8]">Subtotal: {formatINR(calcBOQSubtotal(sections))}</span>}
       >
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <button onClick={() => addSection()} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg">
+=======
+        actions={<span className="text-sm font-semibold text-[#0B2857]">Subtotal: {formatINR(calcBOQSubtotal(sections))}</span>}
+      >
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <button onClick={() => addSection()} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg">
+>>>>>>> origin/main
             <Plus className="w-4 h-4" /> Add Section
           </button>
           <select onChange={(e) => { if (e.target.value) { addSection(e.target.value); e.target.value = ''; } }} className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white" defaultValue="" aria-label="Add section from preset">
@@ -161,7 +168,11 @@ export default function BOQStep() {
             <p className="text-sm text-slate-400 mb-4">Add a section manually or pick from common presets above.</p>
             <div className="flex flex-wrap justify-center gap-2">
               {DEFAULT_BOQ_SECTIONS.slice(0, 5).map((s) => (
+<<<<<<< HEAD
                 <button key={s} onClick={() => addSection(s)} className="px-3 py-1.5 text-xs font-medium text-[#1D4ED8] border border-[#1D4ED8] hover:bg-[#1D4ED8]/5 rounded-lg">
+=======
+                <button key={s} onClick={() => addSection(s)} className="px-3 py-1.5 text-xs font-medium text-[#0B2857] border border-[#0B2857] hover:bg-[#0B2857]/5 rounded-lg">
+>>>>>>> origin/main
                   {s}
                 </button>
               ))}
@@ -176,7 +187,11 @@ export default function BOQStep() {
                 value={section.title}
                 onChange={(e) => updateSection(section.id, { title: e.target.value })}
                 aria-label="Section title"
+<<<<<<< HEAD
                 className="flex-1 bg-transparent text-sm font-semibold text-[#1D4ED8] focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30 rounded px-1"
+=======
+                className="flex-1 bg-transparent text-sm font-semibold text-[#0B2857] focus:outline-none focus:ring-1 focus:ring-[#0B2857]/30 rounded px-1"
+>>>>>>> origin/main
               />
               <span className="text-sm text-slate-500 font-medium">{formatINR(calcSectionSubtotal(section))}</span>
               <div className="flex items-center gap-0.5">
@@ -190,7 +205,11 @@ export default function BOQStep() {
             {section.items.length > 0 && (
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm">
+<<<<<<< HEAD
                   <thead className="bg-[#1D4ED8] text-white text-xs">
+=======
+                  <thead className="bg-[#0B2857] text-white text-xs">
+>>>>>>> origin/main
                     <tr>
                       <th className="px-2 py-2 text-left font-medium w-8">#</th>
                       <th className="px-2 py-2 text-left font-medium">Description</th>
@@ -211,7 +230,11 @@ export default function BOQStep() {
                             value={item.description}
                             onChange={(e) => updateItem(section.id, item.id, { description: e.target.value })}
                             aria-label={`Description, row ${iIdx + 1}`}
+<<<<<<< HEAD
                             className="w-full px-1.5 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30"
+=======
+                            className="w-full px-1.5 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#0B2857]/30"
+>>>>>>> origin/main
                           />
                         </td>
                         <td className="px-2 py-1.5">
@@ -220,7 +243,11 @@ export default function BOQStep() {
                             value={item.quantity}
                             onChange={(e) => updateItem(section.id, item.id, { quantity: Number(e.target.value) })}
                             aria-label={`Quantity, row ${iIdx + 1}`}
+<<<<<<< HEAD
                             className="w-full px-1.5 py-1 text-xs text-right border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30"
+=======
+                            className="w-full px-1.5 py-1 text-xs text-right border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#0B2857]/30"
+>>>>>>> origin/main
                           />
                         </td>
                         <td className="px-2 py-1.5">
@@ -228,7 +255,11 @@ export default function BOQStep() {
                             value={item.unit}
                             onChange={(e) => updateItem(section.id, item.id, { unit: e.target.value })}
                             aria-label={`Unit, row ${iIdx + 1}`}
+<<<<<<< HEAD
                             className="w-full px-1.5 py-1 text-xs border border-slate-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30"
+=======
+                            className="w-full px-1.5 py-1 text-xs border border-slate-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-[#0B2857]/30"
+>>>>>>> origin/main
                           >
                             {BOQ_UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
                           </select>
@@ -240,10 +271,17 @@ export default function BOQStep() {
                             onChange={(e) => updateItem(section.id, item.id, { rate: Number(e.target.value) })}
                             onKeyDown={(e) => handleItemKeyDown(e, section.id, true)}
                             aria-label={`Rate, row ${iIdx + 1}`}
+<<<<<<< HEAD
                             className="w-full px-1.5 py-1 text-xs text-right border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30"
                           />
                         </td>
                         <td className="px-2 py-1.5 text-right font-medium text-[#1D4ED8]">{formatINR(calcItemAmount(item))}</td>
+=======
+                            className="w-full px-1.5 py-1 text-xs text-right border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#0B2857]/30"
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 text-right font-medium text-[#0B2857]">{formatINR(calcItemAmount(item))}</td>
+>>>>>>> origin/main
                         <td className="px-2 py-1.5">
                           <div className="flex items-center justify-center gap-0.5">
                             <button onClick={() => moveItem(section.id, item.id, -1)} disabled={iIdx === 0} tabIndex={-1} className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30" aria-label={`Move row ${iIdx + 1} up`}><ChevronUp className="w-3.5 h-3.5" /></button>
@@ -258,7 +296,11 @@ export default function BOQStep() {
                   <tfoot>
                     <tr className="border-t-2 border-slate-200 bg-slate-50">
                       <td colSpan={5} className="px-2 py-2 text-right text-xs font-semibold text-slate-600">Section Subtotal:</td>
+<<<<<<< HEAD
                       <td className="px-2 py-2 text-right text-sm font-bold text-[#1D4ED8]">{formatINR(calcSectionSubtotal(section))}</td>
+=======
+                      <td className="px-2 py-2 text-right text-sm font-bold text-[#0B2857]">{formatINR(calcSectionSubtotal(section))}</td>
+>>>>>>> origin/main
                       <td></td>
                     </tr>
                   </tfoot>
@@ -309,11 +351,19 @@ export default function BOQStep() {
                         />
                       </div>
                     </div>
+<<<<<<< HEAD
                     <div className="flex justify-end mt-2"><span className="text-sm font-semibold text-[#1D4ED8]">{formatINR(calcItemAmount(item))}</span></div>
                   </div>
                 ))}
                 <div className="flex justify-between px-3 py-2 bg-slate-50 text-sm font-semibold">
                   <span>Section Subtotal:</span><span className="text-[#1D4ED8]">{formatINR(calcSectionSubtotal(section))}</span>
+=======
+                    <div className="flex justify-end mt-2"><span className="text-sm font-semibold text-[#0B2857]">{formatINR(calcItemAmount(item))}</span></div>
+                  </div>
+                ))}
+                <div className="flex justify-between px-3 py-2 bg-slate-50 text-sm font-semibold">
+                  <span>Section Subtotal:</span><span className="text-[#0B2857]">{formatINR(calcSectionSubtotal(section))}</span>
+>>>>>>> origin/main
                 </div>
               </div>
             )}
@@ -321,7 +371,11 @@ export default function BOQStep() {
             {section.items.length === 0 && <div className="px-4 py-6 text-center text-sm text-slate-400">No items in this section yet.</div>}
 
             <div className="px-4 py-2 border-t border-slate-100 bg-slate-50">
+<<<<<<< HEAD
               <button onClick={() => addItem(section.id, true)} className="inline-flex items-center gap-1.5 text-sm text-[#1D4ED8] font-medium hover:underline">
+=======
+              <button onClick={() => addItem(section.id, true)} className="inline-flex items-center gap-1.5 text-sm text-[#0B2857] font-medium hover:underline">
+>>>>>>> origin/main
                 <Plus className="w-4 h-4" /> Add Item
               </button>
             </div>
@@ -329,7 +383,11 @@ export default function BOQStep() {
         ))}
 
         {sections.length > 0 && (
+<<<<<<< HEAD
           <div className="flex justify-between items-center px-4 py-3 bg-[#1D4ED8] text-white rounded-lg mt-2">
+=======
+          <div className="flex justify-between items-center px-4 py-3 bg-[#0B2857] text-white rounded-lg mt-2">
+>>>>>>> origin/main
             <span className="text-sm font-semibold">BOQ Grand Total</span>
             <span className="text-lg font-bold text-[#F4B72B]">{formatINR(calcBOQSubtotal(sections))}</span>
           </div>

@@ -89,7 +89,11 @@ function BuilderInner() {
             <p className="mt-1 text-sm text-slate-500">Save your draft at any time. Generate the PDF once the project details and commercial values are ready.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+<<<<<<< HEAD
             <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-[#1D4ED8]">
+=======
+            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-[#0B2857]">
+>>>>>>> origin/main
               {quotation.status === 'DRAFT' ? 'Draft' : 'In progress'}
             </span>
             <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -116,11 +120,19 @@ function BuilderInner() {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => navigate(-1)} className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">Back to List</button>
+<<<<<<< HEAD
           <button onClick={handleSaveDraft} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#1D4ED8] border border-[#1D4ED8]/30 bg-white hover:bg-[#1D4ED8]/5 rounded-lg"><Save className="w-4 h-4" /> Save Draft</button>
           {current === steps.length - 1 && (
             <>
               <button onClick={handlePreviewPDF} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg"><Eye className="w-4 h-4" /> Preview</button>
               <button onClick={handleGeneratePDF} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#17243A] bg-[#F4B72B] hover:bg-[#e0a822] rounded-lg shadow-sm"><FileDown className="w-4 h-4" /> Generate PDF</button>
+=======
+          <button onClick={handleSaveDraft} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#0B2857] border border-[#0B2857]/30 bg-white hover:bg-[#0B2857]/5 rounded-lg"><Save className="w-4 h-4" /> Save Draft</button>
+          {current === steps.length - 1 && (
+            <>
+              <button onClick={handlePreviewPDF} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg"><Eye className="w-4 h-4" /> Preview</button>
+              <button onClick={handleGeneratePDF} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#071C3F] bg-[#F4B72B] hover:bg-[#e0a822] rounded-lg shadow-sm"><FileDown className="w-4 h-4" /> Generate PDF</button>
+>>>>>>> origin/main
             </>
           )}
         </div>
@@ -131,11 +143,19 @@ function BuilderInner() {
       <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
         <button onClick={() => setCurrent((c) => Math.max(0, c - 1))} disabled={current === 0} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-40"><ArrowLeft className="w-4 h-4" /> Previous</button>
         {current < steps.length - 1 ? (
+<<<<<<< HEAD
           <button onClick={() => setCurrent((c) => Math.min(steps.length - 1, c + 1))} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg">Next <ArrowRight className="w-4 h-4" /></button>
         ) : (
           <div className="flex items-center gap-2">
             <button onClick={handlePreviewPDF} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg"><Eye className="w-4 h-4" /> Preview</button>
             <button onClick={handleGeneratePDF} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#17243A] bg-[#F4B72B] hover:bg-[#e0a822] rounded-lg shadow-sm"><FileDown className="w-4 h-4" /> Generate PDF</button>
+=======
+          <button onClick={() => setCurrent((c) => Math.min(steps.length - 1, c + 1))} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#0B2857] hover:bg-[#071C3F] rounded-lg">Next <ArrowRight className="w-4 h-4" /></button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <button onClick={handlePreviewPDF} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg"><Eye className="w-4 h-4" /> Preview</button>
+            <button onClick={handleGeneratePDF} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#071C3F] bg-[#F4B72B] hover:bg-[#e0a822] rounded-lg shadow-sm"><FileDown className="w-4 h-4" /> Generate PDF</button>
+>>>>>>> origin/main
           </div>
         )}
       </div>

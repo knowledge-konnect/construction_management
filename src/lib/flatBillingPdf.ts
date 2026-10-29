@@ -173,7 +173,11 @@ function drawTitleBanner(doc: jsPDF, y: number): number {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(...WHITE);
+<<<<<<< HEAD
   doc.text('BOOKING RECEIPT', PAGE_W / 2, y + 8.5, { align: 'center' });
+=======
+  doc.text('FLAT BOOKING RECEIPT', PAGE_W / 2, y + 8.5, { align: 'center' });
+>>>>>>> origin/main
   return y + 12;
 }
 
@@ -403,6 +407,7 @@ function drawAmountSummary(doc: jsPDF, billing: FlatBilling, y: number): number 
   const labelX = MARGIN + 8;
   const valX = PAGE_W - MARGIN - 4;
 
+<<<<<<< HEAD
   // Row 1: Total Booking Cost
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
@@ -422,6 +427,27 @@ function drawAmountSummary(doc: jsPDF, billing: FlatBilling, y: number): number 
   doc.setFontSize(9.5);
   doc.setTextColor(...(balance > 0 ? ORANGE : NAVY));
   doc.text('Outstanding Balance:', labelX, y + 24);
+=======
+  // Row 1: Total Flat Cost
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...NAVY);
+  doc.text('Total Flat Cost:', labelX, y + 8);
+  doc.text(fmtAmt(total), valX, y + 8, { align: 'right' });
+
+  // Row 2: Total Paid
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...TEXT);
+  doc.text('Total Paid:', labelX, y + 16);
+  doc.text(fmtAmt(totalPaid), valX, y + 16, { align: 'right' });
+
+  // Row 3: Balance Due
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...(balance > 0 ? ORANGE : NAVY));
+  doc.text('Balance Due:', labelX, y + 24);
+>>>>>>> origin/main
   doc.text(fmtAmt(Math.max(balance, 0)), valX, y + 24, { align: 'right' });
 
   y += boxH + 4;

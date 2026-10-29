@@ -25,7 +25,10 @@ import {
     getPrimaryMembership,
     QUOTATION_ROLES,
     requireAuth,
+<<<<<<< HEAD
     resolveProjectScopedAccess,
+=======
+>>>>>>> origin/main
 } from './authz.js';
 import {
     createCompany,
@@ -43,6 +46,7 @@ import {
     updateCustomerRow,
 } from './customers.js';
 import {
+<<<<<<< HEAD
     getFlatBillingRow,
     listFlatBillingsForCompany,
     saveFlatBillingToDatabase,
@@ -99,6 +103,13 @@ import {
     voidProjectExpenseRow,
     voidProjectReceiptRow
 } from './projects.js';
+=======
+    listFlatBillingsForCompany,
+    getFlatBillingRow,
+    saveFlatBillingToDatabase,
+    softDeleteFlatBilling,
+} from './flatBilling.js';
+>>>>>>> origin/main
 import { allocateDocumentNumber, peekNextDocumentNumber } from './sequence.js';
 import {
     applySuccessfulPayment,
@@ -128,11 +139,18 @@ import {
     validateCompanyPayload,
     validateCustomerPayload,
     validateFlatBillingPayload,
+<<<<<<< HEAD
     validateProjectPayload,
     validateQuotationPayload,
 } from './validation.js';
 
 const app = Fastify({ logger: true, bodyLimit: 10 * 1024 * 1024 }); // 10 MB — safer headroom for base64-encoded logo/signature payloads
+=======
+    validateQuotationPayload,
+} from './validation.js';
+
+const app = Fastify({ logger: true, bodyLimit: 5 * 1024 * 1024 }); // 5 MB — accommodates base64-encoded logo + signature images
+>>>>>>> origin/main
 
 // Captures the raw request body alongside the normally-parsed JSON. Needed
 // ONLY for the Razorpay webhook (POST /api/webhooks/razorpay), whose
@@ -159,6 +177,7 @@ function parseNumber(value: unknown): number {
     return 0;
 }
 
+<<<<<<< HEAD
 function parseDateOrNull(value: unknown): Date | null {
     if (!value || typeof value !== 'string') return null;
     const parsed = new Date(value);
@@ -242,6 +261,8 @@ async function getOutstandingByExpenseId(companyId: string, projectId?: string |
     return outstanding;
 }
 
+=======
+>>>>>>> origin/main
 function getRequestMeta(request: any): { userAgent: string | null; ip: string | null } {
     return {
         userAgent: (request.headers['user-agent'] as string | undefined) ?? null,
@@ -250,6 +271,7 @@ function getRequestMeta(request: any): { userAgent: string | null; ip: string | 
 }
 
 function mapStatusToDb(status: string): string {
+<<<<<<< HEAD
     switch (status) {
         case 'DRAFT':
             return 'Draft';
@@ -266,6 +288,9 @@ function mapStatusToDb(status: string): string {
         default:
             return 'Draft';
     }
+=======
+    return status === 'DRAFT' ? 'Draft' : 'Completed';
+>>>>>>> origin/main
 }
 
 function buildDocumentPayload(quotation: any, companyId: string, documentNumber: string, customerId: string | null) {
@@ -283,19 +308,28 @@ function buildDocumentPayload(quotation: any, companyId: string, documentNumber:
         status: mapStatusToDb(quotation.status),
         quotation_date: quotation.quotationDate || null,
         valid_until: quotation.validUntil || null,
+<<<<<<< HEAD
         project_type_id: quotation.projectTypeId ?? quotation.project_type_id ?? null,
         project_name: quotation.project?.name ?? '',
         project_type: quotation.project?.projectType ?? '',
         project_location: quotation.project?.address ?? '',
         area_unit_id: quotation.areaUnitId ?? quotation.area_unit_id ?? null,
+=======
+        project_name: quotation.project?.name ?? '',
+        project_type: quotation.project?.projectType ?? '',
+        project_location: quotation.project?.address ?? '',
+>>>>>>> origin/main
         builtup_area: parseNumber(quotation.project?.builtupArea),
         area_unit: quotation.project?.builtupAreaUnit ?? '',
         floors: quotation.project?.floors ?? '',
         subtotal: quotation.subtotal ?? 0,
         additional_charges: additionalCharges,
         discount: quotation.discount?.value ?? 0,
+<<<<<<< HEAD
         tax_rate_id: quotation.taxRateId ?? quotation.tax_rate_id ?? null,
         tax_name: quotation.tax?.name ?? null,
+=======
+>>>>>>> origin/main
         tax_percentage: quotation.tax?.rate ?? 0,
         tax_amount: taxAmount,
         grand_total: quotation.grandTotal ?? 0,
@@ -603,6 +637,7 @@ app.post('/api/signup', async (request, reply) => {
         return reply.status(400).send({ error: 'Email and password are required.' });
     }
 
+<<<<<<< HEAD
     try {
         // Check duplicate
         const existing = await findUserByEmail(body.email);
@@ -659,6 +694,55 @@ app.post('/api/signup', async (request, reply) => {
         }
         return reply.status(500).send({ error: 'Failed to create account. Please try again.' });
     }
+=======
+    // Check duplicate
+    const existing = await findUserByEmail(body.email);
+    if (existing) {
+        return reply.status(409).send({ error: 'An account with this email already exists.' });
+    }
+
+    // Create user row in public.users
+    const passwordHash = await hashPassword(body.password);
+    let user: Awaited<ReturnType<typeof createUser>>;
+    try {
+        user = await createUser(body.email, passwordHash);
+    } catch (err: any) {
+        app.log.error(err, 'Failed to create user');
+        return reply.status(500).send({ error: 'Failed to create account. Please try again.' });
+    }
+
+    // Create profile row in public.user_profiles (non-fatal if it fails)
+    try {
+        await createUserProfile(user.id, body.fullName ?? null);
+    } catch (err: any) {
+        // Profile creation failed — log but don't block the response.
+        // User can update profile later.
+        app.log.warn(err, 'Failed to create user profile for user %s', user.id);
+    }
+
+    const token = signJwt({ sub: user.id, email: user.email, role: user.role });
+
+    let refreshToken: string | null = null;
+    try {
+        refreshToken = await issueRefreshToken(user.id, getRequestMeta(request));
+    } catch (err: any) {
+        // Non-fatal: the access token still works, just without silent renewal
+        // until the next successful login/refresh.
+        app.log.warn(err, 'Failed to issue refresh token for user %s', user.id);
+    }
+
+    return reply.status(201).send({
+        token,
+        refreshToken,
+        user: {
+            id: user.id,
+            email: user.email,
+            fullName: body.fullName ?? null,
+            role: user.role,
+            mustChangePassword: false,
+        },
+    });
+>>>>>>> origin/main
 });
 
 // ─── POST /api/login ───────────────────────────────────────────────────────────
@@ -670,6 +754,7 @@ app.post('/api/login', async (request, reply) => {
         return reply.status(400).send({ error: 'Email and password are required.' });
     }
 
+<<<<<<< HEAD
     try {
         const user = await findUserByEmail(body.email);
 
@@ -724,6 +809,53 @@ app.post('/api/login', async (request, reply) => {
         }
         return reply.status(500).send({ error: 'Login failed. Please try again.' });
     }
+=======
+    const user = await findUserByEmail(body.email);
+
+    // Use same error message for missing user and wrong password — prevents email enumeration
+    if (!user) {
+        return reply.status(401).send({ error: 'Invalid email or password.' });
+    }
+
+    // Check account is active
+    if (!user.is_active) {
+        return reply.status(403).send({ error: 'This account has been deactivated. Please contact support.' });
+    }
+
+    const valid = await comparePassword(body.password, user.password_hash);
+    if (!valid) {
+        return reply.status(401).send({ error: 'Invalid email or password.' });
+    }
+
+    // Update last_login_at (non-fatal)
+    updateLastLogin(user.id).catch((err) =>
+        app.log.warn(err, 'Failed to update last_login_at for user %s', user.id)
+    );
+
+    // Fetch full_name from user_profiles
+    const profile = await getUserProfile(user.id).catch(() => null);
+
+    const token = signJwt({ sub: user.id, email: user.email, role: user.role });
+
+    let refreshToken: string | null = null;
+    try {
+        refreshToken = await issueRefreshToken(user.id, getRequestMeta(request));
+    } catch (err: any) {
+        app.log.warn(err, 'Failed to issue refresh token for user %s', user.id);
+    }
+
+    return reply.send({
+        token,
+        refreshToken,
+        user: {
+            id: user.id,
+            email: user.email,
+            fullName: profile?.full_name ?? null,
+            role: user.role,
+            mustChangePassword: !!user.must_change_password,
+        },
+    });
+>>>>>>> origin/main
 });
 
 // ─── POST /api/refresh ─────────────────────────────────────────────────────────
@@ -995,8 +1127,13 @@ app.post('/api/company', async (request, reply) => {
             ifsc: body.ifsc ?? null,
             branch: body.branch ?? null,
             upi_id: body.upi_id ?? null,
+<<<<<<< HEAD
             quotation_prefix: body.quotation_prefix || 'QTN',
             booking_prefix: body.booking_prefix || 'BR',
+=======
+            quotation_prefix: body.quotation_prefix ?? null,
+            booking_prefix: body.booking_prefix ?? null,
+>>>>>>> origin/main
             default_validity_days: body.default_validity_days ?? 30,
             default_terms: body.default_terms ?? null,
         });
@@ -1085,8 +1222,13 @@ app.put('/api/company/:companyId', async (request, reply) => {
             ifsc: body.ifsc ?? null,
             branch: body.branch ?? null,
             upi_id: body.upi_id ?? null,
+<<<<<<< HEAD
             quotation_prefix: body.quotation_prefix || 'QTN',
             booking_prefix: body.booking_prefix || 'BR',
+=======
+            quotation_prefix: body.quotation_prefix ?? null,
+            booking_prefix: body.booking_prefix ?? null,
+>>>>>>> origin/main
             default_validity_days: body.default_validity_days ?? 30,
             default_terms: body.default_terms ?? null,
         });
@@ -1214,6 +1356,7 @@ app.delete('/api/customers/:id', async (request, reply) => {
     }
 });
 
+<<<<<<< HEAD
 // ─── Projects ───────────────────────────────────────────────────────────────
 
 app.get('/api/projects', async (request, reply) => {
@@ -2758,6 +2901,8 @@ app.get('/api/reports/company-summary', async (request, reply) => {
     }
 });
 
+=======
+>>>>>>> origin/main
 // ─── Team management ────────────────────────────────────────────────────────
 // Owner/admin only for adding/editing members — companyId is always the
 // requested-and-verified company via authorizeCompany, never trusted from
@@ -2883,10 +3028,13 @@ app.post('/api/subscription/checkout', async (request, reply) => {
         });
     } catch (err: any) {
         app.log.error(err, 'Failed to create checkout order');
+<<<<<<< HEAD
         const message = err instanceof Error ? err.message : '';
         if (/Razorpay checkout is temporarily unavailable|ECONNRESET|fetch failed|TLS/i.test(message)) {
             return reply.status(503).send({ error: 'Payment gateway is temporarily unavailable. Please try again in a moment.' });
         }
+=======
+>>>>>>> origin/main
         return reply.status(500).send({ error: 'Failed to start checkout.' });
     }
 });
@@ -3316,6 +3464,7 @@ app.get('/api/quotations/next-sequence', async (request, reply) => {
     }
 });
 
+<<<<<<< HEAD
 app.get('/api/reports/summary', async (request, reply) => {
     const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
     if (!membership) return;
@@ -3410,6 +3559,8 @@ app.get('/api/reports/summary', async (request, reply) => {
     }
 });
 
+=======
+>>>>>>> origin/main
 // ─── Server start ──────────────────────────────────────────────────────────────
 
 // Health endpoint for load balancers and Render

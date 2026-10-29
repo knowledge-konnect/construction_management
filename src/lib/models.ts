@@ -8,8 +8,11 @@ export type QuotationStatus =
   | 'REJECTED'
   | 'EXPIRED';
 
+<<<<<<< HEAD
 export type ProjectStatus = 'planned' | 'in_progress' | 'on_hold' | 'completed' | 'cancelled';
 
+=======
+>>>>>>> origin/main
 export interface Customer {
   name: string;
   mobile: string;
@@ -133,9 +136,12 @@ export interface Quotation {
   id: string;
   quotationNumber: string;
   status: QuotationStatus;
+<<<<<<< HEAD
   projectTypeId?: string | null;
   areaUnitId?: string | null;
   taxRateId?: string | null;
+=======
+>>>>>>> origin/main
   quotationDate: string;
   validUntil: string;
   validity: string;
@@ -208,6 +214,7 @@ export interface Template {
   createdAt: string;
   updatedAt: string;
 }
+<<<<<<< HEAD
 
 export interface ProjectRecord {
   id: string;
@@ -238,3 +245,5 @@ export interface ProjectRecord {
     pincode?: string | null;
   } | null;
 }
+=======
+>>>>>>> origin/main
