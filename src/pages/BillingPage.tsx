@@ -4,10 +4,10 @@ import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
 import { formatDate } from '@/lib/utils';
 import {
-    cancelSubscription,
-    getSubscription,
-    startCheckout,
-    type SubscriptionSummary,
+  cancelSubscription,
+  getSubscription,
+  startCheckout,
+  type SubscriptionSummary,
 } from '@/services/subscription.service';
 import { Check, CreditCard, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -50,7 +50,7 @@ export default function BillingPage() {
       push('success', 'Payment successful — you’re now on the BuilderDocs plan.');
       void refresh();
     } else if (result.error && result.error !== 'Payment cancelled.') {
-      push('error', result.error);
+      push('error', result.error || 'We could not complete the payment right now. Please try again.');
     }
   };
 
@@ -64,7 +64,7 @@ export default function BillingPage() {
       push('success', 'Subscription cancelled. You\u2019re back on the free plan.');
       void refresh();
     } else {
-      push('error', result.error || 'Could not cancel subscription.');
+      push('error', result.error || 'We could not cancel the subscription right now. Please try again.');
     }
   };
 
@@ -114,13 +114,13 @@ export default function BillingPage() {
       </PremiumCard>
 
       {!isPaid && (
-        <div className="rounded-2xl border-2 border-[#F4B72B] bg-[#FFF8E8] p-6 shadow-[0_6px_18px_rgba(15,23,42,0.03)]">
+        <div className="rounded-2xl border border-[#DDE8FF] bg-[#F5F8FF] p-6 shadow-[0_6px_18px_rgba(15,23,42,0.03)]">
           <h2 className="text-base font-semibold text-[#17243A] mb-1">Upgrade to BuilderDocs</h2>
           <p className="text-sm text-[#667085] mb-5">One plan. All features. No complicated tiers.</p>
           <ul className="space-y-2 mb-6">
             {PAID_FEATURES.map((f) => (
               <li key={f} className="flex items-center gap-2.5 text-sm text-slate-600">
-                <Check className="w-4 h-4 text-emerald-500 shrink-0" /> {f}
+                <Check className="w-4 h-4 text-[#1D4ED8] shrink-0" /> {f}
               </li>
             ))}
           </ul>
@@ -132,7 +132,7 @@ export default function BillingPage() {
               <AppButton onClick={() => handleUpgrade('monthly')} disabled={busy !== null} className="flex-1 justify-center">
                 <CreditCard className="h-4 w-4" /> {busy === 'monthly' ? 'Opening…' : '₹499 / month'}
               </AppButton>
-              <AppButton variant="secondary" onClick={() => handleUpgrade('yearly')} disabled={busy !== null} className="flex-1 justify-center border-[#F4B72B] bg-[#F4B72B] text-[#17243A] hover:bg-[#e0a520]">
+              <AppButton variant="secondary" onClick={() => handleUpgrade('yearly')} disabled={busy !== null} className="flex-1 justify-center border-[#DDE8FF] bg-[#EAF1FF] text-[#1D4ED8] hover:bg-[#DBEAFE]">
                 <CreditCard className="h-4 w-4" /> {busy === 'yearly' ? 'Opening…' : '₹4,999 / year'}
               </AppButton>
             </div>

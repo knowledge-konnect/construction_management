@@ -1,4 +1,5 @@
-﻿import { useAuth } from '@/context/AuthContext';
+﻿import { AppLoader } from '@/components/loading/Loaders';
+import { useAuth } from '@/context/AuthContext';
 import { type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
@@ -7,7 +8,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   if (loading) {
-    return <div className="py-20 text-center text-slate-500">Loading authentication…</div>;
+    return <AppLoader fullscreen={false} message="Verifying your sign-in and preparing your workspace…" />;
   }
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;

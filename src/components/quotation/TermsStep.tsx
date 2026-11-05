@@ -1,10 +1,10 @@
-﻿import { useBuilder } from '@/context/BuilderContext';
+﻿import { SectionCard, TextArea } from '@/components/ui/Form';
+import { useBuilder } from '@/context/BuilderContext';
 import { useCompany } from '@/context/CompanyContext';
-import { SectionCard, TextArea } from '@/components/ui/Form';
-import { Plus, Trash2, ChevronUp, ChevronDown, Upload } from 'lucide-react';
-import { v4 as uuid } from 'uuid';
-import type { Term, Quotation } from '@/lib/models';
 import { useToast } from '@/context/ToastContext';
+import type { Quotation, Term } from '@/lib/models';
+import { ChevronDown, ChevronUp, Plus, Trash2, Upload } from 'lucide-react';
+import { v4 as uuid } from 'uuid';
 
 export default function TermsStep() {
   const { quotation, setQuotation } = useBuilder();
@@ -27,7 +27,7 @@ export default function TermsStep() {
   const loadDefaults = () => {
     const defaultTerms = company?.settings.defaultTerms ?? [];
     setQuotation((prev) => ({ ...prev, terms: defaultTerms.map((t) => ({ ...t, id: uuid() })) }));
-    push('success', 'Default terms loaded.');
+    push('success', `Loaded ${defaultTerms.length} default terms from company settings.`);
   };
 
   const update = (patch: Partial<Quotation>) => setQuotation((prev) => ({ ...prev, ...patch }));

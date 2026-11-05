@@ -420,9 +420,10 @@ function drawAmountSummary(doc: jsPDF, billing: FlatBilling, y: number): number 
   // Row 3: Outstanding Balance
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9.5);
-  doc.setTextColor(...(balance > 0 ? ORANGE : NAVY));
+  const overAllocatedColor: [number, number, number] = [190, 18, 60];
+  doc.setTextColor(...(balance > 0 ? ORANGE : balance < 0 ? overAllocatedColor : NAVY));
   doc.text('Outstanding Balance:', labelX, y + 24);
-  doc.text(fmtAmt(Math.max(balance, 0)), valX, y + 24, { align: 'right' });
+  doc.text(fmtAmt(balance), valX, y + 24, { align: 'right' });
 
   y += boxH + 4;
 

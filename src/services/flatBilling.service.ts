@@ -8,10 +8,10 @@
  * read only if the backend request itself fails. Supabase/the backend
  * remains the source of truth.
  */
-import { getCurrentUserIdFromToken } from '@/services/auth.service';
 import type { FlatBilling, FlatPaymentRow } from '@/lib/flatBilling';
 import { flatBillingRepo } from '@/lib/flatBilling';
 import { apiDelete, apiGet, apiPost } from '@/services/apiClient';
+import { getCurrentUserIdFromToken } from '@/services/auth.service';
 
 function currentStorageScope(companyId: string) {
   return { userId: getCurrentUserIdFromToken() ?? 'anonymous', companyId };
@@ -47,6 +47,8 @@ function parseFlatBillingRow(row: any): FlatBilling {
     receiptNumber: row.document_number ?? '',
     bookingId: details?.booking_id ?? '',
     date: row.quotation_date ?? '',
+    projectId: row.project_id ?? row.projectId ?? '',
+    projectName: row.project_name ?? row.projectName ?? row.projects?.name ?? '',
     buyerName: customer?.name ?? '',
     buyerAddress: customer?.address ?? '',
     buyerPhone: customer?.mobile ?? '',
@@ -56,6 +58,10 @@ function parseFlatBillingRow(row: any): FlatBilling {
     blockTower: details?.block_tower ?? '',
     areaSqft: row.builtup_area !== null && row.builtup_area !== undefined ? String(row.builtup_area) : '',
     ratePerSqft: details?.rate_per_sqft !== null && details?.rate_per_sqft !== undefined ? String(details.rate_per_sqft) : '',
+    agreementValue: details?.agreement_value !== null && details?.agreement_value !== undefined ? String(details.agreement_value) : row.agreement_value !== null && row.agreement_value !== undefined ? String(row.agreement_value) : '',
+    balanceDue: details?.balance_due !== null && details?.balance_due !== undefined ? String(details.balance_due) : row.balance_due !== null && row.balance_due !== undefined ? String(row.balance_due) : '',
+    paymentMode: details?.payment_mode ?? row.payment_mode ?? 'Cash',
+    dueDate: details?.due_date ?? row.due_date ?? '',
     payments,
     terms,
     createdAt: row.created_at,
@@ -63,8 +69,9 @@ function parseFlatBillingRow(row: any): FlatBilling {
   };
 }
 
-export async function listFlatBillings(companyId: string): Promise<FlatBilling[]> {
-  const { data, error } = await apiGet<{ flatBillings: any[] }>('/api/flat-billings');
+export async function listFlatBillings(companyId: string, projectId?: string): Promise<FlatBilling[]> {
+  const endpoint = projectId ? `/api/flat-billings?projectId=${encodeURIComponent(projectId)}` : '/api/flat-billings';
+  const { data, error } = await apiGet<{ flatBillings: any[] }>(endpoint);
   if (!error && Array.isArray(data?.flatBillings)) {
     return data!.flatBillings.map(parseFlatBillingRow);
   }
@@ -87,6 +94,7 @@ export async function getFlatBilling(id: string, companyId?: string): Promise<Fl
 export interface SaveFlatBillingResult {
   ok: boolean;
   receiptNumber?: string;
+  error?: string;
 }
 
 export async function saveFlatBilling(billing: FlatBilling, companyId: string, _userId: string): Promise<SaveFlatBillingResult> {
@@ -95,13 +103,20 @@ export async function saveFlatBilling(billing: FlatBilling, companyId: string, _
   flatBillingRepo.save(currentStorageScope(companyId), billing);
 
   const { data, error } = await apiPost<{ ok: boolean; id: string; receiptNumber?: string }>('/api/flat-billings', {
-    flatBilling: billing,
+    flatBilling: {
+      ...billing,
+      projectId: billing.projectId ?? null,
+      projectName: billing.projectName ?? '',
+    },
     companyId,
   });
 
   if (error || !data?.ok) {
     console.warn('Failed to save receipt to the server; it remains cached locally until the next successful save', error);
-    return { ok: false };
+    return {
+      ok: false,
+      error: error || 'The booking receipt could not be saved. Please try again.',
+    };
   }
 
   return { ok: true, receiptNumber: data.receiptNumber };

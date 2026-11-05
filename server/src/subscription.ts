@@ -1,5 +1,5 @@
 ﻿import crypto from 'node:crypto';
-import { supabaseAdmin } from './auth.js';
+import { isTransientNetworkError, supabaseAdmin } from './auth.js';
 
 export const FREE_MONTHLY_QUOTATION_LIMIT = 3;
 export const PAID_MONTHLY_PRICE_PAISE = 49900; // ₹499.00
@@ -278,8 +278,8 @@ export async function createRazorpayOrder(companyId: string, billingCycle: Billi
 
         return { orderId: order.id, amount: order.amount, currency: order.currency };
     } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err ?? 'Unknown error');
-        if (/fetch failed|ECONNRESET|ECONNREFUSED|ENOTFOUND|TLS|network/i.test(message)) {
+        const message = String(err ?? 'Unknown error');
+        if (isTransientNetworkError(err) || /fetch failed|ECONNRESET|ECONNREFUSED|ENOTFOUND|TLS|network|timed out|timeout|socket disconnected/i.test(message)) {
             throw new Error('Razorpay checkout is temporarily unavailable. Please try again in a moment.');
         }
         throw err;

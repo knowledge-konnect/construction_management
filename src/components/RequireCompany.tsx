@@ -1,4 +1,5 @@
-﻿import { useAuth } from '@/context/AuthContext';
+﻿import { AppLoader } from '@/components/loading/Loaders';
+import { useAuth } from '@/context/AuthContext';
 import { useCompany } from '@/context/CompanyContext';
 import { Navigate, useLocation } from 'react-router-dom';
 
@@ -8,11 +9,19 @@ export default function RequireCompany({ children }: { children: JSX.Element }) 
     const location = useLocation();
 
     if (loading || companyLoading) {
-        return <div className="py-20 text-center text-slate-500">Loading company details…</div>;
+        return <AppLoader fullscreen={false} message="Loading company details…" />;
     }
 
     if (!user) {
         return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+
+    if (user.role === 'client') {
+        return <Navigate to="/client-dashboard" replace state={{ from: location }} />;
+    }
+
+    if (user.role === 'investor') {
+        return <Navigate to="/investor-dashboard" replace state={{ from: location }} />;
     }
 
     if (!company) {

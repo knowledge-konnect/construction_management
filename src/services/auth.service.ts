@@ -9,15 +9,20 @@
  * expired access token without interrupting the user.
  */
 
+import { networkErrorMessage, timeoutErrorMessage, toUserFacingApiError } from '@/services/errorMessages';
+
 // Use VITE_API_URL for custom backend hosts, otherwise use relative paths in hosted builds.
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
 const TOKEN_KEY = 'sopan.auth.token';
 const REFRESH_TOKEN_KEY = 'sopan.auth.refreshToken';
 
+export type AuthRole = 'user' | 'owner' | 'admin' | 'staff' | 'client' | 'investor';
+
 export interface AuthUser {
     id: string;
     email: string | null;
     userName: string;
+    role: AuthRole;
     mustChangePassword: boolean;
 }
 
@@ -69,11 +74,16 @@ export function clearTokens() {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
-function buildAuthUser(raw: { id: string; email: string; fullName?: string | null; mustChangePassword?: boolean }): AuthUser {
+function buildAuthUser(raw: { id: string; email: string; fullName?: string | null; role?: AuthRole; mustChangePassword?: boolean }): AuthUser {
+    const role = raw.role === 'client' || raw.role === 'investor' || raw.role === 'owner' || raw.role === 'admin' || raw.role === 'staff' || raw.role === 'user'
+        ? raw.role
+        : 'user';
+
     return {
         id: raw.id,
         email: raw.email ?? null,
         userName: raw.fullName ?? raw.email?.split('@')[0] ?? 'User',
+        role,
         mustChangePassword: !!raw.mustChangePassword,
     };
 }
@@ -91,10 +101,13 @@ async function apiPost<T>(path: string, body: unknown): Promise<{ data?: T; erro
             body: JSON.stringify(body),
         });
         const json = await res.json().catch(() => null);
-        if (!res.ok) return { error: json?.error ?? `Request failed (${res.status})` };
+        if (!res.ok) return { error: toUserFacingApiError({ status: res.status, error: json?.error }) };
         return { data: json as T };
-    } catch (err) {
-        return { error: 'Unable to reach the server. Please check your connection.' };
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            return { error: timeoutErrorMessage() };
+        }
+        return { error: networkErrorMessage() };
     }
 }
 
@@ -104,10 +117,13 @@ async function apiGet<T>(path: string, token: string): Promise<{ data?: T; error
             headers: { Authorization: `Bearer ${token}` },
         });
         const json = await res.json().catch(() => null);
-        if (!res.ok) return { error: json?.error ?? `Request failed (${res.status})` };
+        if (!res.ok) return { error: toUserFacingApiError({ status: res.status, error: json?.error }) };
         return { data: json as T };
-    } catch (err) {
-        return { error: 'Unable to reach the server. Please check your connection.' };
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            return { error: timeoutErrorMessage() };
+        }
+        return { error: networkErrorMessage() };
     }
 }
 

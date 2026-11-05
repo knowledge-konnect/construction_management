@@ -1,3 +1,4 @@
+import BrandLogo from '@/components/BrandLogo';
 import { useBuilder } from '@/context/BuilderContext';
 import { useCompany } from '@/context/CompanyContext';
 import {
@@ -63,7 +64,7 @@ export default function PreviewStep() {
         <div className="bg-[#071C3F] px-8 py-6 relative">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <LogoMark />
+              <BrandLogo variant="mark" size="md" />
               <div>
                 <h1 className="text-white font-bold text-xl">{settings.companyName || 'CONSTRUCTION DOCUMENTS'}</h1>
                 {settings.tagline && <p className="text-[#F4B72B] text-xs tracking-widest uppercase">{settings.tagline}</p>}
@@ -260,16 +261,4 @@ export default function PreviewStep() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return <div className="flex justify-between"><span className="text-slate-600">{label}</span><span className="font-semibold text-[#0B2857]">{value}</span></div>;
-}
-
-function LogoMark() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="48" rx="10" fill="#F4B72B" />
-      <path d="M14 34V20L24 12L34 20V34" stroke="#071C3F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <path d="M19 34V24H29V34" stroke="#071C3F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <rect x="22" y="27" width="4" height="4" fill="#071C3F" />
-      <path d="M12 34H36" stroke="#071C3F" strokeWidth="2.5" strokeLinecap="round" />
-    </svg>
-  );
 }

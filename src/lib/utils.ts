@@ -96,7 +96,10 @@ export function calcCommercial(q: Quotation): CommercialSummary {
   const boqSubtotal = calcBOQSubtotal(q.boqSections);
   const additionalCharges = calcAdditionalCharges(q.additionalCharges);
   const baseForDiscount = round2(boqSubtotal + additionalCharges);
-  const discountAmount = calcDiscountAmount(q.discount, baseForDiscount);
+  const discountAmount = Math.max(0, calcDiscountAmount(q.discount, baseForDiscount));
+  if (discountAmount > baseForDiscount) {
+    throw new Error('Discount amount cannot exceed subtotal.');
+  }
   const taxableAmount = round2(baseForDiscount - discountAmount);
 
   let taxAmount = 0;
@@ -171,7 +174,8 @@ export function getSafeRedirectPath(
     ? (location.state as { from?: { pathname?: string; search?: string; hash?: string } }).from
     : null;
 
-  if (from?.pathname) {
+  // Prevent redirect loops when the stored `from` route matches the current route.
+  if (from?.pathname && from.pathname !== location?.pathname) {
     return `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`;
   }
 
@@ -272,18 +276,18 @@ export function isValidBankAccountNumber(s: string): boolean {
 }
 
 const GST_STATE_CODES: Record<string, string> = {
-  'Andhra Pradesh': '36',
+  'Andhra Pradesh': '37',
   'Arunachal Pradesh': '12',
   Assam: '18',
   Bihar: '10',
   Chhattisgarh: '22',
-  Goa: '29',
+  Goa: '30',
   Gujarat: '24',
   Haryana: '06',
   'Himachal Pradesh': '02',
   Jharkhand: '20',
-  Karnataka: '28',
-  Kerala: '31',
+  Karnataka: '29',
+  Kerala: '32',
   'Madhya Pradesh': '23',
   Maharashtra: '27',
   Manipur: '14',
@@ -294,8 +298,8 @@ const GST_STATE_CODES: Record<string, string> = {
   Punjab: '03',
   Rajasthan: '08',
   Sikkim: '11',
-  'Tamil Nadu': '32',
-  Telangana: '35',
+  'Tamil Nadu': '33',
+  Telangana: '36',
   Tripura: '16',
   'Uttar Pradesh': '09',
   Uttarakhand: '05',
@@ -303,7 +307,7 @@ const GST_STATE_CODES: Record<string, string> = {
   Delhi: '07',
   'Jammu and Kashmir': '01',
   Ladakh: '38',
-  Puducherry: '33',
+  Puducherry: '34',
 };
 
 export function getGSTStateCode(state: string): string | undefined {

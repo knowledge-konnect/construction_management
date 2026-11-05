@@ -24,7 +24,7 @@ CREATE TABLE public.users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email text NOT NULL UNIQUE,
   password_hash text NOT NULL,
-  role text NOT NULL DEFAULT 'user' CHECK (role IN ('user','owner','admin','staff')),
+  role text NOT NULL DEFAULT 'user' CHECK (role IN ('user','owner','admin','staff','client','investor')),
   is_active boolean NOT NULL DEFAULT true,
   email_verified boolean NOT NULL DEFAULT false,
   must_change_password boolean NOT NULL DEFAULT false,
@@ -230,6 +230,7 @@ CREATE TABLE public.documents (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
   customer_id uuid,
+  project_id uuid REFERENCES public.projects(id) ON DELETE SET NULL,
   document_type text NOT NULL CHECK (document_type IN ('Quotation','BookingReceipt')),
   document_number text NOT NULL,
   status text NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft','Generated','Sent','Accepted','Rejected','Expired','Completed','Cancelled')),
@@ -269,6 +270,10 @@ CREATE TABLE public.documents (
   CONSTRAINT fk_documents_customer
     FOREIGN KEY (customer_id)
     REFERENCES public.customers(id)
+    ON DELETE SET NULL,
+  CONSTRAINT fk_documents_project_company
+    FOREIGN KEY (project_id, company_id)
+    REFERENCES public.projects(id, company_id)
     ON DELETE SET NULL
 );
 

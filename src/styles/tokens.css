@@ -1,0 +1,89 @@
+/*
+ * Design tokens — single source of truth for colour, elevation and radius.
+ * Colours are stored as space-separated RGB channels so Tailwind can apply
+ * opacity (bg-primary/10). Pages use semantic classes (bg-surface, text-muted);
+ * they never use dark: pairs. Dark values below are applied by the `.dark` class.
+ *
+ * Contrast is verified by `npm run check:contrast`.
+ */
+:root {
+  color-scheme: light;
+
+  /* surfaces */
+  --c-canvas: 248 250 252;        /* #F8FAFC page background */
+  --c-surface: 255 255 255;       /* #FFFFFF cards, tables */
+  --c-raised: 255 255 255;        /* modals, menus, inputs */
+  --c-sunken: 241 245 249;        /* #F1F5F9 table heads, wells */
+  --c-scrim: 0 0 0;               /* modal backdrop (same in both themes) */
+
+  /* text */
+  --c-ink: 15 23 42;              /* #0F172A */
+  --c-muted: 82 94 112;           /* secondary text */
+  --c-subtle: 148 163 184;        /* #94A3B8 icons, disabled — not for body text */
+
+  /* lines */
+  --c-line: 226 232 240;          /* #E2E8F0 */
+  --c-line-strong: 203 213 225;   /* #CBD5E1 */
+
+  /* brand */
+  --c-primary: 79 70 229;         /* #4F46E5 fills (buttons) */
+  --c-primary-strong: 67 56 202;  /* #4338CA hover fill */
+  --c-primary-soft: 238 242 255;  /* #EEF2FF tinted backgrounds */
+  --c-primary-fg: 67 56 202;      /* text/icons in brand colour */
+  --c-accent: 99 102 241;         /* #6366F1 */
+  --c-ring: 79 70 229;            /* focus ring */
+  --c-accent-soft: 224 231 255;
+
+  /* status: base = fills/borders/icons, soft = tinted bg, fg = text (AA on soft + surface) */
+  --c-success: 22 163 74;   --c-success-soft: 220 252 231;  --c-success-fg: 21 101 52;
+  --c-warning: 217 119 6;   --c-warning-soft: 254 243 199;  --c-warning-fg: 146 64 14;
+  --c-danger: 220 38 38;    --c-danger-soft: 254 226 226;   --c-danger-fg: 185 28 28;
+  --c-info: 37 99 235;      --c-info-soft: 219 234 254;     --c-info-fg: 29 78 216;
+
+  /* navigation */
+  --c-sidebar: 15 23 42;          /* #0F172A */
+
+  /* elevation */
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-pop: 0 12px 32px -8px rgb(15 23 42 / 0.22), 0 2px 6px rgb(15 23 42 / 0.06);
+
+  /* shape + motion */
+  --radius-control: 8px;
+  --radius-card: 10px;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --c-canvas: 9 9 11;             /* #09090B */
+  --c-surface: 20 20 23;          /* #141417 cards */
+  --c-raised: 32 32 36;           /* #202024 modals, menus, inputs */
+  --c-sunken: 26 26 30;           /* #1A1A1E */
+
+  --c-ink: 250 250 250;           /* #FAFAFA */
+  --c-muted: 161 161 170;         /* #A1A1AA */
+  --c-subtle: 113 113 122;        /* #71717A */
+
+  --c-line: 42 42 48;             /* #2A2A30 */
+  --c-line-strong: 63 63 70;      /* #3F3F46 */
+
+  --c-primary: 79 70 229;         /* fills keep white-text contrast */
+  --c-primary-strong: 67 56 202;  /* hover */
+  --c-primary-soft: 30 27 75;     /* #1E1B4B */
+  --c-primary-fg: 165 180 252;    /* #A5B4FC */
+  --c-accent: 129 140 248;        /* #818CF8 */
+  --c-ring: 129 140 248;
+  --c-accent-soft: 38 36 90;
+
+  --c-success: 22 163 74;   --c-success-soft: 5 46 22;    --c-success-fg: 74 222 128;
+  --c-warning: 217 119 6;   --c-warning-soft: 69 26 3;    --c-warning-fg: 251 191 36;
+  --c-danger: 220 38 38;    --c-danger-soft: 69 10 10;    --c-danger-fg: 248 113 113;
+  --c-info: 37 99 235;      --c-info-soft: 23 37 84;      --c-info-fg: 96 165 250;
+
+  --c-sidebar: 12 12 15;          /* #0C0C0F */
+
+  --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.02);
+  --shadow-pop: 0 16px 40px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.04);
+}

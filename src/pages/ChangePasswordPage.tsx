@@ -1,4 +1,4 @@
-﻿import Logo from '@/components/Logo';
+﻿import BrandLogo from '@/components/BrandLogo';
 import { AppButton } from '@/components/ui/DesignSystem';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -25,7 +25,7 @@ export default function ChangePasswordPage() {
 
   const handleSignOut = async () => {
     await logout();
-    navigate('/login');
+    navigate('/', { replace: true });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,21 +42,21 @@ export default function ChangePasswordPage() {
     const result = await changePassword(currentPassword, newPassword);
     setIsSubmitting(false);
     if (result.ok) {
-      push('success', 'Password updated.');
+      push('success', 'Password updated successfully.');
       navigate('/dashboard');
     } else {
-      push('error', result.error || 'Could not change password.');
+      push('error', result.error || 'We could not update your password right now. Please verify your current password and try again.');
     }
   };
 
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 bg-[#17243A] relative overflow-hidden flex-col justify-between p-12">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #F4B72B 0, #F4B72B 1px, transparent 1px, transparent 30px)' }} />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, rgba(96,132,255,0.9) 0, rgba(96,132,255,0.9) 1px, transparent 1px, transparent 28px)' }} />
         <div className="relative z-10 flex flex-col gap-8">
           <div className="flex flex-col items-start">
-            <Logo className="h-16 w-auto" size="lg" />
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#F4B72B]">Construction Quotations & Business Documents</p>
+            <BrandLogo size="lg" onDark />
+            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#D9E4FF]">Construction Quotations & Business Documents</p>
           </div>
         </div>
         <div className="relative z-10 flex items-center justify-between text-sm text-slate-400 border-t border-white/10 pt-4 mt-8">
@@ -68,7 +68,7 @@ export default function ChangePasswordPage() {
       <div className="flex-1 flex items-center justify-center p-6 bg-[#F7F9FC]">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex flex-col items-center mb-8">
-            <Logo className="h-14 w-auto" size="lg" onDark={false} />
+            <BrandLogo size="lg" onDark={false} />
           </div>
           <h2 className="text-2xl font-bold text-[#0B234A] mb-2">Set a New Password</h2>
           <p className="text-sm text-slate-500 mb-7">

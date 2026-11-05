@@ -1,25 +1,13 @@
-﻿import Logo from '@/components/Logo';
+﻿import BrandLogo from '@/components/BrandLogo';
 import { AppButton, StatCard } from '@/components/ui/DesignSystem';
 import {
-  ArrowRight,
-  BarChart3,
-  CalendarClock,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  FileText,
-  FolderKanban,
-  IndianRupee,
-  LayoutDashboard,
-  Menu,
-  ReceiptText,
-  Settings,
-  Users,
-  WalletCards,
-  X,
+  ArrowRight, BarChart3, CalendarClock, Check, CheckCircle2, ChevronDown, FileText, FolderKanban,
+  IndianRupee, LayoutDashboard, Menu, PiggyBank, ReceiptText, Settings, Users, WalletCards, X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+/* ------------------------------ Content ------------------------------ */
 
 const navItems = [
   { label: 'Features', href: '#features' },
@@ -29,59 +17,40 @@ const navItems = [
 ];
 
 const features = [
-  {
-    icon: FileText,
-    title: 'Professional Quotations',
-    description: 'Itemized estimates, project-specific terms, and branded document output for customer-ready quotations.',
-  },
-  {
-    icon: FolderKanban,
-    title: 'Project Management',
-    description: 'Create projects directly or from accepted quotations and track progress across active jobs.',
-  },
-  {
-    icon: WalletCards,
-    title: 'Expense Tracking',
-    description: 'Organize project spending, review costs, and keep financial records in one place.',
-  },
-  {
-    icon: IndianRupee,
-    title: 'Supplier Payments',
-    description: 'Track supplier bills, payments, and outstanding balances without losing visibility into obligations.',
-  },
-  {
-    icon: ReceiptText,
-    title: 'Payments Received',
-    description: 'Record receipts and monitor customer payments against project balances.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Financial Reports',
-    description: 'Review project costs, collections, and outstanding amounts from the reports workspace.',
-  },
+  { icon: FolderKanban, title: 'Project Management', description: 'Create and organize projects from quotation flow or direct entry, then monitor progress across active jobs.' },
+  { icon: FileText, title: 'Quotations and BOQ', description: 'Prepare itemized quotations with scope, rates, and structured BOQ-style details for customer-ready documents.' },
+  { icon: ReceiptText, title: 'Booking Receipts', description: 'Generate and manage booking receipt workflows for apartment-style bookings with payment stage tracking.' },
+  { icon: Users, title: 'Customer and Supplier Management', description: 'Maintain customer and supplier records once, then use them across quotations, projects, receipts, and payments.' },
+  { icon: PiggyBank, title: 'Investor Management', description: 'Track investor records and contributions with visibility through dedicated investor and reporting views.' },
+  { icon: WalletCards, title: 'Expenses and Payments', description: 'Record project expenses, customer receipts, and supplier payments to keep balances and obligations visible.' },
+];
+
+const businessTypes = [
+  { title: 'Individual House Contractors', workflow: 'Create quotation, convert to project, track expenses and customer receipts, then review outstanding balances.' },
+  { title: 'Apartment Developers', workflow: 'Manage project-level planning and use booking receipt workflows for unit bookings and payment stage tracking.' },
+  { title: 'Civil Contractors', workflow: 'Handle multiple site projects, maintain supplier and material records, and monitor expense-heavy execution cycles.' },
+  { title: 'Material Suppliers', workflow: 'Track customer-facing quotation and receipt activity, maintain party records, and review payment collections clearly.' },
 ];
 
 const steps = [
-  {
-    step: '01',
-    title: 'Set up your business and customers',
-    description: 'Define your company setup, customer details, and project context before creating formal documents.',
-  },
-  {
-    step: '02',
-    title: 'Create a quotation or start a project',
-    description: 'Use the quotation flow or jump directly into project creation to move opportunities forward.',
-  },
-  {
-    step: '03',
-    title: 'Track progress, expenses, and payments',
-    description: 'Monitor active work, record supplier costs, and keep customer payments tied to the right projects.',
-  },
-  {
-    step: '04',
-    title: 'Review reports and outstanding balances',
-    description: 'Use the dashboard and report views to understand project performance and financial status.',
-  },
+  { step: '01', title: 'Set up your company and business information', description: 'Configure company profile details and base records so your quotation and project workflows start with clean data.' },
+  { step: '02', title: 'Create quotations and projects', description: 'Prepare project quotations, then create projects directly from accepted opportunities or start projects directly.' },
+  { step: '03', title: 'Track progress, expenses, and payments', description: 'Monitor execution progress, log project expenses, and record customer and supplier payment activity.' },
+  { step: '04', title: 'Review financial reports and outstanding balances', description: 'Use dashboard and reports to review collections, expenses, and unpaid balances for informed decisions.' },
+];
+
+const financeBlindSpots = [
+  'Customer receipt status not centralized',
+  'Project expense entries spread across files',
+  'Supplier outstanding dues missed',
+  'Investor contribution tracking fragmented',
+];
+
+const financeSolutions = [
+  'Customer payments received and pending balance visibility',
+  'Project expenses recorded against active jobs',
+  'Supplier payments and outstanding balances in one view',
+  'Investor contributions and project financial performance in reports',
 ];
 
 const freePlanFeatures = [
@@ -100,50 +69,31 @@ const proPlanFeatures = [
   'Company branding and document support in the app',
 ];
 
-const faqs = [
-  {
-    question: 'What does BuilderDocs do?',
-    answer: 'BuilderDocs helps construction businesses manage quotations, project records, expenses, supplier payments, customer receipts, and financial reporting in one workspace.',
-  },
-  {
-    question: 'Can I create projects without a quotation?',
-    answer: 'Yes. The app supports direct project creation alongside the quotation flow, so you can start work without first generating a quotation.',
-  },
-  {
-    question: 'Can I track expenses and payments?',
-    answer: 'Yes. The app includes expense tracking, supplier-bill management, and customer payment tracking so financial activity stays connected to ongoing projects.',
-  },
-  {
-    question: 'How do I review project costs and collections?',
-    answer: 'Use the dashboard and reports pages to review project values, supplier costs, customer receipts, and outstanding balances.',
-  },
-  {
-    question: 'What are the plan limits?',
-    answer: 'The free plan allows up to 3 quotations in a calendar month. Paid plans remove that limit and unlock broader project and finance workflows.',
-  },
-  {
-    question: 'Does BuilderDocs support team access?',
-    answer: 'The application includes team and settings workflows, and permissions are managed through the existing app logic rather than the landing page itself.',
-  },
-  {
-    question: 'Can I upgrade to annual billing?',
-    answer: 'Yes. The current billing implementation supports both monthly and yearly subscriptions, and the yearly Pro option is shown as ₹4,999 / year.',
-  },
-];
+// Annual saves 5,988 - 4,999 = 989 (about 17%).
+const PRO_MONTHLY = 499;
+const PRO_ANNUAL = 4999;
+const PRO_ANNUAL_SAVING = PRO_MONTHLY * 12 - PRO_ANNUAL;
+const PRO_ANNUAL_PER_MONTH = Math.round(PRO_ANNUAL / 12);
 
-const trustPoints = ['Project visibility', 'Expense control', 'Payment tracking', 'Financial reporting'];
+const faqs = [
+  { question: 'Which construction businesses can use BuilderDocs?', answer: 'BuilderDocs is built for individual house contractors, apartment developers, civil contractors, and teams that need centralized quotation, project, and finance tracking.' },
+  { question: 'Can I track project expenses and payments?', answer: 'Yes. BuilderDocs supports project expense tracking, customer payment receipts, supplier payments, and outstanding-balance visibility.' },
+  { question: 'Can I manage apartment bookings?', answer: 'Yes. The application includes booking receipt workflows with booking IDs, staged payments, and receipt documents.' },
+  { question: 'Can I migrate existing data?', answer: 'There is no one-click migration wizard in the current app. Existing records can be moved in using your current process and then managed in BuilderDocs.' },
+  { question: 'Is my company data secure?', answer: 'BuilderDocs keeps company data scoped by organization and user access through the existing authentication and company access controls.' },
+];
 
 const heroBenefits = ['Free plan', 'No credit card required', 'Quick setup'];
 
-// Static, read-only preview. All figures are illustrative sample data and are
-// not connected to any real company, API, or financial calculation.
+/* Static, read-only preview. All figures are illustrative sample data and are
+   not connected to any real company, API, or financial calculation. */
 const previewNav = [
   { label: 'Dashboard', icon: LayoutDashboard, active: true },
   { label: 'Projects', icon: FolderKanban },
   { label: 'Quotations', icon: FileText },
   { label: 'Customers', icon: Users },
   { label: 'Expenses', icon: IndianRupee },
-  { label: 'Payments Received', icon: ReceiptText },
+  { label: 'Payments', icon: ReceiptText },
   { label: 'Reports', icon: BarChart3 },
   { label: 'Settings', icon: Settings },
 ];
@@ -162,19 +112,61 @@ const previewProjects = [
   { name: 'Office Renovation', progress: 35, status: 'On hold' },
 ];
 
+const previewFinanceRows = [
+  { label: 'Customer collections', value: '₹26.4L', tone: 'text-[#0F766E]' },
+  { label: 'Project expenses', value: '₹21.6L', tone: 'text-[#17243A]' },
+  { label: 'Supplier outstanding', value: '₹4.8L', tone: 'text-[#1D4ED8]' },
+];
+
 const previewStatusStyles: Record<string, string> = {
   'In progress': 'bg-[#EAF1FF] text-[#1D4ED8]',
   Completed: 'bg-[#ECFDF5] text-[#0F766E]',
-  'On hold': 'bg-amber-50 text-amber-700',
+  'On hold': 'bg-[#EEF2FF] text-[#3730A3]',
 };
 
+const previewTrend = [35, 55, 42, 68, 74, 61, 82];
+
+/* --------------------------- Small helpers --------------------------- */
+
+function SectionHead({ eyebrow, title }: { eyebrow: string; title: ReactNode }) {
+  return (
+    <div className="mx-auto max-w-3xl text-center">
+      <p className="text-sm font-semibold text-[#1D4ED8]">{eyebrow}</p>
+      <h2 className="mt-2 text-balance text-3xl font-bold tracking-[-0.04em] text-[#17243A] sm:text-4xl">{title}</h2>
+    </div>
+  );
+}
+
+function trendPaths(values: number[], w = 120, h = 40) {
+  const step = w / (values.length - 1);
+  const pts = values.map((v, i) => [i * step, h - (v / 100) * (h - 4) - 2] as const);
+  const line = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  return { line, area: `${line} L${w},${h} L0,${h} Z`, last: pts[pts.length - 1] };
+}
+
+/* ------------------------- Dashboard preview ------------------------- */
+
 function DashboardPreviewCard() {
+  const { line, area, last } = trendPaths(previewTrend);
+
   return (
     <div role="img" aria-label="Illustrative BuilderDocs dashboard preview with sample data" className="w-full">
-      <div className="overflow-hidden rounded-2xl border border-[#E6E8EC] bg-white shadow-[0_24px_60px_rgba(23,36,58,0.12)]">
+      <div className="overflow-hidden rounded-2xl border border-[#DDE3EC] bg-white shadow-[0_24px_56px_rgba(23,36,58,0.14)]">
+        <div className="flex items-center gap-3 border-b border-[#E6E8EC] bg-[#F8FAFC] px-4 py-2.5">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#F8B4B4]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#FCD9A0]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#A7E3C4]" />
+          </div>
+          <div className="mx-auto max-w-[16rem] flex-1 truncate rounded-md border border-[#E6E8EC] bg-white px-3 py-1 text-center text-[11px] font-medium text-[#667085]">
+            app.builderdocs.in/dashboard
+          </div>
+          <span className="w-12 shrink-0 max-sm:hidden" aria-hidden />
+        </div>
+
         <div className="flex">
-          <aside className="hidden w-36 shrink-0 flex-col gap-1 bg-[#17243A] p-3 sm:flex xl:w-40">
-            <p className="px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#93B4F5]">Workspace</p>
+          <aside className="hidden w-36 shrink-0 flex-col gap-1 bg-[#17243A] p-3 md:flex">
+            <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold text-[#93B4F5]">Workspace</p>
             {previewNav.map(({ label, icon: Icon, active }) => (
               <div
                 key={label}
@@ -192,87 +184,102 @@ function DashboardPreviewCard() {
                 <p className="text-base font-semibold text-[#17243A]">Dashboard</p>
                 <p className="text-xs text-[#667085]">Workspace overview</p>
               </div>
-              <span className="shrink-0 rounded-full border border-[#E6E8EC] bg-white px-2.5 py-1 text-[11px] font-medium text-[#667085]">
-                Sample data
-              </span>
+              <span className="shrink-0 rounded-full border border-[#E6E8EC] bg-white px-2.5 py-1 text-[11px] font-medium text-[#667085]">Sample data</span>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3">
               {previewMetrics.map(({ label, value, icon: Icon, tone }) => (
-                <StatCard
-                  key={label}
-                  label={label}
-                  value={value}
-                  icon={<Icon className="h-3.5 w-3.5" />}
-                  iconTone={tone}
-                  compact
-                  className="p-3"
-                />
+                <StatCard key={label} label={label} value={value} icon={<Icon className="h-3.5 w-3.5" />} iconTone={tone} compact className="p-3" />
               ))}
             </div>
 
-            <div className="mt-4 rounded-xl border border-[#E6E8EC] bg-white p-4">
-              <p className="text-sm font-semibold text-[#17243A]">Recent projects</p>
-              <div className="mt-3 space-y-3">
-                {previewProjects.map((project) => (
-                  <div key={project.name}>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="min-w-0 truncate text-xs font-medium text-[#17243A]">{project.name}</span>
-                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${previewStatusStyles[project.status]}`}>
-                        {project.status}
-                      </span>
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="h-1.5 flex-1 rounded-full bg-[#E6E8EC]">
-                        <div
-                          className={`h-1.5 rounded-full ${project.status === 'Completed' ? 'bg-[#0F766E]' : 'bg-[#1D4ED8]'}`}
-                          style={{ width: `${project.progress}%` }}
-                        />
+            <div className="mt-3 grid gap-3 xl:grid-cols-2">
+              <div className="rounded-xl border border-[#E6E8EC] bg-white p-4">
+                <p className="text-sm font-semibold text-[#17243A]">Recent projects</p>
+                <div className="mt-3 space-y-3">
+                  {previewProjects.map((project) => (
+                    <div key={project.name}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="min-w-0 truncate text-xs font-medium text-[#17243A]">{project.name}</span>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${previewStatusStyles[project.status]}`}>{project.status}</span>
                       </div>
-                      <span className="w-8 shrink-0 text-right text-[11px] text-[#667085]">{project.progress}%</span>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#E6E8EC]">
+                          <div className={`h-full rounded-full ${project.status === 'Completed' ? 'bg-[#0F766E]' : 'bg-[#1D4ED8]'}`} style={{ width: `${project.progress}%` }} />
+                        </div>
+                        <span className="w-8 shrink-0 text-right text-[11px] tabular-nums text-[#667085]">{project.progress}%</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-[#E6E8EC] bg-white p-4">
+                <p className="text-sm font-semibold text-[#17243A]">Finance snapshot</p>
+                <div className="mt-3 space-y-2">
+                  {previewFinanceRows.map((row) => (
+                    <div key={row.label} className="flex items-center justify-between gap-2 rounded-lg border border-[#EEF2F6] bg-[#F8FAFC] px-3 py-2">
+                      <p className="min-w-0 truncate text-[11px] font-medium text-[#667085]">{row.label}</p>
+                      <p className={`shrink-0 text-sm font-semibold tabular-nums ${row.tone}`}>{row.value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 rounded-lg border border-[#E6E8EC] px-3 py-2.5">
+                  <p className="text-[11px] font-medium text-[#667085]">Collection trend</p>
+                  <svg viewBox="0 0 120 40" className="mt-1.5 h-10 w-full" preserveAspectRatio="none" aria-hidden>
+                    <defs>
+                      <linearGradient id="bd-trend" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#1D4ED8" stopOpacity="0.22" />
+                        <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={area} fill="url(#bd-trend)" />
+                    <path d={line} fill="none" stroke="#1D4ED8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                    <circle cx={last[0]} cy={last[1]} r="2.4" fill="#1D4ED8" stroke="#fff" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="relative z-10 mx-3 -mt-4 grid grid-cols-2 gap-3 sm:mx-6">
-        <div className="min-w-0 rounded-xl border border-[#E6E8EC] bg-white p-3 shadow-[0_12px_28px_rgba(23,36,58,0.10)]">
-          <div className="flex items-center gap-2 text-[11px] font-medium text-[#667085]">
-            <ReceiptText className="h-3.5 w-3.5 shrink-0 text-[#0F766E]" />
-            <span className="truncate">Payments received</span>
-          </div>
-          <p className="mt-1.5 text-lg font-semibold text-[#17243A]">₹26.4L</p>
-          <p className="truncate text-[11px] text-[#667085]">Receipts received</p>
-        </div>
-        <div className="min-w-0 rounded-xl border border-[#E6E8EC] bg-white p-3 shadow-[0_12px_28px_rgba(23,36,58,0.10)]">
-          <div className="flex items-center gap-2 text-[11px] font-medium text-[#667085]">
-            <WalletCards className="h-3.5 w-3.5 shrink-0 text-[#1D4ED8]" />
-            <span className="truncate">Supplier outstanding</span>
-          </div>
-          <p className="mt-1.5 text-lg font-semibold text-[#17243A]">₹4.8L</p>
-          <p className="truncate text-[11px] text-[#667085]">Unpaid supplier balance</p>
         </div>
       </div>
     </div>
   );
 }
 
+/* ------------------------------- Page -------------------------------- */
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [annual, setAnnual] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState('');
 
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) setMobileMenuOpen(false);
     };
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && setActive(`#${e.target.id}`)),
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    navItems.forEach((n) => {
+      const el = document.querySelector(n.href);
+      if (el) io.observe(el);
+    });
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', onScroll);
+      io.disconnect();
+    };
   }, []);
 
   const goToSignup = () => navigate('/login?mode=register');
@@ -280,18 +287,16 @@ export default function LandingPage() {
 
   const scrollToSection = (href: string) => {
     const el = document.querySelector(href);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setMobileMenuOpen(false);
   };
 
   return (
     <div className="min-h-screen bg-[#F5F7FA] text-[#17243A]">
-      <header className="sticky top-0 z-40 border-b border-[#E6E8EC] bg-white/90 backdrop-blur-xl">
+      <header className={`sticky top-0 z-40 border-b bg-white/90 backdrop-blur-xl transition-shadow ${scrolled ? 'border-[#E6E8EC] shadow-[0_6px_24px_rgba(23,36,58,0.06)]' : 'border-transparent'}`}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <button type="button" onClick={() => navigate('/')} className="text-left" aria-label="BuilderDocs home">
-            <Logo size="sm" onDark={false} />
+            <BrandLogo size="sm" onDark={false} />
           </button>
 
           <nav className="hidden items-center gap-8 lg:flex" aria-label="Main navigation">
@@ -300,20 +305,17 @@ export default function LandingPage() {
                 key={item.label}
                 type="button"
                 onClick={() => scrollToSection(item.href)}
-                className="text-sm font-medium text-[#475467] transition hover:text-[#17243A]"
+                className={`relative py-1 text-sm font-medium transition hover:text-[#17243A] ${active === item.href ? 'text-[#17243A]' : 'text-[#475467]'}`}
               >
                 {item.label}
+                <span className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-[#1D4ED8] transition-all duration-200 ${active === item.href ? 'w-full' : 'w-0'}`} />
               </button>
             ))}
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <AppButton variant="secondary" onClick={goToLogin} className="border-[#E6E8EC] px-4 py-2.5 text-sm">
-              Sign In
-            </AppButton>
-            <AppButton onClick={goToSignup} className="px-4 py-2.5 text-sm">
-              Get Started Free
-            </AppButton>
+            <AppButton variant="secondary" onClick={goToLogin} className="border-[#E6E8EC] px-4 py-2.5 text-sm">Sign In</AppButton>
+            <AppButton onClick={goToSignup} className="px-4 py-2.5 text-sm">Get Started Free</AppButton>
           </div>
 
           <button
@@ -341,12 +343,8 @@ export default function LandingPage() {
                 </button>
               ))}
               <div className="mt-2 grid gap-2 pt-2">
-                <AppButton variant="secondary" onClick={goToLogin} className="w-full justify-center">
-                  Sign In
-                </AppButton>
-                <AppButton onClick={goToSignup} className="w-full justify-center">
-                  Get Started Free
-                </AppButton>
+                <AppButton variant="secondary" onClick={goToLogin} className="w-full justify-center">Sign In</AppButton>
+                <AppButton onClick={goToSignup} className="w-full justify-center">Get Started Free</AppButton>
               </div>
             </nav>
           </div>
@@ -354,34 +352,41 @@ export default function LandingPage() {
       </header>
 
       <main>
+        {/* Hero */}
         <section className="relative isolate overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#F5F8FF_65%,#F5F7FA_100%)]">
-          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12 lg:px-8 lg:py-20">
+          <div className="bd-grid pointer-events-none absolute inset-0 -z-10" aria-hidden />
+          <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12 lg:px-8 lg:py-16">
             <div className="min-w-0">
-              <div className="inline-flex items-center rounded-full border border-[#D9E7FF] bg-[#EEF4FF] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1D4ED8]">
-                Construction Business Management
+              <div className="bd-rise inline-flex items-center gap-2 rounded-full border border-[#D9E7FF] bg-white px-3 py-1.5 text-xs font-semibold text-[#1D4ED8] shadow-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1D4ED8] opacity-40" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#1D4ED8]" />
+                </span>
+                Construction business management
               </div>
 
-              <h1 className="mt-5 text-4xl font-bold leading-[1.08] tracking-[-0.04em] text-[#17243A] sm:text-5xl xl:text-6xl">
-                <span className="block">Your projects.</span>
-                <span className="block">Your finances.</span>
-                <span className="block text-[#1D4ED8]">One place.</span>
+              <h1 className="bd-rise bd-d1 mt-5 text-4xl font-bold leading-[1.08] tracking-[-0.04em] text-[#17243A] sm:text-5xl xl:text-6xl">
+                <span className="block">Build Better.</span>
+                <span className="block text-[#1D4ED8]">Manage Smarter.</span>
               </h1>
 
-              <p className="mt-5 max-w-xl text-base leading-7 text-[#475467] sm:text-lg">
-                Manage construction quotations, projects, expenses, supplier payments and customer receipts — all from one workspace.
+              <p className="bd-rise bd-d2 mt-4 text-xl font-semibold tracking-[-0.02em] text-[#17243A] sm:text-2xl">Your entire construction business. One workspace.</p>
+
+              <p className="bd-rise bd-d2 mt-4 max-w-xl text-base leading-7 text-[#475467] sm:text-lg">
+                Manage projects, quotations, customers, suppliers, expenses and payments from one centralized platform.
               </p>
 
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <AppButton onClick={goToSignup} className="w-full px-6 py-3.5 text-sm sm:w-auto">
+              <div className="bd-rise bd-d3 mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <AppButton onClick={goToSignup} className="group w-full px-6 py-3.5 text-sm sm:w-auto">
                   Get Started Free
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </AppButton>
                 <AppButton variant="secondary" onClick={() => scrollToSection('#pricing')} className="w-full px-6 py-3.5 text-sm sm:w-auto">
                   View Pricing
                 </AppButton>
               </div>
 
-              <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
+              <ul className="bd-rise bd-d3 mt-5 flex flex-wrap gap-x-5 gap-y-2">
                 {heroBenefits.map((benefit) => (
                   <li key={benefit} className="flex items-center gap-2 text-sm text-[#475467]">
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-[#0F766E]" />
@@ -391,42 +396,25 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            <div className="relative min-w-0">
-              <div className="pointer-events-none absolute -inset-4 -z-10 rounded-[40px] bg-[radial-gradient(circle_at_center,rgba(29,78,216,0.14),transparent_68%)] blur-2xl" />
+            <div className="bd-rise bd-d4 relative min-w-0">
+              <div className="pointer-events-none absolute -inset-4 -z-10 rounded-[40px] bg-[radial-gradient(circle_at_center,rgba(29,78,216,0.12),transparent_68%)] blur-2xl" />
               <DashboardPreviewCard />
             </div>
           </div>
         </section>
 
-        <section className="border-y border-[#E6E8EC] bg-white/80 py-6 sm:py-7">
+        {/* Features */}
+        <section id="features" className="bg-[#F5F7FA] py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-              {trustPoints.map((point) => (
-                <div key={point} className="flex items-center gap-2 text-sm font-medium text-[#475467]">
-                  <CheckCircle2 className="h-4 w-4 text-[#0F766E]" />
-                  <span>{point}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+            <SectionHead eyebrow="Features" title="Everything you need to run your construction business" />
 
-        <section id="features" className="bg-[#F5F7FA] py-20 sm:py-24">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#1D4ED8]">Features</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em] text-[#17243A] sm:text-4xl">
-                Everything You Need to Manage Construction Projects
-              </h2>
-            </div>
-
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {features.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="rounded-2xl border border-[#E6E8EC] bg-white p-6 shadow-[0_12px_28px_rgba(15,23,42,0.04)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#EEF4FF] text-[#1D4ED8]">
+                <div key={title} className="rounded-2xl border border-[#E6E8EC] bg-white p-6 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF4FF] text-[#1D4ED8]">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold text-[#17243A]">{title}</h3>
+                  <h3 className="mt-4 text-lg font-semibold text-[#17243A]">{title}</h3>
                   <p className="mt-2 text-sm leading-6 text-[#475467]">{description}</p>
                 </div>
               ))}
@@ -434,39 +422,56 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="how-it-works" className="bg-[#F5F7FA] py-20 sm:py-24">
+        {/* Business types */}
+        <section className="border-y border-[#E6E8EC] bg-white py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#1D4ED8]">How it works</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em] text-[#17243A] sm:text-4xl">From Quotation to Project Completion</h2>
-            </div>
+            <SectionHead eyebrow="Built for your construction business" title="Workflows for real construction teams" />
 
-            <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {steps.map(({ step, title, description }) => (
-                <div key={step} className="rounded-2xl border border-[#E6E8EC] bg-white p-6 shadow-[0_8px_22px_rgba(15,23,42,0.03)]">
-                  <div className="inline-flex rounded-full bg-[#EEF4FF] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1D4ED8]">{step}</div>
-                  <h3 className="mt-4 text-xl font-semibold text-[#17243A]">{title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-[#475467]">{description}</p>
+            <div className="mt-10 grid gap-4 md:grid-cols-2">
+              {businessTypes.map(({ title, workflow }) => (
+                <div key={title} className="rounded-2xl border border-[#E6E8EC] bg-[#F8FAFC] p-5">
+                  <h3 className="text-lg font-semibold text-[#17243A]">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[#475467]">{workflow}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="py-20 sm:py-24">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#1D4ED8]">Why BuilderDocs</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em] text-[#17243A] sm:text-4xl">Less Spreadsheet Work. More Control.</h2>
-            </div>
+        {/* How it works */}
+        <section id="how-it-works" className="bg-[#F5F7FA] py-12 sm:py-16">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <SectionHead eyebrow="How it works" title="From quotation to project completion" />
 
-            <div className="mt-12 grid gap-6 md:grid-cols-2">
+            <div className="relative mt-10">
+              <div className="absolute left-0 right-0 top-[22px] hidden h-px bg-[linear-gradient(90deg,transparent,#D9E7FF_10%,#D9E7FF_90%,transparent)] xl:block" aria-hidden />
+              <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+                {steps.map(({ step, title, description }) => (
+                  <div key={step} className="relative">
+                    <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#D9E7FF] bg-white text-sm font-bold text-[#1D4ED8] shadow-sm">
+                      {step}
+                    </div>
+                    <h3 className="mt-4 text-lg font-semibold leading-snug text-[#17243A]">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-[#475467]">{description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Financial visibility */}
+        <section className="border-y border-[#E6E8EC] bg-white py-12 sm:py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <SectionHead eyebrow="Financial visibility" title="Know where every rupee is moving" />
+
+            <div className="mt-10 grid gap-6 md:grid-cols-2">
               <div className="rounded-2xl border border-[#E6E8EC] bg-white p-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#667085]">Manual process</p>
-                <ul className="mt-6 space-y-4">
-                  {['Disconnected files', 'Duplicate data entry', 'Unclear customer status', 'Missed payment follow-ups'].map((point) => (
+                <p className="text-sm font-semibold text-[#667085]">Financial blind spots</p>
+                <ul className="mt-5 space-y-4">
+                  {financeBlindSpots.map((point) => (
                     <li key={point} className="flex items-center gap-3 text-sm text-[#475467]">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FEE2E2] text-[#B91C1C]">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FEE2E2] text-[#B91C1C]">
                         <X className="h-3.5 w-3.5" />
                       </span>
                       {point}
@@ -476,11 +481,11 @@ export default function LandingPage() {
               </div>
 
               <div className="rounded-2xl border-2 border-[#D9E7FF] bg-[#F8FBFF] p-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1D4ED8]">BuilderDocs workflow</p>
-                <ul className="mt-6 space-y-4">
-                  {['Quotes, projects, and costs in one place', 'Real-time project visibility', 'Supplier and customer payment tracking', 'Decision-ready reporting'].map((point) => (
+                <p className="text-sm font-semibold text-[#1D4ED8]">BuilderDocs financial view</p>
+                <ul className="mt-5 space-y-4">
+                  {financeSolutions.map((point) => (
                     <li key={point} className="flex items-center gap-3 text-sm text-[#17243A]">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#DCFCE7] text-[#166534]">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#DCFCE7] text-[#166534]">
                         <Check className="h-3.5 w-3.5" />
                       </span>
                       {point}
@@ -492,57 +497,73 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="pricing" className="bg-[#F5F7FA] py-20 sm:py-24">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#1D4ED8]">Pricing</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em] text-[#17243A] sm:text-4xl">Simple, transparent plans.</h2>
+        {/* Pricing */}
+        <section id="pricing" className="bg-[#F5F7FA] py-12 sm:py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <SectionHead eyebrow="Pricing" title="Simple, transparent plans." />
+
+            <div className="mt-6 flex justify-center">
+              <div role="group" aria-label="Billing period" className="inline-flex rounded-full border border-[#E6E8EC] bg-white p-1 text-sm font-medium">
+                {[{ k: false, l: 'Monthly' }, { k: true, l: 'Annual' }].map(({ k, l }) => (
+                  <button
+                    key={l}
+                    type="button"
+                    aria-pressed={annual === k}
+                    onClick={() => setAnnual(k)}
+                    className={`rounded-full px-4 py-1.5 transition ${annual === k ? 'bg-[#1D4ED8] text-white' : 'text-[#475467] hover:text-[#17243A]'}`}
+                  >
+                    {l}
+                    {k && (
+                      <span className={`ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${annual ? 'bg-white/20 text-white' : 'bg-[#ECFDF5] text-[#0F766E]'}`}>
+                        Save 17%
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="mt-12 grid gap-6 lg:grid-cols-2">
-              <div className="rounded-3xl border border-[#E6E8EC] bg-white p-8 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#667085]">Free</p>
-                <div className="mt-5 flex items-baseline gap-2">
+            <div className="mt-8 grid gap-6 md:grid-cols-2">
+              <div className="flex flex-col rounded-3xl border border-[#E6E8EC] bg-white p-8">
+                <p className="text-sm font-semibold text-[#667085]">Free</p>
+                <div className="mt-4 flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-[#17243A]">₹0</span>
                   <span className="text-sm text-[#667085]">/ month</span>
                 </div>
+                <p className="mt-2 h-5 text-xs text-[#667085]">For trying quotations before you upgrade</p>
 
-                <ul className="mt-7 space-y-3">
+                <ul className="mt-6 space-y-3">
                   {freePlanFeatures.map((feature) => (
                     <li key={feature} className="flex items-start gap-3 text-sm text-[#475467]">
-                      <Check className="mt-0.5 h-4 w-4 text-[#0F766E]" />
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0F766E]" />
                       <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
 
-                <AppButton variant="secondary" onClick={goToSignup} className="mt-8 w-full justify-center">
-                  Get Started Free
-                </AppButton>
+                <AppButton variant="secondary" onClick={goToSignup} className="mt-auto w-full justify-center">Get Started Free</AppButton>
               </div>
 
-              <div className="rounded-3xl border-2 border-[#D9E7FF] bg-white p-8 shadow-[0_18px_42px_rgba(29,78,216,0.12)]">
+              <div className="flex flex-col rounded-3xl border-2 border-[#D9E7FF] bg-white p-8 shadow-[0_18px_42px_rgba(29,78,216,0.12)]">
                 <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1D4ED8]">Pro</p>
-                  <span className="rounded-full bg-[#EAF1FF] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1D4ED8]">
-                    Recommended
-                  </span>
+                  <p className="text-sm font-semibold text-[#1D4ED8]">Pro</p>
+                  <span className="rounded-full bg-[#EAF1FF] px-2.5 py-1 text-xs font-semibold text-[#1D4ED8]">Recommended</span>
                 </div>
 
-                <div className="mt-5 flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-[#17243A]">₹499</span>
-                  <span className="text-sm text-[#667085]">/ month</span>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-4xl font-bold tabular-nums text-[#17243A]">₹{(annual ? PRO_ANNUAL : PRO_MONTHLY).toLocaleString('en-IN')}</span>
+                  <span className="text-sm text-[#667085]">/ {annual ? 'year' : 'month'}</span>
                 </div>
+                <p className={`mt-2 h-5 text-xs ${annual ? 'text-[#0F766E]' : 'text-[#667085]'}`}>
+                  {annual
+                    ? `About ₹${PRO_ANNUAL_PER_MONTH} a month. You save ₹${PRO_ANNUAL_SAVING}.`
+                    : `Or ₹${PRO_ANNUAL.toLocaleString('en-IN')} / year with annual billing`}
+                </p>
 
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#F5F7FA] px-3 py-1.5 text-xs text-[#475467]">
-                  <IndianRupee className="h-3.5 w-3.5 text-[#1D4ED8]" />
-                  Annual Pro: ₹4,999 / year
-                </div>
-
-                <ul className="mt-7 space-y-3">
+                <ul className="mt-6 space-y-3">
                   {proPlanFeatures.map((feature) => (
                     <li key={feature} className="flex items-start gap-3 text-sm text-[#475467]">
-                      <Check className="mt-0.5 h-4 w-4 text-[#0F766E]" />
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0F766E]" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -556,49 +577,56 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="faq" className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#1D4ED8]">FAQ</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em] text-[#17243A] sm:text-4xl">Everything you need to know</h2>
-          </div>
+        {/* FAQ */}
+        <section id="faq" className="border-t border-[#E6E8EC] bg-white py-12 sm:py-16">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <SectionHead eyebrow="FAQ" title="Everything you need to know" />
 
-          <div className="mt-10 overflow-hidden rounded-2xl border border-[#E6E8EC] bg-white">
-            {faqs.map(({ question, answer }, index) => {
-              const isOpen = openFaq === index;
+            <div className="mt-8 overflow-hidden rounded-2xl border border-[#E6E8EC] bg-white">
+              {faqs.map(({ question, answer }, index) => {
+                const isOpen = openFaq === index;
 
-              return (
-                <div key={question} className={`border-b border-[#E6E8EC] last:border-none ${isOpen ? 'bg-[#F8FAFC]' : ''}`}>
-                  <button
-                    type="button"
-                    onClick={() => setOpenFaq(isOpen ? null : index)}
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
-                    aria-expanded={isOpen}
-                    aria-controls={`faq-panel-${index}`}
-                  >
-                    <span className="text-base font-medium text-[#17243A]">{question}</span>
-                    <ChevronDown className={`h-5 w-5 shrink-0 text-[#475467] transition ${isOpen ? 'rotate-180' : ''}`} />
-                  </button>
+                return (
+                  <div key={question} className={`border-b border-[#E6E8EC] transition-colors last:border-none ${isOpen ? 'bg-[#F8FAFC]' : ''}`}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(isOpen ? null : index)}
+                      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
+                      aria-expanded={isOpen}
+                      aria-controls={`faq-panel-${index}`}
+                    >
+                      <span className="text-base font-medium text-[#17243A]">{question}</span>
+                      <ChevronDown className={`h-5 w-5 shrink-0 text-[#475467] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
 
-                  {isOpen && (
-                    <div id={`faq-panel-${index}`} className="px-5 pb-5 text-sm leading-6 text-[#475467] sm:px-6">
-                      {answer}
+                    <div
+                      id={`faq-panel-${index}`}
+                      role="region"
+                      className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                    >
+                      <div className="overflow-hidden">
+                        <p className="px-5 pb-5 text-sm leading-6 text-[#475467] sm:px-6">{answer}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
-        <section className="bg-[#17243A] py-20 text-white">
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl">Build Better. Manage Smarter.</h2>
+        {/* Closing CTA */}
+        <section className="relative overflow-hidden bg-[#17243A] py-14 text-white sm:py-16">
+          <div className="bd-grid absolute inset-0 opacity-40 [filter:invert(1)_brightness(2)]" aria-hidden />
+          <div className="pointer-events-none absolute left-1/2 top-0 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-[#1D4ED8]/30 blur-3xl" aria-hidden />
+          <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+            <h2 className="text-balance text-3xl font-bold tracking-[-0.04em] sm:text-4xl">Build Better. Manage Smarter.</h2>
             <p className="mx-auto mt-4 max-w-2xl text-base text-slate-300">
               Bring your quotations, projects, expenses, and payment tracking into one organized workspace.
             </p>
-            <AppButton onClick={goToSignup} className="mt-8 px-6 py-3.5 text-sm bg-[#1D4ED8] hover:bg-[#1E40AF]">
+            <AppButton onClick={goToSignup} className="group mt-7 bg-[#1D4ED8] px-6 py-3.5 text-sm hover:bg-[#1E40AF]">
               Get Started Free
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </AppButton>
           </div>
         </section>
@@ -606,19 +634,17 @@ export default function LandingPage() {
 
       <footer className="border-t border-[#E6E8EC] bg-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div className="flex items-center gap-3">
-            <Logo variant="mark" size="sm" onDark={false} />
-            <div>
-              <div className="text-base font-bold text-[#17243A]">BuilderDocs</div>
-              <div className="text-xs text-[#667085]">Construction business management</div>
-            </div>
+          <div>
+            <BrandLogo size="sm" onDark={false} />
+            <div className="mt-1 text-xs text-[#667085]">Construction business management</div>
           </div>
 
           <div className="flex flex-wrap items-center gap-5 text-sm text-[#475467]">
-            <button type="button" onClick={() => scrollToSection('#features')} className="transition hover:text-[#17243A]">Features</button>
-            <button type="button" onClick={() => scrollToSection('#how-it-works')} className="transition hover:text-[#17243A]">How It Works</button>
-            <button type="button" onClick={() => scrollToSection('#pricing')} className="transition hover:text-[#17243A]">Pricing</button>
-            <button type="button" onClick={() => scrollToSection('#faq')} className="transition hover:text-[#17243A]">FAQ</button>
+            {navItems.map((item) => (
+              <button key={item.label} type="button" onClick={() => scrollToSection(item.href)} className="transition hover:text-[#17243A]">
+                {item.label}
+              </button>
+            ))}
           </div>
 
           <div className="flex items-center gap-5 text-sm text-[#475467]">
@@ -626,8 +652,10 @@ export default function LandingPage() {
             <button type="button" onClick={goToSignup} className="transition hover:text-[#17243A]">Get Started</button>
           </div>
         </div>
+        <div className="border-t border-[#E6E8EC] py-4 text-center text-xs text-[#667085]">
+          © {new Date().getFullYear()} BuilderDocs. All rights reserved.
+        </div>
       </footer>
     </div>
   );
 }
-

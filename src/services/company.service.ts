@@ -10,6 +10,13 @@ export interface CompanyRecord {
     callerRole: 'owner' | 'admin' | 'staff' | null;
 }
 
+type FrontendOnlySettings = Pick<
+    CompanySettings,
+    'tagline' | 'contactPerson' | 'city' | 'state' | 'pincode' | 'showBankOnPdf' | 'defaultState' | 'footerText'
+>;
+
+const FRONTEND_ONLY_SETTINGS_KEY = 'sopan.company.frontendOnlySettingsByCompany';
+
 // ─── API helper ────────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T | null> {
@@ -37,10 +44,52 @@ function parseDefaultTerms(value: unknown): CompanySettings['defaultTerms'] {
     return DEFAULT_SETTINGS.defaultTerms;
 }
 
+function readFrontendOnlySettingsByCompany(): Record<string, FrontendOnlySettings> {
+    try {
+        const raw = localStorage.getItem(FRONTEND_ONLY_SETTINGS_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return {};
+        return parsed as Record<string, FrontendOnlySettings>;
+    } catch {
+        return {};
+    }
+}
+
+function writeFrontendOnlySettingsByCompany(value: Record<string, FrontendOnlySettings>) {
+    localStorage.setItem(FRONTEND_ONLY_SETTINGS_KEY, JSON.stringify(value));
+}
+
+function getFrontendOnlySettings(companyId: string): FrontendOnlySettings | null {
+    const all = readFrontendOnlySettingsByCompany();
+    return all[companyId] ?? null;
+}
+
+function persistFrontendOnlySettings(companyId: string, settings: CompanySettings) {
+    const all = readFrontendOnlySettingsByCompany();
+    all[companyId] = {
+        tagline: settings.tagline,
+        contactPerson: settings.contactPerson,
+        city: settings.city,
+        state: settings.state,
+        pincode: settings.pincode,
+        showBankOnPdf: settings.showBankOnPdf,
+        defaultState: settings.defaultState,
+        footerText: settings.footerText,
+    };
+    writeFrontendOnlySettingsByCompany(all);
+}
+
 function mapRowToRecord(companyRow: any): CompanyRecord {
     const settingsRow = Array.isArray(companyRow.company_settings)
         ? companyRow.company_settings[0]
         : companyRow.company_settings;
+
+    const enabledBusinessModels = Array.isArray(settingsRow?.enabled_business_models)
+        ? settingsRow.enabled_business_models.filter((value: unknown) => typeof value === 'string')
+        : DEFAULT_SETTINGS.enabledBusinessModels;
+
+    const frontendOnly = getFrontendOnlySettings(companyRow.id);
 
     const settings: CompanySettings = {
         ...DEFAULT_SETTINGS,
@@ -54,6 +103,8 @@ function mapRowToRecord(companyRow: any): CompanyRecord {
         logoUrl: companyRow?.logo_url ?? DEFAULT_SETTINGS.logoUrl,
         primaryColor: companyRow?.primary_color ?? DEFAULT_SETTINGS.primaryColor,
         secondaryColor: companyRow?.secondary_color ?? DEFAULT_SETTINGS.secondaryColor,
+        defaultTaxName: settingsRow?.default_tax_name ?? DEFAULT_SETTINGS.defaultTaxName,
+        defaultTaxRate: Number(settingsRow?.default_tax_rate ?? DEFAULT_SETTINGS.defaultTaxRate),
         signatureImage: settingsRow?.signature_url ?? DEFAULT_SETTINGS.signatureImage,
         authorizedPersonName: settingsRow?.authorized_person ?? DEFAULT_SETTINGS.authorizedPersonName,
         designation: settingsRow?.designation ?? DEFAULT_SETTINGS.designation,
@@ -67,6 +118,15 @@ function mapRowToRecord(companyRow: any): CompanyRecord {
         bookingPrefix: settingsRow?.booking_prefix ?? DEFAULT_SETTINGS.bookingPrefix,
         defaultValidity: `${(settingsRow?.default_validity_days ?? 30)} Days`,
         defaultTerms: parseDefaultTerms(settingsRow?.default_terms),
+        tagline: frontendOnly?.tagline ?? DEFAULT_SETTINGS.tagline,
+        contactPerson: frontendOnly?.contactPerson ?? DEFAULT_SETTINGS.contactPerson,
+        city: frontendOnly?.city ?? DEFAULT_SETTINGS.city,
+        state: frontendOnly?.state ?? DEFAULT_SETTINGS.state,
+        pincode: frontendOnly?.pincode ?? DEFAULT_SETTINGS.pincode,
+        showBankOnPdf: frontendOnly?.showBankOnPdf ?? DEFAULT_SETTINGS.showBankOnPdf,
+        defaultState: frontendOnly?.defaultState ?? DEFAULT_SETTINGS.defaultState,
+        footerText: frontendOnly?.footerText ?? DEFAULT_SETTINGS.footerText,
+        enabledBusinessModels: enabledBusinessModels.length > 0 ? enabledBusinessModels as CompanySettings['enabledBusinessModels'] : DEFAULT_SETTINGS.enabledBusinessModels,
     };
 
     return {
@@ -102,6 +162,11 @@ function settingsToPayload(settings: CompanySettings, companyId?: string) {
         booking_prefix: settings.bookingPrefix,
         default_validity_days: Number(settings.defaultValidity.replace(/\D/g, '')) || 30,
         default_terms: JSON.stringify(settings.defaultTerms),
+        default_tax_name: settings.defaultTaxName,
+        default_tax_rate: Number.isFinite(settings.defaultTaxRate) ? settings.defaultTaxRate : 0,
+        enabled_business_models: Array.isArray(settings.enabledBusinessModels) && settings.enabledBusinessModels.length > 0
+            ? settings.enabledBusinessModels
+            : ['contract_construction', 'property_development', 'civil_works_contract', 'material_supply'],
         ...(companyId ? { company_id: companyId } : {}),
     };
 }
@@ -121,6 +186,7 @@ export async function createCompany(_userId: string, settings: CompanySettings):
         body: JSON.stringify(settingsToPayload(settings)),
     });
     if (!data?.company) return null;
+    persistFrontendOnlySettings(data.company.id, settings);
     return mapRowToRecord(data.company);
 }
 
@@ -131,6 +197,7 @@ export async function updateCompanySettings(companyId: string, settings: Company
         body: JSON.stringify(settingsToPayload(settings, companyId)),
     });
     if (!data?.company) return null;
+    persistFrontendOnlySettings(companyId, settings);
     return mapRowToRecord(data.company);
 }
 

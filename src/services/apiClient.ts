@@ -1,4 +1,5 @@
 import { clearTokens, getToken, refreshAccessToken } from '@/services/auth.service';
+import { networkErrorMessage, timeoutErrorMessage, toUserFacingApiError } from '@/services/errorMessages';
 
 // Use VITE_API_URL for custom backend hosts, otherwise use relative paths in hosted builds.
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
@@ -44,10 +45,19 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
         }
 
         const json = await res.json().catch(() => null);
-        if (!res.ok) return { error: json?.error ?? `Request failed (${res.status})`, code: json?.code, status: res.status };
+        if (!res.ok) {
+            return {
+                error: toUserFacingApiError({ status: res.status, error: json?.error }),
+                code: json?.code,
+                status: res.status,
+            };
+        }
         return { data: json as T, status: res.status };
     } catch (err) {
-        return { error: 'Unable to reach the server.' };
+        const message = err instanceof DOMException && err.name === 'AbortError'
+            ? timeoutErrorMessage()
+            : networkErrorMessage();
+        return { error: message };
     }
 }
 

@@ -1,13 +1,13 @@
-﻿import { useBuilder } from '@/context/BuilderContext';
+﻿import ConfirmDialog from '@/components/ConfirmDialog';
 import { SectionCard } from '@/components/ui/Form';
-import { Plus, Copy, Trash2, ChevronUp, ChevronDown, FileText } from 'lucide-react';
-import { v4 as uuid } from 'uuid';
-import type { BOQSection, BOQItem } from '@/lib/models';
-import { BOQ_UNITS, DEFAULT_BOQ_SECTIONS } from '@/lib/constants';
-import { calcItemAmount, calcSectionSubtotal, calcBOQSubtotal, formatINR, formatNumber } from '@/lib/utils';
+import { useBuilder } from '@/context/BuilderContext';
 import { useToast } from '@/context/ToastContext';
-import ConfirmDialog from '@/components/ConfirmDialog';
-import { useState, useRef, useCallback } from 'react';
+import { BOQ_UNITS, DEFAULT_BOQ_SECTIONS } from '@/lib/constants';
+import type { BOQItem, BOQSection } from '@/lib/models';
+import { calcBOQSubtotal, calcItemAmount, calcSectionSubtotal, formatINR } from '@/lib/utils';
+import { ChevronDown, ChevronUp, Copy, FileText, Plus, Trash2 } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
+import { v4 as uuid } from 'uuid';
 
 export default function BOQStep() {
   const { quotation, setQuotation } = useBuilder();
@@ -40,7 +40,7 @@ export default function BOQStep() {
   const deleteSection = (id: string) => {
     setQuotation((prev) => ({ ...prev, boqSections: prev.boqSections.filter((s) => s.id !== id) }));
     setDeleteSectionId(null);
-    push('success', 'Section deleted.');
+    push('success', 'BOQ section deleted successfully.');
   };
 
   const duplicateSection = (id: string) => {
@@ -81,12 +81,14 @@ export default function BOQStep() {
     setQuotation((prev) => ({
       ...prev,
       boqSections: prev.boqSections.map((s) => s.id === sectionId
-        ? { ...s, items: s.items.map((i) => {
+        ? {
+          ...s, items: s.items.map((i) => {
             if (i.id !== itemId) return i;
             const updated = { ...i, ...patch };
             updated.amount = calcItemAmount(updated);
             return updated;
-          }) }
+          })
+        }
         : s),
     }));
   };
@@ -336,7 +338,7 @@ export default function BOQStep() {
         )}
       </SectionCard>
 
-      <ConfirmDialog open={!!deleteSectionId} title="Delete Section?" message="This will remove the section and all its items." danger confirmLabel="Delete" onConfirm={() => deleteSectionId && deleteSection(deleteSectionId)} onCancel={() => setDeleteSectionId(null)} />
+      <ConfirmDialog open={!!deleteSectionId} title="Delete BOQ section?" message="This will permanently remove this section and all items inside it." danger confirmLabel="Delete section" onConfirm={() => deleteSectionId && deleteSection(deleteSectionId)} onCancel={() => setDeleteSectionId(null)} />
     </div>
   );
 }

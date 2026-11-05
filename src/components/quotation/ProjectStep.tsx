@@ -7,6 +7,7 @@ import type { Quotation } from '@/lib/models';
 import { quotationRepo } from '@/lib/storage';
 import { calcValidUntil, isValidEmail, isValidMobile, isValidPincode } from '@/lib/utils';
 import { listMasterData, type MasterItem } from '@/services/masterData.service';
+import { listParties, type PartyRecord } from '@/services/party.service';
 import { UserCheck } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -16,6 +17,8 @@ export default function ProjectStep() {
   const { user } = useAuth();
   const [projectTypes, setProjectTypes] = useState<MasterItem[]>([]);
   const [areaUnits, setAreaUnits] = useState<MasterItem[]>([]);
+  const [availableCustomerContacts, setAvailableCustomerContacts] = useState<PartyRecord[]>([]);
+  const [selectedCustomerContactId, setSelectedCustomerContactId] = useState('');
 
   const storageScope = { userId: user?.id ?? 'local', companyId: company?.companyId ?? 'local-company' };
 
@@ -37,20 +40,28 @@ export default function ProjectStep() {
     if (!company) {
       setProjectTypes([]);
       setAreaUnits([]);
+      setAvailableCustomerContacts([]);
+      setSelectedCustomerContactId('');
       return;
     }
 
     let active = true;
-    Promise.all([listMasterData('projectTypes'), listMasterData('units')])
-      .then(([typeRows, unitRows]) => {
+    Promise.all([
+      listMasterData('projectTypes'),
+      listMasterData('units'),
+      listParties(undefined, 'customer', '', { activeOnly: true }),
+    ])
+      .then(([typeRows, unitRows, parties]) => {
         if (!active) return;
         setProjectTypes(typeRows);
         setAreaUnits(unitRows);
+        setAvailableCustomerContacts(parties.filter((party) => party.isCustomer && party.isActive));
       })
       .catch(() => {
         if (!active) return;
         setProjectTypes([]);
         setAreaUnits([]);
+        setAvailableCustomerContacts([]);
       });
 
     return () => { active = false; };
@@ -70,6 +81,25 @@ export default function ProjectStep() {
 
   const onValidityChange = (validity: string) => update({ validity, validUntil: calcValidUntil(q.quotationDate, validity) });
   const onDateChange = (date: string) => update({ quotationDate: date, validUntil: calcValidUntil(date, q.validity) });
+  const applyCustomerContact = (partyId: string) => {
+    const selectedParty = availableCustomerContacts.find((party) => party.id === partyId);
+    if (!selectedParty) return;
+    setSelectedCustomerContactId(partyId);
+    setQuotation((prev) => ({
+      ...prev,
+      customerPartyId: partyId,
+      customer: {
+        ...prev.customer,
+        name: selectedParty.name || prev.customer.name,
+        email: selectedParty.email || prev.customer.email,
+        mobile: selectedParty.mobile || prev.customer.mobile,
+        address: selectedParty.address || prev.customer.address,
+        city: selectedParty.city || prev.customer.city,
+        state: selectedParty.state || prev.customer.state,
+        pincode: selectedParty.pincode || prev.customer.pincode,
+      },
+    }));
+  };
   const projectTypeOptions = projectTypes.length > 0 ? projectTypes : PROJECT_TYPES.map((name) => ({ id: name, name, code: name, companyId: null, isActive: true } as MasterItem));
   const areaUnitOptions = areaUnits.length > 0 ? areaUnits : AREA_UNITS.map((name) => ({ id: name, name, code: name, symbol: name, companyId: null, isActive: true } as MasterItem));
 
@@ -107,6 +137,30 @@ export default function ProjectStep() {
       </SectionCard>
 
       <SectionCard title="Customer Details">
+        {availableCustomerContacts.length > 0 && (
+          <div className="mb-4">
+            <Field label="Reuse Existing Customer Contact">
+              <Select
+                value={selectedCustomerContactId}
+                onChange={(e) => {
+                  const nextValue = e.target.value;
+                  if (!nextValue) {
+                    setSelectedCustomerContactId('');
+                    return;
+                  }
+                  applyCustomerContact(nextValue);
+                }}
+              >
+                <option value="">Create new customer</option>
+                {availableCustomerContacts.map((party) => (
+                  <option key={party.id} value={party.id}>
+                    {party.name} {party.mobile ? `• ${party.mobile}` : ''}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Field label="Customer Name" required error={!q.customer.name ? 'Required' : ''}>
             <TextInput value={q.customer.name} onChange={(e) => updateCustomer({ name: e.target.value })} placeholder="e.g. Ramesh Kumar" />

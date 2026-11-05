@@ -22,9 +22,81 @@ export interface DashboardReport {
     projectsCount: number;
     activeProjects: number;
     totalContract: number;
+    totalBilled: number;
+    totalOutstanding: number;
+    totalCollected: number;
+    totalExpenses: number;
+    netCashFlow: number;
+    collectionEfficiency: number;
     totalCost: number;
     totalCollections: number;
     supplierOutstanding: number;
+    projectSummaries: DashboardProjectSummary[];
+}
+
+export interface DashboardProjectSummary {
+    projectId: string;
+    projectName: string;
+    contractValue: number;
+    billed: number;
+    collected: number;
+    outstanding: number;
+    expenses: number;
+    netCashFlow: number;
+}
+
+export interface MonthlyFinancialEntry {
+    month: string;
+    billed: number;
+    collected: number;
+    expenses: number;
+    netCashFlow: number;
+}
+
+export interface MonthlyFinancialReport {
+    summary: {
+        totalBilled: number;
+        totalCollected: number;
+        totalExpenses: number;
+        totalOutstanding: number;
+        netCashFlow: number;
+    };
+    monthly: MonthlyFinancialEntry[];
+}
+
+export interface DefaulterReportRow {
+    customerId: string;
+    customerName: string;
+    outstanding: number;
+    invoices: number;
+    dueInvoices: number;
+}
+
+export interface CompanyReceiptRow {
+    id: string;
+    projectId: string | null;
+    customerId: string | null;
+    receiptNumber: string;
+    amount: number;
+    receivedDate: string | null;
+    paymentMethodId: string | null;
+    paymentMethod: string;
+    referenceNumber: string | null;
+    notes: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
+    voidedAt: string | null;
+    allocatedAmount?: number;
+    unallocatedAmount?: number;
+    project?: {
+        id: string;
+        name: string;
+        projectNumber?: string | null;
+    } | null;
+    customer?: {
+        id: string;
+        name: string;
+    } | null;
 }
 
 export interface ReportFilters {
@@ -39,6 +111,7 @@ export interface ProjectReportRow {
     name: string;
     project_number?: string | null;
     contract_amount?: number | null;
+    budget_amount?: number | null;
     status?: string | null;
     start_date?: string | null;
     created_at?: string | null;
@@ -100,6 +173,24 @@ export async function getDashboardReport(): Promise<DashboardReport | null> {
     return data.dashboard;
 }
 
+export async function getMonthlyFinancialReport(): Promise<MonthlyFinancialReport | null> {
+    const { data, error } = await apiGet<MonthlyFinancialReport>('/api/reports/monthly');
+    if (error || !data || !Array.isArray(data.monthly)) {
+        console.warn('Failed to load monthly financial report', error);
+        return null;
+    }
+    return data;
+}
+
+export async function getDefaultersReport(): Promise<DefaulterReportRow[]> {
+    const { data, error } = await apiGet<{ defaulters?: DefaulterReportRow[] }>('/api/reports/defaulters');
+    if (error || !Array.isArray(data?.defaulters)) {
+        console.warn('Failed to load defaulter report', error);
+        return [];
+    }
+    return data.defaulters;
+}
+
 export async function getProjectsReport(filters?: ReportFilters): Promise<ProjectReportRow[]> {
     const { data, error } = await apiGet<{ projects?: ProjectReportRow[] }>(`/api/reports/projects${buildQuery(filters)}`);
     if (error || !Array.isArray(data?.projects)) {
@@ -137,16 +228,22 @@ export async function getSupplierOutstandingReport(projectId?: string): Promise<
     return { outstanding: data.outstanding ?? [], totalOutstanding: Number(data.totalOutstanding ?? 0) };
 }
 
-export async function getProjectFinancials(projectId: string): Promise<{ supplierCost: number; clientCollections: number; investorContributions: number; netCashFlow: number } | null> {
+export async function getProjectFinancials(projectId: string): Promise<{ contractValue: number; projectBudget: number; actualCost: number; customerCollections: number; investorContributions: number; expectedProjectMargin: number | null; cashBasedProfitLoss: number; budgetRemaining: number; budgetUtilization: number; netCashFlow: number } | null> {
     const { data, error } = await apiGet<{ summary?: any }>(`/api/reports/project-financials?projectId=${encodeURIComponent(projectId)}`);
     if (error || !data?.summary) {
         console.warn('Failed to load project financial report', error);
         return null;
     }
     return {
-        supplierCost: Number(data.summary.supplierCost ?? 0),
-        clientCollections: Number(data.summary.clientCollections ?? 0),
+        contractValue: Number(data.summary.contractValue ?? 0),
+        projectBudget: Number(data.summary.projectBudget ?? 0),
+        actualCost: Number(data.summary.actualCost ?? 0),
+        customerCollections: Number(data.summary.customerCollections ?? 0),
         investorContributions: Number(data.summary.investorContributions ?? 0),
+        expectedProjectMargin: data.summary.expectedProjectMargin == null ? null : Number(data.summary.expectedProjectMargin),
+        cashBasedProfitLoss: Number(data.summary.cashBasedProfitLoss ?? 0),
+        budgetRemaining: Number(data.summary.budgetRemaining ?? 0),
+        budgetUtilization: Number(data.summary.budgetUtilization ?? 0),
         netCashFlow: Number(data.summary.netCashFlow ?? 0),
     };
 }
@@ -163,4 +260,19 @@ export async function getCompanySummary(filters?: ReportFilters): Promise<{ proj
         expenseTotal: Number(data.summary.expenseTotal ?? 0),
         profitEstimate: Number(data.summary.profitEstimate ?? 0),
     };
+}
+
+export async function getCompanyReceipts(filters?: { projectId?: string | null; customerId?: string | null }): Promise<CompanyReceiptRow[]> {
+    const params = new URLSearchParams();
+    if (filters?.projectId !== undefined) params.set('projectId', filters.projectId === null ? 'null' : filters.projectId);
+    if (filters?.customerId !== undefined) params.set('customerId', filters.customerId === null ? 'null' : filters.customerId);
+    const query = params.toString();
+
+    const { data, error } = await apiGet<{ receipts?: CompanyReceiptRow[] }>(`/api/receipts${query ? `?${query}` : ''}`);
+    if (error || !Array.isArray(data?.receipts)) {
+        console.warn('Failed to load company receipts', error);
+        return [];
+    }
+
+    return data.receipts;
 }

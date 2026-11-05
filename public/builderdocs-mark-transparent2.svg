@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" role="img" aria-label="BuilderDocs icon" fill="none">
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#0E2245"/>
+  <path d="M8 58L10.5 55.5H52.5L55 58H8Z" fill="#0F766E"/>
+
+  <path d="M13 22.5L22 17V49H13V22.5Z" fill="#1D4ED8"/>
+  <path d="M23.5 15L31.5 10V49H23.5V15Z" fill="#112A52"/>
+  <path d="M33.5 20.5L40.5 16.5V29H33.5V20.5Z" fill="#1A3A6B"/>
+  <path d="M24.5 18.2H31V25H24.5V18.2ZM24.5 27.2H31V34H24.5V27.2Z" fill="#FFFFFF"/>
+
+  <path d="M28.5 24.5H44L52 32.8V49.5C52 51.4 50.4 53 48.5 53H28.5C26.6 53 25 51.4 25 49.5V28C25 26.1 26.6 24.5 28.5 24.5Z" fill="#FFFFFF" stroke="#1D4ED8" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M44 24.5V30.8C44 32.2 45.1 33.3 46.5 33.3H52" fill="#0F766E" stroke="#0F766E" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M32.2 37.4H42.4M32.2 42.8H45.5M32.2 48.2H40.5" stroke="#1D4ED8" stroke-width="2.2" stroke-linecap="round"/>
+
+  <path d="M22.8 49.7C22.8 46.9 25.1 44.6 27.9 44.6C30.8 44.6 33 46.9 33 49.7V50.6H22.8V49.7Z" fill="#FFFFFF" stroke="#1D4ED8" stroke-width="1.5"/>
+  <path d="M20.5 50.6H35.2" stroke="#0F766E" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

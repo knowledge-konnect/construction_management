@@ -1,6 +1,8 @@
 ﻿import ConfirmDialog from '@/components/ConfirmDialog';
+import { DocumentGenerationLoader } from '@/components/loading/Loaders';
 import PdfPreviewModal from '@/components/quotation/PdfPreviewModal';
 import StatusBadge from '@/components/StatusBadge';
+import { AppButton } from '@/components/ui/DesignSystem';
 import { useAuth } from '@/context/AuthContext';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
@@ -44,6 +46,9 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
   const [sortBy, setSortBy] = useState('updated');
+  const [generatingPdfId, setGeneratingPdfId] = useState<string | null>(null);
+  const [creatingProjectId, setCreatingProjectId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const nextSearch = searchParams.get('search') ?? '';
@@ -98,16 +103,27 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
       updatedAt: new Date().toISOString(),
       generatedAt: null,
     };
-    await saveDocument(copy, company.companyId, user.id);
-    push('success', 'Quotation duplicated.');
+    const result = await saveDocument(copy, company.companyId, user.id);
+    if (!result.ok) {
+      push('error', 'We could not duplicate this quotation right now. Please try again.');
+      return;
+    }
+    push('success', 'Quotation duplicated successfully. A new draft copy is ready for editing.');
     onRefresh();
   };
 
-  const handleDownload = (q: Quotation) => {
+  const handleDownload = async (q: Quotation) => {
     if (!settings) return;
-    downloadQuotationPDF(q, settings)
-      .then(() => push('success', 'PDF downloaded.'))
-      .catch((e) => push('error', e instanceof Error ? e.message : 'Could not generate PDF.'));
+    if (generatingPdfId) return;
+    setGeneratingPdfId(q.id);
+    try {
+      await downloadQuotationPDF(q, settings);
+      push('success', 'Quotation PDF downloaded successfully.');
+    } catch (e) {
+      push('error', 'We could not generate the PDF right now. Please try again.');
+    } finally {
+      setGeneratingPdfId(null);
+    }
   };
 
   const handleWhatsAppShare = (q: Quotation) => {
@@ -126,36 +142,52 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
   };
 
   const handleDelete = async () => {
-    if (!deleteId) return;
-    await deleteDocument(deleteId, company?.companyId);
+    if (!deleteId || deleting) return;
+    setDeleting(true);
+    const ok = await deleteDocument(deleteId, company?.companyId);
     setDeleteId(null);
-    push('success', 'Quotation deleted.');
+    setDeleting(false);
+    if (!ok) {
+      push('error', 'We could not delete this quotation right now. Please try again.');
+      return;
+    }
+    push('success', 'Quotation deleted successfully.');
     onRefresh();
   };
 
   const handleStatusChange = async (q: Quotation, status: QuotationStatus) => {
     if (!company || !user) return;
     const updated: Quotation = { ...q, status, updatedAt: new Date().toISOString() };
-    await saveDocument(updated, company.companyId, user.id);
+    const result = await saveDocument(updated, company.companyId, user.id);
+    if (!result.ok) {
+      push('error', 'We could not update quotation status right now. Please try again.');
+      return;
+    }
     push('success', `Marked as ${QUOTATION_STATUSES.find((s) => s.value === status)?.label ?? status}.`);
     onRefresh();
   };
 
   const handleCreateProject = async (q: Quotation) => {
     if (!company || !user) return;
+    if (creatingProjectId) return;
     if (q.status !== 'ACCEPTED') {
       push('error', 'Only accepted quotations can be converted into projects.');
       return;
     }
 
-    const project = await createProjectFromQuotation(q.id);
-    if (!project) {
-      push('error', 'Project could not be created from this quotation.');
-      return;
-    }
+    setCreatingProjectId(q.id);
+    try {
+      const project = await createProjectFromQuotation(q.id);
+      if (!project) {
+        push('error', 'Project could not be created from this quotation.');
+        return;
+      }
 
-    push('success', `Project ${project.projectNumber} created.`);
-    navigate(`/projects/${project.id}`);
+      push('success', `Project ${project.projectNumber} created.`);
+      navigate(`/projects/${project.id}`);
+    } finally {
+      setCreatingProjectId(null);
+    }
   };
 
   const statusCounts = useMemo(() => {
@@ -190,7 +222,26 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="mb-4 grid gap-3 md:grid-cols-4">
+        <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">Total</p>
+          <p className="mt-2 text-2xl font-bold text-[#17243B]">{quotations.length}</p>
+        </div>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Generated</p>
+          <p className="mt-2 text-2xl font-bold text-emerald-800">{statusCounts.GENERATED ?? 0}</p>
+        </div>
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-700">Sent</p>
+          <p className="mt-2 text-2xl font-bold text-blue-800">{statusCounts.SENT ?? 0}</p>
+        </div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Draft</p>
+          <p className="mt-2 text-2xl font-bold text-amber-800">{statusCounts.DRAFT ?? 0}</p>
+        </div>
+      </div>
+
+      <div className="mb-4 flex flex-wrap gap-2">
         {QUOTATION_STATUSES.map((status) => (
           <div key={status.value} className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${statusSummaryStyles[status.value] ?? 'border-slate-200 bg-slate-50'}`}>
             <span className={`h-2.5 w-2.5 rounded-full ${statusDotStyles[status.value] ?? 'bg-slate-400'}`} />
@@ -200,28 +251,34 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
         ))}
       </div>
 
-      <div className="rounded-2xl border border-[#E6E8EC] bg-white p-3 shadow-[0_6px_18px_rgba(15,23,42,0.03)]">
+      {generatingPdfId && (
+        <div className="mb-4">
+          <DocumentGenerationLoader label="Generating quotation PDF…" />
+        </div>
+      )}
+
+      <div className="rounded-[28px] border border-[#E2E8F0] bg-white p-3 shadow-[0_18px_38px_rgba(15,23,42,0.04)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <label className="relative block flex-1 min-w-[220px]">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]" />
             <input
               type="text"
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search quotation, customer, project, or mobile…"
-              className="w-full rounded-xl border border-[#D0D5DD] bg-white py-2.5 pl-9 pr-3 text-sm text-[#17243A] placeholder-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/25"
+              className="w-full rounded-xl border border-[#D0D5DD] bg-[#F8FAFC] py-2.5 pl-9 pr-3 text-sm text-[#17243B] placeholder:text-[#94A3B8] focus:border-[#2454D6] focus:outline-none focus:ring-2 focus:ring-[#2454D6]/15"
             />
           </label>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-xl border border-[#D0D5DD] bg-white px-3 py-2.5 text-sm text-[#17243A] focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/25">
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-xl border border-[#D0D5DD] bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#17243B] focus:border-[#2454D6] focus:outline-none focus:ring-2 focus:ring-[#2454D6]/15">
               <option value="All">All Status</option>
               {QUOTATION_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
-            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="rounded-xl border border-[#D0D5DD] bg-white px-3 py-2.5 text-sm text-[#17243A] focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/25">
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="rounded-xl border border-[#D0D5DD] bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#17243B] focus:border-[#2454D6] focus:outline-none focus:ring-2 focus:ring-[#2454D6]/15">
               <option value="All">All Types</option>
               {projectTypeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="rounded-xl border border-[#D0D5DD] bg-white px-3 py-2.5 text-sm text-[#17243A] focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/25">
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="rounded-xl border border-[#D0D5DD] bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#17243B] focus:border-[#2454D6] focus:outline-none focus:ring-2 focus:ring-[#2454D6]/15">
               <option value="updated">Recently Updated</option>
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
@@ -242,12 +299,9 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
               <p className="text-slate-600 font-medium">No quotations yet</p>
               <p className="text-sm text-slate-400 mb-4">Create your first quotation to start tracking customer work and project value.</p>
               {showCreate && (
-                <button
-                  onClick={() => navigate('/quotations/new')}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg"
-                >
+                <AppButton onClick={() => navigate('/quotations/new')}>
                   <Plus className="w-4 h-4" /> Create Quotation
-                </button>
+                </AppButton>
               )}
             </>
           ) : (
@@ -298,13 +352,13 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
                       <div className="flex items-center justify-center gap-1">
                         <button onClick={() => navigate(`/quotations/${q.id}/edit`)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8]" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
                         <button onClick={() => setPreviewQuotation(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8]" aria-label="Preview PDF"><Eye className="h-4 w-4" /></button>
-                        <button onClick={() => handleDownload(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8]" aria-label="Download PDF"><FileDown className="h-4 w-4" /></button>
+                        <button disabled={Boolean(generatingPdfId)} onClick={() => void handleDownload(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50" aria-label="Download PDF"><FileDown className="h-4 w-4" /></button>
                         <button onClick={() => handleWhatsAppShare(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600 transition-colors hover:bg-emerald-100" aria-label="Share on WhatsApp"><MessageCircle className="h-4 w-4" /></button>
                         <button onClick={() => handleDuplicate(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8]" aria-label="Duplicate"><Copy className="h-4 w-4" /></button>
                         {q.status === 'ACCEPTED' && (
-                          <button onClick={() => void handleCreateProject(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600 transition-colors hover:bg-emerald-100" aria-label="Create project from quotation"><FolderKanban className="h-4 w-4" /></button>
+                          <button disabled={Boolean(creatingProjectId)} onClick={() => void handleCreateProject(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Create project from quotation"><FolderKanban className="h-4 w-4" /></button>
                         )}
-                        <button onClick={() => setDeleteId(q.id)} className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
+                        <button disabled={deleting} onClick={() => setDeleteId(q.id)} className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </td>
                   </tr>
@@ -349,13 +403,13 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
                 <div className="flex items-center gap-1 border-t border-[#E6E8EC] pt-3">
                   <button onClick={() => navigate(`/quotations/${q.id}/edit`)} className="flex-1 rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-medium text-[#1D4ED8]" aria-label="Edit">Edit</button>
                   <button onClick={() => setPreviewQuotation(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500" aria-label="Preview PDF"><Eye className="h-4 w-4" /></button>
-                  <button onClick={() => handleDownload(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500" aria-label="Download PDF"><FileDown className="h-4 w-4" /></button>
+                  <button disabled={Boolean(generatingPdfId)} onClick={() => void handleDownload(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Download PDF"><FileDown className="h-4 w-4" /></button>
                   <button onClick={() => handleWhatsAppShare(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600" aria-label="Share on WhatsApp"><MessageCircle className="h-4 w-4" /></button>
                   <button onClick={() => handleDuplicate(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500" aria-label="Duplicate"><Copy className="h-4 w-4" /></button>
                   {q.status === 'ACCEPTED' && (
-                    <button onClick={() => void handleCreateProject(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600" aria-label="Create project"><FolderKanban className="h-4 w-4" /></button>
+                    <button disabled={Boolean(creatingProjectId)} onClick={() => void handleCreateProject(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Create project"><FolderKanban className="h-4 w-4" /></button>
                   )}
-                  <button onClick={() => setDeleteId(q.id)} className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-500" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
+                  <button disabled={deleting} onClick={() => setDeleteId(q.id)} className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
                 </div>
               </div>
             ))}
@@ -365,10 +419,10 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
 
       <ConfirmDialog
         open={!!deleteId}
-        title="Delete Quotation?"
+        title="Delete quotation?"
         message="This will remove the quotation from your active list and hide it from search and reports."
         danger
-        confirmLabel="Delete"
+        confirmLabel={deleting ? 'Deleting…' : 'Delete quotation'}
         onConfirm={handleDelete}
         onCancel={() => setDeleteId(null)}
       />

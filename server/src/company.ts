@@ -33,20 +33,13 @@ export interface CompanySettingsRow {
     booking_prefix: string | null;
     default_validity_days: number | null;
     default_terms: string | null;
+    default_tax_name: string | null;
+    default_tax_rate: number | null;
+    enabled_business_models: string[] | null;
+    invoice_prefix: string | null;
 }
 
 // ─── Queries ───────────────────────────────────────────────────────────────────
-
-export async function getCompanyByUserId(userId: string) {
-    const { data, error } = await supabaseAdmin
-        .from('companies')
-        .select('*, company_settings!company_settings_company_id_fkey(*)')
-        .eq('owner_id', userId)
-        .maybeSingle();
-
-    if (error) throw error;
-    return data;
-}
 
 export async function getCompanyById(companyId: string) {
     const { data, error } = await supabaseAdmin
