@@ -1,15 +1,18 @@
-﻿import { AppButton, PageHeader } from '@/components/ui/DesignSystem';
+﻿import { AppLoader, FileUploadProgress } from '@/components/loading/Loaders';
+import { AppButton, PageHeader } from '@/components/ui/DesignSystem';
 import { Field, SectionCard, Select, TextArea, TextInput } from '@/components/ui/Form';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
+import { BUSINESS_MODEL_OPTIONS, type BusinessModel } from '@/lib/businessModels';
 import { INDIAN_STATES, VALIDITY_OPTIONS } from '@/lib/constants';
 import type { CompanySettings } from '@/lib/models';
 import { validateCompanySettings } from '@/lib/utils';
-import { Building2, ImageIcon, Loader2, Plus, Save, Sliders, Trash2, Upload, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { listProjects } from '@/services/project.service';
+import { Building2, Check, ImageIcon, Loader2, Plus, Save, Sliders, Trash2, Upload, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
-type Tab = 'company' | 'defaults';
+type Tab = 'company' | 'business-models' | 'defaults';
 
 // ── Image compression helper ──────────────────────────────────────────────────
 // Draws the image onto a canvas, resizes it to maxDim, and returns a base64
@@ -63,6 +66,45 @@ function dataUrlBytes(dataUrl: string): number {
 
 function formatBytes(n: number): string {
   return n < 1024 ? `${n} B` : `${Math.round(n / 1024)} KB`;
+}
+
+function hexToRgb(hex: string) {
+  const value = hex.replace('#', '').trim();
+  if (!/^[0-9a-fA-F]{6}$/.test(value)) return null;
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return { r, g, b };
+}
+
+function relativeLuminance(r: number, g: number, b: number) {
+  const map = [r, g, b].map((v) => {
+    const srgb = v / 255;
+    return srgb <= 0.03928 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * map[0] + 0.7152 * map[1] + 0.0722 * map[2];
+}
+
+function contrastRatio(hexA: string, hexB: string) {
+  const rgbA = hexToRgb(hexA);
+  const rgbB = hexToRgb(hexB);
+  if (!rgbA || !rgbB) return null;
+  const l1 = relativeLuminance(rgbA.r, rgbA.g, rgbA.b);
+  const l2 = relativeLuminance(rgbB.r, rgbB.g, rgbB.b);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function normalizeHexColor(value: string): string | null {
+  const compact = value.trim().replace(/^#/, '').toUpperCase();
+  if (/^[0-9A-F]{3}$/.test(compact)) {
+    return `#${compact.split('').map((c) => `${c}${c}`).join('')}`;
+  }
+  if (/^[0-9A-F]{6}$/.test(compact)) {
+    return `#${compact}`;
+  }
+  return null;
 }
 
 // ── ImageUploadField ──────────────────────────────────────────────────────────
@@ -175,6 +217,8 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
         className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFile(f); }}
       />
+
+      {processing && <div className="mt-2"><FileUploadProgress label={`Uploading ${label.toLowerCase()}…`} /></div>}
     </div>
   );
 }
@@ -185,25 +229,44 @@ export default function SettingsPage() {
   const { push } = useToast();
   const { company, updateSettings, loading } = useCompany();
   const [settings, setSettings] = useState<CompanySettings | null>(null);
+  const [usedBusinessModels, setUsedBusinessModels] = useState<BusinessModel[]>([]);
   const [tab, setTab] = useState<Tab>('company');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [logoProcessing, setLogoProcessing] = useState(false);
 
   useEffect(() => {
     if (company) setSettings({ ...company.settings });
   }, [company]);
 
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const rows = await listProjects();
+      if (!active) return;
+      const models = rows
+        .map((project) => project.businessModel)
+        .filter((value): value is BusinessModel => Boolean(value));
+      setUsedBusinessModels([...new Set(models)]);
+    })();
+    return () => { active = false; };
+  }, [company?.companyId]);
+
   const validateSettings = validateCompanySettings;
 
+  const primaryColor = settings?.primaryColor ?? '#1D4ED8';
+  const accentColor = settings?.secondaryColor ?? '#F4B72B';
+
+  const isLowContrastTheme = useMemo(() => {
+    const ratio = contrastRatio(primaryColor, accentColor);
+    return ratio !== null && ratio < 2.2;
+  }, [primaryColor, accentColor]);
+
+  const canUseEyeDropper = typeof window !== 'undefined' && 'EyeDropper' in window;
+
   if (loading || !settings) {
-    return (
-      <div className="py-20 text-center text-slate-500">
-        <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-          <Loader2 className="h-4 w-4 animate-spin text-[#1D4ED8]" />
-          <span>Loading settings…</span>
-        </div>
-      </div>
-    );
+    return <AppLoader fullscreen={false} message="Loading settings…" />;
   }
 
   const update = (patch: Partial<CompanySettings>) => {
@@ -214,6 +277,18 @@ export default function SettingsPage() {
   const handleSave = async () => {
     if (!settings) return;
     const nextErrors = validateSettings(settings);
+    const enabledModels = settings.enabledBusinessModels ?? [];
+    if (!enabledModels.length) {
+      setErrors({ enabledBusinessModels: 'At least one business model must remain enabled.' });
+      push('error', 'At least one business model must remain enabled.');
+      return;
+    }
+    const disabledUsedModels = usedBusinessModels.filter((model) => !enabledModels.includes(model));
+    if (disabledUsedModels.length > 0) {
+      setErrors({ enabledBusinessModels: `Cannot disable models in use: ${disabledUsedModels.join(', ')}.` });
+      push('error', `Cannot disable models currently in use: ${disabledUsedModels.join(', ')}.`);
+      return;
+    }
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       push('error', 'Please fix the highlighted fields and save again.');
@@ -222,12 +297,61 @@ export default function SettingsPage() {
     setSaving(true);
     const ok = await updateSettings(settings);
     setSaving(false);
-    if (ok) push('success', 'Settings updated successfully.');
+    if (ok) push('success', 'Settings updated successfully. New values are now applied to future documents.');
     else push('error', 'Unable to save settings now. Please try again.');
+  };
+
+  const applyHexColor = (target: 'primary' | 'accent', value: string) => {
+    const normalized = normalizeHexColor(value);
+    if (!normalized) {
+      push('error', 'Please enter a valid hex color like #1D4ED8 or #1D4.');
+      return;
+    }
+    if (target === 'primary') update({ primaryColor: normalized });
+    else update({ secondaryColor: normalized });
+  };
+
+  const pickColorFromScreen = async (target: 'primary' | 'accent') => {
+    if (!canUseEyeDropper) {
+      push('error', 'Screen color picker is not supported in this browser.');
+      return;
+    }
+    try {
+      const EyeDropperCtor = (window as any).EyeDropper;
+      const eyeDropper = new EyeDropperCtor();
+      const result = await eyeDropper.open();
+      const color = normalizeHexColor(result?.sRGBHex ?? '');
+      if (!color) return;
+      if (target === 'primary') update({ primaryColor: color });
+      else update({ secondaryColor: color });
+    } catch {
+      // User cancellation is expected, so no toast needed.
+    }
+  };
+
+  const handleLogoFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      push('error', 'Please upload a valid logo file (PNG, JPEG, or WebP).');
+      return;
+    }
+
+    setLogoProcessing(true);
+    try {
+      const dataUrl = await compressImage(file, 400, 0.82, 'image/jpeg');
+      const kb = Math.round(dataUrlBytes(dataUrl) / 1024);
+      update({ logoUrl: dataUrl });
+      push('success', `Logo is ready (${kb} KB). Click "Save Settings" to apply it.`);
+    } catch (err) {
+      push('error', err instanceof Error ? err.message : 'Unable to process logo right now. Please try again.');
+    } finally {
+      setLogoProcessing(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
   };
 
   const tabs: { key: Tab; label: string; icon: typeof Building2 }[] = [
     { key: 'company', label: 'Company Profile', icon: Building2 },
+    { key: 'business-models', label: 'Business Models', icon: Sliders },
     { key: 'defaults', label: 'Quotation Defaults', icon: Sliders },
   ];
 
@@ -236,9 +360,9 @@ export default function SettingsPage() {
       <PageHeader
         title="Settings"
         actions={
-          <AppButton onClick={handleSave} disabled={saving}>
+          <AppButton onClick={handleSave} loading={saving} loadingText="Saving settings…">
             <Save className="h-4 w-4" />
-            {saving ? 'Saving…' : 'Save Settings'}
+            Save Settings
           </AppButton>
         }
       />
@@ -295,7 +419,7 @@ export default function SettingsPage() {
                   maxLength={15}
                   value={settings.gstin}
                   onChange={(e) => update({ gstin: e.target.value.toUpperCase() })}
-                  placeholder="e.g. 36ABCDE1234F2Z5"
+                  placeholder="e.g. 37ABCDE1234F2Z5"
                 />
               </Field>
               <Field label="PAN (optional)" error={errors.pan}>
@@ -328,41 +452,187 @@ export default function SettingsPage() {
             title="Branding"
             description="Images are compressed and saved directly in the database. They appear in PDF headers and signature blocks."
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ImageUploadField
-                label="Company Logo"
-                hint="PNG or JPEG — resized to 400 px wide"
-                currentUrl={settings.logoUrl}
-                type="logo"
-                onProcessed={(url) => update({ logoUrl: url })}
-                onRemoved={() => update({ logoUrl: undefined })}
-              />
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Theme Colors</p>
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={settings.primaryColor ?? '#1D4ED8'}
-                        onChange={(e) => update({ primaryColor: e.target.value })}
-                        className="w-9 h-9 p-0.5 border border-slate-200 rounded cursor-pointer"
-                      />
-                      <div>
-                        <p className="text-xs font-medium text-slate-600">Primary</p>
-                        <p className="text-xs text-slate-400">{settings.primaryColor ?? '#1D4ED8'}</p>
+            <div className="space-y-4">
+              <p className="text-sm text-slate-600">
+                Logo appears in quotation/invoice headers. Signature (in Authorized Signatory) appears in the PDF sign-off block.
+              </p>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                  <p className="text-sm font-semibold text-slate-800 mb-1">Company Logo</p>
+                  <p className="text-xs text-slate-600 mb-3">PNG/JPEG recommended. Auto-optimized for PDF header quality.</p>
+
+                  <div className="flex items-start gap-4">
+                    <div className="relative">
+                      <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+                        {settings.logoUrl ? (
+                          <img src={settings.logoUrl} alt="Company logo" className="h-full w-full object-contain" />
+                        ) : (
+                          <div className="text-xs text-slate-400 text-center leading-4">No logo</div>
+                        )}
+                      </div>
+                      {settings.logoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            update({ logoUrl: undefined });
+                            if (logoInputRef.current) logoInputRef.current.value = '';
+                          }}
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow"
+                          title="Remove logo"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex-1 space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={logoProcessing}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#1D4ED8] border border-[#1D4ED8]/30 hover:bg-[#1D4ED8]/5 rounded-lg disabled:opacity-60"
+                      >
+                        {logoProcessing
+                          ? <><Loader2 className="w-4 h-4 animate-spin" /> Compressing…</>
+                          : <><Upload className="w-4 h-4" /> {settings.logoUrl ? 'Replace logo' : 'Choose logo'}</>
+                        }
+                      </button>
+                      <p className="text-xs text-slate-500">Best result: square logo with clear foreground.</p>
+                    </div>
+                  </div>
+
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void handleLogoFile(f);
+                    }}
+                  />
+
+                  {logoProcessing && <div className="mt-2"><FileUploadProgress label="Uploading company logo…" /></div>}
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                  <p className="text-sm font-semibold text-slate-800 mb-1">Theme Colors</p>
+                  <p className="text-xs text-slate-600 mb-3">
+                    Match your website colors: use swatch picker, paste hex code, or pick directly from screen.
+                  </p>
+
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs font-medium text-slate-700 mb-1">Primary</p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={primaryColor}
+                          onChange={(e) => update({ primaryColor: e.target.value })}
+                          className="w-10 h-10 p-0.5 border border-slate-200 rounded cursor-pointer shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <TextInput
+                            value={primaryColor}
+                            onChange={(e) => update({ primaryColor: e.target.value })}
+                            onBlur={(e) => applyHexColor('primary', e.target.value)}
+                            placeholder="#1D4ED8"
+                          />
+                        </div>
+                        {canUseEyeDropper && (
+                          <button
+                            type="button"
+                            onClick={() => void pickColorFromScreen('primary')}
+                            className="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            Pick
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={settings.secondaryColor ?? '#F4B72B'}
-                        onChange={(e) => update({ secondaryColor: e.target.value })}
-                        className="w-9 h-9 p-0.5 border border-slate-200 rounded cursor-pointer"
-                      />
+
+                    <div>
+                      <p className="text-xs font-medium text-slate-700 mb-1">Accent</p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={accentColor}
+                          onChange={(e) => update({ secondaryColor: e.target.value })}
+                          className="w-10 h-10 p-0.5 border border-slate-200 rounded cursor-pointer shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <TextInput
+                            value={accentColor}
+                            onChange={(e) => update({ secondaryColor: e.target.value })}
+                            onBlur={(e) => applyHexColor('accent', e.target.value)}
+                            placeholder="#F4B72B"
+                          />
+                        </div>
+                        {canUseEyeDropper && (
+                          <button
+                            type="button"
+                            onClick={() => void pickColorFromScreen('accent')}
+                            className="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            Pick
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={() => update({ primaryColor: '#1D4ED8', secondaryColor: '#F4B72B' })}
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-100"
+                    >
+                      Reset to Default Colors
+                    </button>
+                  </div>
+
+                  {isLowContrastTheme && (
+                    <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
+                      Selected colors are very close. PDF headings may be less readable.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <div className="px-4 py-2.5 text-white text-xs font-semibold tracking-wide" style={{ backgroundColor: primaryColor }}>
+                  Brand Preview
+                </div>
+                <div className="p-4 bg-white space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white p-1.5">
+                        {settings.logoUrl ? (
+                          <img src={settings.logoUrl} alt="Preview logo" className="h-full w-full object-contain" />
+                        ) : (
+                          <span className="text-[10px] text-slate-400">LOGO</span>
+                        )}
+                      </div>
                       <div>
-                        <p className="text-xs font-medium text-slate-600">Accent</p>
-                        <p className="text-xs text-slate-400">{settings.secondaryColor ?? '#F4B72B'}</p>
+                        <p className="text-base font-semibold text-slate-800 leading-5">{settings.companyName || 'Your Company Name'}</p>
+                        <p className="text-sm text-slate-600">{settings.tagline || 'Your company tagline appears here.'}</p>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-white" style={{ backgroundColor: accentColor }}>
+                      Accent Style
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="rounded-lg border border-slate-200 p-2.5">
+                      <p className="text-xs text-slate-500 mb-1">Sample heading</p>
+                      <p className="text-sm font-semibold" style={{ color: primaryColor }}>Quotation Summary</p>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 p-2.5">
+                      <p className="text-xs text-slate-500 mb-1">Sample highlight</p>
+                      <div className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-white" style={{ backgroundColor: accentColor }}>
+                        Approved
                       </div>
                     </div>
                   </div>
@@ -439,6 +709,53 @@ export default function SettingsPage() {
       )}
 
       {/* ── Quotation Defaults tab ── */}
+      {tab === 'business-models' && (
+        <div className="space-y-6">
+          <SectionCard
+            title="Enabled business models"
+            description="Choose which project models are available for this company. Models already used by existing projects remain locked until reassigned."
+          >
+            <div className="space-y-3">
+              {BUSINESS_MODEL_OPTIONS.map((option) => {
+                const enabled = (settings.enabledBusinessModels ?? []).includes(option.value);
+                const isLocked = usedBusinessModels.includes(option.value);
+                return (
+                  <label
+                    key={option.value}
+                    className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${enabled ? 'border-[#DBEAFE] bg-[#F8FAFC]' : 'border-slate-200 bg-white'} ${isLocked ? 'opacity-90' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={enabled}
+                      disabled={isLocked}
+                      onChange={() => {
+                        const current = settings.enabledBusinessModels ?? [];
+                        const next = enabled
+                          ? current.filter((value) => value !== option.value)
+                          : [...current, option.value];
+                        update({ enabledBusinessModels: next });
+                      }}
+                      className="mt-1 h-4 w-4 rounded border-slate-300 text-[#1D4ED8]"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-semibold text-[#17243A]">{option.label}</p>
+                        {isLocked && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                            <Check className="h-3 w-3" /> In use
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-sm text-[#667085]">{option.description}</p>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </SectionCard>
+        </div>
+      )}
+
       {tab === 'defaults' && (
         <div className="space-y-6">
           <SectionCard title="Quotation Defaults" description="Default values applied when creating a new quotation.">

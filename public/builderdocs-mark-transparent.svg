@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">BuilderDocs app icon</title>
+  <desc id="desc">Navy and blue construction buildings behind a white document, inside a softly rounded light background.</desc>
+  <rect width="512" height="512" rx="112" fill="#F5F7FA"/>
+
+  <!-- Rear buildings -->
+  <path d="M52 190 158 128v274H52V190Z" fill="#1D4ED8"/>
+  <path d="M174 112 286 48v354H174V112Z" fill="#17243A"/>
+  <path d="M302 166 380 121v281h-78V166Z" fill="#17243A"/>
+
+  <!-- Building windows -->
+  <path d="M205 145h20v24h-20zm43-25h20v24h-20zm-43 66h20v24h-20zm43-25h20v24h-20z" fill="#FFFFFF"/>
+
+  <!-- Document -->
+  <path d="M232 174h158l82 82v171c0 27-21 48-48 48H232c-27 0-48-21-48-48V222c0-27 21-48 48-48Z" fill="#1D4ED8"/>
+  <path d="M232 198h148l74 74v155c0 14-11 25-25 25H232c-14 0-25-11-25-25V223c0-14 11-25 25-25Z" fill="#FFFFFF"/>
+
+  <!-- Folded corner -->
+  <path d="M380 198v56c0 27 21 48 48 48h44v-48l-92-56Z" fill="#1D4ED8"/>
+
+  <!-- Document lines -->
+  <path d="M252 310h94M252 359h124M252 408h82" fill="none" stroke="#1D4ED8" stroke-width="20" stroke-linecap="round"/>
+</svg>

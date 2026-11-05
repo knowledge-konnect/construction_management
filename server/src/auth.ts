@@ -27,6 +27,31 @@ const JWT_SECRET: string = secret;
 const expiry = process.env.JWT_EXPIRY || '15m';
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS || 12);
 
+export function getErrorText(err: unknown): string {
+    if (err == null) return '';
+    if (typeof err === 'string') return err;
+    if (err instanceof Error) {
+        const pieces = [err.message];
+        const cause = (err as Error & { cause?: unknown }).cause;
+        if (cause !== undefined) {
+            pieces.push(getErrorText(cause));
+        }
+        return pieces.filter(Boolean).join('\n');
+    }
+    if (typeof err === 'object') {
+        const cause = 'cause' in err ? (err as { cause?: unknown }).cause : undefined;
+        if (cause !== undefined) {
+            return getErrorText(cause);
+        }
+    }
+    return String(err);
+}
+
+export function isTransientNetworkError(err: unknown): boolean {
+    const text = getErrorText(err);
+    return /(fetch failed|ECONNRESET|ECONNREFUSED|ENOTFOUND|TLS|network|timed out|timeout|socket disconnected)/i.test(text);
+}
+
 export const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
     auth: {
         persistSession: false,

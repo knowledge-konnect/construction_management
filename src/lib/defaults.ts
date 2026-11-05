@@ -52,6 +52,7 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   logoUrl: '',
   signatureImage: '',
   pan: '',
+  enabledBusinessModels: ['contract_construction', 'property_development', 'civil_works_contract', 'material_supply'],
 };
 
 function defaultTerms(): Term[] {

@@ -5,7 +5,9 @@ export type MasterType = 'projectTypes' | 'units' | 'expenseCategories' | 'payme
 export interface MasterItem {
     id: string;
     companyId: string | null;
+    projectTypeId?: string | null;
     code: string;
+    templateCode?: string | null;
     name: string;
     description?: string | null;
     symbol?: string | null;
@@ -21,7 +23,9 @@ function mapItem(row: any): MasterItem {
     return {
         id: row.id,
         companyId: row.company_id ?? null,
+        projectTypeId: row.project_type_id ?? null,
         code: row.code ?? row.template_code ?? '',
+        templateCode: row.template_code ?? null,
         name: row.name ?? '',
         description: row.description ?? null,
         symbol: row.symbol ?? null,

@@ -1,7 +1,15 @@
 import { supabaseAdmin } from './auth.js';
+import {
+    DEFAULT_ENABLED_BUSINESS_MODELS,
+    isSupportedBusinessModel,
+    normalizeBusinessModel,
+    normalizeBusinessModels,
+} from './businessModels.js';
+import { validateProjectPayload } from './validation.js';
 
 export type ProjectStatus = 'planned' | 'in_progress' | 'on_hold' | 'completed' | 'cancelled';
 export type ProjectExpenseStatus = 'unpaid' | 'partially_paid' | 'paid' | 'void';
+export type ProjectExpenseType = 'direct' | 'supplier_bill';
 export type ProjectExpenseVisibility = 'internal' | 'published';
 export type ProjectReceiptPaymentMethod = 'cash' | 'upi' | 'bank_transfer' | 'cheque' | 'other';
 export type ProjectReceiptVisibility = 'internal' | 'published';
@@ -12,6 +20,7 @@ export type ProjectClientAccessStatus = 'pending' | 'accepted' | 'revoked' | 'ex
 
 export const PROJECT_STATUS_VALUES: ProjectStatus[] = ['planned', 'in_progress', 'on_hold', 'completed', 'cancelled'];
 export const PROJECT_EXPENSE_STATUS_VALUES: ProjectExpenseStatus[] = ['unpaid', 'partially_paid', 'paid', 'void'];
+export const PROJECT_EXPENSE_TYPE_VALUES: ProjectExpenseType[] = ['direct', 'supplier_bill'];
 export const PROJECT_EXPENSE_VISIBILITY_VALUES: ProjectExpenseVisibility[] = ['internal', 'published'];
 export const PROJECT_RECEIPT_PAYMENT_METHODS: ProjectReceiptPaymentMethod[] = ['cash', 'upi', 'bank_transfer', 'cheque', 'other'];
 export const PROJECT_RECEIPT_VISIBILITY_VALUES: ProjectReceiptVisibility[] = ['internal', 'published'];
@@ -28,6 +37,31 @@ export function normalizeProjectExpenseStatus(value: unknown): ProjectExpenseSta
     return PROJECT_EXPENSE_STATUS_VALUES.includes(value as ProjectExpenseStatus)
         ? (value as ProjectExpenseStatus)
         : 'unpaid';
+}
+
+export function normalizeProjectExpenseType(value: unknown): ProjectExpenseType {
+    return PROJECT_EXPENSE_TYPE_VALUES.includes(value as ProjectExpenseType)
+        ? (value as ProjectExpenseType)
+        : 'direct';
+}
+
+function inferProjectExpenseType(payload: any): ProjectExpenseType {
+    if (payload?.expenseType !== undefined || payload?.expense_type !== undefined) {
+        return normalizeProjectExpenseType(payload?.expenseType ?? payload?.expense_type);
+    }
+
+    const hasSupplierFields = Boolean(
+        payload?.supplierId
+        || payload?.supplier_id
+        || payload?.supplierPartyId
+        || payload?.supplier_party_id
+        || String(payload?.supplierName ?? '').trim()
+        || String(payload?.supplierBillNumber ?? '').trim()
+        || payload?.dueDate
+        || payload?.due_date
+    );
+
+    return hasSupplierFields ? 'supplier_bill' : 'direct';
 }
 
 export function normalizeProjectExpenseVisibility(value: unknown): ProjectExpenseVisibility {
@@ -72,6 +106,39 @@ export function normalizeProjectClientAccessStatus(value: unknown): ProjectClien
         : 'pending';
 }
 
+async function ensureExternalUserAccount(email: string, role: 'client' | 'investor') {
+    const normalizedEmail = String(email ?? '').trim().toLowerCase();
+    if (!normalizedEmail) {
+        const error: any = new Error(`${role === 'client' ? 'Client' : 'Investor'} email is required.`);
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const { data: user, error: userError } = await supabaseAdmin
+        .from('users')
+        .select('id, email, role')
+        .eq('email', normalizedEmail)
+        .maybeSingle();
+
+    if (userError) throw userError;
+    if (!user) {
+        const error: any = new Error(`No user account exists for ${normalizedEmail}. Invite or create the ${role} account first before granting project access.`);
+        error.statusCode = 409;
+        throw error;
+    }
+
+    if (user.role !== role) {
+        const { error: updateError } = await supabaseAdmin
+            .from('users')
+            .update({ role, updated_at: new Date().toISOString() })
+            .eq('id', user.id);
+
+        if (updateError) throw updateError;
+    }
+
+    return user;
+}
+
 export function buildProjectPayloadFromQuotation(
     quotation: any,
     companyId: string,
@@ -114,6 +181,152 @@ export function canConvertQuotationToProject(
         return { allowed: false, reason: 'This quotation has already been converted to a project.' };
     }
     return { allowed: true };
+}
+
+type ProjectStageDraftInput = {
+    name: string;
+    sequenceNumber: number;
+    plannedStartDate?: string | null;
+    plannedEndDate?: string | null;
+};
+
+function normalizeProjectStageDrafts(stageDrafts: unknown): ProjectStageDraftInput[] {
+    if (!Array.isArray(stageDrafts)) return [];
+
+    const normalized: ProjectStageDraftInput[] = [];
+    for (let index = 0; index < stageDrafts.length; index += 1) {
+        const row = stageDrafts[index] as any;
+        const name = String(row?.name ?? '').trim();
+        if (!name) continue;
+
+        const rawSequence = Number(row?.sequenceNumber ?? index + 1);
+        const sequenceNumber = Number.isFinite(rawSequence) && rawSequence > 0
+            ? Math.floor(rawSequence)
+            : index + 1;
+
+        normalized.push({
+            name,
+            sequenceNumber,
+            plannedStartDate: row?.plannedStartDate ?? null,
+            plannedEndDate: row?.plannedEndDate ?? null,
+        });
+    }
+
+    return normalized
+        .sort((a, b) => a.sequenceNumber - b.sequenceNumber || a.name.localeCompare(b.name))
+        .map((row, index) => ({
+            ...row,
+            sequenceNumber: index + 1,
+        }));
+}
+
+async function getCompanyEnabledBusinessModels(companyId: string): Promise<string[]> {
+    const { data, error } = await supabaseAdmin
+        .from('company_settings')
+        .select('enabled_business_models')
+        .eq('company_id', companyId)
+        .maybeSingle();
+
+    if (error) throw error;
+    return normalizeBusinessModels(data?.enabled_business_models ?? DEFAULT_ENABLED_BUSINESS_MODELS);
+}
+
+async function assertBusinessModelEnabled(companyId: string, businessModel: unknown) {
+    const normalizedBusinessModel = normalizeBusinessModel(businessModel);
+    if (!normalizedBusinessModel) return;
+
+    const enabledBusinessModels = await getCompanyEnabledBusinessModels(companyId);
+    if (!enabledBusinessModels.includes(normalizedBusinessModel)) {
+        const error = new Error(`Business model "${normalizedBusinessModel}" is not enabled for this company.`) as Error & { statusCode?: number };
+        error.statusCode = 403;
+        throw error;
+    }
+}
+
+async function validateLandownerPartyForCompany(companyId: string, landownerPartyId: string | null | undefined) {
+    if (!landownerPartyId) return null;
+
+    const { data, error } = await supabaseAdmin
+        .from('parties')
+        .select('id, company_id, is_active, is_deleted, name')
+        .eq('id', landownerPartyId)
+        .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+        const err: any = new Error('Selected landowner party could not be found.');
+        err.statusCode = 404;
+        throw err;
+    }
+    if (data.company_id !== companyId) {
+        const err: any = new Error('Selected landowner party belongs to a different company.');
+        err.statusCode = 403;
+        throw err;
+    }
+    if (!data.is_active || data.is_deleted) {
+        const err: any = new Error('Selected landowner party is not active for this company.');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    return data;
+}
+
+async function createProjectAndSeedStagesTransactional(companyId: string, payload: any, userId: string) {
+    const stageDrafts = normalizeProjectStageDrafts(payload?.stage_drafts ?? payload?.stages);
+    const normalizedBusinessModel = payload?.business_model ?? payload?.businessModel ?? null;
+    const landownerPartyId = payload?.landowner_party_id ?? payload?.landownerPartyId ?? null;
+    const normalizedBusinessModelValue = isSupportedBusinessModel(normalizedBusinessModel) ? normalizedBusinessModel : null;
+
+    if (normalizedBusinessModelValue === 'property_development' && landownerPartyId) {
+        await validateLandownerPartyForCompany(companyId, landownerPartyId);
+    }
+
+    const rpcPayload = {
+        p_company_id: companyId,
+        p_created_by: userId,
+        p_customer_id: payload?.customer_id ?? null,
+        p_source_document_id: payload?.source_document_id ?? null,
+        p_project_type_id: payload?.project_type_id ?? null,
+        p_project_type_snapshot: payload?.project_type_snapshot ?? null,
+        p_business_model: normalizedBusinessModelValue,
+        p_projected_sales_value: payload?.projected_sales_value ?? payload?.projectedSalesValue ?? null,
+        p_land_cost: payload?.land_cost ?? payload?.landCost ?? null,
+        p_development_arrangement: payload?.development_arrangement ?? payload?.developmentArrangement ?? null,
+        p_total_project_flats: payload?.total_project_flats ?? payload?.totalProjectFlats ?? null,
+        p_landowner_party_id: landownerPartyId,
+        p_jda_agreement_reference: payload?.jda_agreement_reference ?? payload?.jdaAgreementReference ?? null,
+        p_jda_agreement_document_url: payload?.jda_agreement_document_url ?? payload?.jdaAgreementDocumentUrl ?? null,
+        p_jda_agreement_date: payload?.jda_agreement_date ?? payload?.jdaAgreementDate ?? null,
+        p_builder_share_units: payload?.builder_share_units ?? payload?.builderShareUnits ?? null,
+        p_landowner_share_units: payload?.landowner_share_units ?? payload?.landownerShareUnits ?? null,
+        p_project_number: payload?.project_number,
+        p_name: payload?.name,
+        p_description: payload?.description ?? null,
+        p_site_address: payload?.site_address ?? null,
+        p_contract_amount: Number(payload?.contract_amount ?? 0),
+        p_budget_amount: payload?.budget_amount === undefined || payload?.budget_amount === null ? null : Number(payload.budget_amount ?? 0),
+        p_start_date: payload?.start_date ?? null,
+        p_expected_end_date: payload?.expected_end_date ?? null,
+        p_actual_end_date: payload?.actual_end_date ?? null,
+        p_status: normalizeProjectStatus(payload?.status ?? 'planned'),
+        p_stage_drafts: stageDrafts.length > 0 ? stageDrafts : null,
+    };
+
+    const { data: projectId, error: rpcError } = await supabaseAdmin.rpc('create_project_with_stages_with_business_model', rpcPayload);
+    if (rpcError) throw rpcError;
+
+    const createdProjectId = String(projectId ?? '').trim();
+    if (!createdProjectId) {
+        throw new Error('Project creation did not return an id.');
+    }
+
+    const project = await getProjectRowById(createdProjectId);
+    if (!project) {
+        throw new Error('Project was created but could not be loaded.');
+    }
+
+    return project;
 }
 
 export async function generateProjectNumber(companyId: string): Promise<string> {
@@ -304,14 +517,53 @@ export async function createProjectClientAccessForProject(projectId: string, com
         throw error;
     }
 
+    const existingUser = await ensureExternalUserAccount(email, 'client');
+
+    const { data: existingAccess, error: lookupError } = await supabaseAdmin
+        .from('project_client_access')
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('email', email)
+        .maybeSingle();
+
+    if (lookupError) throw lookupError;
+    if (existingAccess) {
+        if (existingAccess.invitation_status === 'revoked' || existingAccess.invitation_status === 'expired') {
+            const { data: updated, error: updateError } = await supabaseAdmin
+                .from('project_client_access')
+                .update({
+                    user_id: existingUser.id,
+                    invitation_status: 'accepted',
+                    accepted_at: new Date().toISOString(),
+                    revoked_at: null,
+                    invitation_token_hash: null,
+                    invitation_expires_at: null,
+                    invited_by: userId,
+                    invited_at: existingAccess.invited_at ?? new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', existingAccess.id)
+                .select('*')
+                .single();
+
+            if (updateError) throw updateError;
+            return updated;
+        }
+
+        const error: any = new Error('This client already has access to this project.');
+        error.statusCode = 409;
+        throw error;
+    }
+
     const accessPayload = {
         project_id: projectId,
         email,
-        user_id: payload?.userId ?? null,
+        user_id: existingUser.id,
         invitation_token_hash: payload?.invitationTokenHash ?? null,
         invitation_expires_at: payload?.invitationExpiresAt ?? null,
-        invitation_status: normalizeProjectClientAccessStatus(payload?.invitationStatus ?? 'pending'),
+        invitation_status: 'accepted',
         invited_by: userId,
+        accepted_at: new Date().toISOString(),
     };
 
     const { data, error } = await supabaseAdmin
@@ -380,6 +632,22 @@ export async function getProjectRowById(id: string) {
 }
 
 export async function createProjectForCompany(companyId: string, payload: any, userId: string) {
+    const businessModelValue = payload?.business_model ?? payload?.businessModel ?? null;
+    if (businessModelValue === null || businessModelValue === undefined || (typeof businessModelValue === 'string' && businessModelValue.trim() === '')) {
+        const error = new Error('Business model is required for new project creation. Select one of: contract_construction, property_development, civil_works_contract, material_supply.') as Error & { statusCode?: number };
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (!isSupportedBusinessModel(businessModelValue)) {
+        const error = new Error('Business model must be one of: contract_construction, property_development, civil_works_contract, material_supply.') as Error & { statusCode?: number };
+        error.statusCode = 400;
+        throw error;
+    }
+
+    await assertBusinessModelEnabled(companyId, businessModelValue);
+
+    const normalizedBusinessModel = businessModelValue;
     const cleanPayload = {
         ...payload,
         company_id: companyId,
@@ -388,27 +656,87 @@ export async function createProjectForCompany(companyId: string, payload: any, u
         source_document_id: payload?.source_document_id ?? null,
         project_type_id: payload?.project_type_id ?? null,
         project_type_snapshot: payload?.project_type_snapshot ?? null,
+        business_model: isSupportedBusinessModel(normalizedBusinessModel) ? normalizedBusinessModel : null,
+        development_arrangement: payload?.development_arrangement ?? payload?.developmentArrangement ?? null,
+        total_project_flats: payload?.total_project_flats ?? payload?.totalProjectFlats ?? null,
+        landowner_party_id: payload?.landowner_party_id ?? payload?.landownerPartyId ?? null,
+        jda_agreement_reference: payload?.jda_agreement_reference ?? payload?.jdaAgreementReference ?? null,
+        jda_agreement_document_url: payload?.jda_agreement_document_url ?? payload?.jdaAgreementDocumentUrl ?? null,
+        jda_agreement_date: payload?.jda_agreement_date ?? payload?.jdaAgreementDate ?? null,
+        builder_share_units: payload?.builder_share_units ?? payload?.builderShareUnits ?? null,
+        landowner_share_units: payload?.landowner_share_units ?? payload?.landownerShareUnits ?? null,
+        projected_sales_value: payload?.projected_sales_value ?? payload?.projectedSalesValue ?? null,
+        land_cost: payload?.land_cost ?? payload?.landCost ?? null,
         status: normalizeProjectStatus(payload?.status ?? 'planned'),
         contract_amount: Number(payload?.contract_amount ?? 0),
+        budget_amount: payload?.budget_amount === undefined || payload?.budget_amount === null ? null : Number(payload.budget_amount ?? 0),
     };
 
-    const { data, error } = await supabaseAdmin
-        .from('projects')
-        .insert(cleanPayload)
-        .select('*, customers(*)')
-        .single();
-
-    if (error) throw error;
-    return data;
+    return createProjectAndSeedStagesTransactional(companyId, cleanPayload, userId);
 }
 
 export async function updateProjectRow(id: string, payload: any) {
+    const currentProject = await getProjectRowById(id);
+    const nextProjectPayload = {
+        ...currentProject,
+        ...payload,
+        business_model: payload.business_model ?? payload.businessModel ?? currentProject?.business_model ?? null,
+        development_arrangement: payload.development_arrangement ?? payload.developmentArrangement ?? currentProject?.development_arrangement ?? null,
+        total_project_flats: payload.total_project_flats ?? payload.totalProjectFlats ?? currentProject?.total_project_flats ?? null,
+        landowner_party_id: payload.landowner_party_id ?? payload.landownerPartyId ?? currentProject?.landowner_party_id ?? null,
+        jda_agreement_reference: payload.jda_agreement_reference ?? payload.jdaAgreementReference ?? currentProject?.jda_agreement_reference ?? null,
+        jda_agreement_document_url: payload.jda_agreement_document_url ?? payload.jdaAgreementDocumentUrl ?? currentProject?.jda_agreement_document_url ?? null,
+        jda_agreement_date: payload.jda_agreement_date ?? payload.jdaAgreementDate ?? currentProject?.jda_agreement_date ?? null,
+        builder_share_units: payload.builder_share_units ?? payload.builderShareUnits ?? currentProject?.builder_share_units ?? null,
+        landowner_share_units: payload.landowner_share_units ?? payload.landownerShareUnits ?? currentProject?.landowner_share_units ?? null,
+        projected_sales_value: payload.projected_sales_value ?? payload.projectedSalesValue ?? currentProject?.projected_sales_value ?? null,
+        land_cost: payload.land_cost ?? payload.landCost ?? currentProject?.land_cost ?? null,
+    };
+
+    const validationError = validateProjectPayload(nextProjectPayload);
+    if (validationError) {
+        const error = new Error(validationError) as Error & { statusCode?: number };
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (currentProject?.company_id && nextProjectPayload.business_model === 'property_development' && nextProjectPayload.landowner_party_id) {
+        await validateLandownerPartyForCompany(currentProject.company_id, nextProjectPayload.landowner_party_id);
+    }
+
+    if (currentProject?.id) {
+        const { data: existingProjectUnits, error: existingProjectUnitsError } = await supabaseAdmin
+            .from('project_units')
+            .select('id, share_type, status')
+            .eq('project_id', currentProject.id);
+
+        if (existingProjectUnitsError) throw existingProjectUnitsError;
+
+        const builderExisting = (existingProjectUnits ?? []).filter((row) => row.share_type === 'builder').length;
+        const landownerExisting = (existingProjectUnits ?? []).filter((row) => row.share_type === 'landowner').length;
+        const nextBuilderShareUnits = Number(nextProjectPayload.builder_share_units ?? currentProject.builder_share_units ?? 0);
+        const nextLandownerShareUnits = Number(nextProjectPayload.landowner_share_units ?? currentProject.landowner_share_units ?? 0);
+
+        if (nextProjectPayload.business_model !== 'property_development' && (existingProjectUnits ?? []).length > 0) {
+            const error: any = new Error('Existing project units must be removed before switching away from property development.');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        if (nextBuilderShareUnits < builderExisting || nextLandownerShareUnits < landownerExisting) {
+            const error: any = new Error('Project share totals cannot be reduced below the number of existing registered units.');
+            error.statusCode = 400;
+            throw error;
+        }
+    }
+
     const updates: Record<string, unknown> = {};
 
     if (payload.name !== undefined) updates.name = payload.name;
     if (payload.description !== undefined) updates.description = payload.description ?? null;
     if (payload.site_address !== undefined) updates.site_address = payload.site_address ?? null;
     if (payload.contract_amount !== undefined) updates.contract_amount = Number(payload.contract_amount ?? 0);
+    if (payload.budget_amount !== undefined) updates.budget_amount = payload.budget_amount === null || payload.budget_amount === undefined ? null : Number(payload.budget_amount ?? 0);
     if (payload.start_date !== undefined) updates.start_date = payload.start_date ?? null;
     if (payload.expected_end_date !== undefined) updates.expected_end_date = payload.expected_end_date ?? null;
     if (payload.actual_end_date !== undefined) updates.actual_end_date = payload.actual_end_date ?? null;
@@ -416,6 +744,53 @@ export async function updateProjectRow(id: string, payload: any) {
     if (payload.source_document_id !== undefined) updates.source_document_id = payload.source_document_id ?? null;
     if (payload.project_type_id !== undefined) updates.project_type_id = payload.project_type_id ?? null;
     if (payload.project_type_snapshot !== undefined) updates.project_type_snapshot = payload.project_type_snapshot ?? null;
+    if (payload.business_model !== undefined || payload.businessModel !== undefined) {
+        const businessModelValue = payload.business_model ?? payload.businessModel ?? null;
+        if (businessModelValue !== null && businessModelValue !== undefined) {
+            const trimmedBusinessModel = typeof businessModelValue === 'string' ? businessModelValue.trim() : businessModelValue;
+            if (trimmedBusinessModel === '' || !isSupportedBusinessModel(trimmedBusinessModel)) {
+                const error = new Error('Business model must be one of: contract_construction, property_development, civil_works_contract, material_supply.') as Error & { statusCode?: number };
+                error.statusCode = 400;
+                throw error;
+            }
+        }
+
+        const normalizedBusinessModel = normalizeBusinessModel(businessModelValue);
+        if (currentProject?.company_id) {
+            await assertBusinessModelEnabled(currentProject.company_id, businessModelValue);
+        }
+        updates.business_model = normalizedBusinessModel ?? null;
+    }
+    if (payload.development_arrangement !== undefined || payload.developmentArrangement !== undefined) {
+        updates.development_arrangement = payload.development_arrangement ?? payload.developmentArrangement ?? null;
+    }
+    if (payload.total_project_flats !== undefined || payload.totalProjectFlats !== undefined) {
+        updates.total_project_flats = payload.total_project_flats ?? payload.totalProjectFlats ?? null;
+    }
+    if (payload.landowner_party_id !== undefined || payload.landownerPartyId !== undefined) {
+        updates.landowner_party_id = payload.landowner_party_id ?? payload.landownerPartyId ?? null;
+    }
+    if (payload.jda_agreement_reference !== undefined || payload.jdaAgreementReference !== undefined) {
+        updates.jda_agreement_reference = payload.jda_agreement_reference ?? payload.jdaAgreementReference ?? null;
+    }
+    if (payload.jda_agreement_document_url !== undefined || payload.jdaAgreementDocumentUrl !== undefined) {
+        updates.jda_agreement_document_url = payload.jda_agreement_document_url ?? payload.jdaAgreementDocumentUrl ?? null;
+    }
+    if (payload.jda_agreement_date !== undefined || payload.jdaAgreementDate !== undefined) {
+        updates.jda_agreement_date = payload.jda_agreement_date ?? payload.jdaAgreementDate ?? null;
+    }
+    if (payload.builder_share_units !== undefined || payload.builderShareUnits !== undefined) {
+        updates.builder_share_units = payload.builder_share_units ?? payload.builderShareUnits ?? null;
+    }
+    if (payload.landowner_share_units !== undefined || payload.landownerShareUnits !== undefined) {
+        updates.landowner_share_units = payload.landowner_share_units ?? payload.landownerShareUnits ?? null;
+    }
+    if (payload.projected_sales_value !== undefined || payload.projectedSalesValue !== undefined) {
+        updates.projected_sales_value = payload.projected_sales_value ?? payload.projectedSalesValue ?? null;
+    }
+    if (payload.land_cost !== undefined || payload.landCost !== undefined) {
+        updates.land_cost = payload.land_cost ?? payload.landCost ?? null;
+    }
     if (payload.status !== undefined) updates.status = normalizeProjectStatus(payload.status);
 
     const { data, error } = await supabaseAdmin
@@ -494,6 +869,146 @@ export async function getProjectExpenseRowById(id: string) {
     };
 }
 
+async function validateExpenseCategoryForCompany(companyId: string, categoryId: string | null | undefined) {
+    if (!categoryId) return null;
+
+    const { data, error } = await supabaseAdmin
+        .from('expense_categories')
+        .select('id, company_id, is_active')
+        .eq('id', categoryId)
+        .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+        const err: any = new Error('Selected expense category could not be found.');
+        err.statusCode = 404;
+        throw err;
+    }
+    if (data.is_active === false) {
+        const err: any = new Error('Selected expense category is inactive.');
+        err.statusCode = 400;
+        throw err;
+    }
+    if (data.company_id && data.company_id !== companyId) {
+        const err: any = new Error('Selected expense category belongs to a different company.');
+        err.statusCode = 403;
+        throw err;
+    }
+
+    return data;
+}
+
+async function validateSupplierForCompany(companyId: string, supplierId: string | null | undefined) {
+    if (!supplierId) return null;
+
+    const { data, error } = await supabaseAdmin
+        .from('suppliers')
+        .select('id, company_id, name')
+        .eq('id', supplierId)
+        .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+        const err: any = new Error('Selected supplier could not be found.');
+        err.statusCode = 404;
+        throw err;
+    }
+    if (data.company_id !== companyId) {
+        const err: any = new Error('Selected supplier belongs to a different company.');
+        err.statusCode = 403;
+        throw err;
+    }
+
+    return data;
+}
+
+async function validateSupplierPartyForCompany(companyId: string, supplierPartyId: string | null | undefined) {
+    if (!supplierPartyId) return null;
+
+    const { data, error } = await supabaseAdmin
+        .from('parties')
+        .select('id, company_id, name, is_supplier, is_active, is_deleted')
+        .eq('id', supplierPartyId)
+        .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+        const err: any = new Error('Selected supplier contact could not be found.');
+        err.statusCode = 404;
+        throw err;
+    }
+    if (data.company_id !== companyId) {
+        const err: any = new Error('Selected supplier contact belongs to a different company.');
+        err.statusCode = 403;
+        throw err;
+    }
+    if (!data.is_supplier || !data.is_active || data.is_deleted) {
+        const err: any = new Error('Selected contact is not an active supplier for this company.');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    return data;
+}
+
+async function validatePaymentMethodForCompany(companyId: string, paymentMethodId: string | null | undefined, paymentMethod: unknown) {
+    const normalized = normalizeProjectReceiptPaymentMethod(paymentMethod ?? 'cash');
+
+    if (paymentMethodId) {
+        const { data, error } = await supabaseAdmin
+            .from('payment_methods')
+            .select('id, company_id, is_active, code')
+            .eq('id', paymentMethodId)
+            .maybeSingle();
+
+        if (error) throw error;
+        if (!data) {
+            const err: any = new Error('Selected payment method could not be found.');
+            err.statusCode = 404;
+            throw err;
+        }
+        if (!data.is_active) {
+            const err: any = new Error('Selected payment method is inactive.');
+            err.statusCode = 400;
+            throw err;
+        }
+        if (data.company_id && data.company_id !== companyId) {
+            const err: any = new Error('Selected payment method belongs to a different company.');
+            err.statusCode = 403;
+            throw err;
+        }
+        if (data.code && String(data.code).trim() && normalized !== String(data.code).trim()) {
+            const err: any = new Error('Selected payment method does not match the payment type.');
+            err.statusCode = 400;
+            throw err;
+        }
+    }
+
+    return normalized;
+}
+
+async function getProjectExpenseOutstandingAmount(expenseId: string): Promise<number> {
+    const expense = await getProjectExpenseRowById(expenseId);
+    if (!expense) {
+        const err: any = new Error('Supplier bill not found.');
+        err.statusCode = 404;
+        throw err;
+    }
+
+    const { data: payments, error } = await supabaseAdmin
+        .from('project_expense_payments')
+        .select('amount, voided_at')
+        .eq('project_expense_id', expenseId);
+
+    if (error) throw error;
+
+    const paid = (payments ?? [])
+        .filter((row: any) => !row.voided_at)
+        .reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
+
+    return Math.max(0, Number(expense.bill_amount ?? 0) - paid);
+}
+
 export async function createProjectExpenseForProject(projectId: string, companyId: string, payload: any, userId: string) {
     const project = await supabaseAdmin
         .from('projects')
@@ -509,12 +1024,23 @@ export async function createProjectExpenseForProject(projectId: string, companyI
         throw error;
     }
 
+    const categoryId = payload?.categoryId ?? payload?.category_id ?? null;
+    const supplierId = payload?.supplierId ?? payload?.supplier_id ?? null;
+    const supplierPartyId = payload?.supplierPartyId ?? payload?.supplier_party_id ?? null;
+    const supplierParty = supplierPartyId ? await validateSupplierPartyForCompany(companyId, supplierPartyId) : null;
+    const supplier = supplierParty ? null : await validateSupplierForCompany(companyId, supplierId);
+    await validateExpenseCategoryForCompany(companyId, categoryId);
+
     const expensePayload = {
         project_id: projectId,
-        category_id: payload?.categoryId ?? payload?.category_id ?? null,
+        company_id: companyId,
+        expense_type: inferProjectExpenseType(payload),
+        category_id: categoryId,
         category: String(payload?.category ?? '').trim() || 'General',
         description: String(payload?.description ?? '').trim() || 'Supplier expense',
-        supplier_name: payload?.supplierName ?? null,
+        supplier_id: supplierId,
+        party_id: supplierPartyId ?? null,
+        supplier_name: String(payload?.supplierName ?? supplierParty?.name ?? supplier?.name ?? '').trim() || null,
         supplier_bill_number: payload?.supplierBillNumber ?? null,
         bill_date: payload?.billDate ?? null,
         due_date: payload?.dueDate ?? null,
@@ -552,8 +1078,27 @@ export async function updateProjectExpenseRow(id: string, companyId: string, pay
 
     const updates: Record<string, unknown> = {};
     if (payload.category !== undefined) updates.category = String(payload.category ?? '').trim() || 'General';
-    if (payload.categoryId !== undefined || payload.category_id !== undefined) updates.category_id = payload.categoryId ?? payload.category_id ?? null;
+    if (payload.categoryId !== undefined || payload.category_id !== undefined) {
+        const nextCategoryId = payload.categoryId ?? payload.category_id ?? null;
+        await validateExpenseCategoryForCompany(companyId, nextCategoryId);
+        updates.category_id = nextCategoryId;
+    }
     if (payload.description !== undefined) updates.description = String(payload.description ?? '').trim() || 'Supplier expense';
+    if (payload.expenseType !== undefined || payload.expense_type !== undefined) {
+        updates.expense_type = normalizeProjectExpenseType(payload.expenseType ?? payload.expense_type);
+    }
+    if (payload.supplierPartyId !== undefined || payload.supplier_party_id !== undefined) {
+        const nextSupplierPartyId = payload.supplierPartyId ?? payload.supplier_party_id ?? null;
+        const nextSupplierParty = await validateSupplierPartyForCompany(companyId, nextSupplierPartyId);
+        updates.party_id = nextSupplierPartyId;
+        if (payload.supplierName === undefined && nextSupplierParty) updates.supplier_name = nextSupplierParty.name ?? null;
+    }
+    if (payload.supplierId !== undefined || payload.supplier_id !== undefined) {
+        const nextSupplierId = payload.supplierId ?? payload.supplier_id ?? null;
+        const nextSupplier = await validateSupplierForCompany(companyId, nextSupplierId);
+        updates.supplier_id = nextSupplierId;
+        if (payload.supplierName === undefined && nextSupplier) updates.supplier_name = nextSupplier.name ?? null;
+    }
     if (payload.supplierName !== undefined) updates.supplier_name = payload.supplierName ?? null;
     if (payload.supplierBillNumber !== undefined) updates.supplier_bill_number = payload.supplierBillNumber ?? null;
     if (payload.billDate !== undefined) updates.bill_date = payload.billDate ?? null;
@@ -602,10 +1147,17 @@ export async function voidProjectExpenseRow(id: string, companyId: string) {
         error.statusCode = 403;
         throw error;
     }
+    if (existing.status === 'void' || existing.voided_at) {
+        return;
+    }
 
     const { error } = await supabaseAdmin
         .from('project_expenses')
-        .delete()
+        .update({
+            status: 'void',
+            voided_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        })
         .eq('id', id);
 
     if (error) throw error;
@@ -800,17 +1352,406 @@ export async function createProjectFromQuotation(companyId: string, quotationId:
         projectNumber,
     );
 
-    const { data, error } = await supabaseAdmin
+    return createProjectForCompany(companyId, projectPayload, userId);
+}
+
+export type ProjectUnitShareType = 'builder' | 'landowner';
+export type ProjectUnitStatus = 'available' | 'allocated' | 'booked';
+
+function normalizeProjectUnitShareType(value: unknown): ProjectUnitShareType | null {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'builder') return 'builder';
+    if (normalized === 'landowner') return 'landowner';
+    return null;
+}
+
+function normalizeProjectUnitStatus(value: unknown): ProjectUnitStatus {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'allocated') return 'allocated';
+    if (normalized === 'booked') return 'booked';
+    return 'available';
+}
+
+function validateProjectUnitStatusForShareType(shareType: ProjectUnitShareType | null, status: ProjectUnitStatus) {
+    if (shareType === 'landowner' && status === 'available') {
+        const error: any = new Error('Landowner units must be allocated or booked; available is not allowed.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (status === 'booked') {
+        const error: any = new Error('Manual booking is not allowed here. Booking status is reserved for the booking workflow.');
+        error.statusCode = 400;
+        throw error;
+    }
+}
+
+function buildProjectUnitSummary(units: Array<{ share_type?: string | null; status?: string | null }>, project?: any) {
+    const total = units.length;
+    const builder = units.filter((row) => row.share_type === 'builder').length;
+    const landowner = units.filter((row) => row.share_type === 'landowner').length;
+    const available = units.filter((row) => row.status === 'available').length;
+    const allocated = units.filter((row) => row.status === 'allocated').length;
+    const booked = units.filter((row) => row.status === 'booked').length;
+    const registered = total;
+
+    const totalProjectFlats = Number(project?.total_project_flats ?? 0);
+    const builderTarget = Number(project?.builder_share_units ?? 0);
+    const landownerTarget = Number(project?.landowner_share_units ?? 0);
+    const completionBase = totalProjectFlats > 0 ? totalProjectFlats : Math.max(builderTarget + landownerTarget, total);
+    const completionPercent = completionBase > 0 ? Math.min(100, Math.round((total / completionBase) * 100)) : 0;
+
+    return {
+        total,
+        builder,
+        landowner,
+        registered,
+        available,
+        allocated,
+        booked,
+        completionPercent,
+        isComplete: totalProjectFlats > 0
+            ? total === totalProjectFlats && builder === builderTarget && landowner === landownerTarget
+            : total > 0,
+    };
+}
+
+function assertProjectUnitCountsWithinProject(project: any, rows: Array<{ share_type?: string | null; status?: string | null; id?: string; flat_no?: string | null }>) {
+    if (!project || project.business_model !== 'property_development') {
+        const error: any = new Error('Inventory is only supported for property development projects.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (rows.some((row) => row.share_type === 'landowner' && row.status === 'available')) {
+        const error: any = new Error('Landowner units must be allocated or booked; available is not allowed.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (project.development_arrangement === 'self') {
+        if (rows.some((row) => row.share_type === 'landowner')) {
+            const error: any = new Error('Self development inventory must use builder share type only.');
+            error.statusCode = 400;
+            throw error;
+        }
+        return;
+    }
+
+    const totalProjectFlats = Number(project.total_project_flats ?? 0);
+    const builderShareUnits = Number(project.builder_share_units ?? 0);
+    const landownerShareUnits = Number(project.landowner_share_units ?? 0);
+
+    if (!project.development_arrangement || project.development_arrangement !== 'joint_development') {
+        return;
+    }
+
+    if (!Number.isFinite(totalProjectFlats) || totalProjectFlats <= 0) {
+        const error: any = new Error('Joint development projects require total_project_flats before inventory can be created.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const builderCount = rows.filter((row) => row.share_type === 'builder').length;
+    const landownerCount = rows.filter((row) => row.share_type === 'landowner').length;
+    const totalCount = rows.length;
+
+    if (totalCount > totalProjectFlats) {
+        const error: any = new Error('Inventory cannot exceed the agreed total project flats.');
+        error.statusCode = 400;
+        throw error;
+    }
+    if (builderCount > builderShareUnits || landownerCount > landownerShareUnits) {
+        const error: any = new Error('Inventory exceeds the agreed builder or landowner allocation counts.');
+        error.statusCode = 400;
+        throw error;
+    }
+    if (builderCount + landownerCount !== totalCount) {
+        const error: any = new Error('Inventory count does not match the registered builder and landowner allocations.');
+        error.statusCode = 400;
+        throw error;
+    }
+    if (builderCount === builderShareUnits && landownerCount === landownerShareUnits && totalCount !== totalProjectFlats) {
+        const error: any = new Error('Inventory is complete only when both share counts exactly match the project allocation totals.');
+        error.statusCode = 400;
+        throw error;
+    }
+    if (totalCount === totalProjectFlats && (builderCount !== builderShareUnits || landownerCount !== landownerShareUnits)) {
+        const error: any = new Error('Inventory is incomplete or inconsistent with the project allocation counts.');
+        error.statusCode = 400;
+        throw error;
+    }
+}
+
+export async function listProjectUnitsForProject(projectId: string, companyId: string) {
+    const { data: project, error: projectError } = await supabaseAdmin
         .from('projects')
-        .insert({
-            ...projectPayload,
-            created_by: userId,
-        })
-        .select('*, customers(*)')
+        .select('id, company_id, business_model, development_arrangement, total_project_flats, builder_share_units, landowner_share_units')
+        .eq('id', projectId)
+        .eq('company_id', companyId)
+        .maybeSingle();
+
+    if (projectError) throw projectError;
+    if (!project) {
+        return { units: [], summary: buildProjectUnitSummary([]) };
+    }
+
+    if (project.business_model !== 'property_development') {
+        const error: any = new Error('Inventory is only supported for property development projects.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const { data, error } = await supabaseAdmin
+        .from('project_units')
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('company_id', companyId)
+        .order('block_tower', { ascending: true })
+        .order('floor', { ascending: true })
+        .order('flat_no', { ascending: true });
+
+    if (error) throw error;
+    const units = data ?? [];
+    assertProjectUnitCountsWithinProject(project, units);
+
+    return {
+        units,
+        summary: buildProjectUnitSummary(units, project),
+    };
+}
+
+export async function getProjectUnitRowById(id: string) {
+    const { data, error } = await supabaseAdmin
+        .from('project_units')
+        .select('*, projects!project_id(id, company_id, business_model, development_arrangement, total_project_flats, builder_share_units, landowner_share_units)')
+        .eq('id', id)
+        .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return null;
+    return {
+        ...data,
+        project: Array.isArray(data.projects) ? data.projects[0] ?? null : data.projects ?? null,
+    };
+}
+
+export async function createProjectUnitForProject(projectId: string, companyId: string, payload: any) {
+    const { data: project, error: projectError } = await supabaseAdmin
+        .from('projects')
+        .select('id, company_id, business_model, development_arrangement, total_project_flats, builder_share_units, landowner_share_units')
+        .eq('id', projectId)
+        .eq('company_id', companyId)
+        .maybeSingle();
+
+    if (projectError) throw projectError;
+    if (!project) {
+        const error: any = new Error('Project not found for this company.');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    if (project.business_model !== 'property_development') {
+        const error: any = new Error('Project flat inventory is only supported for property development projects.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const flatNo = String(payload?.flatNo ?? payload?.flat_no ?? '').trim();
+    if (!flatNo) {
+        const error: any = new Error('Flat number is required.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const shareType = normalizeProjectUnitShareType(payload?.shareType ?? payload?.share_type);
+    if (!shareType) {
+        const error: any = new Error('Share type must be builder or landowner.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (project.development_arrangement === 'self' && shareType !== 'builder') {
+        const error: any = new Error('Self development inventory must be assigned to builder share type only.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const requestedStatus = normalizeProjectUnitStatus(payload?.status ?? 'available');
+    validateProjectUnitStatusForShareType(shareType, requestedStatus);
+
+    const { data: existingUnits, error: existingUnitsError } = await supabaseAdmin
+        .from('project_units')
+        .select('id, flat_no, share_type, status')
+        .eq('project_id', projectId)
+        .eq('company_id', companyId)
+        .order('flat_no', { ascending: true });
+
+    if (existingUnitsError) throw existingUnitsError;
+
+    const duplicate = (existingUnits ?? []).some((row) => String(row.flat_no ?? '').trim().toLowerCase() === flatNo.toLowerCase());
+    if (duplicate) {
+        const error: any = new Error('This flat number already exists for this project.');
+        error.statusCode = 409;
+        throw error;
+    }
+
+    const nextUnits = [
+        ...(existingUnits ?? []).map((row) => ({
+            id: row.id,
+            share_type: row.share_type,
+            status: row.status,
+            flat_no: row.flat_no,
+        })),
+        {
+            id: 'new',
+            share_type: shareType,
+            status: normalizeProjectUnitStatus(payload?.status ?? 'available'),
+            flat_no: flatNo,
+        },
+    ];
+    assertProjectUnitCountsWithinProject(project, nextUnits);
+
+    const projectUnitPayload = {
+        company_id: companyId,
+        project_id: projectId,
+        flat_no: flatNo,
+        floor: payload?.floor == null || payload?.floor === '' ? null : Number(payload?.floor),
+        block_tower: payload?.blockTower ?? payload?.block_tower ?? null,
+        share_type: shareType,
+        status: requestedStatus,
+    };
+
+    const { data, error } = await supabaseAdmin
+        .from('project_units')
+        .insert(projectUnitPayload)
+        .select('*')
         .single();
 
     if (error) throw error;
     return data;
+}
+
+export async function updateProjectUnitRow(id: string, companyId: string, payload: any) {
+    const existing = await getProjectUnitRowById(id);
+    if (!existing) {
+        const error: any = new Error('Project unit not found.');
+        error.statusCode = 404;
+        throw error;
+    }
+    if (existing.project?.company_id !== companyId) {
+        const error: any = new Error('This project unit belongs to a different company.');
+        error.statusCode = 403;
+        throw error;
+    }
+
+    const project = existing.project;
+    const { data: projectUnits, error: projectUnitsError } = await supabaseAdmin
+        .from('project_units')
+        .select('id, flat_no, share_type, status')
+        .eq('project_id', existing.project_id)
+        .eq('company_id', companyId)
+        .neq('id', id)
+        .order('flat_no', { ascending: true });
+
+    if (projectUnitsError) throw projectUnitsError;
+
+    const nextFlatNo = payload.flatNo ?? payload.flat_no ?? existing.flat_no ?? '';
+    const normalizedFlatNo = String(nextFlatNo).trim();
+    if (!normalizedFlatNo) {
+        const error: any = new Error('Flat number is required.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const duplicate = (projectUnits ?? []).some((row) => String(row.flat_no ?? '').trim().toLowerCase() === normalizedFlatNo.toLowerCase());
+    if (duplicate) {
+        const error: any = new Error('This flat number already exists for this project.');
+        error.statusCode = 409;
+        throw error;
+    }
+
+    const nextShareType = normalizeProjectUnitShareType(payload.shareType ?? payload.share_type ?? existing.share_type);
+    if (!nextShareType) {
+        const error: any = new Error('Share type must be builder or landowner.');
+        error.statusCode = 400;
+        throw error;
+    }
+    if (project?.business_model !== 'property_development') {
+        const error: any = new Error('Project flat inventory is only supported for property development projects.');
+        error.statusCode = 400;
+        throw error;
+    }
+    if (project?.development_arrangement === 'self' && nextShareType !== 'builder') {
+        const error: any = new Error('Self development inventory must be assigned to builder share type only.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const nextStatus = normalizeProjectUnitStatus(payload.status ?? existing.status);
+    validateProjectUnitStatusForShareType(nextShareType, nextStatus);
+
+    const candidateUnits = [
+        ...(projectUnits ?? []).map((row) => ({
+            id: row.id,
+            share_type: row.share_type,
+            status: row.status,
+            flat_no: row.flat_no,
+        })),
+        {
+            id: 'updated',
+            share_type: nextShareType,
+            status: nextStatus,
+            flat_no: normalizedFlatNo,
+        },
+    ];
+    assertProjectUnitCountsWithinProject(project, candidateUnits);
+
+    const updates: Record<string, unknown> = {};
+    if (payload.flatNo !== undefined || payload.flat_no !== undefined) updates.flat_no = normalizedFlatNo;
+    if (payload.floor !== undefined || payload.floor === null) updates.floor = payload.floor == null || payload.floor === '' ? null : Number(payload.floor);
+    if (payload.blockTower !== undefined || payload.block_tower !== undefined) updates.block_tower = payload.blockTower ?? payload.block_tower ?? null;
+    if (payload.shareType !== undefined || payload.share_type !== undefined) updates.share_type = nextShareType;
+    if (payload.status !== undefined) updates.status = nextStatus;
+
+    const { data, error } = await supabaseAdmin
+        .from('project_units')
+        .update(updates)
+        .eq('id', id)
+        .select('*')
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function deleteProjectUnitRow(id: string, companyId: string) {
+    const existing = await getProjectUnitRowById(id);
+    if (!existing) {
+        const error: any = new Error('Project unit not found.');
+        error.statusCode = 404;
+        throw error;
+    }
+    if (existing.project?.company_id !== companyId) {
+        const error: any = new Error('This project unit belongs to a different company.');
+        error.statusCode = 403;
+        throw error;
+    }
+    if (existing.project?.business_model !== 'property_development') {
+        const error: any = new Error('Project flat inventory is only supported for property development projects.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (existing.status !== 'available') {
+        const error: any = new Error('This unit cannot be deleted because it has a historical or allocation state and is protected from removal.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const { error } = await supabaseAdmin.from('project_units').delete().eq('id', id);
+    if (error) throw error;
+    return true;
 }
 
 export async function listProjectStagesForProject(projectId: string, companyId: string) {
@@ -1107,12 +2048,19 @@ export async function deleteProjectProgressUpdateRow(id: string, companyId: stri
 async function recomputeExpenseStatus(expenseId: string): Promise<void> {
     const { data: expense, error: expenseError } = await supabaseAdmin
         .from('project_expenses')
-        .select('id, bill_amount, status')
+        .select('id, bill_amount, status, voided_at')
         .eq('id', expenseId)
         .maybeSingle();
     if (expenseError) throw expenseError;
     if (!expense) return;
-    if (expense.status === 'void') return;
+    if (expense.voided_at || expense.status === 'void') {
+        const { error: preserveError } = await supabaseAdmin
+            .from('project_expenses')
+            .update({ status: 'void', updated_at: new Date().toISOString() })
+            .eq('id', expenseId);
+        if (preserveError) throw preserveError;
+        return;
+    }
 
     const { data: payments, error: paymentError } = await supabaseAdmin
         .from('project_expense_payments')
@@ -1130,7 +2078,7 @@ async function recomputeExpenseStatus(expenseId: string): Promise<void> {
 
     const { error: updateError } = await supabaseAdmin
         .from('project_expenses')
-        .update({ status: nextStatus })
+        .update({ status: nextStatus, updated_at: new Date().toISOString() })
         .eq('id', expenseId);
     if (updateError) throw updateError;
 }
@@ -1175,6 +2123,11 @@ export async function createProjectExpensePaymentForExpense(expenseId: string, c
         error.statusCode = 403;
         throw error;
     }
+    if (expense.status === 'void' || expense.voided_at) {
+        const error: any = new Error('Payments cannot be recorded for a void supplier bill.');
+        error.statusCode = 400;
+        throw error;
+    }
 
     const amount = Number(payload?.amount ?? 0);
     if (!Number.isFinite(amount) || amount <= 0) {
@@ -1183,14 +2136,25 @@ export async function createProjectExpensePaymentForExpense(expenseId: string, c
         throw error;
     }
 
+    const outstanding = await getProjectExpenseOutstandingAmount(expenseId);
+    if (amount > outstanding + 0.0001) {
+        const error: any = new Error('Payment amount exceeds the outstanding bill balance.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const paymentMethodId = payload?.paymentMethodId ?? payload?.payment_method_id ?? null;
+    const paymentMethod = await validatePaymentMethodForCompany(companyId, paymentMethodId, payload?.paymentMethod ?? 'cash');
+
     const { data, error } = await supabaseAdmin
         .from('project_expense_payments')
         .insert({
             project_expense_id: expenseId,
+            company_id: companyId,
             amount,
             payment_date: payload?.paymentDate ?? null,
-            payment_method_id: payload?.paymentMethodId ?? payload?.payment_method_id ?? null,
-            payment_method: normalizeProjectReceiptPaymentMethod(payload?.paymentMethod ?? 'cash'),
+            payment_method_id: paymentMethodId,
+            payment_method: paymentMethod,
             reference_number: payload?.referenceNumber ?? null,
             notes: payload?.notes ?? null,
             created_by: userId,
@@ -1224,11 +2188,36 @@ export async function updateProjectExpensePaymentRow(id: string, companyId: stri
             error.statusCode = 400;
             throw error;
         }
+
+        const otherPayments = await supabaseAdmin
+            .from('project_expense_payments')
+            .select('amount, voided_at')
+            .eq('project_expense_id', existing.project_expense_id)
+            .neq('id', id);
+
+        if (otherPayments.error) throw otherPayments.error;
+
+        const otherPaid = (otherPayments.data ?? [])
+            .filter((row: any) => !row.voided_at)
+            .reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
+        const billAmount = Number((await getProjectExpenseRowById(existing.project_expense_id))?.bill_amount ?? 0);
+        const maxAllowed = Math.max(0, billAmount - otherPaid);
+
+        if (amount > maxAllowed + 0.0001) {
+            const error: any = new Error('Updated payment exceeds the outstanding bill balance.');
+            error.statusCode = 400;
+            throw error;
+        }
         updates.amount = amount;
     }
     if (payload.paymentDate !== undefined) updates.payment_date = payload.paymentDate ?? null;
-    if (payload.paymentMethodId !== undefined || payload.payment_method_id !== undefined) updates.payment_method_id = payload.paymentMethodId ?? payload.payment_method_id ?? null;
-    if (payload.paymentMethod !== undefined) updates.payment_method = normalizeProjectReceiptPaymentMethod(payload.paymentMethod);
+    if (payload.paymentMethodId !== undefined || payload.payment_method_id !== undefined) {
+        updates.payment_method_id = payload.paymentMethodId ?? payload.payment_method_id ?? null;
+    }
+    if (payload.paymentMethod !== undefined) {
+        const paymentMethodId = updates.payment_method_id ?? existing.payment_method_id ?? null;
+        updates.payment_method = await validatePaymentMethodForCompany(companyId, paymentMethodId, payload.paymentMethod);
+    }
     if (payload.referenceNumber !== undefined) updates.reference_number = payload.referenceNumber ?? null;
     if (payload.notes !== undefined) updates.notes = payload.notes ?? null;
 
@@ -1256,10 +2245,16 @@ export async function voidProjectExpensePaymentRow(id: string, companyId: string
         error.statusCode = 403;
         throw error;
     }
+    if (existing.voided_at) {
+        return;
+    }
 
     const { error } = await supabaseAdmin
         .from('project_expense_payments')
-        .delete()
+        .update({
+            voided_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        })
         .eq('id', id);
     if (error) throw error;
 
@@ -1280,7 +2275,6 @@ export async function listProjectInvestorsForProject(projectId: string, companyI
         .from('project_investors')
         .select('*')
         .eq('project_id', projectId)
-        .eq('is_active', true)
         .order('created_at', { ascending: false });
     if (error) throw error;
     return data ?? [];
@@ -1289,12 +2283,23 @@ export async function listProjectInvestorsForProject(projectId: string, companyI
 export async function getProjectInvestorRowById(id: string) {
     const { data, error } = await supabaseAdmin
         .from('project_investors')
-        .select('*, projects!project_id(id, company_id)')
+        .select('*')
         .eq('id', id)
         .maybeSingle();
     if (error) throw error;
     if (!data) return null;
-    const project = Array.isArray(data.projects) ? data.projects[0] ?? null : data.projects ?? null;
+
+    let project: any = null;
+    if (data.project_id) {
+        const { data: projectRow, error: projectError } = await supabaseAdmin
+            .from('projects')
+            .select('id, company_id')
+            .eq('id', data.project_id)
+            .maybeSingle();
+        if (projectError) throw projectError;
+        project = projectRow ?? null;
+    }
+
     return { ...data, project };
 }
 
@@ -1306,6 +2311,44 @@ export async function getProjectInvestorCompanyIdById(id: string): Promise<strin
         .maybeSingle();
     if (error) throw error;
     return data?.company_id ?? null;
+}
+
+async function ensureInvestorMasterForCompany(companyId: string, payload: { name: string; email: string | null; phone: string | null }) {
+    const normalizedName = String(payload.name ?? '').trim() || 'Investor';
+    const normalizedEmail = payload.email ? String(payload.email).trim().toLowerCase() : null;
+    const normalizedPhone = payload.phone ? String(payload.phone).trim() : null;
+
+    let query = supabaseAdmin
+        .from('investors')
+        .select('id, company_id, name, email, phone')
+        .eq('company_id', companyId);
+
+    if (normalizedEmail) {
+        query = query.eq('email', normalizedEmail);
+    } else if (normalizedPhone) {
+        query = query.eq('phone', normalizedPhone).eq('name', normalizedName);
+    } else {
+        query = query.eq('name', normalizedName);
+    }
+
+    const { data: existingRows, error: existingError } = await query.limit(1);
+    if (existingError) throw existingError;
+    const existing = existingRows?.[0] ?? null;
+    if (existing?.id) return existing.id as string;
+
+    const { data: created, error: createError } = await supabaseAdmin
+        .from('investors')
+        .insert({
+            company_id: companyId,
+            name: normalizedName,
+            email: normalizedEmail,
+            phone: normalizedPhone,
+        })
+        .select('id')
+        .single();
+
+    if (createError) throw createError;
+    return String(created.id);
 }
 
 export async function createProjectInvestorForProject(projectId: string, companyId: string, payload: any, userId: string) {
@@ -1322,15 +2365,109 @@ export async function createProjectInvestorForProject(projectId: string, company
         throw error;
     }
 
+    const partyId = payload?.partyId ?? payload?.party_id ?? null;
+    if (partyId) {
+        const { data: party, error: partyError } = await supabaseAdmin
+            .from('parties')
+            .select('id, company_id, is_investor, is_active, is_deleted')
+            .eq('id', partyId)
+            .eq('company_id', companyId)
+            .maybeSingle();
+
+        if (partyError) throw partyError;
+        if (!party) {
+            const error: any = new Error('Selected investor contact was not found for this company.');
+            error.statusCode = 404;
+            throw error;
+        }
+        if (party.is_deleted || !party.is_active || !party.is_investor) {
+            const error: any = new Error('Selected investor contact must be an active investor contact for this company.');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const { data: existingPartyInvestor, error: existingPartyInvestorError } = await supabaseAdmin
+            .from('project_investors')
+            .select('id, is_active')
+            .eq('project_id', projectId)
+            .eq('company_id', companyId)
+            .eq('party_id', partyId)
+            .maybeSingle();
+
+        if (existingPartyInvestorError) throw existingPartyInvestorError;
+        if (existingPartyInvestor && existingPartyInvestor.is_active) {
+            const error: any = new Error('This investor contact is already attached to this project.');
+            error.statusCode = 409;
+            throw error;
+        }
+    }
+
+    const name = String(payload?.name ?? '').trim();
+    const email = payload?.email ? String(payload.email).trim().toLowerCase() : null;
+    const phone = payload?.phone ? String(payload.phone).trim() : null;
+    const normalizedUserId = payload?.userId ?? null;
+    const isPartyLinkedInvestor = Boolean(partyId);
+
+    // Project-finance investor linking (party-based) must not require an app account.
+    // Access-oriented flows can still provide userId/email and rely on account checks.
+    if (email && !isPartyLinkedInvestor) {
+        const existingUser = await ensureExternalUserAccount(email, 'investor');
+        const { data: existingInvestor, error: investorLookupError } = await supabaseAdmin
+            .from('project_investors')
+            .select('*')
+            .eq('project_id', projectId)
+            .eq('company_id', companyId)
+            .or(`email.eq.${email},user_id.eq.${existingUser.id}`)
+            .maybeSingle();
+
+        if (investorLookupError) throw investorLookupError;
+        if (existingInvestor) {
+            if (existingInvestor.is_active) {
+                const error: any = new Error('This investor already has access to this project.');
+                error.statusCode = 409;
+                throw error;
+            }
+
+            const { data: updated, error: reactivateError } = await supabaseAdmin
+                .from('project_investors')
+                .update({
+                    user_id: existingUser.id,
+                    name,
+                    email,
+                    phone,
+                    investment_percentage: payload?.investmentPercentage !== undefined ? Number(payload.investmentPercentage ?? 0) : existingInvestor.investment_percentage,
+                    can_view_financials: Boolean(payload?.canViewFinancials ?? existingInvestor.can_view_financials),
+                    can_approve_payments: Boolean(payload?.canApprovePayments ?? existingInvestor.can_approve_payments),
+                    can_view_client_receipts: Boolean(payload?.canViewClientReceipts ?? existingInvestor.can_view_client_receipts),
+                    is_active: true,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', existingInvestor.id)
+                .select('*')
+                .single();
+
+            if (reactivateError) throw reactivateError;
+            return updated;
+        }
+    }
+
+    const investorMasterId = await ensureInvestorMasterForCompany(companyId, {
+        name,
+        email,
+        phone,
+    });
+
     const { data, error } = await supabaseAdmin
         .from('project_investors')
         .insert({
             project_id: projectId,
             company_id: companyId,
-            user_id: payload?.userId ?? null,
-            name: String(payload?.name ?? '').trim(),
-            email: payload?.email ?? null,
-            phone: payload?.phone ?? null,
+            investor_id: investorMasterId,
+            user_id: normalizedUserId,
+            party_id: partyId || null,
+            name,
+            email,
+            phone,
             investment_percentage: payload?.investmentPercentage !== undefined ? Number(payload.investmentPercentage ?? 0) : null,
             can_view_financials: Boolean(payload?.canViewFinancials),
             can_approve_payments: Boolean(payload?.canApprovePayments),
@@ -1358,10 +2495,51 @@ export async function updateProjectInvestorRow(id: string, companyId: string, pa
     }
 
     const updates: Record<string, unknown> = {};
+    const nextPartyId = payload?.partyId ?? payload?.party_id;
     if (payload.name !== undefined) updates.name = String(payload.name ?? '').trim();
     if (payload.email !== undefined) updates.email = payload.email ?? null;
     if (payload.phone !== undefined) updates.phone = payload.phone ?? null;
     if (payload.userId !== undefined) updates.user_id = payload.userId ?? null;
+    if (nextPartyId !== undefined) {
+        const normalizedPartyId = nextPartyId ? String(nextPartyId) : null;
+        if (normalizedPartyId) {
+            const { data: party, error: partyError } = await supabaseAdmin
+                .from('parties')
+                .select('id, company_id, is_investor, is_active, is_deleted')
+                .eq('id', normalizedPartyId)
+                .eq('company_id', companyId)
+                .maybeSingle();
+
+            if (partyError) throw partyError;
+            if (!party) {
+                const error: any = new Error('Selected investor contact was not found for this company.');
+                error.statusCode = 404;
+                throw error;
+            }
+            if (party.is_deleted || !party.is_active || !party.is_investor) {
+                const error: any = new Error('Selected investor contact must be an active investor contact for this company.');
+                error.statusCode = 400;
+                throw error;
+            }
+
+            const { data: existingPartyInvestor, error: existingPartyInvestorError } = await supabaseAdmin
+                .from('project_investors')
+                .select('id')
+                .eq('project_id', existing.project_id)
+                .eq('company_id', companyId)
+                .eq('party_id', normalizedPartyId)
+                .neq('id', id)
+                .maybeSingle();
+
+            if (existingPartyInvestorError) throw existingPartyInvestorError;
+            if (existingPartyInvestor) {
+                const error: any = new Error('This investor contact is already attached to this project.');
+                error.statusCode = 409;
+                throw error;
+            }
+        }
+        updates.party_id = normalizedPartyId;
+    }
     if (payload.investmentPercentage !== undefined) updates.investment_percentage = payload.investmentPercentage !== null ? Number(payload.investmentPercentage ?? 0) : null;
     if (payload.canViewFinancials !== undefined) updates.can_view_financials = Boolean(payload.canViewFinancials);
     if (payload.canApprovePayments !== undefined) updates.can_approve_payments = Boolean(payload.canApprovePayments);
@@ -1391,17 +2569,12 @@ export async function deleteProjectInvestorRow(id: string, companyId: string) {
         throw error;
     }
 
-    // Remove dependent contributions explicitly before deleting the investor.
-    // This keeps delete reliable even if cascade FK is missing in older databases.
-    const { error: contributionDeleteError } = await supabaseAdmin
-        .from('project_investor_contributions')
-        .delete()
-        .eq('project_investor_id', id);
-    if (contributionDeleteError) throw contributionDeleteError;
-
     const { error } = await supabaseAdmin
         .from('project_investors')
-        .delete()
+        .update({
+            is_active: false,
+            updated_at: new Date().toISOString(),
+        })
         .eq('id', id)
         .eq('company_id', companyId);
     if (error) throw error;
@@ -1425,13 +2598,14 @@ export async function listInvestorContributionsForInvestor(investorId: string, c
 export async function getInvestorContributionRowById(id: string) {
     const { data, error } = await supabaseAdmin
         .from('project_investor_contributions')
-        .select('*, project_investors!project_investor_id(id, project_id, company_id, projects!project_id(id, company_id))')
+        .select('*')
         .eq('id', id)
         .maybeSingle();
     if (error) throw error;
     if (!data) return null;
-    const investor = Array.isArray(data.project_investors) ? data.project_investors[0] ?? null : data.project_investors ?? null;
-    const project = Array.isArray(investor?.projects) ? investor.projects[0] ?? null : investor?.projects ?? null;
+
+    const investor = await getProjectInvestorRowById(String(data.project_investor_id));
+    const project = investor?.project ?? null;
     return { ...data, investor, project };
 }
 

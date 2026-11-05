@@ -1,4 +1,5 @@
 ﻿import QuotationTable from '@/components/QuotationTable';
+import { SkeletonLoader } from '@/components/loading/Loaders';
 import { AppButton, PageHeader } from '@/components/ui/DesignSystem';
 import { useCompany } from '@/context/CompanyContext';
 import type { Quotation } from '@/lib/models';
@@ -54,7 +55,7 @@ export default function QuotationsPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-slate-400 py-16 text-center">Loading quotations…</p>
+        <SkeletonLoader variant="table" rows={8} />
       ) : (
         <QuotationTable quotations={quotations} onRefresh={refresh} />
       )}

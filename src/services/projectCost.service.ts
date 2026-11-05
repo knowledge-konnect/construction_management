@@ -1,6 +1,9 @@
-import { apiDelete, apiGet, apiPost, apiPut } from '@/services/apiClient';
+import { apiDelete, apiGet, apiPost, apiPut, apiRequest } from '@/services/apiClient';
+import type { ServiceResult } from '@/services/serviceResult';
+import { toServiceResult } from '@/services/serviceResult';
 
 export type ProjectExpenseStatus = 'unpaid' | 'partially_paid' | 'paid' | 'void';
+export type ProjectExpenseType = 'direct' | 'supplier_bill';
 export type ProjectExpenseVisibility = 'internal' | 'published';
 export type ProjectReceiptPaymentMethod = 'cash' | 'upi' | 'bank_transfer' | 'cheque' | 'other';
 export type ProjectReceiptVisibility = 'internal' | 'published';
@@ -15,11 +18,13 @@ export interface ProjectExpenseRecord {
     categoryId?: string | null;
     category: string;
     description: string;
+    supplierPartyId?: string | null;
     supplierName?: string | null;
     supplierBillNumber?: string | null;
     billDate?: string | null;
     dueDate?: string | null;
     billAmount: number;
+    expenseType: ProjectExpenseType;
     status: ProjectExpenseStatus;
     visibilityStatus: ProjectExpenseVisibility;
     createdAt?: string;
@@ -41,6 +46,73 @@ export interface ProjectReceiptRecord {
     createdAt?: string;
     updatedAt?: string;
     voidedAt?: string | null;
+}
+
+export type PurchaseOrderStatus = 'draft' | 'approved' | 'cancelled' | 'closed';
+
+export interface PurchaseOrderLineRecord {
+    id: string;
+    purchaseOrderId: string;
+    description: string;
+    quantity: number;
+    unit: string | null;
+    rate: number;
+    lineAmount: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface PurchaseOrderRecord {
+    id: string;
+    companyId: string;
+    projectId: string;
+    supplierPartyId: string;
+    supplierName?: string | null;
+    poNumber: string;
+    orderDate?: string;
+    expectedDeliveryDate?: string | null;
+    status: PurchaseOrderStatus;
+    subtotal: number;
+    taxAmount: number;
+    totalAmount: number;
+    notes?: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+    lineItems: PurchaseOrderLineRecord[];
+}
+
+export type MaterialReceiptStatus = 'draft' | 'accepted' | 'rejected';
+
+export interface MaterialReceiptLineRecord {
+    id: string;
+    materialReceiptId: string;
+    purchaseOrderLineId: string;
+    purchaseOrderLineDescription: string;
+    orderedQuantity: number;
+    previouslyReceivedQuantity: number;
+    quantityReceived: number;
+    acceptedQuantity: number;
+    rejectedQuantity: number;
+    remainingQuantity: number;
+    notes?: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface MaterialReceiptRecord {
+    id: string;
+    companyId: string;
+    projectId: string;
+    purchaseOrderId: string;
+    supplierPartyId: string;
+    receiptNumber: string;
+    receiptDate?: string | null;
+    deliveryReferenceNumber?: string | null;
+    notes?: string | null;
+    status: MaterialReceiptStatus;
+    createdAt?: string;
+    updatedAt?: string;
+    lineItems: MaterialReceiptLineRecord[];
 }
 
 export interface ProjectStageRecord {
@@ -91,6 +163,7 @@ export interface ProjectInvestorRecord {
     projectId: string;
     companyId: string;
     userId?: string | null;
+    partyId?: string | null;
     name: string;
     email?: string | null;
     phone?: string | null;
@@ -145,6 +218,10 @@ function normalizeExpenseStatus(value: unknown): ProjectExpenseStatus {
         : 'unpaid';
 }
 
+function normalizeExpenseType(value: unknown): ProjectExpenseType {
+    return value === 'supplier_bill' || value === 'direct' ? (value as ProjectExpenseType) : 'direct';
+}
+
 function normalizeExpenseVisibility(value: unknown): ProjectExpenseVisibility {
     return value === 'internal' || value === 'published' ? (value as ProjectExpenseVisibility) : 'internal';
 }
@@ -170,6 +247,13 @@ function normalizeProgressVisibility(value: unknown): ProjectProgressVisibility 
 }
 
 function mapExpenseRow(row: any): ProjectExpenseRecord {
+    const hasSupplierFields = Boolean(
+        row?.supplier_name
+        || row?.supplier_bill_number
+        || row?.due_date
+        || row?.supplier_id
+        || row?.party_id
+    );
     const project = row?.project ?? row?.projects ?? null;
     return {
         id: row.id,
@@ -179,11 +263,13 @@ function mapExpenseRow(row: any): ProjectExpenseRecord {
         categoryId: row.category_id ?? null,
         category: row.category ?? 'General',
         description: row.description ?? 'Supplier expense',
+        supplierPartyId: row.party_id ?? null,
         supplierName: row.supplier_name ?? null,
         supplierBillNumber: row.supplier_bill_number ?? null,
         billDate: row.bill_date ?? null,
         dueDate: row.due_date ?? null,
         billAmount: Number(row.bill_amount ?? 0),
+        expenseType: normalizeExpenseType(row.expense_type ?? (hasSupplierFields ? 'supplier_bill' : 'direct')),
         status: normalizeExpenseStatus(row.status),
         visibilityStatus: normalizeExpenseVisibility(row.visibility_status),
         createdAt: row.created_at ?? undefined,
@@ -232,6 +318,7 @@ function mapInvestorRow(row: any): ProjectInvestorRecord {
         projectId: row.project_id,
         companyId: row.company_id,
         userId: row.user_id ?? null,
+        partyId: row.party_id ?? null,
         name: row.name ?? '',
         email: row.email ?? null,
         phone: row.phone ?? null,
@@ -331,11 +418,13 @@ export async function listProjectExpenses(projectId?: string): Promise<ProjectEx
     return data.expenses.map(mapExpenseRow);
 }
 
-export async function createProjectExpense(input: {
+export async function createProjectExpenseResult(input: {
     projectId: string;
+    expenseType?: ProjectExpenseType;
     categoryId?: string | null;
     category?: string;
     description?: string;
+    supplierPartyId?: string | null;
     supplierName?: string | null;
     supplierBillNumber?: string | null;
     billDate?: string | null;
@@ -343,13 +432,15 @@ export async function createProjectExpense(input: {
     billAmount: number;
     status?: ProjectExpenseStatus;
     visibilityStatus?: ProjectExpenseVisibility;
-}): Promise<ProjectExpenseRecord | null> {
-    const { data, error } = await apiPost<{ expense?: any }>('/api/project-expenses', {
+}): Promise<ServiceResult<ProjectExpenseRecord>> {
+    const base = toServiceResult(await apiPost<{ expense?: any }>('/api/project-expenses', {
         expense: {
             projectId: input.projectId,
+            expenseType: input.expenseType ?? 'direct',
             categoryId: input.categoryId ?? null,
             category: input.category ?? 'General',
             description: input.description ?? 'Supplier expense',
+            supplierPartyId: input.supplierPartyId ?? null,
             supplierName: input.supplierName ?? null,
             supplierBillNumber: input.supplierBillNumber ?? null,
             billDate: input.billDate ?? null,
@@ -358,22 +449,48 @@ export async function createProjectExpense(input: {
             status: input.status ?? 'unpaid',
             visibilityStatus: input.visibilityStatus ?? 'internal',
         },
-    });
+    }));
 
-    if (error || !data?.expense) {
-        console.warn('Failed to create project expense', error);
-        return null;
+    if (!base.ok || !base.data?.expense) {
+        console.warn('Failed to create project expense', base.ok ? undefined : base.error);
+        return {
+            ok: false,
+            error: base.ok ? 'We could not create this expense right now. Please try again.' : base.error,
+            status: base.status,
+        };
     }
-    return mapExpenseRow(data.expense);
+
+    return { ok: true, data: mapExpenseRow(base.data.expense), status: base.status };
 }
 
-export async function updateProjectExpense(id: string, input: Partial<ProjectExpenseRecord> & { projectId?: string }): Promise<ProjectExpenseRecord | null> {
-    const { data, error } = await apiPut<{ expense?: any }>(`/api/project-expenses/${id}`, {
+export async function createProjectExpense(input: {
+    projectId: string;
+    expenseType?: ProjectExpenseType;
+    categoryId?: string | null;
+    category?: string;
+    description?: string;
+    supplierPartyId?: string | null;
+    supplierName?: string | null;
+    supplierBillNumber?: string | null;
+    billDate?: string | null;
+    dueDate?: string | null;
+    billAmount: number;
+    status?: ProjectExpenseStatus;
+    visibilityStatus?: ProjectExpenseVisibility;
+}): Promise<ProjectExpenseRecord | null> {
+    const result = await createProjectExpenseResult(input);
+    return result.ok ? result.data : null;
+}
+
+export async function updateProjectExpenseResult(id: string, input: Partial<ProjectExpenseRecord> & { projectId?: string }): Promise<ServiceResult<ProjectExpenseRecord>> {
+    const base = toServiceResult(await apiPut<{ expense?: any }>(`/api/project-expenses/${id}`, {
         expense: {
             projectId: input.projectId,
+            expenseType: input.expenseType,
             categoryId: input.categoryId,
             category: input.category,
             description: input.description,
+            supplierPartyId: input.supplierPartyId,
             supplierName: input.supplierName,
             supplierBillNumber: input.supplierBillNumber,
             billDate: input.billDate,
@@ -382,13 +499,23 @@ export async function updateProjectExpense(id: string, input: Partial<ProjectExp
             status: input.status,
             visibilityStatus: input.visibilityStatus,
         },
-    });
+    }));
 
-    if (error || !data?.expense) {
-        console.warn('Failed to update project expense', error);
-        return null;
+    if (!base.ok || !base.data?.expense) {
+        console.warn('Failed to update project expense', base.ok ? undefined : base.error);
+        return {
+            ok: false,
+            error: base.ok ? 'We could not update this expense right now. Please try again.' : base.error,
+            status: base.status,
+        };
     }
-    return mapExpenseRow(data.expense);
+
+    return { ok: true, data: mapExpenseRow(base.data.expense), status: base.status };
+}
+
+export async function updateProjectExpense(id: string, input: Partial<ProjectExpenseRecord> & { projectId?: string }): Promise<ProjectExpenseRecord | null> {
+    const result = await updateProjectExpenseResult(id, input);
+    return result.ok ? result.data : null;
 }
 
 export async function deleteProjectExpense(id: string): Promise<boolean> {
@@ -467,6 +594,421 @@ export async function deleteProjectReceipt(id: string): Promise<boolean> {
     const { error } = await apiDelete<{ ok: boolean }>(`/api/project-receipts/${id}`);
     if (error) {
         console.warn('Failed to delete project receipt', error);
+        return false;
+    }
+    return true;
+}
+
+export async function listPurchaseOrdersForProject(projectId: string): Promise<PurchaseOrderRecord[]> {
+    const { data, error } = await apiGet<{ purchaseOrders?: any[] }>(`/api/project-purchase-orders?projectId=${encodeURIComponent(projectId)}`);
+    if (error || !data?.purchaseOrders) {
+        console.warn('Failed to load purchase orders', error);
+        return [];
+    }
+
+    const mapPurchaseOrderRow = (row: any): PurchaseOrderRecord => ({
+        id: row.id,
+        companyId: row.company_id,
+        projectId: row.project_id,
+        supplierPartyId: row.supplier_party_id,
+        supplierName: row.supplier_name ?? null,
+        poNumber: row.po_number ?? '',
+        orderDate: row.order_date ?? undefined,
+        expectedDeliveryDate: row.expected_delivery_date ?? null,
+        status: row.status ?? 'draft',
+        subtotal: Number(row.subtotal ?? 0),
+        taxAmount: Number(row.tax_amount ?? 0),
+        totalAmount: Number(row.total_amount ?? 0),
+        notes: row.notes ?? null,
+        createdAt: row.created_at ?? undefined,
+        updatedAt: row.updated_at ?? undefined,
+        lineItems: Array.isArray(row.line_items ?? row.lineItems) ? (row.line_items ?? row.lineItems).map((line: any) => ({
+            id: line.id,
+            purchaseOrderId: line.purchase_order_id ?? row.id,
+            description: line.description ?? '',
+            quantity: Number(line.quantity ?? 0),
+            unit: line.unit ?? null,
+            rate: Number(line.rate ?? 0),
+            lineAmount: Number(line.line_amount ?? line.lineAmount ?? 0),
+            createdAt: line.created_at ?? undefined,
+            updatedAt: line.updated_at ?? undefined,
+        })) : [],
+    });
+
+    return (data.purchaseOrders ?? []).map(mapPurchaseOrderRow);
+}
+
+export async function getPurchaseOrder(id: string): Promise<PurchaseOrderRecord | null> {
+    const { data, error } = await apiGet<{ purchaseOrder?: any }>(`/api/project-purchase-orders/${id}`);
+    if (error || !data?.purchaseOrder) {
+        console.warn('Failed to load purchase order', error);
+        return null;
+    }
+
+    const row = data.purchaseOrder;
+    return {
+        id: row.id,
+        companyId: row.company_id,
+        projectId: row.project_id,
+        supplierPartyId: row.supplier_party_id,
+        supplierName: row.supplier_name ?? null,
+        poNumber: row.po_number ?? '',
+        orderDate: row.order_date ?? undefined,
+        expectedDeliveryDate: row.expected_delivery_date ?? null,
+        status: row.status ?? 'draft',
+        subtotal: Number(row.subtotal ?? 0),
+        taxAmount: Number(row.tax_amount ?? 0),
+        totalAmount: Number(row.total_amount ?? 0),
+        notes: row.notes ?? null,
+        createdAt: row.created_at ?? undefined,
+        updatedAt: row.updated_at ?? undefined,
+        lineItems: Array.isArray(row.line_items ?? row.lineItems) ? (row.line_items ?? row.lineItems).map((line: any) => ({
+            id: line.id,
+            purchaseOrderId: line.purchase_order_id ?? row.id,
+            description: line.description ?? '',
+            quantity: Number(line.quantity ?? 0),
+            unit: line.unit ?? null,
+            rate: Number(line.rate ?? 0),
+            lineAmount: Number(line.line_amount ?? line.lineAmount ?? 0),
+            createdAt: line.created_at ?? undefined,
+            updatedAt: line.updated_at ?? undefined,
+        })) : [],
+    };
+}
+
+export async function createPurchaseOrder(input: {
+    projectId: string;
+    supplierPartyId: string;
+    poNumber?: string;
+    orderDate?: string;
+    expectedDeliveryDate?: string | null;
+    status?: PurchaseOrderStatus;
+    taxAmount?: number;
+    notes?: string | null;
+    lines: Array<{
+        description: string;
+        quantity: number;
+        unit?: string | null;
+        rate: number;
+    }>;
+}): Promise<PurchaseOrderRecord | null> {
+    const { data, error } = await apiPost<{ purchaseOrder?: any }>('/api/project-purchase-orders', {
+        purchaseOrder: {
+            projectId: input.projectId,
+            supplierPartyId: input.supplierPartyId,
+            poNumber: input.poNumber,
+            orderDate: input.orderDate,
+            expectedDeliveryDate: input.expectedDeliveryDate ?? null,
+            status: input.status ?? 'draft',
+            taxAmount: Number(input.taxAmount ?? 0),
+            notes: input.notes ?? null,
+            lines: input.lines.map((line) => ({
+                description: line.description,
+                quantity: Number(line.quantity ?? 0),
+                unit: line.unit ?? null,
+                rate: Number(line.rate ?? 0),
+            })),
+        },
+    });
+
+    if (error || !data?.purchaseOrder) {
+        console.warn('Failed to create purchase order', error);
+        return null;
+    }
+
+    const row = data.purchaseOrder;
+    return {
+        id: row.id,
+        companyId: row.company_id,
+        projectId: row.project_id,
+        supplierPartyId: row.supplier_party_id,
+        supplierName: row.supplier_name ?? null,
+        poNumber: row.po_number ?? '',
+        orderDate: row.order_date ?? undefined,
+        expectedDeliveryDate: row.expected_delivery_date ?? null,
+        status: row.status ?? 'draft',
+        subtotal: Number(row.subtotal ?? 0),
+        taxAmount: Number(row.tax_amount ?? 0),
+        totalAmount: Number(row.total_amount ?? 0),
+        notes: row.notes ?? null,
+        createdAt: row.created_at ?? undefined,
+        updatedAt: row.updated_at ?? undefined,
+        lineItems: Array.isArray(row.line_items ?? row.lineItems) ? (row.line_items ?? row.lineItems).map((line: any) => ({
+            id: line.id,
+            purchaseOrderId: line.purchase_order_id ?? row.id,
+            description: line.description ?? '',
+            quantity: Number(line.quantity ?? 0),
+            unit: line.unit ?? null,
+            rate: Number(line.rate ?? 0),
+            lineAmount: Number(line.line_amount ?? line.lineAmount ?? 0),
+            createdAt: line.created_at ?? undefined,
+            updatedAt: line.updated_at ?? undefined,
+        })) : [],
+    };
+}
+
+export async function updatePurchaseOrder(id: string, updates: {
+    supplierPartyId?: string;
+    poNumber?: string;
+    orderDate?: string;
+    expectedDeliveryDate?: string | null;
+    status?: PurchaseOrderStatus;
+    taxAmount?: number;
+    notes?: string | null;
+    lines?: Array<{
+        description: string;
+        quantity: number;
+        unit?: string | null;
+        rate: number;
+    }>;
+}): Promise<PurchaseOrderRecord | null> {
+    const { data, error } = await apiPut<{ purchaseOrder?: any }>(`/api/project-purchase-orders/${id}`, {
+        purchaseOrder: {
+            supplierPartyId: updates.supplierPartyId,
+            poNumber: updates.poNumber,
+            orderDate: updates.orderDate,
+            expectedDeliveryDate: updates.expectedDeliveryDate,
+            status: updates.status,
+            taxAmount: updates.taxAmount,
+            notes: updates.notes,
+            lines: updates.lines?.map((line) => ({
+                description: line.description,
+                quantity: Number(line.quantity ?? 0),
+                unit: line.unit ?? null,
+                rate: Number(line.rate ?? 0),
+            })),
+        },
+    });
+
+    if (error || !data?.purchaseOrder) {
+        console.warn('Failed to update purchase order', error);
+        return null;
+    }
+
+    const row = data.purchaseOrder;
+    return {
+        id: row.id,
+        companyId: row.company_id,
+        projectId: row.project_id,
+        supplierPartyId: row.supplier_party_id,
+        supplierName: row.supplier_name ?? null,
+        poNumber: row.po_number ?? '',
+        orderDate: row.order_date ?? undefined,
+        expectedDeliveryDate: row.expected_delivery_date ?? null,
+        status: row.status ?? 'draft',
+        subtotal: Number(row.subtotal ?? 0),
+        taxAmount: Number(row.tax_amount ?? 0),
+        totalAmount: Number(row.total_amount ?? 0),
+        notes: row.notes ?? null,
+        createdAt: row.created_at ?? undefined,
+        updatedAt: row.updated_at ?? undefined,
+        lineItems: Array.isArray(row.line_items ?? row.lineItems) ? (row.line_items ?? row.lineItems).map((line: any) => ({
+            id: line.id,
+            purchaseOrderId: line.purchase_order_id ?? row.id,
+            description: line.description ?? '',
+            quantity: Number(line.quantity ?? 0),
+            unit: line.unit ?? null,
+            rate: Number(line.rate ?? 0),
+            lineAmount: Number(line.line_amount ?? line.lineAmount ?? 0),
+            createdAt: line.created_at ?? undefined,
+            updatedAt: line.updated_at ?? undefined,
+        })) : [],
+    };
+}
+
+export async function updatePurchaseOrderStatus(id: string, status: PurchaseOrderStatus): Promise<PurchaseOrderRecord | null> {
+    const { data, error } = await apiRequest<{ purchaseOrder?: any }>(`/api/project-purchase-orders/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+    });
+
+    if (error || !data?.purchaseOrder) {
+        console.warn('Failed to update purchase order status', error);
+        return null;
+    }
+
+    const row = data.purchaseOrder;
+    return {
+        id: row.id,
+        companyId: row.company_id,
+        projectId: row.project_id,
+        supplierPartyId: row.supplier_party_id,
+        supplierName: row.supplier_name ?? null,
+        poNumber: row.po_number ?? '',
+        orderDate: row.order_date ?? undefined,
+        expectedDeliveryDate: row.expected_delivery_date ?? null,
+        status: row.status ?? 'draft',
+        subtotal: Number(row.subtotal ?? 0),
+        taxAmount: Number(row.tax_amount ?? 0),
+        totalAmount: Number(row.total_amount ?? 0),
+        notes: row.notes ?? null,
+        createdAt: row.created_at ?? undefined,
+        updatedAt: row.updated_at ?? undefined,
+        lineItems: Array.isArray(row.line_items ?? row.lineItems) ? (row.line_items ?? row.lineItems).map((line: any) => ({
+            id: line.id,
+            purchaseOrderId: line.purchase_order_id ?? row.id,
+            description: line.description ?? '',
+            quantity: Number(line.quantity ?? 0),
+            unit: line.unit ?? null,
+            rate: Number(line.rate ?? 0),
+            lineAmount: Number(line.line_amount ?? line.lineAmount ?? 0),
+            createdAt: line.created_at ?? undefined,
+            updatedAt: line.updated_at ?? undefined,
+        })) : [],
+    };
+}
+
+export async function cancelPurchaseOrder(id: string): Promise<PurchaseOrderRecord | null> {
+    const { data, error } = await apiPost<{ purchaseOrder?: any }>(`/api/project-purchase-orders/${id}/cancel`, {});
+    if (error || !data?.purchaseOrder) {
+        console.warn('Failed to cancel purchase order', error);
+        return null;
+    }
+
+    const row = data.purchaseOrder;
+    return {
+        id: row.id,
+        companyId: row.company_id,
+        projectId: row.project_id,
+        supplierPartyId: row.supplier_party_id,
+        supplierName: row.supplier_name ?? null,
+        poNumber: row.po_number ?? '',
+        orderDate: row.order_date ?? undefined,
+        expectedDeliveryDate: row.expected_delivery_date ?? null,
+        status: row.status ?? 'cancelled',
+        subtotal: Number(row.subtotal ?? 0),
+        taxAmount: Number(row.tax_amount ?? 0),
+        totalAmount: Number(row.total_amount ?? 0),
+        notes: row.notes ?? null,
+        createdAt: row.created_at ?? undefined,
+        updatedAt: row.updated_at ?? undefined,
+        lineItems: Array.isArray(row.line_items ?? row.lineItems) ? (row.line_items ?? row.lineItems).map((line: any) => ({
+            id: line.id,
+            purchaseOrderId: line.purchase_order_id ?? row.id,
+            description: line.description ?? '',
+            quantity: Number(line.quantity ?? 0),
+            unit: line.unit ?? null,
+            rate: Number(line.rate ?? 0),
+            lineAmount: Number(line.line_amount ?? line.lineAmount ?? 0),
+            createdAt: line.created_at ?? undefined,
+            updatedAt: line.updated_at ?? undefined,
+        })) : [],
+    };
+}
+
+export async function listMaterialReceipts(projectId: string): Promise<MaterialReceiptRecord[]> {
+    const { data, error } = await apiGet<{ materialReceipts?: any[] }>(`/api/project-material-receipts?projectId=${encodeURIComponent(projectId)}`);
+    if (error || !data?.materialReceipts) {
+        console.warn('Failed to load material receipts', error);
+        return [];
+    }
+
+    return (data.materialReceipts ?? []).map((row: any) => ({
+        id: row.id,
+        companyId: row.company_id,
+        projectId: row.project_id,
+        purchaseOrderId: row.purchase_order_id,
+        supplierPartyId: row.supplier_party_id,
+        receiptNumber: row.receipt_number ?? '',
+        receiptDate: row.receipt_date ?? null,
+        deliveryReferenceNumber: row.delivery_reference_number ?? null,
+        notes: row.notes ?? null,
+        status: row.status ?? 'draft',
+        createdAt: row.created_at ?? undefined,
+        updatedAt: row.updated_at ?? undefined,
+        lineItems: Array.isArray(row.line_items ?? row.lineItems) ? (row.line_items ?? row.lineItems).map((line: any) => ({
+            id: line.id,
+            materialReceiptId: line.material_receipt_id ?? row.id,
+            purchaseOrderLineId: line.purchase_order_line_id,
+            purchaseOrderLineDescription: line.purchase_order_line_description ?? line.description ?? '',
+            orderedQuantity: Number(line.ordered_quantity ?? 0),
+            previouslyReceivedQuantity: Number(line.previously_received_quantity ?? 0),
+            quantityReceived: Number(line.quantity_received ?? 0),
+            acceptedQuantity: Number(line.accepted_quantity ?? 0),
+            rejectedQuantity: Number(line.rejected_quantity ?? 0),
+            remainingQuantity: Number(line.remaining_quantity ?? 0),
+            notes: line.notes ?? null,
+            createdAt: line.created_at ?? undefined,
+            updatedAt: line.updated_at ?? undefined,
+        })) : [],
+    }));
+}
+
+export async function createMaterialReceipt(input: {
+    projectId: string;
+    purchaseOrderId: string;
+    receiptNumber?: string;
+    receiptDate?: string | null;
+    deliveryReferenceNumber?: string | null;
+    notes?: string | null;
+    status?: MaterialReceiptStatus;
+    lines: Array<{
+        purchaseOrderLineId: string;
+        acceptedQuantity: number;
+        rejectedQuantity?: number;
+        notes?: string | null;
+    }>;
+}): Promise<MaterialReceiptRecord | null> {
+    const { data, error } = await apiPost<{ materialReceipt?: any }>('/api/project-material-receipts', {
+        materialReceipt: {
+            projectId: input.projectId,
+            purchaseOrderId: input.purchaseOrderId,
+            receiptNumber: input.receiptNumber,
+            receiptDate: input.receiptDate ?? null,
+            deliveryReferenceNumber: input.deliveryReferenceNumber ?? null,
+            notes: input.notes ?? null,
+            status: input.status ?? 'accepted',
+            lines: input.lines.map((line) => ({
+                purchaseOrderLineId: line.purchaseOrderLineId,
+                acceptedQuantity: Number(line.acceptedQuantity ?? 0),
+                rejectedQuantity: Number(line.rejectedQuantity ?? 0),
+                notes: line.notes ?? null,
+            })),
+        },
+    });
+
+    if (error || !data?.materialReceipt) {
+        console.warn('Failed to create material receipt', error);
+        return null;
+    }
+
+    const row = data.materialReceipt;
+    return {
+        id: row.id,
+        companyId: row.company_id,
+        projectId: row.project_id,
+        purchaseOrderId: row.purchase_order_id,
+        supplierPartyId: row.supplier_party_id,
+        receiptNumber: row.receipt_number ?? '',
+        receiptDate: row.receipt_date ?? null,
+        deliveryReferenceNumber: row.delivery_reference_number ?? null,
+        notes: row.notes ?? null,
+        status: row.status ?? 'draft',
+        createdAt: row.created_at ?? undefined,
+        updatedAt: row.updated_at ?? undefined,
+        lineItems: Array.isArray(row.line_items ?? row.lineItems) ? (row.line_items ?? row.lineItems).map((line: any) => ({
+            id: line.id,
+            materialReceiptId: line.material_receipt_id ?? row.id,
+            purchaseOrderLineId: line.purchase_order_line_id,
+            purchaseOrderLineDescription: line.purchase_order_line_description ?? line.description ?? '',
+            orderedQuantity: Number(line.ordered_quantity ?? 0),
+            previouslyReceivedQuantity: Number(line.previously_received_quantity ?? 0),
+            quantityReceived: Number(line.quantity_received ?? 0),
+            acceptedQuantity: Number(line.accepted_quantity ?? 0),
+            rejectedQuantity: Number(line.rejected_quantity ?? 0),
+            remainingQuantity: Number(line.remaining_quantity ?? 0),
+            notes: line.notes ?? null,
+            createdAt: line.created_at ?? undefined,
+            updatedAt: line.updated_at ?? undefined,
+        })) : [],
+    };
+}
+
+export async function deleteMaterialReceipt(id: string): Promise<boolean> {
+    const { error } = await apiDelete<{ ok: boolean }>(`/api/project-material-receipts/${id}`);
+    if (error) {
+        console.warn('Failed to delete material receipt', error);
         return false;
     }
     return true;
@@ -619,7 +1161,7 @@ export async function listProjectExpensePayments(projectExpenseId: string): Prom
     return data.payments.map(mapExpensePaymentRow);
 }
 
-export async function createProjectExpensePayment(input: {
+export async function createProjectExpensePaymentResult(input: {
     projectExpenseId: string;
     amount: number;
     paymentDate?: string | null;
@@ -627,8 +1169,8 @@ export async function createProjectExpensePayment(input: {
     paymentMethod?: ProjectReceiptPaymentMethod;
     referenceNumber?: string | null;
     notes?: string | null;
-}): Promise<ProjectExpensePaymentRecord | null> {
-    const { data, error } = await apiPost<{ payment?: any }>('/api/project-expense-payments', {
+}): Promise<ServiceResult<ProjectExpensePaymentRecord>> {
+    const base = toServiceResult(await apiPost<{ payment?: any }>('/api/project-expense-payments', {
         payment: {
             projectExpenseId: input.projectExpenseId,
             amount: Number(input.amount ?? 0),
@@ -638,13 +1180,31 @@ export async function createProjectExpensePayment(input: {
             referenceNumber: input.referenceNumber ?? null,
             notes: input.notes ?? null,
         },
-    });
+    }));
 
-    if (error || !data?.payment) {
-        console.warn('Failed to create project expense payment', error);
-        return null;
+    if (!base.ok || !base.data?.payment) {
+        console.warn('Failed to create project expense payment', base.ok ? undefined : base.error);
+        return {
+            ok: false,
+            error: base.ok ? 'We could not record this supplier payment right now. Please try again.' : base.error,
+            status: base.status,
+        };
     }
-    return mapExpensePaymentRow(data.payment);
+
+    return { ok: true, data: mapExpensePaymentRow(base.data.payment), status: base.status };
+}
+
+export async function createProjectExpensePayment(input: {
+    projectExpenseId: string;
+    amount: number;
+    paymentDate?: string | null;
+    paymentMethodId?: string | null;
+    paymentMethod?: ProjectReceiptPaymentMethod;
+    referenceNumber?: string | null;
+    notes?: string | null;
+}): Promise<ProjectExpensePaymentRecord | null> {
+    const result = await createProjectExpensePaymentResult(input);
+    return result.ok ? result.data : null;
 }
 
 export async function updateProjectExpensePayment(id: string, input: Partial<ProjectExpensePaymentRecord>): Promise<ProjectExpensePaymentRecord | null> {
@@ -685,12 +1245,21 @@ export async function listProjectInvestors(projectId: string): Promise<ProjectIn
 }
 
 export async function createProjectInvestor(input: Omit<ProjectInvestorRecord, 'id' | 'companyId'>): Promise<ProjectInvestorRecord | null> {
-    const { data, error } = await apiPost<{ investor?: any }>('/api/project-investors', { investor: input });
-    if (error || !data?.investor) {
-        console.warn('Failed to create project investor', error);
-        return null;
+    const result = await createProjectInvestorResult(input);
+    return result.ok ? result.data : null;
+}
+
+export async function createProjectInvestorResult(input: Omit<ProjectInvestorRecord, 'id' | 'companyId'>): Promise<ServiceResult<ProjectInvestorRecord>> {
+    const base = toServiceResult(await apiPost<{ investor?: any }>('/api/project-investors', { investor: input }));
+    if (!base.ok || !base.data?.investor) {
+        console.warn('Failed to create project investor', base.ok ? undefined : base.error);
+        return {
+            ok: false,
+            error: base.ok ? 'Could not grant investor access right now. Please try again.' : base.error,
+            status: base.status,
+        };
     }
-    return mapInvestorRow(data.investor);
+    return { ok: true, data: mapInvestorRow(base.data.investor), status: base.status };
 }
 
 export async function updateProjectInvestor(id: string, updates: Partial<ProjectInvestorRecord>): Promise<ProjectInvestorRecord | null> {
@@ -703,12 +1272,17 @@ export async function updateProjectInvestor(id: string, updates: Partial<Project
 }
 
 export async function deleteProjectInvestor(id: string): Promise<boolean> {
-    const { error } = await apiDelete<{ ok: boolean }>(`/api/project-investors/${id}`);
-    if (error) {
-        console.warn('Failed to delete project investor', error);
-        return false;
+    const result = await deleteProjectInvestorResult(id);
+    return result.ok;
+}
+
+export async function deleteProjectInvestorResult(id: string): Promise<ServiceResult<true>> {
+    const base = toServiceResult(await apiDelete<{ ok: boolean }>(`/api/project-investors/${id}`));
+    if (!base.ok) {
+        console.warn('Failed to delete project investor', base.error);
+        return { ok: false, error: base.error, status: base.status };
     }
-    return true;
+    return { ok: true, data: true, status: base.status };
 }
 
 export async function listInvestorContributions(investorId: string): Promise<InvestorContributionRecord[]> {
@@ -806,21 +1380,40 @@ export async function createProjectClientAccess(input: {
     invitationStatus?: 'pending' | 'accepted' | 'revoked' | 'expired';
     invitationExpiresAt?: string | null;
 }): Promise<ProjectClientAccessRecord | null> {
-    const { data, error } = await apiPost<{ access?: any }>('/api/project-client-access', {
+    const result = await createProjectClientAccessResult(input);
+    return result.ok ? result.data : null;
+}
+
+export async function createProjectClientAccessResult(input: {
+    projectId: string;
+    email: string;
+    invitationStatus?: 'pending' | 'accepted' | 'revoked' | 'expired';
+    invitationExpiresAt?: string | null;
+}): Promise<ServiceResult<ProjectClientAccessRecord>> {
+    const base = toServiceResult(await apiPost<{ access?: any }>('/api/project-client-access', {
         access: input,
-    });
-    if (error || !data?.access) {
-        console.warn('Failed to create project client access', error);
-        return null;
+    }));
+    if (!base.ok || !base.data?.access) {
+        console.warn('Failed to create project client access', base.ok ? undefined : base.error);
+        return {
+            ok: false,
+            error: base.ok ? 'Could not grant customer access right now. Please try again.' : base.error,
+            status: base.status,
+        };
     }
-    return mapClientAccessRow(data.access);
+    return { ok: true, data: mapClientAccessRow(base.data.access), status: base.status };
 }
 
 export async function revokeProjectClientAccess(id: string): Promise<boolean> {
-    const { error } = await apiDelete<{ ok: boolean }>(`/api/project-client-access/${id}`);
-    if (error) {
-        console.warn('Failed to revoke project client access', error);
-        return false;
+    const result = await revokeProjectClientAccessResult(id);
+    return result.ok;
+}
+
+export async function revokeProjectClientAccessResult(id: string): Promise<ServiceResult<true>> {
+    const base = toServiceResult(await apiDelete<{ ok: boolean }>(`/api/project-client-access/${id}`));
+    if (!base.ok) {
+        console.warn('Failed to revoke project client access', base.error);
+        return { ok: false, error: base.error, status: base.status };
     }
-    return true;
+    return { ok: true, data: true, status: base.status };
 }

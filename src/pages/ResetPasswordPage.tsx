@@ -1,4 +1,4 @@
-﻿import Logo from '@/components/Logo';
+﻿import BrandLogo from '@/components/BrandLogo';
 import { AppButton } from '@/components/ui/DesignSystem';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -40,20 +40,20 @@ export default function ResetPasswordPage() {
       setDone(true);
       push('success', 'Password updated. Please sign in with your new password.');
     } else {
-      push('error', result.error || 'Could not reset password. The link may have expired.');
+      push('error', result.error || 'We could not reset your password. The link may have expired, so please request a new reset link.');
     }
   };
 
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 bg-[#17243A] relative overflow-hidden flex-col justify-between p-12">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #F4B72B 0, #F4B72B 1px, transparent 1px, transparent 30px)' }} />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, rgba(96,132,255,0.9) 0, rgba(96,132,255,0.9) 1px, transparent 1px, transparent 28px)' }} />
         <div className="relative z-10 flex flex-col gap-8">
           <div className="flex flex-col items-start">
             <button onClick={() => navigate('/')} aria-label="Back to home" className="cursor-pointer">
-              <Logo className="h-16 w-auto" size="lg" />
+              <BrandLogo size="lg" onDark />
             </button>
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#F4B72B]">Construction Quotations & Business Documents</p>
+            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#D9E4FF]">Construction Quotations & Business Documents</p>
           </div>
         </div>
         <div className="relative z-10 flex items-center justify-between text-sm text-slate-400 border-t border-white/10 pt-4 mt-8">
@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex flex-col items-center mb-8">
             <button onClick={() => navigate('/')} aria-label="Back to home" className="cursor-pointer">
-              <Logo className="h-14 w-auto" size="lg" onDark={false} />
+              <BrandLogo size="lg" onDark={false} />
             </button>
           </div>
           <h2 className="text-2xl font-bold text-[#0B234A] mb-2">Reset Password</h2>

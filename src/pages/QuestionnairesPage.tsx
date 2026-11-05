@@ -31,7 +31,7 @@ export default function QuestionnairesPage() {
     questionnaireRepo.delete(scope, deleteId);
     setDeleteId(null);
     refresh();
-    push('success', 'Requirements sheet deleted.');
+    push('success', 'Requirements sheet deleted successfully.');
   };
 
   return (
@@ -90,7 +90,7 @@ export default function QuestionnairesPage() {
         title="Delete Requirements?"
         message="This will permanently delete this requirements sheet. This cannot be undone."
         danger
-        confirmLabel="Delete"
+        confirmLabel="Delete requirements sheet"
         onConfirm={handleDelete}
         onCancel={() => setDeleteId(null)}
       />

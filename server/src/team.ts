@@ -1,5 +1,5 @@
 import { createUser, createUserProfile, findUserByEmail, hashPassword, supabaseAdmin } from './auth.js';
-import { ensureCompanyMembership, getMembership, type CompanyRole } from './authz.js';
+import { ensureCompanyMembership, type CompanyRole } from './authz.js';
 
 export interface TeamMember {
     userId: string;
@@ -73,6 +73,27 @@ export async function createOrLinkTeamMember(
     const existing = await findUserByEmail(email);
 
     if (existing) {
+        const existingMembership = await supabaseAdmin
+            .from('company_users')
+            .select('company_id')
+            .eq('user_id', existing.id)
+            .limit(2);
+
+        if (existingMembership.error) throw existingMembership.error;
+
+        const rows = existingMembership.data ?? [];
+        if (rows.length > 1) {
+            const err: any = new Error('This user is linked to multiple companies. Resolve memberships before linking.');
+            err.statusCode = 409;
+            throw err;
+        }
+
+        if (rows.length === 1 && rows[0].company_id !== companyId) {
+            const err: any = new Error('This user already belongs to another company.');
+            err.statusCode = 409;
+            throw err;
+        }
+
         await ensureCompanyMembership(companyId, existing.id, role);
         return { userId: existing.id, email: existing.email, fullName: fullName ?? null, role, isNewAccount: false };
     }
@@ -108,7 +129,15 @@ export async function updateTeamMember(
     targetUserId: string,
     updates: { role?: 'admin' | 'staff'; isActive?: boolean },
 ): Promise<void> {
-    const target = await getMembership(targetUserId, companyId);
+    const { data: target, error: targetError } = await supabaseAdmin
+        .from('company_users')
+        .select('role')
+        .eq('company_id', companyId)
+        .eq('user_id', targetUserId)
+        .maybeSingle();
+
+    if (targetError) throw targetError;
+
     if (!target) {
         const err: any = new Error('Team member not found in this company.');
         err.statusCode = 404;

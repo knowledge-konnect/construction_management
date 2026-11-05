@@ -91,9 +91,13 @@ export default function QuestionnaireEditor() {
       createdAt: now,
       updatedAt: now,
     };
-    questionnaireRepo.save({ userId: user.id, companyId: company.companyId }, rec);
-    push('success', 'Requirements sheet saved.');
-    navigate('/questionnaire');
+    try {
+      questionnaireRepo.save({ userId: user.id, companyId: company.companyId }, rec);
+      push('success', 'Requirements sheet saved successfully.');
+      navigate('/questionnaire');
+    } catch {
+      push('error', 'We could not save this requirements sheet right now. Please try again.');
+    }
   };
 
   return (

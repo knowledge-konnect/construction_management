@@ -6,8 +6,10 @@ import {
     createUserProfile,
     findUserByEmail,
     findUserById,
+    getErrorText,
     getUserProfile,
     hashPassword,
+    isTransientNetworkError,
     signJwt,
     supabaseAdmin,
     updateLastLogin,
@@ -21,17 +23,23 @@ import {
     COMPANY_MANAGEMENT_ROLES,
     COMPANY_READ_ROLES,
     ensureCompanyMembership,
-    getMembership,
     getPrimaryMembership,
     QUOTATION_ROLES,
     requireAuth,
     resolveProjectScopedAccess,
 } from './authz.js';
 import {
+    BUSINESS_MODEL_VALUES,
+    calculateProjectedMargin,
+    DEFAULT_ENABLED_BUSINESS_MODELS,
+    normalizeBusinessModel,
+    normalizeBusinessModels,
+    type BusinessModel,
+} from './businessModels.js';
+import {
     createCompany,
     createCompanySettings,
     getCompanyById,
-    getCompanyByUserId,
     updateCompany,
     upsertCompanySettings,
 } from './company.js';
@@ -49,6 +57,30 @@ import {
     softDeleteFlatBilling,
 } from './flatBilling.js';
 import {
+    cancelInvoiceRow,
+    createInvoiceForCompany,
+    deleteInvoiceRow,
+    getInvoiceRowById,
+    issueInvoiceRow,
+    listInvoicesForCompany,
+    peekNextInvoiceNumber,
+    updateInvoiceRow,
+    validateInvoicePayload,
+} from './invoices.js';
+import {
+    createMaterialReceiptForProject,
+    deleteMaterialReceiptForProject,
+    getMaterialReceiptById,
+    listMaterialReceiptsForProject,
+} from './materialReceipts.js';
+import {
+    createPartyForCompany,
+    deletePartyRow,
+    getPartyRow,
+    listPartiesForCompany,
+    updatePartyRow,
+} from './parties.js';
+import {
     createInvestorContributionForInvestor,
     createProjectAttachmentForProject,
     createProjectClientAccessForProject,
@@ -60,11 +92,13 @@ import {
     createProjectProgressUpdateForProject,
     createProjectReceiptForProject,
     createProjectStageForProject,
+    createProjectUnitForProject,
     deleteInvestorContributionRow,
     deleteProjectAttachmentRow,
     deleteProjectInvestorRow,
     deleteProjectProgressUpdateRow,
     deleteProjectStageRow,
+    deleteProjectUnitRow,
     generateProjectNumber,
     getInvestorContributionRowById,
     getProjectCompanyId,
@@ -76,6 +110,7 @@ import {
     getProjectReceiptRowById,
     getProjectRowById,
     getProjectStageRowById,
+    getProjectUnitRowById,
     listInvestorContributionsForInvestor,
     listProjectAttachmentsForProject,
     listProjectClientAccessForProject,
@@ -86,6 +121,7 @@ import {
     listProjectReceiptsForProject,
     listProjectsForCompany,
     listProjectStagesForProject,
+    listProjectUnitsForProject,
     revokeProjectClientAccessRow,
     updateInvestorContributionRow,
     updateProjectExpensePaymentRow,
@@ -95,10 +131,29 @@ import {
     updateProjectReceiptRow,
     updateProjectRow,
     updateProjectStageRow,
+    updateProjectUnitRow,
     voidProjectExpensePaymentRow,
     voidProjectExpenseRow,
     voidProjectReceiptRow
 } from './projects.js';
+import {
+    cancelPurchaseOrder,
+    createPurchaseOrderForProject,
+    getPurchaseOrderById,
+    listPurchaseOrdersForProject,
+    updatePurchaseOrderForProject,
+    updatePurchaseOrderStatus,
+} from './purchaseOrders.js';
+import {
+    createReceiptAllocationForInvoice,
+    createReceiptForCompany,
+    deleteReceiptRow,
+    getReceiptRowById,
+    listPaymentAllocationsForInvoice,
+    listPaymentAllocationsForReceipt,
+    listReceiptsForCompany,
+    updateReceiptRow,
+} from './receipts.js';
 import { allocateDocumentNumber, peekNextDocumentNumber } from './sequence.js';
 import {
     applySuccessfulPayment,
@@ -112,6 +167,13 @@ import {
     verifyRazorpayWebhookSignature,
     type BillingCycle,
 } from './subscription.js';
+import {
+    createSupplierForCompany,
+    deleteSupplierRow,
+    getSupplierRow,
+    listSuppliersForCompany,
+    updateSupplierRow,
+} from './suppliers.js';
 import { createOrLinkTeamMember, listTeamMembers, updateTeamMember } from './team.js';
 import {
     findActivePasswordReset,
@@ -128,11 +190,44 @@ import {
     validateCompanyPayload,
     validateCustomerPayload,
     validateFlatBillingPayload,
+    validatePartyPayload,
     validateProjectPayload,
     validateQuotationPayload,
+    validateSupplierPayload,
 } from './validation.js';
 
 const app = Fastify({ logger: true, bodyLimit: 10 * 1024 * 1024 }); // 10 MB — safer headroom for base64-encoded logo/signature payloads
+
+const TECHNICAL_ERROR_PATTERN = /(insert failed|update failed|delete failed|sql|postgres|supabase|stack|trace|exception|jwt_secret|razorpay_key|ecconn|enotfound|econnrefused|pgrst|schema|relation|column|table|violates|duplicate key value|syntax error|permission denied)/i;
+
+function fallbackErrorByStatus(statusCode: number): string {
+    if (statusCode === 400) return 'Please check the entered information and try again.';
+    if (statusCode === 401) return 'Your session has expired. Please sign in again.';
+    if (statusCode === 403) return 'You do not have permission to perform this action.';
+    if (statusCode === 404) return 'The requested record could not be found.';
+    if (statusCode === 409) return 'This record conflicts with existing information. Please review and try again.';
+    if (statusCode === 422) return 'Please correct the highlighted fields and try again.';
+    if (statusCode === 429) return 'Too many requests. Please wait a moment and try again.';
+    if (statusCode >= 500) return 'Something went wrong on our side. Please try again later.';
+    return 'Something went wrong. Please try again.';
+}
+
+function sanitizeUserFacingError(error: unknown, statusCode: number): string {
+    if (typeof error !== 'string') return fallbackErrorByStatus(statusCode);
+    const trimmed = error.trim();
+    if (!trimmed) return fallbackErrorByStatus(statusCode);
+    if (TECHNICAL_ERROR_PATTERN.test(trimmed)) return fallbackErrorByStatus(statusCode);
+    return trimmed;
+}
+
+app.addHook('preSerialization', async (_request, reply, payload) => {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return payload;
+    const nextPayload = payload as Record<string, unknown>;
+    if (typeof nextPayload.error === 'string') {
+        nextPayload.error = sanitizeUserFacingError(nextPayload.error, reply.statusCode);
+    }
+    return nextPayload;
+});
 
 // Captures the raw request body alongside the normally-parsed JSON. Needed
 // ONLY for the Razorpay webhook (POST /api/webhooks/razorpay), whose
@@ -171,6 +266,271 @@ function inDateRange(value: unknown, from?: Date | null, to?: Date | null): bool
     if (from && date < from) return false;
     if (to && date > to) return false;
     return true;
+}
+
+function toMoney(value: unknown): number {
+    const parsed = Number(value ?? 0);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function monthKeyFromDate(value: string | Date | null | undefined): string {
+    if (!value) return '';
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function yearKeyFromDate(value: string | Date | null | undefined): string {
+    if (!value) return '';
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return String(date.getFullYear());
+}
+
+function formatMoneyNumber(value: number): number {
+    return Number(value.toFixed(2));
+}
+
+async function getCompanyFinancialReport(companyId: string, projectId?: string | null) {
+    const [projects, invoices, expenses, receipts, allocations, investors, customers] = await Promise.all([
+        listProjectsForCompany(companyId),
+        supabaseAdmin.from('invoices').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('project_expenses').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('project_receipts').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('payment_allocations').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('project_investor_contributions').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('customers').select('id, name').eq('company_id', companyId).then((result) => result.data ?? []),
+    ]);
+
+    const projectIds = new Set((projects ?? []).map((project: any) => project.id));
+    const customerMap = new Map((customers ?? []).map((customer: any) => [customer.id, customer]));
+    const invoiceRows = (invoices ?? []).filter((invoice: any) => {
+        if (projectId) return invoice.project_id === projectId || (!invoice.project_id && projectId === 'company-wide');
+        return !invoice.project_id || projectIds.has(invoice.project_id);
+    });
+    const expenseRows = (expenses ?? []).filter((expense: any) => {
+        if (projectId) return expense.project_id === projectId || (!expense.project_id && projectId === 'company-wide');
+        return !expense.project_id || projectIds.has(expense.project_id);
+    });
+    const receiptRows = (receipts ?? []).filter((receipt: any) => {
+        if (projectId) return receipt.project_id === projectId || (!receipt.project_id && projectId === 'company-wide');
+        return !receipt.project_id || projectIds.has(receipt.project_id);
+    });
+
+    const issuedInvoices = invoiceRows.filter((invoice: any) => String(invoice.status ?? '').trim() !== 'Cancelled');
+    const issuedInvoiceIds = new Set(issuedInvoices.map((invoice: any) => invoice.id));
+    const paidAllocations = (allocations ?? []).filter((allocation: any) => issuedInvoiceIds.has(allocation.invoice_id));
+
+    const allocatedByInvoice = new Map<string, number>();
+    for (const allocation of paidAllocations) {
+        const nextTotal = (allocatedByInvoice.get(allocation.invoice_id) ?? 0) + toMoney(allocation.allocated_amount);
+        allocatedByInvoice.set(allocation.invoice_id, nextTotal);
+    }
+
+    const totalBilled = issuedInvoices.reduce((sum: number, invoice: any) => sum + toMoney(invoice.grand_total), 0);
+    const totalCollected = receiptRows.filter((receipt: any) => !receipt.voided_at).reduce((sum: number, receipt: any) => sum + toMoney(receipt.amount), 0);
+    const totalExpenses = expenseRows.filter((expense: any) => (expense.status ?? 'void') !== 'void').reduce((sum: number, expense: any) => sum + toMoney(expense.bill_amount), 0);
+    const investorContributions = (investors ?? []).reduce((sum: number, contribution: any) => sum + toMoney(contribution.amount), 0);
+    const totalOutstanding = issuedInvoices.reduce((sum: number, invoice: any) => {
+        const paid = allocatedByInvoice.get(invoice.id) ?? 0;
+        const outstanding = Math.max(0, toMoney(invoice.grand_total) - paid);
+        return sum + outstanding;
+    }, 0);
+
+    const collectionEfficiency = totalBilled > 0 ? (totalCollected / totalBilled) * 100 : 0;
+    const netCashFlow = totalCollected - totalExpenses;
+
+    const defaulters = Array.from(
+        issuedInvoices.reduce((map: Map<string, any>, invoice: any) => {
+            const outstanding = Math.max(0, toMoney(invoice.grand_total) - (allocatedByInvoice.get(invoice.id) ?? 0));
+            if (outstanding <= 0) return map;
+            const customerId = invoice.customer_id ?? 'unknown';
+            const existing = map.get(customerId) ?? {
+                customerId,
+                customerName: customerMap.get(customerId)?.name ?? 'Unknown customer',
+                outstanding: 0,
+                invoices: 0,
+                dueInvoices: 0,
+            };
+            existing.outstanding += outstanding;
+            existing.invoices += 1;
+            if (invoice.due_date) {
+                const dueDate = new Date(invoice.due_date);
+                if (!Number.isNaN(dueDate.getTime()) && dueDate < new Date()) existing.dueInvoices += 1;
+            }
+            map.set(customerId, existing);
+            return map;
+        }, new Map()).values(),
+    )
+        .map((row: any) => ({ ...row, outstanding: formatMoneyNumber(row.outstanding) }))
+        .sort((a: any, b: any) => b.outstanding - a.outstanding);
+
+    const projectSummaries = (projects ?? []).map((project: any) => {
+        const projectInvoices = issuedInvoices.filter((invoice: any) => invoice.project_id === project.id);
+        const projectExpenses = expenseRows.filter((expense: any) => expense.project_id === project.id && (expense.status ?? 'void') !== 'void');
+        const projectReceipts = receiptRows.filter((receipt: any) => receipt.project_id === project.id && !receipt.voided_at);
+        const projectInvestorContributions = (investors ?? []).filter((contribution: any) => contribution.project_id === project.id).reduce((sum: number, contribution: any) => sum + toMoney(contribution.amount), 0);
+
+        const billed = projectInvoices.reduce((sum: number, invoice: any) => sum + toMoney(invoice.grand_total), 0);
+        const collected = projectReceipts.reduce((sum: number, receipt: any) => sum + toMoney(receipt.amount), 0);
+        const expenses = projectExpenses.reduce((sum: number, expense: any) => sum + toMoney(expense.bill_amount), 0);
+        const outstanding = projectInvoices.reduce((sum: number, invoice: any) => {
+            const paid = allocatedByInvoice.get(invoice.id) ?? 0;
+            return sum + Math.max(0, toMoney(invoice.grand_total) - paid);
+        }, 0);
+
+        return {
+            projectId: project.id,
+            projectName: project.name,
+            contractValue: formatMoneyNumber(toMoney(project.contract_amount)),
+            billed: formatMoneyNumber(billed),
+            collected: formatMoneyNumber(collected),
+            outstanding: formatMoneyNumber(outstanding),
+            expenses: formatMoneyNumber(expenses),
+            netCashFlow: formatMoneyNumber(collected - expenses),
+        };
+    });
+
+    return {
+        totalContract: formatMoneyNumber(projects.reduce((sum: number, project: any) => sum + toMoney(project.contract_amount), 0)),
+        totalBilled: formatMoneyNumber(totalBilled),
+        totalCollected: formatMoneyNumber(totalCollected),
+        totalOutstanding: formatMoneyNumber(totalOutstanding),
+        totalExpenses: formatMoneyNumber(totalExpenses),
+        totalCost: formatMoneyNumber(totalExpenses),
+        totalCollections: formatMoneyNumber(totalCollected),
+        supplierOutstanding: formatMoneyNumber(totalOutstanding),
+        netCashFlow: formatMoneyNumber(netCashFlow),
+        collectionEfficiency: formatMoneyNumber(collectionEfficiency),
+        defaulters,
+        projectSummaries,
+        projectsCount: projects.length,
+        activeProjects: projects.filter((project: any) => project.status === 'in_progress' || project.status === 'planned').length,
+    };
+}
+
+async function getCompanyFinancialMonthlySeries(companyId: string, projectId?: string | null) {
+    const report = await getCompanyFinancialReport(companyId, projectId);
+    const [invoices, expenses, receipts, investorContributions] = await Promise.all([
+        supabaseAdmin.from('invoices').select('*').eq('company_id', companyId).then((result) => (result.data ?? []).filter((invoice: any) => {
+            if (projectId) return invoice.project_id === projectId || (!invoice.project_id && projectId === 'company-wide');
+            return !invoice.project_id || !!invoice.project_id;
+        })),
+        supabaseAdmin.from('project_expenses').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('project_receipts').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('project_investor_contributions').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+    ]);
+
+    const monthMap = new Map<string, any>();
+    for (const invoice of invoices.filter((row: any) => String(row.status ?? '').trim() !== 'Cancelled')) {
+        const key = monthKeyFromDate(invoice.invoice_date ?? invoice.created_at);
+        if (!key) continue;
+        const current = monthMap.get(key) ?? { month: key, billed: 0, collected: 0, expenses: 0, netCashFlow: 0 };
+        current.billed += toMoney(invoice.grand_total);
+        monthMap.set(key, current);
+    }
+    for (const receipt of receipts.filter((row: any) => !row.voided_at)) {
+        const key = monthKeyFromDate(receipt.received_date ?? receipt.created_at);
+        if (!key) continue;
+        const current = monthMap.get(key) ?? { month: key, billed: 0, collected: 0, expenses: 0, netCashFlow: 0 };
+        current.collected += toMoney(receipt.amount);
+        monthMap.set(key, current);
+    }
+    for (const expense of expenses.filter((row: any) => (row.status ?? 'void') !== 'void')) {
+        const key = monthKeyFromDate(expense.bill_date ?? expense.created_at);
+        if (!key) continue;
+        const current = monthMap.get(key) ?? { month: key, billed: 0, collected: 0, expenses: 0, netCashFlow: 0 };
+        current.expenses += toMoney(expense.bill_amount);
+        monthMap.set(key, current);
+    }
+    const monthEntries = Array.from(monthMap.values()).map((entry: any) => {
+        entry.netCashFlow = entry.collected - entry.expenses;
+        return {
+            month: entry.month,
+            billed: formatMoneyNumber(entry.billed),
+            collected: formatMoneyNumber(entry.collected),
+            expenses: formatMoneyNumber(entry.expenses),
+            netCashFlow: formatMoneyNumber(entry.netCashFlow),
+        };
+    });
+
+    return {
+        summary: {
+            totalBilled: report.totalBilled,
+            totalCollected: report.totalCollected,
+            totalExpenses: report.totalExpenses,
+            totalOutstanding: report.totalOutstanding,
+            netCashFlow: report.netCashFlow,
+        },
+        monthly: monthEntries.sort((a: any, b: any) => a.month.localeCompare(b.month)),
+    };
+}
+
+async function getCompanyFinancialYearlySeries(companyId: string, projectId?: string | null) {
+    const [invoices, expenses, receipts, investorContributions] = await Promise.all([
+        supabaseAdmin.from('invoices').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('project_expenses').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('project_receipts').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+        supabaseAdmin.from('project_investor_contributions').select('*').eq('company_id', companyId).then((result) => result.data ?? []),
+    ]);
+
+    const filteredInvoices = invoices.filter((row: any) => {
+        if (projectId) return row.project_id === projectId || (!row.project_id && projectId === 'company-wide');
+        return String(row.status ?? '').trim() !== 'Cancelled';
+    });
+    const filteredReceipts = receipts.filter((row: any) => {
+        if (projectId) return row.project_id === projectId || (!row.project_id && projectId === 'company-wide');
+        return !row.voided_at;
+    });
+    const filteredExpenses = expenses.filter((row: any) => {
+        if (projectId) return row.project_id === projectId || (!row.project_id && projectId === 'company-wide');
+        return (row.status ?? 'void') !== 'void';
+    });
+    const filteredContributions = investorContributions.filter((row: any) => {
+        if (projectId) return row.project_id === projectId || (!row.project_id && projectId === 'company-wide');
+        return true;
+    });
+
+    const yearMap = new Map<string, any>();
+    for (const invoice of filteredInvoices) {
+        const key = yearKeyFromDate(invoice.invoice_date ?? invoice.created_at);
+        if (!key) continue;
+        const current = yearMap.get(key) ?? { year: key, billed: 0, collected: 0, expenses: 0, netCashFlow: 0 };
+        current.billed += toMoney(invoice.grand_total);
+        yearMap.set(key, current);
+    }
+    for (const receipt of filteredReceipts.filter((row: any) => !row.voided_at)) {
+        const key = yearKeyFromDate(receipt.received_date ?? receipt.created_at);
+        if (!key) continue;
+        const current = yearMap.get(key) ?? { year: key, billed: 0, collected: 0, expenses: 0, netCashFlow: 0 };
+        current.collected += toMoney(receipt.amount);
+        yearMap.set(key, current);
+    }
+    for (const expense of filteredExpenses) {
+        const key = yearKeyFromDate(expense.bill_date ?? expense.created_at);
+        if (!key) continue;
+        const current = yearMap.get(key) ?? { year: key, billed: 0, collected: 0, expenses: 0, netCashFlow: 0 };
+        current.expenses += toMoney(expense.bill_amount);
+        yearMap.set(key, current);
+    }
+    for (const contribution of filteredContributions) {
+        const key = yearKeyFromDate(contribution.contribution_date ?? contribution.created_at);
+        if (!key) continue;
+        const current = yearMap.get(key) ?? { year: key, billed: 0, collected: 0, expenses: 0, netCashFlow: 0 };
+        current.netCashFlow += toMoney(contribution.amount);
+        yearMap.set(key, current);
+    }
+
+    return Array.from(yearMap.values()).map((entry: any) => {
+        entry.netCashFlow = entry.collected + entry.netCashFlow - entry.expenses;
+        return {
+            year: entry.year,
+            billed: formatMoneyNumber(entry.billed),
+            collected: formatMoneyNumber(entry.collected),
+            expenses: formatMoneyNumber(entry.expenses),
+            netCashFlow: formatMoneyNumber(entry.netCashFlow),
+        };
+    }).sort((a: any, b: any) => a.year.localeCompare(b.year));
 }
 
 async function getProjectScopedAccessForRead(
@@ -268,7 +628,7 @@ function mapStatusToDb(status: string): string {
     }
 }
 
-function buildDocumentPayload(quotation: any, companyId: string, documentNumber: string, customerId: string | null) {
+function buildDocumentPayload(quotation: any, companyId: string, documentNumber: string, customerId: string | null, partyId: string | null) {
     const additionalCharges = (quotation.additionalCharges ?? []).reduce((total: number, item: any) => total + Number(item?.amount ?? 0), 0);
     const taxAmount = quotation.tax?.applicable
         ? Math.round((Number(quotation.subtotal ?? 0) * Number(quotation.tax?.rate ?? 0)) / 100 * 100) / 100
@@ -278,6 +638,7 @@ function buildDocumentPayload(quotation: any, companyId: string, documentNumber:
         id: quotation.id,
         company_id: companyId,
         customer_id: customerId,
+        party_id: partyId,
         document_type: 'Quotation',
         document_number: documentNumber,
         status: mapStatusToDb(quotation.status),
@@ -338,15 +699,7 @@ async function getQuotationRowById(id: string) {
     return data;
 }
 
-async function saveQuotationToDatabase(quotation: any, companyId: string, userId: string) {
-    if (!companyId || companyId === 'local-company') {
-        const company = await getCompanyByUserId(userId);
-        if (company?.id) {
-            companyId = company.id;
-        } else {
-            throw new Error('No company found for this user. Create a company before saving a quotation.');
-        }
-    }
+async function saveQuotationToDatabase(quotation: any, companyId: string) {
 
     // The row may already exist (an autosave/draft update). Load it first to
     // find (a) whether it already belongs to a DIFFERENT company — which
@@ -356,7 +709,7 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
     // whatever the client sent, and (c) any customer_id already linked to it.
     const { data: existingDoc, error: existingDocError } = await supabaseAdmin
         .from('documents')
-        .select('id, company_id, document_number, customer_id, is_deleted')
+        .select('id, company_id, document_number, customer_id, party_id, is_deleted')
         .eq('id', quotation.id)
         .maybeSingle();
 
@@ -375,6 +728,8 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
     }
 
     const isNewQuotation = !existingDoc;
+    const selectedPartyId = (quotation.customerPartyId ?? quotation.customer_party_id ?? existingDoc?.party_id ?? null) as string | null;
+    const normalizedPartyId = selectedPartyId ? String(selectedPartyId).trim() || null : null;
 
     if (isNewQuotation) {
         // Existing quotations (edits/autosaves) are never subject to this —
@@ -411,7 +766,42 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
                 pincode: quotation.customer?.pincode ?? null,
             };
 
-            if (customerId) {
+            if (normalizedPartyId) {
+                const { data: party, error: partyError } = await supabaseAdmin
+                    .from('parties')
+                    .select('id, company_id, is_customer, is_active, is_deleted')
+                    .eq('id', normalizedPartyId)
+                    .maybeSingle();
+
+                if (partyError) throw partyError;
+                if (!party) {
+                    const err: any = new Error('Selected customer contact could not be found.');
+                    err.statusCode = 404;
+                    throw err;
+                }
+                if (party.company_id !== companyId || !party.is_customer || !party.is_active || party.is_deleted) {
+                    const err: any = new Error('Selected customer contact is not a valid active customer for this company.');
+                    err.statusCode = 403;
+                    throw err;
+                }
+
+                const { data: existingCustomer, error: existingCustomerError } = await supabaseAdmin
+                    .from('customers')
+                    .select('id, company_id, party_id')
+                    .eq('company_id', companyId)
+                    .eq('party_id', normalizedPartyId)
+                    .eq('is_deleted', false)
+                    .maybeSingle();
+
+                if (existingCustomerError) throw existingCustomerError;
+                if (existingCustomer) {
+                    customerId = existingCustomer.id;
+                    await updateCustomerRow(existingCustomer.id, { ...customerFields, party_id: normalizedPartyId });
+                } else {
+                    const created = await createCustomerForCompany(companyId, { ...customerFields, party_id: normalizedPartyId });
+                    customerId = created.id;
+                }
+            } else if (customerId) {
                 const linkedCustomer = await getCustomerRow(customerId);
                 if (linkedCustomer && linkedCustomer.company_id === companyId) {
                     await updateCustomerRow(customerId, customerFields);
@@ -428,7 +818,7 @@ async function saveQuotationToDatabase(quotation: any, companyId: string, userId
             }
         }
 
-        const documentPayload = buildDocumentPayload(quotation, companyId, documentNumber, customerId);
+        const documentPayload = buildDocumentPayload(quotation, companyId, documentNumber, customerId, normalizedPartyId);
 
         const { data: documentData, error: documentError } = await supabaseAdmin
             .from('documents')
@@ -653,8 +1043,8 @@ app.post('/api/signup', async (request, reply) => {
         });
     } catch (err: any) {
         app.log.error(err, 'Failed to create account');
-        const message = err instanceof Error ? err.message : '';
-        if (/fetch failed|ECONNRESET|ECONNREFUSED|ENOTFOUND|TLS|network/i.test(message)) {
+        const message = getErrorText(err);
+        if (isTransientNetworkError(err) || /fetch failed|ECONNRESET|ECONNREFUSED|ENOTFOUND|TLS|network/i.test(message)) {
             return reply.status(503).send({ error: 'Authentication service is temporarily unavailable. Please try again in a moment.' });
         }
         return reply.status(500).send({ error: 'Failed to create account. Please try again.' });
@@ -718,8 +1108,8 @@ app.post('/api/login', async (request, reply) => {
         });
     } catch (err: any) {
         app.log.error(err, 'Login failed due to backend auth service issue');
-        const message = err instanceof Error ? err.message : '';
-        if (/fetch failed|ECONNRESET|ECONNREFUSED|ENOTFOUND|TLS|network/i.test(message)) {
+        const message = getErrorText(err);
+        if (isTransientNetworkError(err) || /fetch failed|ECONNRESET|ECONNREFUSED|ENOTFOUND|TLS|network/i.test(message)) {
             return reply.status(503).send({ error: 'Authentication service is temporarily unavailable. Please try again in a moment.' });
         }
         return reply.status(500).send({ error: 'Login failed. Please try again.' });
@@ -972,6 +1362,17 @@ app.post('/api/company', async (request, reply) => {
     }
 
     try {
+        const { data: existingMembershipRows, error: membershipLookupError } = await supabaseAdmin
+            .from('company_users')
+            .select('company_id')
+            .eq('user_id', userId)
+            .limit(2);
+        if (membershipLookupError) throw membershipLookupError;
+
+        if ((existingMembershipRows ?? []).length > 0) {
+            return reply.status(409).send({ error: 'This account already belongs to a company.' });
+        }
+
         const company = await createCompany(userId, {
             name: body.name ?? '',
             address: body.address ?? null,
@@ -985,30 +1386,50 @@ app.post('/api/company', async (request, reply) => {
             secondary_color: body.secondary_color ?? null,
         });
 
-        await createCompanySettings(company.id, {
-            authorized_person: body.authorized_person ?? null,
-            designation: body.designation ?? null,
-            signature_url: body.signature_url ?? null,
-            bank_name: body.bank_name ?? null,
-            account_name: body.account_name ?? null,
-            account_number: body.account_number ?? null,
-            ifsc: body.ifsc ?? null,
-            branch: body.branch ?? null,
-            upi_id: body.upi_id ?? null,
-            quotation_prefix: body.quotation_prefix || 'QTN',
-            booking_prefix: body.booking_prefix || 'BR',
-            default_validity_days: body.default_validity_days ?? 30,
-            default_terms: body.default_terms ?? null,
-        });
-
-        // Record the creator as the company's owner in company_users so all
-        // future authorization checks (see server/src/authz.ts) can rely on
-        // it directly. Non-fatal: getMembership/getPrimaryMembership fall
-        // back to companies.owner_id if this row is ever missing.
         try {
+            const requestedEnabledModels = Array.isArray(body.enabled_business_models)
+                ? body.enabled_business_models
+                : Array.isArray(body.enabledBusinessModels)
+                    ? body.enabledBusinessModels
+                    : DEFAULT_ENABLED_BUSINESS_MODELS;
+            const invalidEnabledModels = requestedEnabledModels.filter((value: unknown) => normalizeBusinessModel(value) === null);
+            if (invalidEnabledModels.length > 0) {
+                return reply.status(400).send({ error: `Enabled business models must be a subset of: ${BUSINESS_MODEL_VALUES.join(', ')}.` });
+            }
+            const enabledBusinessModels = normalizeBusinessModels(requestedEnabledModels);
+
+            await createCompanySettings(company.id, {
+                authorized_person: body.authorized_person ?? null,
+                designation: body.designation ?? null,
+                signature_url: body.signature_url ?? null,
+                bank_name: body.bank_name ?? null,
+                account_name: body.account_name ?? null,
+                account_number: body.account_number ?? null,
+                ifsc: body.ifsc ?? null,
+                branch: body.branch ?? null,
+                upi_id: body.upi_id ?? null,
+                quotation_prefix: body.quotation_prefix || 'QTN',
+                booking_prefix: body.booking_prefix || 'BR',
+                default_validity_days: body.default_validity_days ?? 30,
+                default_terms: body.default_terms ?? null,
+                default_tax_name: body.default_tax_name ?? 'GST',
+                default_tax_rate: body.default_tax_rate ?? 0,
+                enabled_business_models: enabledBusinessModels.length > 0 ? enabledBusinessModels : DEFAULT_ENABLED_BUSINESS_MODELS,
+                invoice_prefix: body.invoice_prefix || 'INV',
+            });
+
             await ensureCompanyMembership(company.id, userId, 'owner');
-        } catch (membershipErr: any) {
-            app.log.warn(membershipErr, 'Failed to record company_users membership for owner %s', userId);
+        } catch (creationErr: any) {
+            const rollback = await supabaseAdmin
+                .from('companies')
+                .delete()
+                .eq('id', company.id);
+
+            if (rollback.error) {
+                app.log.error(rollback.error, 'Failed to rollback partially-created company %s', company.id);
+            }
+
+            throw creationErr;
         }
 
         const full = await getCompanyById(company.id);
@@ -1075,6 +1496,35 @@ app.put('/api/company/:companyId', async (request, reply) => {
             secondary_color: body.secondary_color,
         });
 
+        const requestedEnabledModels = Array.isArray(body.enabled_business_models)
+            ? body.enabled_business_models
+            : Array.isArray(body.enabledBusinessModels)
+                ? body.enabledBusinessModels
+                : DEFAULT_ENABLED_BUSINESS_MODELS;
+        const invalidEnabledModels = requestedEnabledModels.filter((value: unknown) => normalizeBusinessModel(value) === null);
+        if (invalidEnabledModels.length > 0) {
+            return reply.status(400).send({ error: `Enabled business models must be a subset of: ${BUSINESS_MODEL_VALUES.join(', ')}.` });
+        }
+        const enabledBusinessModels = normalizeBusinessModels(requestedEnabledModels);
+
+        const { data: usedProjectRows, error: usedProjectError } = await supabaseAdmin
+            .from('projects')
+            .select('business_model')
+            .eq('company_id', membership.companyId)
+            .not('business_model', 'is', null);
+        if (usedProjectError) throw usedProjectError;
+
+        const usedModels = new Set(
+            (usedProjectRows ?? [])
+                .map((row) => normalizeBusinessModel(row.business_model))
+                .filter((model): model is BusinessModel => model !== null),
+        );
+
+        const disabledInUse = BUSINESS_MODEL_VALUES.filter((model) => !enabledBusinessModels.includes(model) && usedModels.has(model));
+        if (disabledInUse.length > 0) {
+            return reply.status(400).send({ error: `Cannot disable business models currently assigned to projects: ${disabledInUse.join(', ')}.` });
+        }
+
         await upsertCompanySettings(membership.companyId, {
             authorized_person: body.authorized_person ?? null,
             designation: body.designation ?? null,
@@ -1089,6 +1539,10 @@ app.put('/api/company/:companyId', async (request, reply) => {
             booking_prefix: body.booking_prefix || 'BR',
             default_validity_days: body.default_validity_days ?? 30,
             default_terms: body.default_terms ?? null,
+            default_tax_name: body.default_tax_name ?? 'GST',
+            default_tax_rate: body.default_tax_rate ?? 0,
+            enabled_business_models: enabledBusinessModels.length > 0 ? enabledBusinessModels : DEFAULT_ENABLED_BUSINESS_MODELS,
+            invoice_prefix: body.invoice_prefix || 'INV',
         });
 
         const full = await getCompanyById(membership.companyId);
@@ -1096,6 +1550,141 @@ app.put('/api/company/:companyId', async (request, reply) => {
     } catch (err: any) {
         app.log.error(err, 'Failed to update company');
         return reply.status(500).send({ error: 'Failed to update company.' });
+    }
+});
+
+// ─── Shared Parties ─────────────────────────────────────────────────────────
+app.get('/api/parties', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
+    if (!membership) return;
+
+    const { type, search, activeOnly } = request.query as { type?: string; search?: string; activeOnly?: string | boolean };
+
+    try {
+        const parties = await listPartiesForCompany(membership.companyId, {
+            type: type && type !== 'null' ? type : 'all',
+            search,
+            activeOnly: activeOnly === true || activeOnly === 'true',
+        });
+        return reply.send({ parties });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to list parties');
+        return reply.status(500).send({ error: 'Failed to load parties.' });
+    }
+});
+
+app.get('/api/parties/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    let party: any = null;
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            party = await getPartyRow(id);
+            return party?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    return reply.send({ party });
+});
+
+app.post('/api/parties', async (request, reply) => {
+    const body = request.body as any;
+    const validationError = validatePartyPayload(body);
+    if (validationError) {
+        return reply.status(400).send({ error: validationError });
+    }
+
+    const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
+    if (!membership) return;
+
+    try {
+        const party = await createPartyForCompany(membership.companyId, {
+            ...body,
+            is_customer: Boolean(body?.is_customer ?? false),
+            is_supplier: Boolean(body?.is_supplier ?? false),
+            is_investor: Boolean(body?.is_investor ?? false),
+        });
+        return reply.status(201).send({ party });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to create party');
+        if (err?.code === '23514' && err?.constraint === 'parties_has_role') {
+            return reply.status(400).send({ error: 'General contacts are not enabled yet for this database. Apply migration 0019_generic_party_contact_support.sql and try again.' });
+        }
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400) return reply.status(400).send({ error: err.message });
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        return reply.status(500).send({ error: 'Failed to create party.' });
+    }
+});
+
+app.put('/api/parties/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as any;
+
+    if (body?.name !== undefined && !isNonEmptyString(body.name)) {
+        return reply.status(400).send({ error: 'Party name cannot be empty.' });
+    }
+    const validationError = validatePartyPayload({
+        ...body,
+        name: body?.name ?? 'placeholder',
+        is_customer: Boolean(body?.is_customer ?? false),
+        is_supplier: Boolean(body?.is_supplier ?? false),
+        is_investor: Boolean(body?.is_investor ?? false),
+    });
+    if (validationError && validationError !== 'Party name is required.') {
+        return reply.status(400).send({ error: validationError });
+    }
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const existing = await getPartyRow(id);
+            return existing?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const party = await updatePartyRow(id, body);
+        return reply.send({ party });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to update party');
+        if (err?.code === '23514' && err?.constraint === 'parties_has_role') {
+            return reply.status(400).send({ error: 'General contacts are not enabled yet for this database. Apply migration 0019_generic_party_contact_support.sql and try again.' });
+        }
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400) return reply.status(400).send({ error: err.message });
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        return reply.status(500).send({ error: 'Failed to update party.' });
+    }
+});
+
+app.delete('/api/parties/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const existing = await getPartyRow(id);
+            return existing?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        await deletePartyRow(id, membership.userId);
+        return reply.send({ ok: true });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to delete party');
+        return reply.status(500).send({ error: 'Failed to delete party.' });
     }
 });
 
@@ -1153,6 +1742,14 @@ app.post('/api/customers', async (request, reply) => {
         return reply.status(201).send({ customer });
     } catch (err: any) {
         app.log.error(err, 'Failed to create customer');
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
         return reply.status(500).send({ error: 'Failed to create customer.' });
     }
 });
@@ -1187,6 +1784,14 @@ app.put('/api/customers/:id', async (request, reply) => {
         return reply.send({ customer });
     } catch (err: any) {
         app.log.error(err, 'Failed to update customer');
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
         return reply.status(500).send({ error: 'Failed to update customer.' });
     }
 });
@@ -1206,11 +1811,557 @@ app.delete('/api/customers/:id', async (request, reply) => {
     if (!membership) return;
 
     try {
-        await deleteCustomerRow(id);
+        await deleteCustomerRow(id, membership.userId);
         return reply.send({ ok: true });
     } catch (err: any) {
         app.log.error(err, 'Failed to delete customer');
         return reply.status(500).send({ error: 'Failed to delete customer.' });
+    }
+});
+
+// ─── Invoices ───────────────────────────────────────────────────────────────
+
+app.get('/api/invoices', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
+    if (!membership) return;
+
+    const projectId = (request.query as { projectId?: string } | undefined)?.projectId ?? null;
+    try {
+        const invoices = await listInvoicesForCompany(membership.companyId, projectId);
+        return reply.send({ invoices });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to list invoices');
+        return reply.status(500).send({ error: 'Failed to load invoices.' });
+    }
+});
+
+app.get('/api/invoices/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    let invoice: any = null;
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            invoice = await getInvoiceRowById(id);
+            return invoice?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    return reply.send({ invoice });
+});
+
+app.get('/api/invoices/next-sequence', async (request, reply) => {
+    const userId = requireAuth(request, reply);
+    if (!userId) return;
+
+    try {
+        const membership = await getPrimaryMembership(userId);
+        if (!membership) {
+            return reply.send({ nextSequence: 1 });
+        }
+
+        const preview = await peekNextInvoiceNumber(membership.companyId);
+        const match = preview.match(/(\d+)$/);
+        return reply.send({ nextSequence: match ? Number(match[1]) : 1 });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to get invoice sequence');
+        return reply.status(500).send({ error: 'Failed to get invoice sequence.' });
+    }
+});
+
+app.post('/api/invoices', async (request, reply) => {
+    const userId = requireAuth(request, reply);
+    if (!userId) return;
+
+    const body = request.body as { invoice?: any; companyId?: string };
+    if (!body?.invoice) {
+        return reply.status(400).send({ error: 'Invoice payload is required.' });
+    }
+
+    const validationError = validateInvoicePayload(body.invoice);
+    if (validationError) {
+        return reply.status(400).send({ error: validationError });
+    }
+
+    const requestedCompanyId = body.companyId && body.companyId !== 'local-company' ? body.companyId : null;
+
+    try {
+        const membership = await getPrimaryMembership(userId);
+        if (!membership) {
+            return reply.status(400).send({ error: 'No company found for this user. Create a company before saving an invoice.' });
+        }
+
+        if (requestedCompanyId && requestedCompanyId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
+        if (!QUOTATION_ROLES.includes(membership.role)) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
+        const invoice = await createInvoiceForCompany(membership.companyId, {
+            ...body.invoice,
+            company_id: membership.companyId,
+        });
+        return reply.status(201).send({ invoice });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to create invoice');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 403) return reply.status(403).send({ error: 'Forbidden.' });
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        return reply.status(500).send({ error: 'Failed to save invoice.' });
+    }
+});
+
+app.put('/api/invoices/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as any;
+
+    if (!body || typeof body !== 'object') {
+        return reply.status(400).send({ error: 'Invoice payload is required.' });
+    }
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const existing = await getInvoiceRowById(id);
+            return existing?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const invoice = await updateInvoiceRow(id, membership.companyId, body);
+        return reply.send({ invoice });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to update invoice');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400) return reply.status(400).send({ error: err.message });
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        return reply.status(500).send({ error: 'Failed to update invoice.' });
+    }
+});
+
+app.post('/api/invoices/:id/issue', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const existing = await getInvoiceRowById(id);
+            return existing?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const invoice = await issueInvoiceRow(id, membership.companyId);
+        return reply.send({ invoice });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to issue invoice');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        return reply.status(500).send({ error: 'Failed to issue invoice.' });
+    }
+});
+
+app.post('/api/invoices/:id/cancel', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const existing = await getInvoiceRowById(id);
+            return existing?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const invoice = await cancelInvoiceRow(id, membership.companyId);
+        return reply.send({ invoice });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to cancel invoice');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        return reply.status(500).send({ error: 'Failed to cancel invoice.' });
+    }
+});
+
+app.delete('/api/invoices/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const existing = await getInvoiceRowById(id);
+            return existing?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const result = await deleteInvoiceRow(id, membership.companyId);
+        return reply.send(result);
+    } catch (err: any) {
+        app.log.error(err, 'Failed to delete invoice');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        return reply.status(500).send({ error: 'Failed to delete invoice.' });
+    }
+});
+
+// ─── Receipts & Payments ─────────────────────────────────────────────────────
+
+app.get('/api/receipts', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
+    if (!membership) return;
+
+    const { projectId, customerId } = request.query as { projectId?: string; customerId?: string };
+    try {
+        const receipts = await listReceiptsForCompany(membership.companyId, {
+            projectId: projectId && projectId !== 'null' ? projectId : null,
+            customerId: customerId && customerId !== 'null' ? customerId : null,
+        });
+        return reply.send({ receipts });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to list receipts');
+        return reply.status(500).send({ error: 'Failed to load receipts.' });
+    }
+});
+
+app.get('/api/receipts/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const receipt = await getReceiptRowById(id);
+            return receipt?.companyId ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    const receipt = await getReceiptRowById(id);
+    if (!receipt) {
+        return reply.status(404).send({ error: 'Receipt not found.' });
+    }
+
+    const allocations = await listPaymentAllocationsForReceipt(id, membership.companyId);
+    return reply.send({ receipt: { ...receipt, allocations } });
+});
+
+app.post('/api/receipts', async (request, reply) => {
+    const userId = requireAuth(request, reply);
+    if (!userId) return;
+
+    const body = request.body as { receipt?: any; companyId?: string };
+    if (!body?.receipt) {
+        return reply.status(400).send({ error: 'Receipt payload is required.' });
+    }
+
+    const membership = await getPrimaryMembership(userId);
+    if (!membership) {
+        return reply.status(400).send({ error: 'No company found for this user. Create a company before saving a receipt.' });
+    }
+
+    const requestedCompanyId = body.companyId && body.companyId !== 'local-company' ? body.companyId : null;
+    if (requestedCompanyId && requestedCompanyId !== membership.companyId) {
+        return reply.status(403).send({ error: 'Forbidden.' });
+    }
+    if (!QUOTATION_ROLES.includes(membership.role)) {
+        return reply.status(403).send({ error: 'Forbidden.' });
+    }
+
+    try {
+        const receipt = await createReceiptForCompany(membership.companyId, { ...body.receipt, company_id: membership.companyId }, userId);
+        return reply.status(201).send({ receipt });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to create receipt');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to save receipt.' });
+    }
+});
+
+app.put('/api/receipts/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as any;
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const receipt = await getReceiptRowById(id);
+            return receipt?.companyId ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const receipt = await updateReceiptRow(id, membership.companyId, body ?? {});
+        return reply.send({ receipt });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to update receipt');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to update receipt.' });
+    }
+});
+
+app.delete('/api/receipts/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const receipt = await getReceiptRowById(id);
+            return receipt?.companyId ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const result = await deleteReceiptRow(id, membership.companyId);
+        return reply.send(result);
+    } catch (err: any) {
+        app.log.error(err, 'Failed to delete receipt');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to delete receipt.' });
+    }
+});
+
+app.get('/api/receipts/:id/allocations', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const receipt = await getReceiptRowById(id);
+            return receipt?.companyId ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const allocations = await listPaymentAllocationsForReceipt(id, membership.companyId);
+        return reply.send({ allocations });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to list receipt allocations');
+        return reply.status(500).send({ error: 'Failed to load receipt allocations.' });
+    }
+});
+
+app.post('/api/receipts/:id/allocations', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as {
+        invoiceId?: string;
+        invoice_id?: string;
+        amount?: number | string;
+        invoiceAmount?: number | string;
+    };
+    const invoiceId = body?.invoiceId ?? body?.invoice_id;
+    const amount = body?.amount ?? body?.invoiceAmount ?? 0;
+
+    if (!invoiceId) {
+        return reply.status(400).send({ error: 'Invoice is required.' });
+    }
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const receipt = await getReceiptRowById(id);
+            return receipt?.companyId ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const result = await createReceiptAllocationForInvoice(id, invoiceId, membership.companyId, amount);
+        return reply.status(201).send(result);
+    } catch (err: any) {
+        app.log.error(err, 'Failed to allocate receipt');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to allocate receipt.' });
+    }
+});
+
+app.get('/api/invoices/:id/payments', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const invoice = await getInvoiceRowById(id);
+            return invoice?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const allocations = await listPaymentAllocationsForInvoice(id, membership.companyId);
+        return reply.send({ allocations });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to list invoice allocations');
+        return reply.status(500).send({ error: 'Failed to load invoice payments.' });
+    }
+});
+
+// ─── Suppliers ──────────────────────────────────────────────────────────────
+app.get('/api/suppliers', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
+    if (!membership) return;
+
+    try {
+        const suppliers = await listSuppliersForCompany(membership.companyId);
+        return reply.send({ suppliers });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to list suppliers');
+        return reply.status(500).send({ error: 'Failed to load suppliers.' });
+    }
+});
+
+app.get('/api/suppliers/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    let supplier: any = null;
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            supplier = await getSupplierRow(id);
+            return supplier?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    return reply.send({ supplier });
+});
+
+app.post('/api/suppliers', async (request, reply) => {
+    const body = request.body as any;
+    const validationError = validateSupplierPayload(body);
+    if (validationError) {
+        return reply.status(400).send({ error: validationError });
+    }
+
+    const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
+    if (!membership) return;
+
+    try {
+        const supplier = await createSupplierForCompany(membership.companyId, body);
+        return reply.status(201).send({ supplier });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to create supplier');
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to create supplier.' });
+    }
+});
+
+app.put('/api/suppliers/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as any;
+
+    if (body?.name !== undefined && !isNonEmptyString(body.name)) {
+        return reply.status(400).send({ error: 'Supplier name cannot be empty.' });
+    }
+    const supplierValidationError = validateSupplierPayload({
+        name: body?.name ?? 'placeholder',
+        mobile: body?.mobile,
+        gstin: body?.gstin,
+    });
+    if (supplierValidationError && supplierValidationError !== 'Supplier name is required.') {
+        return reply.status(400).send({ error: supplierValidationError });
+    }
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const existing = await getSupplierRow(id);
+            return existing?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const supplier = await updateSupplierRow(id, body);
+        return reply.send({ supplier });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to update supplier');
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to update supplier.' });
+    }
+});
+
+app.delete('/api/suppliers/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const existing = await getSupplierRow(id);
+            return existing?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        await deleteSupplierRow(id);
+        return reply.send({ ok: true });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to delete supplier');
+        return reply.status(500).send({ error: 'Failed to delete supplier.' });
     }
 });
 
@@ -1267,6 +2418,270 @@ app.get('/api/projects/:id', async (request, reply) => {
     return reply.send({ project });
 });
 
+app.get('/api/projects/:projectId/units', async (request, reply) => {
+    const { projectId } = request.params as { projectId: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const project = await getProjectRowById(projectId);
+            return project?.company_id ?? null;
+        },
+        { allowedRoles: QUOTATION_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const result = await listProjectUnitsForProject(projectId, membership.companyId);
+        return reply.send(result);
+    } catch (err: any) {
+        app.log.error(err, 'Failed to list project units');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to load project inventory.' });
+    }
+});
+
+app.post('/api/projects/:projectId/units', async (request, reply) => {
+    const { projectId } = request.params as { projectId: string };
+    const body = request.body as any;
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const project = await getProjectRowById(projectId);
+            return project?.company_id ?? null;
+        },
+        { allowedRoles: COMPANY_MANAGEMENT_ROLES },
+    );
+    if (!membership) return;
+
+    try {
+        const unit = await createProjectUnitForProject(projectId, membership.companyId, body ?? {});
+        return reply.status(201).send({ unit });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to create project unit');
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to create project inventory unit.' });
+    }
+});
+
+app.put('/api/projects/:projectId/units/:unitId', async (request, reply) => {
+    const { projectId, unitId } = request.params as { projectId: string; unitId: string };
+    const body = request.body as any;
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const unit = await getProjectUnitRowById(unitId);
+            return unit?.project?.company_id ?? null;
+        },
+        { allowedRoles: COMPANY_MANAGEMENT_ROLES },
+    );
+    if (!membership) return;
+
+    const unit = await getProjectUnitRowById(unitId);
+    if (!unit) {
+        return reply.status(404).send({ error: 'Project unit not found.' });
+    }
+    if (unit.project_id !== projectId) {
+        return reply.status(400).send({ error: 'This unit does not belong to the selected project.' });
+    }
+
+    try {
+        const updated = await updateProjectUnitRow(unitId, membership.companyId, body ?? {});
+        return reply.send({ unit: updated });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to update project unit');
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to update project inventory unit.' });
+    }
+});
+
+app.delete('/api/projects/:projectId/units/:unitId', async (request, reply) => {
+    const { projectId, unitId } = request.params as { projectId: string; unitId: string };
+
+    const membership = await authorizeOwnedResource(
+        request,
+        reply,
+        async () => {
+            const unit = await getProjectUnitRowById(unitId);
+            return unit?.project?.company_id ?? null;
+        },
+        { allowedRoles: COMPANY_MANAGEMENT_ROLES },
+    );
+    if (!membership) return;
+
+    const unit = await getProjectUnitRowById(unitId);
+    if (!unit) {
+        return reply.status(404).send({ error: 'Project unit not found.' });
+    }
+    if (unit.project_id !== projectId) {
+        return reply.status(400).send({ error: 'This unit does not belong to the selected project.' });
+    }
+
+    try {
+        await deleteProjectUnitRow(unitId, membership.companyId);
+        return reply.send({ ok: true });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to delete project unit');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to delete project inventory unit.' });
+    }
+});
+
+app.get('/api/external/projects', async (request, reply) => {
+    const userId = requireAuth(request, reply);
+    if (!userId) return;
+
+    const user = await findUserById(userId);
+    if (!user) {
+        return reply.status(404).send({ error: 'User not found.' });
+    }
+
+    if (user.role !== 'client' && user.role !== 'investor') {
+        return reply.status(403).send({ error: 'Forbidden.' });
+    }
+
+    const projectScope = await resolveProjectScopedAccess(userId);
+    if (!projectScope || projectScope.authorizedProjectIds.length === 0) {
+        return reply.send({ projects: [] });
+    }
+
+    const allowedProjectIds = new Set(projectScope.authorizedProjectIds);
+    const clientProjectIds = new Set(projectScope.clientProjectIds);
+    const userEmail = String(user.email ?? '').trim().toLowerCase();
+
+    const projects = await Promise.all(
+        Array.from(allowedProjectIds).map(async (projectId) => {
+            const project = await getProjectRowById(projectId);
+            if (!project) return null;
+            if (user.role === 'client' && !clientProjectIds.has(projectId)) return null;
+            if (user.role === 'investor' && clientProjectIds.has(projectId)) return null;
+
+            const stages = await listProjectStagesForProject(projectId, project.company_id);
+            const updates = await listProjectProgressUpdatesForProject(projectId, project.company_id);
+            const attachments = await listProjectAttachmentsForProject(projectId, project.company_id);
+            const receipts = await listProjectReceiptsForProject(projectId, project.company_id);
+            const amountPaidByClient = receipts
+                .filter((row: any) => !row?.voided_at)
+                .reduce((sum: number, row: any) => sum + Number(row?.amount ?? 0), 0);
+            const contractValue = Number(project.contract_amount ?? 0);
+            const outstandingAmount = Math.max(0, contractValue - amountPaidByClient);
+
+            let myInvestment = 0;
+            let myFundingHistory: Array<{ id: string; date: string | null; amount: number; reference: string | null }> = [];
+            if (user.role === 'investor') {
+                const { data: investorRows, error: investorError } = await supabaseAdmin
+                    .from('project_investors')
+                    .select('*')
+                    .eq('project_id', projectId)
+                    .eq('is_active', true);
+
+                if (investorError) throw investorError;
+
+                const matchingInvestors = (investorRows ?? []).filter((row: any) => {
+                    const rowEmail = String(row?.email ?? '').trim().toLowerCase();
+                    const rowUserId = row?.user_id;
+                    const emailMatches = rowUserId == null && rowEmail && rowEmail === userEmail;
+                    const userMatches = rowUserId === userId;
+                    return userMatches || emailMatches;
+                });
+
+                const contributions = await Promise.all(
+                    matchingInvestors.map(async (row: any) => listInvestorContributionsForInvestor(row.id, project.company_id)),
+                );
+
+                const fundingRows = contributions.flat();
+                myFundingHistory = fundingRows.map((row: any) => ({
+                    id: String(row.id),
+                    date: row.contribution_date ?? null,
+                    amount: Number(row.amount ?? 0),
+                    reference: row.reference_number ?? null,
+                }));
+                myInvestment = myFundingHistory.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
+            }
+
+            return {
+                id: project.id,
+                name: project.name,
+                status: project.status,
+                siteAddress: project.site_address ?? null,
+                description: project.description ?? null,
+                startDate: project.start_date ?? null,
+                expectedEndDate: project.expected_end_date ?? null,
+                actualEndDate: project.actual_end_date ?? null,
+                projectTypeSnapshot: project.project_type_snapshot ?? null,
+                progressPercent: stages.length > 0
+                    ? Math.round(stages.reduce((sum: number, row: any) => sum + Number(row.completion_percentage ?? 0), 0) / stages.length)
+                    : null,
+                milestoneCount: stages.length,
+                updateCount: updates.length,
+                documentCount: attachments.length,
+                totalContractValue: user.role === 'client' ? contractValue : null,
+                amountPaidByClient: user.role === 'client' ? amountPaidByClient : null,
+                outstandingAmount: user.role === 'client' ? outstandingAmount : null,
+                nextPaymentDueDate: null,
+                paymentHistory: user.role === 'client'
+                    ? receipts
+                        .filter((row: any) => !row?.voided_at)
+                        .map((row: any) => ({
+                            id: String(row.id),
+                            date: row.received_date ?? null,
+                            amount: Number(row.amount ?? 0),
+                            reference: row.reference_number ?? null,
+                        }))
+                    : [],
+                myInvestment: user.role === 'investor' ? myInvestment : null,
+                myFundingHistory,
+                milestones: stages.map((row: any) => ({
+                    id: String(row.id),
+                    name: String(row.name ?? 'Milestone'),
+                    status: String(row.status ?? 'pending'),
+                    targetDate: row.target_date ?? row.due_date ?? null,
+                    completionPercent: Number(row.completion_percentage ?? 0),
+                })),
+                updates: updates.map((row: any) => ({
+                    id: String(row.id),
+                    title: String(row.title ?? 'Project update'),
+                    message: row.message ?? null,
+                    createdAt: row.created_at ?? null,
+                })),
+                documents: attachments.map((row: any) => ({
+                    id: String(row.id),
+                    name: String(row.original_filename ?? 'Document'),
+                    fileType: row.mime_type ?? null,
+                    createdAt: row.created_at ?? null,
+                })),
+            };
+        }),
+    );
+
+    return reply.send({ projects: projects.filter(Boolean) });
+});
+
 app.post('/api/projects', async (request, reply) => {
     const userId = requireAuth(request, reply);
     if (!userId) return;
@@ -1278,22 +2693,20 @@ app.post('/api/projects', async (request, reply) => {
         return reply.status(400).send({ error: validationError });
     }
 
-    const companyId = body.company_id || body.companyId || null;
+    const requestedCompanyId = body.company_id || body.companyId || null;
     let membership: CompanyMembership | null;
 
     try {
-        if (companyId) {
-            membership = await getMembership(userId, companyId);
-            if (!membership) {
-                return reply.status(403).send({ error: 'Forbidden.' });
-            }
-        } else {
-            membership = await getPrimaryMembership(userId);
-        }
+        membership = await getPrimaryMembership(userId);
 
         if (!membership) {
             return reply.status(400).send({ error: 'No company found for this user. Create a company before saving a project.' });
         }
+
+        if (requestedCompanyId && requestedCompanyId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
         if (!QUOTATION_ROLES.includes(membership.role)) {
             return reply.status(403).send({ error: 'Forbidden.' });
         }
@@ -1310,13 +2723,20 @@ app.post('/api/projects', async (request, reply) => {
                 source_document_id: body.source_document_id ?? body.sourceDocumentId ?? null,
                 project_type_id: body.project_type_id ?? body.projectTypeId ?? null,
                 project_type_snapshot: body.project_type_snapshot ?? body.projectTypeSnapshot ?? body.projectType ?? null,
+                business_model: body.business_model ?? body.businessModel ?? null,
+                projected_sales_value: body.projected_sales_value ?? body.projectedSalesValue ?? null,
+                land_cost: body.land_cost ?? body.landCost ?? null,
                 description: body.description ?? null,
                 site_address: body.site_address ?? body.siteAddress ?? null,
                 contract_amount: body.contract_amount ?? body.contractAmount ?? 0,
+                budget_amount: body.budget_amount ?? body.budgetAmount ?? null,
                 start_date: body.start_date ?? body.startDate ?? null,
                 expected_end_date: body.expected_end_date ?? body.expectedEndDate ?? null,
                 actual_end_date: body.actual_end_date ?? body.actualEndDate ?? null,
                 status: body.status ?? 'planned',
+                stage_drafts: Array.isArray(body.stage_drafts)
+                    ? body.stage_drafts
+                    : (Array.isArray(body.stages) ? body.stages : null),
             },
             membership.userId,
         );
@@ -1325,6 +2745,7 @@ app.post('/api/projects', async (request, reply) => {
     } catch (err: any) {
         app.log.error(err, 'Failed to create project');
         const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400) return reply.status(400).send({ error: err.message });
         if (statusCode === 403) return reply.status(403).send({ error: 'Forbidden.' });
         if (statusCode === 409) return reply.status(409).send({ error: err.message });
         return reply.status(500).send({ error: 'Failed to create project.' });
@@ -1386,8 +2807,12 @@ app.put('/api/projects/:id', async (request, reply) => {
             source_document_id: body.source_document_id ?? body.sourceDocumentId,
             project_type_id: body.project_type_id ?? body.projectTypeId,
             project_type_snapshot: body.project_type_snapshot ?? body.projectTypeSnapshot ?? body.projectType,
+            business_model: body.business_model ?? body.businessModel,
+            projected_sales_value: body.projected_sales_value ?? body.projectedSalesValue,
+            land_cost: body.land_cost ?? body.landCost,
             site_address: body.site_address ?? body.siteAddress,
             contract_amount: body.contract_amount ?? body.contractAmount,
+            budget_amount: body.budget_amount ?? body.budgetAmount ?? null,
             start_date: body.start_date ?? body.startDate,
             expected_end_date: body.expected_end_date ?? body.expectedEndDate,
             actual_end_date: body.actual_end_date ?? body.actualEndDate,
@@ -1658,6 +3083,241 @@ app.delete('/api/project-receipts/:id', async (request, reply) => {
             return reply.status(statusCode).send({ error: err.message });
         }
         return reply.status(500).send({ error: 'Failed to delete client receipt.' });
+    }
+});
+
+app.get('/api/project-purchase-orders', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    const projectId = (request.query as { projectId?: string }).projectId;
+    if (!projectId) return reply.status(400).send({ error: 'Project is required.' });
+
+    try {
+        const companyProjectId = await getProjectCompanyId(projectId);
+        if (!companyProjectId || companyProjectId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
+        const purchaseOrders = await listPurchaseOrdersForProject(projectId, membership.companyId);
+        return reply.send({ purchaseOrders });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to list project purchase orders');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to load purchase orders.' });
+    }
+});
+
+app.get('/api/project-purchase-orders/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    try {
+        const purchaseOrder = await getPurchaseOrderById(id, membership.companyId);
+        if (!purchaseOrder) {
+            return reply.status(404).send({ error: 'Purchase order not found.' });
+        }
+
+        const companyProjectId = await getProjectCompanyId(purchaseOrder.projectId);
+        if (!companyProjectId || companyProjectId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
+        return reply.send({ purchaseOrder });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to fetch project purchase order');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to load purchase order.' });
+    }
+});
+
+app.post('/api/project-purchase-orders', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    const body = request.body as { purchaseOrder?: any };
+    const payload = body?.purchaseOrder ?? body;
+    if (!payload?.projectId) {
+        return reply.status(400).send({ error: 'Project is required.' });
+    }
+
+    try {
+        const purchaseOrder = await createPurchaseOrderForProject(payload.projectId, membership.companyId, payload);
+        return reply.status(201).send({ purchaseOrder });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to create project purchase order');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to save purchase order.' });
+    }
+});
+
+app.put('/api/project-purchase-orders/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as { purchaseOrder?: any };
+    const payload = body?.purchaseOrder ?? body;
+
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    try {
+        const existing = await getPurchaseOrderById(id, membership.companyId);
+        if (!existing) {
+            return reply.status(404).send({ error: 'Purchase order not found.' });
+        }
+
+        const purchaseOrder = await updatePurchaseOrderForProject(id, membership.companyId, payload ?? {});
+        return reply.send({ purchaseOrder });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to update project purchase order');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to update purchase order.' });
+    }
+});
+
+app.patch('/api/project-purchase-orders/:id/status', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    const status = (request.body as { status?: unknown })?.status ?? (request.body as any)?.purchaseOrder?.status;
+    if (!status) {
+        return reply.status(400).send({ error: 'Status is required.' });
+    }
+
+    try {
+        const purchaseOrder = await updatePurchaseOrderStatus(id, membership.companyId, status);
+        return reply.send({ purchaseOrder });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to update project purchase order status');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to update purchase order status.' });
+    }
+});
+
+app.post('/api/project-purchase-orders/:id/cancel', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    try {
+        const purchaseOrder = await cancelPurchaseOrder(id, membership.companyId);
+        return reply.send({ purchaseOrder });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to cancel project purchase order');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to cancel purchase order.' });
+    }
+});
+
+app.get('/api/project-material-receipts', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    const projectId = (request.query as { projectId?: string }).projectId;
+    if (!projectId) return reply.status(400).send({ error: 'Project is required.' });
+
+    try {
+        const companyProjectId = await getProjectCompanyId(projectId);
+        if (!companyProjectId || companyProjectId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
+        const materialReceipts = await listMaterialReceiptsForProject(projectId, membership.companyId);
+        return reply.send({ materialReceipts });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to list project material receipts');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to load material receipts.' });
+    }
+});
+
+app.get('/api/project-material-receipts/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    try {
+        const materialReceipt = await getMaterialReceiptById(id, membership.companyId);
+        if (!materialReceipt) {
+            return reply.status(404).send({ error: 'Material receipt not found.' });
+        }
+
+        const companyProjectId = await getProjectCompanyId(materialReceipt.projectId);
+        if (!companyProjectId || companyProjectId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
+        return reply.send({ materialReceipt });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to fetch project material receipt');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to load material receipt.' });
+    }
+});
+
+app.post('/api/project-material-receipts', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    const body = request.body as { materialReceipt?: any };
+    const payload = body?.materialReceipt ?? body;
+    if (!payload?.projectId) {
+        return reply.status(400).send({ error: 'Project is required.' });
+    }
+
+    try {
+        const materialReceipt = await createMaterialReceiptForProject(payload.projectId, membership.companyId, payload);
+        return reply.status(201).send({ materialReceipt });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to create project material receipt');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to save material receipt.' });
+    }
+});
+
+app.delete('/api/project-material-receipts/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    try {
+        const deleted = await deleteMaterialReceiptForProject(id, membership.companyId);
+        return reply.send({ ok: deleted });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to delete project material receipt');
+        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404) {
+            return reply.status(statusCode).send({ error: err.message });
+        }
+        return reply.status(500).send({ error: 'Failed to delete material receipt.' });
     }
 });
 
@@ -2128,8 +3788,19 @@ app.post('/api/project-investors', async (request, reply) => {
         return reply.status(201).send({ investor });
     } catch (err: any) {
         app.log.error(err, 'Failed to create project investor');
-        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-        if (statusCode === 400 || statusCode === 403 || statusCode === 404) return reply.status(statusCode).send({ error: err.message });
+        if (err?.code === '42703' && String(err?.message ?? '').includes('party_id')) {
+            return reply.status(500).send({
+                error: 'Investor-party linking is not available because the database schema is outdated. Please run migration 0009_project_investor_party_id.sql.',
+            });
+        }
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message || 'This investor is already linked to this project.' });
+        }
         return reply.status(500).send({ error: 'Failed to save project investor.' });
     }
 });
@@ -2155,8 +3826,19 @@ app.put('/api/project-investors/:id', async (request, reply) => {
         return reply.send({ investor });
     } catch (err: any) {
         app.log.error(err, 'Failed to update project investor');
-        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-        if (statusCode === 400 || statusCode === 403 || statusCode === 404) return reply.status(statusCode).send({ error: err.message });
+        if (err?.code === '42703' && String(err?.message ?? '').includes('party_id')) {
+            return reply.status(500).send({
+                error: 'Investor-party linking is not available because the database schema is outdated. Please run migration 0009_project_investor_party_id.sql.',
+            });
+        }
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
+            return reply.status(statusCode).send({ error: err.message || 'This investor is already linked to this project.' });
+        }
         return reply.status(500).send({ error: 'Failed to update project investor.' });
     }
 });
@@ -2270,20 +3952,84 @@ app.delete('/api/investor-contributions/:id', async (request, reply) => {
     }
 });
 
+const MASTER_TABLE_MAP: Record<string, string> = {
+    projectTypes: 'project_types',
+    units: 'units_of_measure',
+    expenseCategories: 'expense_categories',
+    paymentMethods: 'payment_methods',
+    taxRates: 'tax_rates',
+    stageTemplates: 'project_stage_templates',
+};
+
+function getMasterRowKey(table: string, row: any): string {
+    if (table === 'project_stage_templates') {
+        const key = String(row?.template_code ?? row?.code ?? row?.name ?? '').trim().toLowerCase();
+        const projectTypeId = row?.project_type_id ?? 'global';
+        return `${table}:${String(projectTypeId)}:${key}`;
+    }
+    const key = String(row?.code ?? '').trim().toLowerCase();
+    return `${table}:${key}`;
+}
+
+function isMasterRowActive(row: any): boolean {
+    if (!row || row.is_active === false) return false;
+    return true;
+}
+
+function isTaxRateCurrent(row: any, todayIso: string): boolean {
+    if (!row || row.is_active === false) return false;
+    const effectiveFrom = String(row.effective_from ?? '').trim();
+    const effectiveTo = String(row.effective_to ?? '').trim();
+    if (effectiveFrom && effectiveFrom > todayIso) return false;
+    if (effectiveTo && effectiveTo < todayIso) return false;
+    return true;
+}
+
+function mergeMasterRows(rows: any[], table: string, companyId: string): any[] {
+    const merged = new Map<string, any>();
+    const todayIso = new Date().toISOString().slice(0, 10);
+
+    for (const row of rows ?? []) {
+        if (row?.company_id != null && row.company_id !== companyId) {
+            continue;
+        }
+        if (!isMasterRowActive(row)) continue;
+        if (table === 'tax_rates' && !isTaxRateCurrent(row, todayIso)) continue;
+
+        const key = getMasterRowKey(table, row);
+        const existing = merged.get(key);
+        if (!existing || (row.company_id === companyId && existing.company_id !== companyId)) {
+            merged.set(key, row);
+        }
+    }
+
+    return Array.from(merged.values()).sort((a, b) => {
+        if (table === 'tax_rates') {
+            const aDate = new Date(String(a?.effective_from ?? '1970-01-01')).getTime();
+            const bDate = new Date(String(b?.effective_from ?? '1970-01-01')).getTime();
+            if (aDate !== bDate) return bDate - aDate;
+        }
+
+        const aSort = Number(a?.sort_order ?? a?.sequence_number ?? 0);
+        const bSort = Number(b?.sort_order ?? b?.sequence_number ?? 0);
+        if (aSort !== bSort) return aSort - bSort;
+        if (table === 'project_stage_templates') {
+            const aSeq = Number(a?.sequence_number ?? Number.MAX_SAFE_INTEGER);
+            const bSeq = Number(b?.sequence_number ?? Number.MAX_SAFE_INTEGER);
+            if (aSeq !== bSeq) return aSeq - bSeq;
+        }
+        const aLabel = String(a?.name ?? a?.code ?? a?.template_code ?? '').toLowerCase();
+        const bLabel = String(b?.name ?? b?.code ?? b?.template_code ?? '').toLowerCase();
+        return aLabel.localeCompare(bLabel);
+    });
+}
+
 app.get('/api/masters/:type', async (request, reply) => {
     const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_READ_ROLES });
     if (!membership) return;
 
     const { type } = request.params as { type: string };
-    const tableMap: Record<string, string> = {
-        projectTypes: 'project_types',
-        units: 'units_of_measure',
-        expenseCategories: 'expense_categories',
-        paymentMethods: 'payment_methods',
-        taxRates: 'tax_rates',
-        stageTemplates: 'project_stage_templates',
-    };
-    const table = tableMap[type];
+    const table = MASTER_TABLE_MAP[type];
     if (!table) return reply.status(404).send({ error: 'Master type not found.' });
 
     try {
@@ -2293,7 +4039,7 @@ app.get('/api/masters/:type', async (request, reply) => {
         else query = query.order('sort_order', { ascending: true });
         const { data, error } = await query;
         if (error) throw error;
-        return reply.send({ items: data ?? [] });
+        return reply.send({ items: mergeMasterRows(data ?? [], table, membership.companyId) });
     } catch (err: any) {
         app.log.error(err, 'Failed to load master data');
         return reply.status(500).send({ error: 'Failed to load master data.' });
@@ -2306,18 +4052,14 @@ app.post('/api/masters/:type', async (request, reply) => {
 
     const { type } = request.params as { type: string };
     const body = request.body as any;
-    const tableMap: Record<string, string> = {
-        projectTypes: 'project_types',
-        units: 'units_of_measure',
-        expenseCategories: 'expense_categories',
-        paymentMethods: 'payment_methods',
-        taxRates: 'tax_rates',
-        stageTemplates: 'project_stage_templates',
-    };
-    const table = tableMap[type];
+    const table = MASTER_TABLE_MAP[type];
     if (!table) return reply.status(404).send({ error: 'Master type not found.' });
 
     try {
+        if (body?.company_id && body.company_id !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
         const payload = { ...body, company_id: body?.company_id ?? membership.companyId };
         if (table === 'tax_rates') {
             payload.code = String(payload.code ?? '').trim();
@@ -2340,24 +4082,21 @@ app.put('/api/masters/:type/:id', async (request, reply) => {
 
     const { type, id } = request.params as { type: string; id: string };
     const body = request.body as any;
-    const tableMap: Record<string, string> = {
-        projectTypes: 'project_types',
-        units: 'units_of_measure',
-        expenseCategories: 'expense_categories',
-        paymentMethods: 'payment_methods',
-        taxRates: 'tax_rates',
-        stageTemplates: 'project_stage_templates',
-    };
-    const table = tableMap[type];
+    const table = MASTER_TABLE_MAP[type];
     if (!table) return reply.status(404).send({ error: 'Master type not found.' });
 
     try {
+        if (body?.company_id && body.company_id !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
         const { data: existing, error: existingError } = await supabaseAdmin.from(table).select('id, company_id').eq('id', id).maybeSingle();
         if (existingError) throw existingError;
         if (!existing) return reply.status(404).send({ error: 'Master row not found.' });
-        if (existing.company_id && existing.company_id !== membership.companyId) return reply.status(403).send({ error: 'Forbidden.' });
+        if (existing.company_id !== membership.companyId) return reply.status(403).send({ error: 'Forbidden.' });
 
-        const { data, error } = await supabaseAdmin.from(table).update(body ?? {}).eq('id', id).select('*').single();
+        const payload = { ...(body ?? {}), company_id: membership.companyId };
+        const { data, error } = await supabaseAdmin.from(table).update(payload).eq('id', id).select('*').single();
         if (error) throw error;
         return reply.send({ item: data });
     } catch (err: any) {
@@ -2371,22 +4110,14 @@ app.delete('/api/masters/:type/:id', async (request, reply) => {
     if (!membership) return;
 
     const { type, id } = request.params as { type: string; id: string };
-    const tableMap: Record<string, string> = {
-        projectTypes: 'project_types',
-        units: 'units_of_measure',
-        expenseCategories: 'expense_categories',
-        paymentMethods: 'payment_methods',
-        taxRates: 'tax_rates',
-        stageTemplates: 'project_stage_templates',
-    };
-    const table = tableMap[type];
+    const table = MASTER_TABLE_MAP[type];
     if (!table) return reply.status(404).send({ error: 'Master type not found.' });
 
     try {
         const { data: existing, error: existingError } = await supabaseAdmin.from(table).select('id, company_id').eq('id', id).maybeSingle();
         if (existingError) throw existingError;
         if (!existing) return reply.status(404).send({ error: 'Master row not found.' });
-        if (existing.company_id && existing.company_id !== membership.companyId) return reply.status(403).send({ error: 'Forbidden.' });
+        if (existing.company_id !== membership.companyId) return reply.status(403).send({ error: 'Forbidden.' });
 
         const { error } = await supabaseAdmin.from(table).update({ is_active: false }).eq('id', id);
         if (error) throw error;
@@ -2402,33 +4133,54 @@ app.get('/api/reports/dashboard', async (request, reply) => {
     if (!membership) return;
 
     try {
-        const [projects, expenses, receipts, outstandingByExpense] = await Promise.all([
-            listProjectsForCompany(membership.companyId),
-            listProjectExpensesForCompany(membership.companyId),
-            supabaseAdmin.from('project_receipts').select('*').in('project_id', (await supabaseAdmin.from('projects').select('id').eq('company_id', membership.companyId)).data?.map((p: any) => p.id) ?? []),
-            getOutstandingByExpenseId(membership.companyId, null),
-        ]);
-
-        const totalContract = projects.reduce((sum, row) => sum + Number(row.contract_amount ?? 0), 0);
-        const totalCost = expenses.filter((row) => row.status !== 'void').reduce((sum, row) => sum + Number(row.bill_amount ?? 0), 0);
-        const totalCollections = (receipts.data ?? []).filter((row: any) => !row.voided_at).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
-        const supplierOutstanding = expenses
-            .filter((row) => row.status !== 'void')
-            .reduce((sum, row) => sum + Number(outstandingByExpense.get(row.id) ?? 0), 0);
-
-        return reply.send({
-            dashboard: {
-                projectsCount: projects.length,
-                activeProjects: projects.filter((row) => row.status === 'in_progress' || row.status === 'planned').length,
-                totalContract,
-                totalCost,
-                totalCollections,
-                supplierOutstanding,
-            },
-        });
+        const report = await getCompanyFinancialReport(membership.companyId, null);
+        return reply.send({ dashboard: report });
     } catch (err: any) {
         app.log.error(err, 'Failed to generate dashboard report');
         return reply.status(500).send({ error: 'Failed to generate dashboard report.' });
+    }
+});
+
+app.get('/api/reports/monthly', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    const { projectId } = request.query as { projectId?: string };
+
+    try {
+        const data = await getCompanyFinancialMonthlySeries(membership.companyId, projectId ?? null);
+        return reply.send(data);
+    } catch (err: any) {
+        app.log.error(err, 'Failed to generate monthly financial report');
+        return reply.status(500).send({ error: 'Failed to generate monthly financial report.' });
+    }
+});
+
+app.get('/api/reports/yearly', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    const { projectId } = request.query as { projectId?: string };
+
+    try {
+        const data = await getCompanyFinancialYearlySeries(membership.companyId, projectId ?? null);
+        return reply.send({ yearly: data });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to generate yearly financial report');
+        return reply.status(500).send({ error: 'Failed to generate yearly financial report.' });
+    }
+});
+
+app.get('/api/reports/defaulters', async (request, reply) => {
+    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_MANAGEMENT_ROLES });
+    if (!membership) return;
+
+    try {
+        const report = await getCompanyFinancialReport(membership.companyId, null);
+        return reply.send({ defaulters: report.defaulters ?? [] });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to generate defaulter report');
+        return reply.status(500).send({ error: 'Failed to generate defaulter report.' });
     }
 });
 
@@ -2657,8 +4409,11 @@ app.get('/api/reports/project-financials', async (request, reply) => {
                 listProjectInvestorsForProject(projectId, membership.companyId),
             ]);
 
-            const supplierCost = expenses.filter((row: any) => row.status !== 'void').reduce((sum: number, row: any) => sum + Number(row.bill_amount ?? 0), 0);
-            const clientCollections = receipts.filter((row: any) => !row.voided_at).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
+            const project = await getProjectRowById(projectId);
+            const contractValue = Number(project?.contract_amount ?? 0);
+            const projectBudget = Number(project?.budget_amount ?? 0);
+            const actualCost = expenses.filter((row: any) => row.status !== 'void').reduce((sum: number, row: any) => sum + Number(row.bill_amount ?? 0), 0);
+            const customerCollections = receipts.filter((row: any) => !row.voided_at).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
 
             let investorContributions = 0;
             for (const investor of investors) {
@@ -2666,12 +4421,29 @@ app.get('/api/reports/project-financials', async (request, reply) => {
                 investorContributions += contributions.reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
             }
 
-            const netCashFlow = clientCollections + investorContributions - supplierCost;
+            const expectedProjectMargin = calculateProjectedMargin({
+                businessModel: (project as any)?.business_model,
+                developmentArrangement: (project as any)?.development_arrangement,
+                contractAmount: project?.contract_amount,
+                budgetAmount: project?.budget_amount,
+                projectedSalesValue: (project as any)?.projected_sales_value,
+                landCost: (project as any)?.land_cost,
+            });
+            const budgetRemaining = projectBudget - actualCost;
+            const budgetUtilization = projectBudget > 0 ? (actualCost / projectBudget) * 100 : 0;
+            const cashBasedProfitLoss = customerCollections - actualCost;
+            const netCashFlow = customerCollections - actualCost;
             return reply.send({
                 summary: {
-                    supplierCost,
-                    clientCollections,
+                    contractValue,
+                    projectBudget,
+                    actualCost,
+                    customerCollections,
                     investorContributions,
+                    expectedProjectMargin,
+                    cashBasedProfitLoss,
+                    budgetRemaining,
+                    budgetUtilization,
                     netCashFlow,
                 },
             });
@@ -2697,8 +4469,10 @@ app.get('/api/reports/project-financials', async (request, reply) => {
             listProjectInvestorsForProject(projectId, project.company_id),
         ]);
 
-        const supplierCost = expenses.filter((row: any) => row.status !== 'void').reduce((sum: number, row: any) => sum + Number(row.bill_amount ?? 0), 0);
-        const clientCollections = receipts.filter((row: any) => !row.voided_at).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
+        const contractValue = Number(project.contract_amount ?? 0);
+        const projectBudget = Number(project.budget_amount ?? 0);
+        const actualCost = expenses.filter((row: any) => row.status !== 'void').reduce((sum: number, row: any) => sum + Number(row.bill_amount ?? 0), 0);
+        const customerCollections = receipts.filter((row: any) => !row.voided_at).reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
 
         let investorContributions = 0;
         for (const investor of investors) {
@@ -2706,12 +4480,29 @@ app.get('/api/reports/project-financials', async (request, reply) => {
             investorContributions += contributions.reduce((sum: number, row: any) => sum + Number(row.amount ?? 0), 0);
         }
 
-        const netCashFlow = clientCollections + investorContributions - supplierCost;
+        const expectedProjectMargin = calculateProjectedMargin({
+            businessModel: (project as any)?.business_model,
+            developmentArrangement: (project as any)?.development_arrangement,
+            contractAmount: project?.contract_amount,
+            budgetAmount: project?.budget_amount,
+            projectedSalesValue: (project as any)?.projected_sales_value,
+            landCost: (project as any)?.land_cost,
+        });
+        const budgetRemaining = projectBudget - actualCost;
+        const budgetUtilization = projectBudget > 0 ? (actualCost / projectBudget) * 100 : 0;
+        const cashBasedProfitLoss = customerCollections - actualCost;
+        const netCashFlow = customerCollections - actualCost;
         return reply.send({
             summary: {
-                supplierCost,
-                clientCollections,
+                contractValue,
+                projectBudget,
+                actualCost,
+                customerCollections,
                 investorContributions,
+                expectedProjectMargin,
+                cashBasedProfitLoss,
+                budgetRemaining,
+                budgetUtilization,
                 netCashFlow,
             },
         });
@@ -2811,6 +4602,7 @@ app.post('/api/company/:companyId/users', async (request, reply) => {
         app.log.error(err, 'Failed to add team member');
         const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
         if (statusCode === 400) return reply.status(400).send({ error: err.message });
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
         return reply.status(500).send({ error: 'Failed to add team member.' });
     }
 });
@@ -2883,8 +4675,8 @@ app.post('/api/subscription/checkout', async (request, reply) => {
         });
     } catch (err: any) {
         app.log.error(err, 'Failed to create checkout order');
-        const message = err instanceof Error ? err.message : '';
-        if (/Razorpay checkout is temporarily unavailable|ECONNRESET|fetch failed|TLS/i.test(message)) {
+        const message = getErrorText(err);
+        if (/Razorpay checkout is temporarily unavailable|ECONNRESET|fetch failed|TLS|network|timeout|timed out|socket disconnected/i.test(message) || isTransientNetworkError(err)) {
             return reply.status(503).send({ error: 'Payment gateway is temporarily unavailable. Please try again in a moment.' });
         }
         return reply.status(500).send({ error: 'Failed to start checkout.' });
@@ -2999,8 +4791,10 @@ app.get('/api/flat-billings', async (request, reply) => {
     const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
     if (!membership) return;
 
+    const projectId = (request.query as { projectId?: string } | undefined)?.projectId ?? null;
+
     try {
-        const flatBillings = await listFlatBillingsForCompany(membership.companyId);
+        const flatBillings = await listFlatBillingsForCompany(membership.companyId, projectId || null);
         return reply.send({ flatBillings });
     } catch (err: any) {
         app.log.error(err, 'Failed to list flat billings');
@@ -3043,19 +4837,16 @@ app.post('/api/flat-billings', async (request, reply) => {
     const requestedCompanyId = body.companyId && body.companyId !== 'local-company' ? body.companyId : null;
 
     try {
-        let membership: CompanyMembership | null;
-        if (requestedCompanyId) {
-            membership = await getMembership(userId, requestedCompanyId);
-            if (!membership) {
-                return reply.status(403).send({ error: 'Forbidden.' });
-            }
-        } else {
-            membership = await getPrimaryMembership(userId);
-        }
+        const membership = await getPrimaryMembership(userId);
 
         if (!membership) {
             return reply.status(400).send({ error: 'No company found for this user. Create a company before saving a receipt.' });
         }
+
+        if (requestedCompanyId && requestedCompanyId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
         if (!QUOTATION_ROLES.includes(membership.role)) {
             return reply.status(403).send({ error: 'Forbidden.' });
         }
@@ -3109,18 +4900,14 @@ app.get('/api/flat-billings/next-sequence', async (request, reply) => {
     const requestedCompanyId = queryCompanyId && queryCompanyId !== 'local-company' ? queryCompanyId : null;
 
     try {
-        let membership: CompanyMembership | null;
-        if (requestedCompanyId) {
-            membership = await getMembership(userId, requestedCompanyId);
-            if (!membership) {
-                return reply.status(403).send({ error: 'Forbidden.' });
-            }
-        } else {
-            membership = await getPrimaryMembership(userId);
-        }
+        const membership = await getPrimaryMembership(userId);
 
         if (!membership) {
             return reply.send({ nextSequence: 1 });
+        }
+
+        if (requestedCompanyId && requestedCompanyId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
         }
 
         const preview = await peekNextDocumentNumber(membership.companyId, 'BookingReceipt');
@@ -3155,24 +4942,21 @@ app.post('/api/quotations', async (request, reply) => {
     const requestedCompanyId = body.companyId && body.companyId !== 'local-company' ? body.companyId : null;
 
     try {
-        let membership: CompanyMembership | null;
-        if (requestedCompanyId) {
-            membership = await getMembership(userId, requestedCompanyId);
-            if (!membership) {
-                return reply.status(403).send({ error: 'Forbidden.' });
-            }
-        } else {
-            membership = await getPrimaryMembership(userId);
-        }
+        const membership = await getPrimaryMembership(userId);
 
         if (!membership) {
             return reply.status(400).send({ error: 'No company found for this user. Create a company before saving a quotation.' });
         }
+
+        if (requestedCompanyId && requestedCompanyId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
+        }
+
         if (!QUOTATION_ROLES.includes(membership.role)) {
             return reply.status(403).send({ error: 'Forbidden.' });
         }
 
-        const result = await saveQuotationToDatabase(body.quotation, membership.companyId, membership.userId);
+        const result = await saveQuotationToDatabase(body.quotation, membership.companyId);
         return reply.send(result);
     } catch (err: any) {
         app.log.error(err, 'Failed to save quotation');
@@ -3288,20 +5072,16 @@ app.get('/api/quotations/next-sequence', async (request, reply) => {
     const requestedCompanyId = queryCompanyId && queryCompanyId !== 'local-company' ? queryCompanyId : null;
 
     try {
-        let membership: CompanyMembership | null;
-        if (requestedCompanyId) {
-            membership = await getMembership(userId, requestedCompanyId);
-            if (!membership) {
-                return reply.status(403).send({ error: 'Forbidden.' });
-            }
-        } else {
-            membership = await getPrimaryMembership(userId);
-        }
+        const membership = await getPrimaryMembership(userId);
 
         if (!membership) {
             // No company yet — mirrors the previous 'local-company' behaviour
             // of starting numbering at 1 rather than treating this as an error.
             return reply.send({ nextSequence: 1 });
+        }
+
+        if (requestedCompanyId && requestedCompanyId !== membership.companyId) {
+            return reply.status(403).send({ error: 'Forbidden.' });
         }
 
         // Preview only — does not consume/reserve a number. The real,

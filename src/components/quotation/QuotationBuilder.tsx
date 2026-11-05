@@ -8,6 +8,7 @@ import QuestionnaireStep from '@/components/quotation/QuestionnaireStep';
 import SpecificationsStep from '@/components/quotation/SpecificationsStep';
 import StepNav, { type StepDef } from '@/components/quotation/StepNav';
 import TermsStep from '@/components/quotation/TermsStep';
+import { AppButton } from '@/components/ui/DesignSystem';
 import { useAuth } from '@/context/AuthContext';
 import { BuilderProvider, useBuilder } from '@/context/BuilderContext';
 import { useCompany } from '@/context/CompanyContext';
@@ -44,7 +45,9 @@ function BuilderInner() {
     return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>;
   }
 
-  const handleSaveDraft = () => { saveNow(); push('success', 'Draft saved.'); };
+  const handleSaveDraft = () => {
+    saveNow();
+  };
 
   const handlePreviewPDF = () => {
     saveNow();
@@ -62,7 +65,7 @@ function BuilderInner() {
       push('success', 'PDF generated and quotation marked as generated.');
       navigate('/quotations');
     } catch (e) {
-      push('error', e instanceof Error ? e.message : 'Could not generate PDF.');
+      push('error', 'We could not generate the PDF right now. Please try again.');
     }
   };
 
@@ -82,14 +85,14 @@ function BuilderInner() {
 
   return (
     <div>
-      <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+      <div className="mb-4 rounded-[28px] border border-[#E2E8F0] bg-[linear-gradient(135deg,#F8FAFC_0%,#EFF4FF_100%)] p-4 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-[#0B234A]">Keep the quotation flow moving</p>
-            <p className="mt-1 text-sm text-slate-500">Save your draft at any time. Generate the PDF once the project details and commercial values are ready.</p>
+            <p className="text-sm font-semibold text-[#17243B]">Keep the quotation flow moving</p>
+            <p className="mt-1 text-sm text-[#64748B]">Save your draft at any time. Generate the PDF once the project details and commercial values are ready.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-[#1D4ED8]">
+            <span className="rounded-full border border-[#BFDBFE] bg-white px-3 py-1 text-xs font-semibold text-[#2454D6]">
               {quotation.status === 'DRAFT' ? 'Draft' : 'In progress'}
             </span>
             <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -99,10 +102,10 @@ function BuilderInner() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-[#E2E8F0] bg-white p-4 shadow-sm">
         <div>
-          <h1 className="text-xl font-bold text-[#0B234A]">{isExisting ? 'Edit Quotation' : 'New Quotation'}</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-bold text-[#17243B]">{isExisting ? 'Edit Quotation' : 'New Quotation'}</h1>
+          <p className="text-sm text-[#64748B]">
             {quotation.quotationNumber}
             {lastSaved && (
               <span className="ml-3">
@@ -115,12 +118,18 @@ function BuilderInner() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">Back to List</button>
-          <button onClick={handleSaveDraft} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#1D4ED8] border border-[#1D4ED8]/30 bg-white hover:bg-[#1D4ED8]/5 rounded-lg"><Save className="w-4 h-4" /> Save Draft</button>
+          <button onClick={() => navigate(-1)} className="px-3 py-2 text-sm font-medium text-[#475569] hover:text-[#17243B]">Back to List</button>
+          <AppButton variant="secondary" onClick={handleSaveDraft}>
+            <Save className="w-4 h-4" /> Save Draft
+          </AppButton>
           {current === steps.length - 1 && (
             <>
-              <button onClick={handlePreviewPDF} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg"><Eye className="w-4 h-4" /> Preview</button>
-              <button onClick={handleGeneratePDF} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#17243A] bg-[#F4B72B] hover:bg-[#e0a822] rounded-lg shadow-sm"><FileDown className="w-4 h-4" /> Generate PDF</button>
+              <AppButton variant="secondary" onClick={handlePreviewPDF}>
+                <Eye className="w-4 h-4" /> Preview
+              </AppButton>
+              <AppButton variant="primary" onClick={handleGeneratePDF}>
+                <FileDown className="w-4 h-4" /> Generate PDF
+              </AppButton>
             </>
           )}
         </div>
@@ -128,14 +137,18 @@ function BuilderInner() {
 
       <StepNav steps={steps} current={current} onStepClick={setCurrent}>{renderStep()}</StepNav>
 
-      <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
-        <button onClick={() => setCurrent((c) => Math.max(0, c - 1))} disabled={current === 0} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-40"><ArrowLeft className="w-4 h-4" /> Previous</button>
+      <div className="mt-6 flex items-center justify-between border-t border-[#E2E8F0] pt-4">
+        <button onClick={() => setCurrent((c) => Math.max(0, c - 1))} disabled={current === 0} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#475569] hover:text-[#17243B] disabled:opacity-40"><ArrowLeft className="w-4 h-4" /> Previous</button>
         {current < steps.length - 1 ? (
-          <button onClick={() => setCurrent((c) => Math.min(steps.length - 1, c + 1))} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg">Next <ArrowRight className="w-4 h-4" /></button>
+          <AppButton variant="primary" onClick={() => setCurrent((c) => Math.min(steps.length - 1, c + 1))}>Next <ArrowRight className="w-4 h-4" /></AppButton>
         ) : (
           <div className="flex items-center gap-2">
-            <button onClick={handlePreviewPDF} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg"><Eye className="w-4 h-4" /> Preview</button>
-            <button onClick={handleGeneratePDF} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-[#17243A] bg-[#F4B72B] hover:bg-[#e0a822] rounded-lg shadow-sm"><FileDown className="w-4 h-4" /> Generate PDF</button>
+            <AppButton variant="secondary" onClick={handlePreviewPDF}>
+              <Eye className="w-4 h-4" /> Preview
+            </AppButton>
+            <AppButton variant="primary" onClick={handleGeneratePDF}>
+              <FileDown className="w-4 h-4" /> Generate PDF
+            </AppButton>
           </div>
         )}
       </div>

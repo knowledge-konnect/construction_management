@@ -14,6 +14,8 @@ export interface FlatBillingPayload {
     id: string;
     date?: string | null;
     bookingId?: string | null;
+    projectId?: string | null;
+    projectName?: string | null;
     buyerName: string;
     buyerAddress?: string | null;
     buyerPhone?: string | null;
@@ -27,16 +29,21 @@ export interface FlatBillingPayload {
     terms?: string[];
 }
 
-const SELECT_FLAT_BILLING = `*, customers(name,mobile,email,address), booking_receipt_details(*), payment_schedules(*), document_terms(*)`;
+const SELECT_FLAT_BILLING = `*, customers(name,mobile,email,address), projects!project_id(name), booking_receipt_details(*), payment_schedules(*), document_terms(*)`;
 
-export async function listFlatBillingsForCompany(companyId: string) {
-    const { data, error } = await supabaseAdmin
+export async function listFlatBillingsForCompany(companyId: string, projectId?: string | null) {
+    let query = supabaseAdmin
         .from('documents')
         .select(SELECT_FLAT_BILLING)
         .eq('company_id', companyId)
         .eq('document_type', 'BookingReceipt')
-        .eq('is_deleted', false)
-        .order('updated_at', { ascending: false });
+        .eq('is_deleted', false);
+
+    if (projectId) {
+        query = query.eq('project_id', projectId);
+    }
+
+    const { data, error } = await query.order('updated_at', { ascending: false });
 
     if (error) throw error;
     return data ?? [];
@@ -122,10 +129,27 @@ export async function saveFlatBillingToDatabase(billing: FlatBillingPayload, com
     const ratePerSqft = toNullableNumber(billing.ratePerSqft);
     const grandTotal = areaSqft !== null && ratePerSqft !== null ? Math.round(areaSqft * ratePerSqft * 100) / 100 : 0;
 
+    if (billing.projectId) {
+        const { data: projectRow, error: projectError } = await supabaseAdmin
+            .from('projects')
+            .select('id, company_id')
+            .eq('id', billing.projectId)
+            .maybeSingle();
+
+        if (projectError) throw projectError;
+        if (!projectRow || projectRow.company_id !== companyId) {
+            const err: any = new Error('This project does not belong to the current company.');
+            err.statusCode = 403;
+            throw err;
+        }
+    }
+
     const documentPayload = {
         id: billing.id,
         company_id: companyId,
         customer_id: customerId,
+        project_id: billing.projectId || null,
+        project_name: billing.projectName || billing.projectId ? (billing.projectName || null) : null,
         document_type: 'BookingReceipt',
         document_number: documentNumber,
         status: 'Draft',

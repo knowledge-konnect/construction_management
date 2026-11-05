@@ -37,27 +37,24 @@ export default function ConfirmDialog({
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-[#17243A]/50"
-        onClick={onCancel}
-      />
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#17243A]/50 p-4" onClick={onCancel}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E6E8EC] bg-white p-5 shadow-xl sm:p-6"
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-md rounded-2xl border border-[#E6E8EC] bg-white p-5 shadow-xl sm:p-6"
       >
         <div className="flex items-start gap-4">
           <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${danger ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${danger ? 'bg-red-50 text-red-600 ring-1 ring-red-100' : 'bg-amber-50 text-amber-600 ring-1 ring-amber-100'
               }`}
           >
             <AlertTriangle className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
             <h3 id={titleId} className="text-base font-semibold text-[#17243A]">{title}</h3>
-            <div className="mt-1 text-sm text-[#5B6475]">{message}</div>
+            <div className="mt-1.5 text-sm leading-6 text-[#5B6475]">{message}</div>
           </div>
         </div>
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

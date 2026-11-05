@@ -83,7 +83,7 @@ export default function TeamPage() {
     }
     push('success', result.isNewAccount
       ? 'Account created. Share the password with them directly — they\u2019ll be asked to change it on first login.'
-      : 'Existing account added to your company.');
+      : 'Existing account added to your company successfully.');
     resetForm();
     void refresh();
   };
@@ -99,7 +99,7 @@ export default function TeamPage() {
       push('error', result.error || 'Could not update team member.');
       return;
     }
-    push('success', 'Team member reactivated.');
+    push('success', 'Team member reactivated successfully. Access has been restored.');
     void refresh();
   };
 
@@ -112,7 +112,7 @@ export default function TeamPage() {
       push('error', result.error || 'Could not update team member.');
       return;
     }
-    push('success', 'Team member deactivated.');
+    push('success', 'Team member deactivated successfully. They can no longer sign in to this company.');
     void refresh();
   };
 
@@ -123,7 +123,7 @@ export default function TeamPage() {
       push('error', result.error || 'Could not update role.');
       return;
     }
-    push('success', 'Role updated.');
+    push('success', 'Team member role updated successfully.');
     void refresh();
   };
 
@@ -291,7 +291,7 @@ export default function TeamPage() {
         title="Deactivate Team Member?"
         message={`${pendingDeactivate?.fullName || pendingDeactivate?.email} will immediately lose access to ${company?.settings.companyName || 'this company'}. You can reactivate them at any time.`}
         danger
-        confirmLabel="Deactivate"
+        confirmLabel="Deactivate team member"
         onConfirm={confirmDeactivate}
         onCancel={() => setPendingDeactivate(null)}
       />

@@ -1,7 +1,7 @@
 // Flat Billing / Booking Receipt domain model and storage.
 
-import type { StorageScope } from './storage';
 import type { CompanySettings } from './models';
+import type { StorageScope } from './storage';
 
 export interface FlatPaymentRow {
   id: string;
@@ -16,6 +16,8 @@ export interface FlatBilling {
   receiptNumber: string;
   bookingId: string;
   date: string;
+  projectId?: string;
+  projectName?: string;
 
   // Buyer
   buyerName: string;
@@ -29,6 +31,10 @@ export interface FlatBilling {
   blockTower: string;
   areaSqft: string;
   ratePerSqft: string;
+  agreementValue: string;
+  balanceDue: string;
+  paymentMode: string;
+  dueDate: string;
 
   // Payment schedule
   payments: FlatPaymentRow[];
@@ -119,6 +125,8 @@ export function defaultFlatBilling(): Omit<FlatBilling, 'id' | 'receiptNumber' |
   return {
     bookingId: '',
     date: new Date().toISOString().slice(0, 10),
+    projectId: '',
+    projectName: '',
     buyerName: '',
     buyerAddress: '',
     buyerPhone: '',
@@ -128,17 +136,18 @@ export function defaultFlatBilling(): Omit<FlatBilling, 'id' | 'receiptNumber' |
     blockTower: '',
     areaSqft: '',
     ratePerSqft: '',
+    agreementValue: '',
+    balanceDue: '',
+    paymentMode: 'Cash',
+    dueDate: new Date().toISOString().slice(0, 10),
     payments: [
       { id: '1', stage: 'Booking Advance', amount: 0, dueDate: '', status: 'Pending' },
-      { id: '2', stage: 'Agreement Registration', amount: 0, dueDate: '', status: 'Pending' },
-      { id: '3', stage: 'Construction Phase 1', amount: 0, dueDate: '', status: 'Pending' },
+      { id: '2', stage: 'Agreement / Registration', amount: 0, dueDate: '', status: 'Pending' },
+      { id: '3', stage: 'Construction Stage', amount: 0, dueDate: '', status: 'Pending' },
       { id: '4', stage: 'Possession', amount: 0, dueDate: '', status: 'Pending' },
     ],
     terms: [
-      'Booking advance is non-refundable.',
-      'Possession will be given on completion of project.',
-      'Delayed payments will incur interest charges.',
-      'All disputes are subject to local jurisdiction.',
+      'Booking amount received for the selected flat. Balance payment will be tracked as per the agreed schedule.',
     ],
   };
 }

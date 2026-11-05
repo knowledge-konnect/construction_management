@@ -1,6 +1,7 @@
-﻿import type { CompanySettings, Quotation } from '@/lib/models';
+﻿import { DocumentGenerationLoader } from '@/components/loading/Loaders';
+import type { CompanySettings, Quotation } from '@/lib/models';
 import { buildQuotationPDFBlob, quotationPdfFilename } from '@/lib/pdf';
-import { AlertTriangle, Download, Loader2, Mail, MessageCircle, X } from 'lucide-react';
+import { AlertTriangle, Download, Mail, MessageCircle, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 interface Props {
@@ -14,6 +15,7 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
   const [error, setError] = useState<string | null>(null);
 
   const filename = useMemo(() => quotationPdfFilename(quotation), [quotation]);
+  const generating = !error && !blobUrl;
 
   useEffect(() => {
     let url: string | null = null;
@@ -29,7 +31,7 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
       })
       .catch((e) => {
         if (!active) return;
-        setError(e instanceof Error ? e.message : 'Could not generate PDF preview.');
+        setError('We could not generate the PDF preview right now. Please try again.');
       });
 
     return () => {
@@ -76,9 +78,14 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
   }, [quotation, settings]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
-      <div className="absolute inset-0 bg-[#17243A]/50" onClick={onClose} />
-      <div role="dialog" aria-modal="true" aria-label="PDF preview" className="relative flex max-h-[100dvh] w-full max-w-3xl flex-col rounded-t-2xl border border-[#E6E8EC] bg-white shadow-xl sm:max-h-[90vh] sm:rounded-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17243A]/50 p-3 sm:p-4" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="PDF preview"
+        onClick={(event) => event.stopPropagation()}
+        className="relative flex w-full max-w-3xl flex-col rounded-2xl border border-[#E6E8EC] bg-white shadow-xl"
+      >
         <div className="flex items-center justify-between gap-3 border-b border-[#E6E8EC] px-5 py-4">
           <div className="min-w-0">
             <h3 className="truncate text-base font-semibold text-[#17243A]">PDF Preview — {quotation.quotationNumber}</h3>
@@ -89,21 +96,21 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
           </button>
         </div>
 
-        <div className="flex-1 min-h-[50vh] bg-slate-100 overflow-hidden">
+        <div className="min-h-[50vh] flex-1 bg-slate-100">
           {error && (
-            <div className="h-full flex items-center justify-center p-6">
-              <div className="flex items-start gap-2 text-red-700 bg-red-50 border border-red-200 rounded-lg p-4 text-sm max-w-md">
-                <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" /> {error}
+            <div className="flex h-full items-center justify-center p-6">
+              <div className="flex max-w-md items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" /> {error}
               </div>
             </div>
           )}
           {!error && !blobUrl && (
-            <div className="h-full flex items-center justify-center text-slate-400">
-              <Loader2 className="w-6 h-6 animate-spin" />
+            <div className="flex h-full items-center justify-center p-6">
+              <DocumentGenerationLoader label="Generating PDF preview…" />
             </div>
           )}
           {!error && blobUrl && (
-            <iframe title="Quotation PDF preview" src={blobUrl} className="w-full h-full min-h-[40vh] border-0" />
+            <iframe title="Quotation PDF preview" src={blobUrl} className="h-[60vh] w-full border-0" />
           )}
         </div>
 
@@ -112,30 +119,30 @@ export default function PdfPreviewModal({ quotation, settings, onClose }: Props)
             href={blobUrl ? whatsappHref : undefined}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border ${blobUrl ? 'text-[#0F766E] border-[#0F766E]/30 hover:bg-[#ECFDF5]' : 'text-slate-400 border-slate-200 cursor-not-allowed'}`}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium ${blobUrl ? 'border-[#0F766E]/30 text-[#0F766E] hover:bg-[#ECFDF5]' : 'cursor-not-allowed border-slate-200 text-slate-400'}`}
             onClick={(e) => {
               if (!blobUrl) e.preventDefault();
             }}
             aria-disabled={!blobUrl}
           >
-            <MessageCircle className="w-4 h-4" /> Share on WhatsApp
+            <MessageCircle className="h-4 w-4" /> Share on WhatsApp
           </a>
           <a
             href={blobUrl ? mailtoHref : undefined}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border ${blobUrl ? 'text-[#1D4ED8] border-[#1D4ED8]/30 hover:bg-[#EAF1FF]' : 'text-slate-400 border-slate-200 cursor-not-allowed'}`}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium ${blobUrl ? 'border-[#1D4ED8]/30 text-[#1D4ED8] hover:bg-[#EAF1FF]' : 'cursor-not-allowed border-slate-200 text-slate-400'}`}
             onClick={(e) => {
               if (!blobUrl) e.preventDefault();
             }}
             aria-disabled={!blobUrl}
           >
-            <Mail className="w-4 h-4" /> Email
+            <Mail className="h-4 w-4" /> Email
           </a>
           <button
             onClick={handleDownload}
-            disabled={!blobUrl}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] disabled:opacity-50 rounded-lg"
+            disabled={!blobUrl || generating}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#1D4ED8] px-4 py-2 text-sm font-medium text-white hover:bg-[#1E40AF] disabled:opacity-50"
           >
-            <Download className="w-4 h-4" /> Download PDF
+            <Download className="h-4 w-4" /> Download PDF
           </button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { InlineLoader, SkeletonLoader } from '@/components/loading/Loaders';
 import { AppButton, PageHeader, PremiumCard, StatCard, StatusPill } from '@/components/ui/DesignSystem';
 import { formatDate, formatINR } from '@/lib/utils';
 import { listProjects, type ProjectRecord } from '@/services/project.service';
@@ -13,12 +14,14 @@ import {
 } from '@/services/report.service';
 import { Download, Filter, RefreshCcw } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 function toCsv(rows: Array<Array<string | number>>) {
     return rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
 }
 
 export default function ReportsPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [projects, setProjects] = useState<ProjectRecord[]>([]);
     const [projectRows, setProjectRows] = useState<ProjectReportRow[]>([]);
     const [expenses, setExpenses] = useState<ExpenseReportRow[]>([]);
@@ -26,7 +29,7 @@ export default function ReportsPage() {
     const [outstanding, setOutstanding] = useState<any[]>([]);
     const [summary, setSummary] = useState<{ projectsTracked: number; quotationRevenue: number; expenseTotal: number; profitEstimate: number } | null>(null);
 
-    const [projectId, setProjectId] = useState('');
+    const [projectId, setProjectId] = useState(searchParams.get('projectId') ?? '');
     const [status, setStatus] = useState('');
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
@@ -65,7 +68,19 @@ export default function ReportsPage() {
         setLoading(false);
     };
 
-    useEffect(() => { void load(); }, []);
+    useEffect(() => { void load(); }, [projectId, status, from, to]);
+
+    useEffect(() => {
+        const fromQuery = searchParams.get('projectId') ?? '';
+        setProjectId(fromQuery);
+    }, [searchParams]);
+
+    useEffect(() => {
+        const next = new URLSearchParams(searchParams);
+        if (projectId) next.set('projectId', projectId);
+        else next.delete('projectId');
+        setSearchParams(next, { replace: true });
+    }, [projectId]);
 
     const totals = useMemo(() => {
         const expenseTotal = expenses.filter((row) => row.status !== 'void').reduce((sum, row) => sum + Number(row.bill_amount ?? 0), 0);
@@ -76,15 +91,17 @@ export default function ReportsPage() {
 
     const financialHealth = useMemo(() => {
         const contractTotal = projectRows.reduce((sum, row) => sum + Number(row.contract_amount ?? 0), 0);
-        const remainingBudget = contractTotal - totals.expenseTotal;
-        const budgetOverrun = Math.max(0, totals.expenseTotal - contractTotal);
+        const budgetTotal = projectRows.reduce((sum, row) => sum + (Number(row.budget_amount ?? 0) || 0), 0);
+        const remainingBudget = budgetTotal > 0 ? budgetTotal - totals.expenseTotal : 0;
+        const budgetOverrun = Math.max(0, totals.expenseTotal - budgetTotal);
         const collectionGap = Math.max(0, contractTotal - totals.receiptTotal);
         return {
             contractTotal,
+            budgetTotal,
             remainingBudget,
             budgetOverrun,
             collectionGap,
-            utilizationPct: contractTotal > 0 ? Math.min(100, Math.round((totals.expenseTotal / contractTotal) * 100)) : 0,
+            utilizationPct: budgetTotal > 0 ? Math.round((totals.expenseTotal / budgetTotal) * 100) : 0,
         };
     }, [projectRows, totals.expenseTotal, totals.receiptTotal]);
 
@@ -162,6 +179,7 @@ export default function ReportsPage() {
         <div className="space-y-6">
             <PageHeader
                 title="Reports"
+                description={loading ? <InlineLoader label="Refreshing report data…" /> : undefined}
                 actions={
                     <div className="flex items-center gap-2">
                         <AppButton variant="secondary" onClick={() => void load()}>
@@ -209,7 +227,7 @@ export default function ReportsPage() {
                     </label>
                 </div>
                 <div className="mt-4">
-                    <AppButton onClick={() => void load()} disabled={loading}>{loading ? 'Applying…' : 'Apply filters'}</AppButton>
+                    <AppButton onClick={() => void load()} loading={loading} loadingText="Applying filters…">Apply filters</AppButton>
                 </div>
             </PremiumCard>
 
@@ -221,7 +239,7 @@ export default function ReportsPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-4">
-                <Metric label="Budgeted value" value={formatINR(financialHealth.contractTotal)} />
+                <Metric label="Budgeted value" value={formatINR(financialHealth.budgetTotal)} />
                 <Metric label="Budget remaining" value={formatINR(financialHealth.remainingBudget)} />
                 <Metric label="Budget overrun" value={formatINR(financialHealth.budgetOverrun)} />
                 <Metric label="Collections pending" value={formatINR(financialHealth.collectionGap)} />
@@ -231,7 +249,7 @@ export default function ReportsPage() {
                 <div className="flex items-center justify-between gap-2">
                     <div>
                         <p className="text-base font-semibold text-[#17243A]">Budget vs actual</p>
-                        <p className="mt-1 text-sm text-[#667085]">Expense utilization against project contract values.</p>
+                        <p className="mt-1 text-sm text-[#667085]">Expense utilization against project budgets.</p>
                     </div>
                     <StatusPill
                         label={financialHealth.budgetOverrun > 0 ? 'Over budget' : 'Within budget'}
@@ -300,7 +318,7 @@ export default function ReportsPage() {
                         <h2 className="text-base font-semibold text-[#17243A]">Projects ({projectRows.length})</h2>
                     </div>
                     {loading ? (
-                        <div className="px-5 py-8 text-sm text-slate-500">Loading projects…</div>
+                        <div className="px-5 py-4"><SkeletonLoader variant="table" rows={4} /></div>
                     ) : projectRows.length === 0 ? (
                         <div className="px-5 py-8 text-sm text-slate-500">No projects for selected filters.</div>
                     ) : (
@@ -326,7 +344,7 @@ export default function ReportsPage() {
                         <h2 className="text-base font-semibold text-[#17243A]">Collections ({receipts.length})</h2>
                     </div>
                     {loading ? (
-                        <div className="px-5 py-8 text-sm text-slate-500">Loading collections…</div>
+                        <div className="px-5 py-4"><SkeletonLoader variant="table" rows={4} /></div>
                     ) : receipts.length === 0 ? (
                         <div className="px-5 py-8 text-sm text-slate-500">No collections for selected filters.</div>
                     ) : (

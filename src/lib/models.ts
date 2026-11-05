@@ -9,6 +9,12 @@ export type QuotationStatus =
   | 'EXPIRED';
 
 export type ProjectStatus = 'planned' | 'in_progress' | 'on_hold' | 'completed' | 'cancelled';
+export type DevelopmentArrangement = 'self' | 'joint_development';
+export type BusinessModel =
+  | 'contract_construction'
+  | 'property_development'
+  | 'civil_works_contract'
+  | 'material_supply';
 
 export interface Customer {
   name: string;
@@ -136,6 +142,7 @@ export interface Quotation {
   projectTypeId?: string | null;
   areaUnitId?: string | null;
   taxRateId?: string | null;
+  customerPartyId?: string | null;
   quotationDate: string;
   validUntil: string;
   validity: string;
@@ -194,6 +201,7 @@ export interface CompanySettings {
   bookingPrefix?: string;
   primaryColor?: string;
   secondaryColor?: string;
+  enabledBusinessModels?: BusinessModel[];
 }
 
 export interface Template {
@@ -216,11 +224,23 @@ export interface ProjectRecord {
   sourceDocumentId: string | null;
   projectTypeId?: string | null;
   projectTypeSnapshot?: string | null;
+  businessModel: BusinessModel | null;
+  developmentArrangement: DevelopmentArrangement | null;
+  totalProjectFlats: number | null;
+  landownerPartyId: string | null;
+  jdaAgreementReference: string | null;
+  jdaAgreementDocumentUrl: string | null;
+  jdaAgreementDate: string | null;
+  builderShareUnits: number | null;
+  landownerShareUnits: number | null;
+  projectedSalesValue: number;
+  landCost: number;
   projectNumber: string;
   name: string;
   description: string | null;
   siteAddress: string | null;
   contractAmount: number;
+  budgetAmount: number | null;
   startDate: string | null;
   expectedEndDate: string | null;
   actualEndDate: string | null;

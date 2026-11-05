@@ -2,12 +2,26 @@
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
+export type UserRole = 'user' | 'owner' | 'admin' | 'staff' | 'client' | 'investor';
 export type CompanyRole = 'owner' | 'admin' | 'staff';
+
+export const EXTERNAL_USER_ROLES: UserRole[] = ['client', 'investor'];
 
 export interface CompanyMembership {
     companyId: string;
     userId: string;
     role: CompanyRole;
+}
+
+export function normalizeUserRole(role: unknown): UserRole {
+    return role === 'user' || role === 'owner' || role === 'admin' || role === 'staff' || role === 'client' || role === 'investor'
+        ? (role as UserRole)
+        : 'user';
+}
+
+export function isExternalUserRole(role: unknown): boolean {
+    const normalized = normalizeUserRole(role);
+    return normalized === 'client' || normalized === 'investor';
 }
 
 // Role groups used by route handlers (see the authorizeCompany/authorizeOwnedResource docs below).
@@ -45,11 +59,6 @@ export function requireAuth(request: any, reply: any): string | null {
 
 /**
  * Looks up whether `userId` is an active member of `companyId` via company_users.
- *
- * Legacy fallback: if no company_users row exists yet for this pair, but the
- * user is the direct owner on `companies.owner_id`, they are treated as an
- * implicit 'owner'. This covers companies/users created before company_users
- * existed, without requiring a data migration or schema change.
  */
 export async function getMembership(userId: string, companyId: string): Promise<CompanyMembership | null> {
     const { data, error } = await supabaseAdmin
@@ -61,35 +70,14 @@ export async function getMembership(userId: string, companyId: string): Promise<
 
     if (error) throw error;
 
-    if (data) {
-        if (!data.is_active) return null;
-        return { companyId: data.company_id, userId: data.user_id, role: normalizeRole(data.role) };
-    }
-
-    // Legacy fallback — no company_users row yet.
-    const { data: company, error: companyError } = await supabaseAdmin
-        .from('companies')
-        .select('id, owner_id')
-        .eq('id', companyId)
-        .maybeSingle();
-
-    if (companyError) throw companyError;
-    if (company && company.owner_id === userId) {
-        return { companyId: company.id, userId, role: 'owner' };
-    }
-
-    return null;
+    if (!data || !data.is_active) return null;
+    return { companyId: data.company_id, userId: data.user_id, role: normalizeRole(data.role) };
 }
 
 /**
- * Finds the company a user belongs to when the caller has NOT supplied an
- * explicit companyId (e.g. GET /api/company, GET /api/quotations). A user
- * may legitimately belong to more than one company (multiple company_users
- * rows) — this deterministically picks their OLDEST active membership
- * (ordered by created_at) as the "primary" one, rather than an arbitrary
- * row order, so the same user always lands on the same company across
- * requests. Falls back to direct `companies.owner_id` ownership for legacy
- * rows with no company_users entry.
+ * Resolves the authenticated user's active company membership from
+ * company_users. In the one-user-one-company model this is expected to be
+ * exactly one active row.
  *
  * Returns null if the user has no company yet — callers must treat this as a
  * normal "no company" state, not an authorization failure.
@@ -100,28 +88,27 @@ export async function getPrimaryMembership(userId: string): Promise<CompanyMembe
         .select('company_id, user_id, role, is_active')
         .eq('user_id', userId)
         .eq('is_active', true)
-        .order('created_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
+        .limit(2);
 
     if (error) throw error;
-    if (data) {
-        return { companyId: data.company_id, userId: data.user_id, role: normalizeRole(data.role) };
+    if (!data || data.length === 0) return null;
+
+    if (data.length > 1) {
+        throw new Error('User is linked to multiple active companies.');
     }
 
-    // Legacy fallback — user may own a company created before company_users existed.
-    const { data: company, error: companyError } = await supabaseAdmin
-        .from('companies')
-        .select('id, owner_id')
-        .eq('owner_id', userId)
-        .maybeSingle();
+    const row = data[0];
+    return { companyId: row.company_id, userId: row.user_id, role: normalizeRole(row.role) };
+}
 
-    if (companyError) throw companyError;
-    if (company) {
-        return { companyId: company.id, userId, role: 'owner' };
-    }
-
-    return null;
+export async function resolveMembershipForRequestedCompany(
+    userId: string,
+    requestedCompanyId?: string | null,
+): Promise<CompanyMembership | null> {
+    const membership = await getPrimaryMembership(userId);
+    if (!membership) return null;
+    if (requestedCompanyId && requestedCompanyId !== membership.companyId) return null;
+    return membership;
 }
 
 export interface ProjectScopedAccess {
@@ -205,10 +192,6 @@ export async function resolveProjectScopedAccess(userId: string): Promise<Projec
 
 /**
  * Ensures the given user_id is recorded as an active member of a company.
- * Used right after a company is created so future authorization checks can
- * rely on company_users instead of the legacy-fallback path. Non-fatal by
- * design — the legacy fallback in getMembership/getPrimaryMembership covers
- * the case where this insert doesn't happen for any reason.
  */
 export async function ensureCompanyMembership(
     companyId: string,
@@ -244,9 +227,8 @@ export interface AuthorizeOptions {
  * Reusable company-level authorization middleware/helper.
  *
  * 1. Reads user_id from the verified JWT (401 if missing/invalid).
- * 2. Resolves the target company: the verified `requestedCompanyId` if one was
- *    supplied, otherwise the caller's own primary company membership.
- * 3. Confirms the user is an ACTIVE company_users member of that company
+ * 2. Resolves the caller's own active company membership from company_users.
+ * 3. If `requestedCompanyId` is supplied, confirms it matches that membership
  *    (403 if not — a client-supplied companyId is NEVER trusted directly).
  * 4. Optionally enforces a role allow-list (403 if the member's role isn't in it).
  *
@@ -264,9 +246,7 @@ export async function authorizeCompany(
 
     let membership: CompanyMembership | null;
     try {
-        membership = opts.requestedCompanyId
-            ? await getMembership(userId, opts.requestedCompanyId)
-            : await getPrimaryMembership(userId);
+        membership = await resolveMembershipForRequestedCompany(userId, opts.requestedCompanyId);
     } catch (err) {
         reply.status(500).send({ error: 'Failed to verify company access.' });
         return null;
@@ -288,7 +268,7 @@ export async function authorizeCompany(
 /**
  * For resources identified only by their own id (e.g. GET/PUT/DELETE
  * /api/quotations/:id): loads the row's company_id first via `loadCompanyId`,
- * then verifies the authenticated user is an active member of THAT company.
+ * then verifies the authenticated user belongs to THAT company.
  * Returns 404 if the row doesn't exist, 403 if the user isn't a member of the
  * owning company, otherwise { membership, companyId }.
  */
@@ -316,7 +296,7 @@ export async function authorizeOwnedResource(
 
     let membership: CompanyMembership | null;
     try {
-        membership = await getMembership(userId, companyId);
+        membership = await resolveMembershipForRequestedCompany(userId, companyId);
     } catch (err) {
         reply.status(500).send({ error: 'Failed to verify company access.' });
         return null;

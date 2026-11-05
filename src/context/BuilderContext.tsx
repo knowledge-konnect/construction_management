@@ -125,7 +125,7 @@ export function BuilderProvider({ children }: { children: ReactNode }) {
       statusTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (e) {
       setSaveStatus('error');
-      push('error', e instanceof Error ? e.message : 'Could not save quotation.');
+      push('error', 'We could not save this quotation right now. Please try again.');
     }
   }, [company, user, push]);
 
