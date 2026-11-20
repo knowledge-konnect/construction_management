@@ -69,7 +69,7 @@ export default function BillingPage() {
   };
 
   if (loading) {
-    return <div className="rounded-2xl border border-[#E6E8EC] bg-white p-10 text-center text-sm text-[#667085] shadow-[0_6px_18px_rgba(15,23,42,0.03)]">Loading billing details…</div>;
+    return <div className="rounded-2xl border border-[var(--border)] bg-white p-10 text-center text-sm text-[var(--text-muted)] shadow-[0_6px_18px_rgba(15,23,42,0.03)]">Loading billing details…</div>;
   }
 
   const isPaid = sub?.plan === 'paid' && sub.status === 'active';
@@ -83,11 +83,11 @@ export default function BillingPage() {
 
       <PremiumCard className="p-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-[#17243A]">
+          <h2 className="text-base font-semibold text-[var(--text)]">
             {isPaid ? 'BuilderDocs Plan' : 'Free Plan'}
           </h2>
           {isPaid && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#ECFDF5] px-2.5 py-1 text-xs font-medium text-[#0F766E]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--success-soft)] px-2.5 py-1 text-xs font-medium text-[var(--success)]">
               <Zap className="h-3.5 w-3.5" /> Active
             </span>
           )}
@@ -95,18 +95,18 @@ export default function BillingPage() {
 
         {isPaid ? (
           <>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[var(--text-muted)]">
               Billed {sub?.billingCycle === 'yearly' ? 'yearly' : 'monthly'}
               {sub?.currentPeriodEnd ? ` \u2014 renews ${formatDate(sub.currentPeriodEnd)}` : ''}. Unlimited quotations.
             </p>
             {canManage && (
-              <AppButton variant="ghost" onClick={() => setConfirmCancel(true)} disabled={busy === 'cancel'} className="mt-4 text-red-600 hover:bg-red-50 hover:text-red-700">
+              <AppButton variant="ghost" onClick={() => setConfirmCancel(true)} disabled={busy === 'cancel'} className="mt-4 text-[var(--danger-fg)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-fg)]">
                 {busy === 'cancel' ? 'Cancelling…' : 'Cancel subscription'}
               </AppButton>
             )}
           </>
         ) : (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[var(--text-muted)]">
             {sub ? `${sub.used} of ${sub.limit} quotations used this month.` : 'Up to 3 quotations per month.'}
             {' '}Upgrade for unlimited quotations.
           </p>
@@ -114,13 +114,13 @@ export default function BillingPage() {
       </PremiumCard>
 
       {!isPaid && (
-        <div className="rounded-2xl border border-[#DDE8FF] bg-[#F5F8FF] p-6 shadow-[0_6px_18px_rgba(15,23,42,0.03)]">
-          <h2 className="text-base font-semibold text-[#17243A] mb-1">Upgrade to BuilderDocs</h2>
-          <p className="text-sm text-[#667085] mb-5">One plan. All features. No complicated tiers.</p>
+        <div className="rounded-2xl border border-[var(--info-border)] bg-[#F5F8FF] p-6 shadow-[0_6px_18px_rgba(15,23,42,0.03)]">
+          <h2 className="text-base font-semibold text-[var(--text)] mb-1">Upgrade to BuilderDocs</h2>
+          <p className="text-sm text-[var(--text-muted)] mb-5">One plan. All features. No complicated tiers.</p>
           <ul className="space-y-2 mb-6">
             {PAID_FEATURES.map((f) => (
-              <li key={f} className="flex items-center gap-2.5 text-sm text-slate-600">
-                <Check className="w-4 h-4 text-[#1D4ED8] shrink-0" /> {f}
+              <li key={f} className="flex items-center gap-2.5 text-sm text-[var(--text-secondary)]">
+                <Check className="w-4 h-4 text-[var(--primary)] shrink-0" /> {f}
               </li>
             ))}
           </ul>
@@ -132,7 +132,7 @@ export default function BillingPage() {
               <AppButton onClick={() => handleUpgrade('monthly')} disabled={busy !== null} className="flex-1 justify-center">
                 <CreditCard className="h-4 w-4" /> {busy === 'monthly' ? 'Opening…' : '₹499 / month'}
               </AppButton>
-              <AppButton variant="secondary" onClick={() => handleUpgrade('yearly')} disabled={busy !== null} className="flex-1 justify-center border-[#DDE8FF] bg-[#EAF1FF] text-[#1D4ED8] hover:bg-[#DBEAFE]">
+              <AppButton variant="secondary" onClick={() => handleUpgrade('yearly')} disabled={busy !== null} className="flex-1 justify-center border-[var(--info-border)] bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary-soft)]">
                 <CreditCard className="h-4 w-4" /> {busy === 'yearly' ? 'Opening…' : '₹4,999 / year'}
               </AppButton>
             </div>

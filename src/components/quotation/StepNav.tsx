@@ -16,7 +16,7 @@ interface Props {
 export default function StepNav({ steps, current, onStepClick, children }: Props) {
   return (
     <div className="mb-6">
-      <div className="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-4 overflow-x-auto">
+      <div className="flex flex-wrap gap-2 mb-6 border-b border-[var(--border)] pb-4 overflow-x-auto">
         {steps.map((step, idx) => {
           const isActive = idx === current;
           const isDone = idx < current;
@@ -26,19 +26,19 @@ export default function StepNav({ steps, current, onStepClick, children }: Props
               onClick={() => onStepClick(idx)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 isActive
-                  ? 'bg-[#1D4ED8] text-white'
+                  ? 'bg-[var(--primary)] text-white'
                   : isDone
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                    ? 'bg-[var(--success-soft)] text-[var(--success-fg)] border border-[var(--success-border)]'
+                    : 'bg-white text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--surface-soft)]'
               }`}
             >
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
                   isActive
-                    ? 'bg-[#F4B72B] text-[#17243A]'
+                    ? 'bg-[var(--primary)] text-white'
                     : isDone
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-slate-100 text-slate-500'
+                      ? 'bg-[var(--success)] text-white'
+                      : 'bg-[var(--surface-muted)] text-[var(--text-muted)]'
                 }`}
               >
                 {isDone ? <Check className="w-3.5 h-3.5" /> : idx + 1}

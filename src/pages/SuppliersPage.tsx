@@ -1,6 +1,6 @@
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { SkeletonLoader } from '@/components/loading/Loaders';
-import { AppButton, Modal, PageHeader, TablePagination } from '@/components/ui/DesignSystem';
+import DataTable, { CellStack, CellText, RowActionButton, RowActions, type Column } from '@/components/ui/DataTable';
+import { AppButton, Modal, PageHeader } from '@/components/ui/DesignSystem';
 import { Field, Select, TextInput } from '@/components/ui/Form';
 import { useToast } from '@/context/ToastContext';
 import { INDIAN_STATES } from '@/lib/constants';
@@ -12,7 +12,7 @@ import {
     updateParty,
     type PartyRecord,
 } from '@/services/party.service';
-import { Building2, Mail, MapPin, Pencil, Phone, Plus, Search, Trash2 } from 'lucide-react';
+import { Building2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -86,10 +86,6 @@ export default function SuppliersPage() {
         });
     }, [parties, search]);
 
-    const pagedFiltered = useMemo(() => {
-        const start = (page - 1) * PARTY_PAGE_SIZE;
-        return filtered.slice(start, start + PARTY_PAGE_SIZE);
-    }, [filtered, page]);
 
     useEffect(() => {
         const totalPages = Math.max(1, Math.ceil(filtered.length / PARTY_PAGE_SIZE));
@@ -207,6 +203,44 @@ export default function SuppliersPage() {
         }
     };
 
+
+    const columns: Column<PartyRecord>[] = [
+        {
+            key: 'name',
+            header: 'Name',
+            sortValue: (p) => p.name,
+            cell: (p) => <CellStack title={p.name} subtitle={p.entityType === 'business' ? 'Business' : 'Person'} />,
+        },
+        {
+            key: 'contact',
+            header: 'Contact',
+            cell: (p) => <CellStack title={p.mobile || '—'} subtitle={p.email} />,
+        },
+        {
+            key: 'location',
+            header: 'Location',
+            sortValue: (p) => [p.city, p.state].filter(Boolean).join(', ') || null,
+            cell: (p) => <CellText>{[p.city, p.state].filter(Boolean).join(', ')}</CellText>,
+        },
+        {
+            key: 'added',
+            header: 'Added',
+            sortValue: (p) => Date.parse(p.createdAt) || null,
+            cell: (p) => <CellText>{formatDate(p.createdAt)}</CellText>,
+        },
+        {
+            key: 'actions',
+            header: 'Actions',
+            kind: 'actions',
+            cell: (p) => (
+                <RowActions>
+                    <RowActionButton label="Edit supplier" icon={<Pencil className="h-4 w-4" />} onClick={() => openEdit(p)} />
+                    <RowActionButton label="Delete supplier" tone="danger" icon={<Trash2 className="h-4 w-4" />} onClick={() => setDeleteId(p.id)} />
+                </RowActions>
+            ),
+        },
+    ];
+
     return (
         <div className="space-y-6">
             <PageHeader
@@ -223,12 +257,12 @@ export default function SuppliersPage() {
             <div className="flex justify-end">
                 <div className="w-full max-w-sm">
                     <label className="relative block">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-subtle)]" />
                         <input
                             value={search}
                             onChange={(e) => handleSearchChange(e.target.value)}
                             placeholder="Search suppliers by name, mobile or email"
-                            className="w-full rounded-xl border border-[#D0D5DD] bg-white py-2.5 pl-9 pr-3 text-sm text-[#17243A] placeholder-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/25"
+                            className="w-full rounded-xl border border-[var(--border-strong)] bg-white py-2.5 pl-9 pr-3 text-sm text-[var(--text)] placeholder-slate-400 focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
                         />
                     </label>
                 </div>
@@ -294,93 +328,21 @@ export default function SuppliersPage() {
                 </Modal>
             )}
 
-            {loading ? (
-                <SkeletonLoader variant="table" rows={8} />
-            ) : filtered.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#D8DEE8] bg-slate-50/80 p-10 text-center">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
-                        <Building2 className="h-5 w-5" />
-                    </div>
-                    <p className="text-base font-semibold text-[#17243A]">
-                        {parties.length === 0 ? 'No suppliers yet' : 'No suppliers match your search'}
-                    </p>
-                    <p className="mt-2 text-sm text-[#667085]">
-                        {parties.length === 0 ? 'Create the first supplier record and keep your procurement details organised.' : 'Try a different search term or add a new supplier.'}
-                    </p>
-                </div>
-            ) : (
-                <>
-                    <div className="hidden overflow-x-auto rounded-2xl border border-[#E6E8EC] bg-white shadow-[0_6px_18px_rgba(15,23,42,0.03)] md:block">
-                        <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
-                            <thead className="bg-[#1D4ED8] text-[11px] uppercase tracking-[0.12em] text-white">
-                                <tr>
-                                    <th className="px-4 py-3.5 text-left font-semibold text-white">Name</th>
-                                    <th className="px-4 py-3.5 text-left font-semibold text-white">Role</th>
-                                    <th className="px-4 py-3.5 text-left font-semibold text-white">Contact</th>
-                                    <th className="px-4 py-3.5 text-left font-semibold text-white">Location</th>
-                                    <th className="px-4 py-3.5 text-left font-semibold text-white">Added</th>
-                                    <th className="px-4 py-3.5 text-center font-semibold text-white">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                                {pagedFiltered.map((party) => (
-                                    <tr key={party.id} className="transition-colors hover:bg-slate-50/80">
-                                        <td className="px-4 py-3.5">
-                                            <div className="font-medium text-[#17243A]">{party.name}</div>
-                                            <div className="text-xs text-slate-500">{party.entityType === 'business' ? 'Business' : 'Person'}</div>
-                                        </td>
-                                        <td className="px-4 py-3.5 text-[#344054]">Supplier</td>
-                                        <td className="px-4 py-3.5 text-[#344054]">
-                                            <div>{party.mobile || '-'}</div>
-                                            <div className="text-xs text-slate-500">{party.email || '-'}</div>
-                                        </td>
-                                        <td className="px-4 py-3.5 text-[#667085]">{[party.city, party.state].filter(Boolean).join(', ') || '-'}</td>
-                                        <td className="px-4 py-3.5 text-xs text-[#667085]">{formatDate(party.createdAt)}</td>
-                                        <td className="px-4 py-3.5">
-                                            <div className="flex items-center justify-center gap-1">
-                                                <button onClick={() => openEdit(party)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8]" aria-label="Edit"><Pencil className="w-4 h-4" /></button>
-                                                <button onClick={() => setDeleteId(party.id)} className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100" aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        <div className="p-3">
-                            <TablePagination
-                                page={page}
-                                pageSize={PARTY_PAGE_SIZE}
-                                total={filtered.length}
-                                onPageChange={setPage}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="md:hidden space-y-3">
-                        {pagedFiltered.map((party) => (
-                            <div key={party.id} className="rounded-xl border border-slate-200 bg-white p-4">
-                                <div className="mb-2 flex items-start justify-between gap-2">
-                                    <div>
-                                        <p className="font-semibold text-[#17243A]">{party.name}</p>
-                                        <p className="text-xs text-slate-500">{party.entityType === 'business' ? 'Business' : 'Person'} • Supplier</p>
-                                    </div>
-                                    <div className="flex gap-1">
-                                        <button onClick={() => openEdit(party)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500" aria-label="Edit"><Pencil className="w-4 h-4" /></button>
-                                        <button onClick={() => setDeleteId(party.id)} className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-500" aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
-                                    </div>
-                                </div>
-                                <div className="space-y-1 text-sm text-[#344054]">
-                                    {party.mobile && <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-slate-400" />{party.mobile}</div>}
-                                    {party.email && <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-slate-400" />{party.email}</div>}
-                                    {[party.city, party.state].filter(Boolean).length > 0 && (
-                                        <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-slate-400" />{[party.city, party.state].filter(Boolean).join(', ')}</div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </>
-            )}
+            <DataTable
+                caption="Suppliers"
+                columns={columns}
+                rows={filtered}
+                rowKey={(party) => party.id}
+                loading={loading}
+                defaultSort={{ key: 'name', direction: 'asc' }}
+                pagination={{ page, pageSize: PARTY_PAGE_SIZE, onPageChange: setPage }}
+                empty={{
+                    icon: <Building2 className="h-5 w-5" />,
+                    title: parties.length === 0 ? 'No suppliers yet' : 'No suppliers match your search',
+                    description: parties.length === 0 ? 'Create the first supplier record and keep your procurement details organised.' : 'Try a different search term or add a new supplier.',
+                    action: parties.length === 0 ? <AppButton onClick={openCreate}>Add supplier</AppButton> : undefined,
+                }}
+            />
 
             {deleteId && (
                 <ConfirmDialog

@@ -1,0 +1,269 @@
+[
+  {
+    "business_model": "contract_construction",
+    "project_code": "independent_house",
+    "stages": [
+      "Client Requirements & Project Planning",
+      "Architectural Design & Drawings",
+      "Estimation, Quotation & Agreement",
+      "Approvals & Site Mobilization",
+      "Foundation & Plinth Construction",
+      "Structural Construction",
+      "Brickwork & Masonry",
+      "Plastering & Waterproofing",
+      "Electrical & Plumbing Works",
+      "Flooring, Doors & Windows",
+      "Painting & Final Finishing",
+      "Quality Inspection & Client Handover"
+    ]
+  },
+  {
+    "business_model": "contract_construction",
+    "project_code": "villa",
+    "stages": [
+      "Client Requirements & Project Planning",
+      "Architectural Design & 3D Elevation",
+      "Structural & Engineering Design",
+      "Estimation, Quotation & Agreement",
+      "Approvals & Site Mobilization",
+      "Foundation & Plinth Construction",
+      "Structural Construction",
+      "Masonry, Plastering & Waterproofing",
+      "Electrical, Plumbing & HVAC Works",
+      "Flooring, Doors, Windows & Joinery",
+      "Interior, Exterior & Landscape Finishing",
+      "Quality Inspection & Client Handover"
+    ]
+  },
+  {
+    "business_model": "contract_construction",
+    "project_code": "apartment",
+    "stages": [
+      "Client Requirements & Project Planning",
+      "Architectural Design & Engineering",
+      "Estimation, BOQ & Agreement",
+      "Approvals & Site Mobilization",
+      "Foundation & Basement Construction",
+      "Structural Construction",
+      "Masonry & Internal Plastering",
+      "Electrical, Plumbing & Fire Systems",
+      "Flooring, Doors & Windows",
+      "Painting & Internal Finishing",
+      "Lifts, Common Areas & External Works",
+      "Quality Inspection & Client Handover"
+    ]
+  },
+  {
+    "business_model": "contract_construction",
+    "project_code": "commercial_building",
+    "stages": [
+      "Client Requirements & Space Planning",
+      "Architectural & Engineering Design",
+      "Estimation, BOQ & Agreement",
+      "Approvals & Site Mobilization",
+      "Foundation & Basement Construction",
+      "Structural Construction",
+      "Masonry & Building Envelope",
+      "Electrical, Plumbing, HVAC & Fire Systems",
+      "Flooring, Ceilings & Interior Works",
+      "Elevation & External Finishing",
+      "Testing, Commissioning & Inspection",
+      "Client Handover"
+    ]
+  },
+  {
+    "business_model": "contract_construction",
+    "project_code": "renovation",
+    "stages": [
+      "Existing Site Inspection & Assessment",
+      "Client Requirements & Scope Finalization",
+      "Design, Drawings & Estimation",
+      "Agreement & Site Preparation",
+      "Demolition & Dismantling",
+      "Structural Repairs & Modifications",
+      "Masonry & Plastering",
+      "Electrical & Plumbing Modifications",
+      "Flooring, Doors & Windows",
+      "Painting & Finishing",
+      "Final Inspection & Snag Rectification",
+      "Client Handover"
+    ]
+  },
+  {
+    "business_model": "contract_construction",
+    "project_code": "building_extension",
+    "stages": [
+      "Existing Building Assessment",
+      "Extension Planning & Design",
+      "Structural Feasibility & Engineering",
+      "Estimation, Agreement & Approvals",
+      "Site Preparation & Protection",
+      "Foundation & Structural Modifications",
+      "New Structural Construction",
+      "Masonry & Plastering",
+      "Electrical & Plumbing Extensions",
+      "Flooring & Finishing",
+      "Integration & Quality Inspection",
+      "Client Handover"
+    ]
+  },
+  {
+    "business_model": "contract_construction",
+    "project_code": "industrial_warehouse",
+    "stages": [
+      "Client Requirements & Industrial Planning",
+      "Architectural & Structural Design",
+      "Estimation, BOQ & Agreement",
+      "Approvals & Site Mobilization",
+      "Site Development & Earthwork",
+      "Foundation & Industrial Flooring",
+      "Structural Steel / RCC Construction",
+      "Roofing & Cladding",
+      "Electrical, Plumbing & Fire Systems",
+      "Flooring, Drainage & External Development",
+      "Testing, Inspection & Commissioning",
+      "Client Handover"
+    ]
+  },
+  {
+    "business_model": "contract_construction",
+    "project_code": "interior_fitout",
+    "stages": [
+      "Site Survey & Client Requirements",
+      "Space Planning & Interior Design",
+      "Material Selection & BOQ",
+      "Quotation, Agreement & Mobilization",
+      "Dismantling & Site Preparation",
+      "Civil & Partition Works",
+      "Electrical, Plumbing & HVAC Works",
+      "Ceiling & Flooring Works",
+      "Carpentry & Custom Furniture",
+      "Painting, Fixtures & Finishing",
+      "Final Inspection & Snag Rectification",
+      "Client Handover"
+    ]
+  },
+  {
+    "business_model": "property_development",
+    "project_code": "apartment",
+    "stages": [
+      "Land Due Diligence & Title Verification",
+      "Land Acquisition & Development Agreement",
+      "Feasibility & Project Planning",
+      "Architectural & Engineering Design",
+      "Building Approvals & Statutory Clearances",
+      "RERA Registration & Project Launch (if applicable)",
+      "Site Mobilization & Preparation",
+      "Foundation & Basement Construction",
+      "Structural Construction",
+      "MEP & Internal Infrastructure",
+      "Finishing & Common Area Development",
+      "Quality Inspection & Occupancy Approval",
+      "Sales, Registration & Customer Handover"
+    ]
+  },
+  {
+    "business_model": "property_development",
+    "project_code": "villa",
+    "stages": [
+      "Land Due Diligence & Title Verification",
+      "Land Acquisition & Development Agreement",
+      "Feasibility & Villa Planning",
+      "Architectural & Engineering Design",
+      "Approvals & Statutory Clearances",
+      "RERA Registration & Project Launch (if applicable)",
+      "Site Development & Infrastructure",
+      "Villa Foundation & Structural Construction",
+      "Masonry, Roofing & Waterproofing",
+      "MEP & Interior Finishing",
+      "Landscaping & Common Amenities",
+      "Quality Inspection & Occupancy Approval",
+      "Sales, Registration & Customer Handover"
+    ]
+  },
+  {
+    "business_model": "property_development",
+    "project_code": "commercial_building",
+    "stages": [
+      "Land Due Diligence & Title Verification",
+      "Land Acquisition & Development Agreement",
+      "Market Feasibility & Project Planning",
+      "Architectural & Engineering Design",
+      "Building Approvals & Statutory Clearances",
+      "RERA Registration & Project Launch (if applicable)",
+      "Site Mobilization & Preparation",
+      "Foundation & Basement Construction",
+      "Structural Construction",
+      "MEP, Fire Systems & Building Services",
+      "Interior, External & Common Area Finishing",
+      "Testing, Occupancy Approval & Completion",
+      "Leasing / Sales, Registration & Handover"
+    ]
+  },
+  {
+    "business_model": "civil_works_contract",
+    "project_code": "civil_infrastructure",
+    "stages": [
+      "Tender & Work Order",
+      "Site Survey & Technical Planning",
+      "BOQ, Estimation & Project Scheduling",
+      "Approvals & Site Mobilization",
+      "Site Clearing & Earthwork",
+      "Foundation & Main Civil Works",
+      "Structural & Infrastructure Construction",
+      "Ancillary Works & Finishing",
+      "Quality Testing & Inspection",
+      "Measurements & RA Billing",
+      "Final Inspection & Defect Rectification",
+      "Project Completion & Handover"
+    ]
+  },
+  {
+    "business_model": "civil_works_contract",
+    "project_code": "road_drainage",
+    "stages": [
+      "Tender & Work Order",
+      "Survey, Alignment & Setting Out",
+      "BOQ & Project Planning",
+      "Approvals & Site Mobilization",
+      "Site Clearing & Earthwork",
+      "Subgrade Preparation & Compaction",
+      "Drainage, Culverts & Pipe Laying",
+      "Base Course & Road Construction",
+      "Chambers, Kerbs & Ancillary Works",
+      "Road Surface & Finishing",
+      "Quality Testing & Final Inspection",
+      "Measurements & Project Handover"
+    ]
+  },
+  {
+    "business_model": "civil_works_contract",
+    "project_code": "structural_works",
+    "stages": [
+      "Tender / Client Requirements & Work Order",
+      "Structural Survey & Assessment",
+      "Structural Design & Engineering",
+      "BOQ, Estimation & Planning",
+      "Approvals & Site Mobilization",
+      "Foundation & Substructure Works",
+      "RCC / Steel Structural Works",
+      "Fabrication & Erection (where applicable)",
+      "Structural Finishing & Protection",
+      "Load Testing / Quality Testing (where applicable)",
+      "Structural Inspection & Rectification",
+      "Completion & Handover"
+    ]
+  },
+  {
+    "business_model": "material_supply",
+    "project_code": "material_supply",
+    "stages": [
+      "Customer Enquiry & Requirement",
+      "Quotation & Order Confirmation",
+      "Material Procurement / Stock Allocation",
+      "Quality & Quantity Verification",
+      "Dispatch & Transportation",
+      "Site Delivery & Acknowledgement"
+    ]
+  }
+]

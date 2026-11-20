@@ -1,0 +1,4 @@
+-- Rolls back 0023_payment_schedule_rounding.sql by restoring save_quotation to its
+-- exact 0022 form (independent per-row rounding on payment_schedules.amount).
+-- Run 0022_quotation_save_and_pdf_support.sql again — CREATE OR REPLACE there defines
+-- the exact pre-0023 function body.

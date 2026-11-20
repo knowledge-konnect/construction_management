@@ -326,12 +326,9 @@ export async function updateReceiptRow(id: string, companyId: string, payload: a
     }
 
     if (existing.allocatedAmount > 0) {
-        const nextAmount = payload?.amount !== undefined ? parseNumber(payload.amount, existing.amount) : existing.amount;
-        if (nextAmount < existing.allocatedAmount) {
-            const err: any = new Error('Receipt allocations already exist; the receipt amount cannot be reduced below the allocated total.');
-            err.statusCode = 400;
-            throw err;
-        }
+        const err: any = new Error('Receipts with payment allocations are read-only and cannot be edited or deleted.');
+        err.statusCode = 400;
+        throw err;
     }
 
     const updates: Record<string, unknown> = {};
@@ -385,7 +382,7 @@ export async function deleteReceiptRow(id: string, companyId: string) {
         throw err;
     }
     if (existing.allocatedAmount > 0) {
-        const err: any = new Error('Receipts with payment allocations cannot be deleted because payment history must be preserved.');
+        const err: any = new Error('Receipts with payment allocations are read-only and cannot be edited or deleted.');
         err.statusCode = 400;
         throw err;
     }
@@ -457,46 +454,34 @@ export async function createReceiptAllocationForInvoice(receiptId: string, invoi
     }
 
     const desiredAmount = Math.max(0, parseNumber(requestedAmount, 0));
-    const receiptRemaining = roundCurrency(Math.max(0, Number(receipt.amount ?? 0) - Number(receipt.allocatedAmount ?? 0)));
-    const invoiceOutstanding = roundCurrency(Math.max(0, Number(invoice.grand_total ?? 0) - await getInvoiceAllocatedAmount(invoiceId)));
-
     if (desiredAmount <= 0) {
         const err: any = new Error('Allocation amount must be greater than zero.');
         err.statusCode = 400;
         throw err;
     }
-    if (receiptRemaining <= 0) {
-        const err: any = new Error('This receipt has no remaining balance to allocate.');
-        err.statusCode = 400;
-        throw err;
-    }
-    if (invoiceOutstanding <= 0) {
-        const err: any = new Error('This invoice is already fully paid.');
+
+    const { data, error } = await supabaseAdmin.rpc('apply_receipt_allocation', {
+        p_company_id: companyId,
+        p_receipt_id: receiptId,
+        p_invoice_id: invoiceId,
+        p_requested_amount: desiredAmount,
+    });
+
+    if (error) {
+        const message = typeof error?.message === 'string' ? error.message : 'Failed to allocate receipt.';
+        const err: any = new Error(message);
         err.statusCode = 400;
         throw err;
     }
 
-    const allocatedAmount = roundCurrency(Math.min(desiredAmount, receiptRemaining, invoiceOutstanding));
-    if (allocatedAmount <= 0) {
-        const err: any = new Error('Requested amount exceeds the remaining receipt balance or invoice outstanding amount.');
-        err.statusCode = 400;
-        throw err;
-    }
+    const result = data ?? {};
+    const allocationRow = result.allocation ?? null;
+    const receiptRemaining = roundCurrency(Number(result.receiptRemaining ?? 0));
+    const invoiceOutstanding = roundCurrency(Number(result.invoiceOutstanding ?? 0));
+    const allocatedAmount = roundCurrency(Number(result.allocatedAmount ?? 0));
 
-    const { data, error } = await supabaseAdmin
-        .from('payment_allocations')
-        .insert({
-            company_id: companyId,
-            invoice_id: invoiceId,
-            receipt_id: receiptId,
-            allocated_amount: allocatedAmount,
-        })
-        .select('*')
-        .single();
-
-    if (error) throw error;
     return {
-        allocation: mapAllocationRow(data),
+        allocation: allocationRow ? mapAllocationRow(allocationRow) : null,
         receiptRemaining,
         invoiceOutstanding,
         allocatedAmount,

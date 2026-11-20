@@ -1,0 +1,9 @@
+apartment|contract_construction count=11
+building_extension|contract_construction count=12
+civil_infrastructure|civil_works_contract count=8
+commercial_building|contract_construction count=14
+independent_house|contract_construction count=14 dupSeq=[1x2, 4x2]
+industrial_warehouse|contract_construction count=12
+interior_fitout|contract_construction count=11
+renovation|contract_construction count=12
+road_drainage|civil_works_contract count=14 dupSeq=[2x2, 3x2, 4x2, 5x2, 6x2, 7x2]

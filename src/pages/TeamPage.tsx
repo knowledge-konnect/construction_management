@@ -1,19 +1,20 @@
-﻿import ConfirmDialog from '@/components/ConfirmDialog';
-import { AppButton, Modal, PageHeader, TablePagination } from '@/components/ui/DesignSystem';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import { AppButton, Modal, PageHeader, StatusPill } from '@/components/ui/DesignSystem';
+import DataTable, { CellStack, CellText, RowActionButton, RowActions, type Column } from '@/components/ui/DataTable';
 import { Field, Select, TextInput } from '@/components/ui/Form';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
 import { addTeamMember, listTeamMembers, updateTeamMember, type TeamMember } from '@/services/team.service';
-import { Plus, ShieldCheck, User, UserX } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Plus, User, UserCheck, UserX } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const TEAM_TABLE_PAGE_SIZE = 10;
 
 function RoleBadge({ role }: { role: TeamMember['role'] }) {
   const styles: Record<TeamMember['role'], string> = {
-    owner: 'bg-[#1D4ED8]/10 text-[#1D4ED8]',
-    admin: 'bg-blue-50 text-blue-700',
-    staff: 'bg-slate-100 text-slate-600',
+    owner: 'bg-[#1D4ED8]/10 text-[var(--primary)]',
+    admin: 'bg-[var(--primary-soft)] text-[var(--primary)]',
+    staff: 'bg-[var(--surface-muted)] text-[var(--text-secondary)]',
   };
   return <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full capitalize ${styles[role]}`}>{role}</span>;
 }
@@ -44,10 +45,6 @@ export default function TeamPage() {
 
   useEffect(() => { void refresh(); }, [company?.companyId]);
 
-  const pagedMembers = useMemo(() => {
-    const start = (page - 1) * TEAM_TABLE_PAGE_SIZE;
-    return members.slice(start, start + TEAM_TABLE_PAGE_SIZE);
-  }, [members, page]);
 
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(members.length / TEAM_TABLE_PAGE_SIZE));
@@ -127,6 +124,67 @@ export default function TeamPage() {
     void refresh();
   };
 
+  const columns: Column<TeamMember>[] = [
+    {
+      key: 'name',
+      header: 'Name',
+      sortValue: (m) => m.fullName || m.email,
+      cell: (m) => <CellStack title={m.fullName || m.email} />,
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      sortValue: (m) => m.email,
+      cell: (m) => <CellText>{m.email}</CellText>,
+    },
+    {
+      key: 'role',
+      header: 'Role',
+      sortValue: (m) => m.role,
+      cell: (m) =>
+        canManage && m.role !== 'owner' ? (
+          <select
+            value={m.role}
+            onChange={(e) => handleRoleChange(m, e.target.value as 'admin' | 'staff')}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`Role for ${m.fullName || m.email}`}
+            className="input-shell !min-h-[32px] !w-auto !rounded-lg !px-2.5 !py-1 text-xs capitalize"
+          >
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+          </select>
+        ) : (
+          <RoleBadge role={m.role} />
+        ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      sortValue: (m) => (m.isActive ? 'Active' : 'Deactivated'),
+      cell: (m) => <StatusPill label={m.isActive ? 'Active' : 'Deactivated'} tone={m.isActive ? 'success' : 'neutral'} />,
+    },
+    ...(canManage
+      ? [
+          {
+            key: 'actions',
+            header: 'Actions',
+            kind: 'actions' as const,
+            cell: (m: TeamMember) =>
+              m.role !== 'owner' ? (
+                <RowActions>
+                  <RowActionButton
+                    label={m.isActive ? 'Deactivate member' : 'Reactivate member'}
+                    tone={m.isActive ? 'danger' : 'default'}
+                    icon={m.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                    onClick={() => handleToggleActive(m)}
+                  />
+                </RowActions>
+              ) : null,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -143,7 +201,7 @@ export default function TeamPage() {
       {showAddForm && (
         <Modal eyebrow="Team" title="Add team member" onClose={resetForm} size="lg">
           <form onSubmit={handleAdd} className="space-y-5">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[var(--text-muted)]">
               If this email already has an account, they’ll simply be added to your company — their existing
               password stays unchanged. Otherwise a new account is created with the password you set below, and
               they’ll be asked to change it the first time they log in.
@@ -175,116 +233,16 @@ export default function TeamPage() {
         </Modal>
       )}
 
-      {loading ? (
-        <div className="text-center py-20 text-slate-400 text-sm">Loading team…</div>
-      ) : (
-        <>
-          {/* Desktop table */}
-          <div className="hidden overflow-x-auto rounded-2xl border border-[#E6E8EC] bg-white shadow-[0_6px_18px_rgba(15,23,42,0.03)] md:block">
-            <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
-              <thead className="bg-[#1D4ED8] text-[11px] uppercase tracking-[0.12em] text-white">
-                <tr>
-                  <th className="px-4 py-3.5 text-left font-semibold text-white">Name</th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-white">Email</th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-white">Role</th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-white">Status</th>
-                  {canManage && <th className="px-4 py-3.5 text-center font-semibold text-white">Actions</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                {pagedMembers.map((m) => (
-                  <tr key={m.userId} className="transition-colors hover:bg-slate-50/80">
-                    <td className="px-4 py-3.5 text-[#17243A]">{m.fullName || '\u2014'}</td>
-                    <td className="px-4 py-3.5 text-[#344054]">{m.email}</td>
-                    <td className="px-4 py-3.5">
-                      {canManage && m.role !== 'owner' ? (
-                        <select
-                          value={m.role}
-                          onChange={(e) => handleRoleChange(m, e.target.value as 'admin' | 'staff')}
-                          className="rounded-lg border border-[#D0D5DD] bg-white px-2.5 py-1.5 text-xs capitalize text-[#17243A] focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/25"
-                        >
-                          <option value="staff">Staff</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      ) : (
-                        <RoleBadge role={m.role} />
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className={`inline-flex items-center gap-1 text-xs font-medium ${m.isActive ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {m.isActive ? <ShieldCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
-                        {m.isActive ? 'Active' : 'Deactivated'}
-                      </span>
-                    </td>
-                    {canManage && (
-                      <td className="px-4 py-3.5 text-center">
-                        {m.role !== 'owner' && (
-                          <button
-                            onClick={() => handleToggleActive(m)}
-                            className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${m.isActive ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
-                          >
-                            {m.isActive ? 'Deactivate' : 'Reactivate'}
-                          </button>
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="p-3">
-              <TablePagination
-                page={page}
-                pageSize={TEAM_TABLE_PAGE_SIZE}
-                total={members.length}
-                onPageChange={setPage}
-              />
-            </div>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="md:hidden space-y-3">
-            {pagedMembers.map((m) => (
-              <div key={m.userId} className="bg-white border border-slate-200 rounded-xl p-4">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <User className="w-4 h-4 text-slate-400 shrink-0" />
-                    <div className="min-w-0">
-                      <p className="font-medium text-slate-800 truncate">{m.fullName || m.email}</p>
-                      <p className="text-xs text-slate-500 truncate">{m.email}</p>
-                    </div>
-                  </div>
-                  <RoleBadge role={m.role} />
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                  <span className={`inline-flex items-center gap-1 text-xs font-medium ${m.isActive ? 'text-emerald-600' : 'text-slate-400'}`}>
-                    {m.isActive ? <ShieldCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
-                    {m.isActive ? 'Active' : 'Deactivated'}
-                  </span>
-                  {canManage && m.role !== 'owner' && (
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={m.role}
-                        onChange={(e) => handleRoleChange(m, e.target.value as 'admin' | 'staff')}
-                        className="text-xs border border-slate-200 rounded px-2 py-1 capitalize"
-                      >
-                        <option value="staff">Staff</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                      <button
-                        onClick={() => handleToggleActive(m)}
-                        className={`text-xs font-medium px-2.5 py-1 rounded-lg ${m.isActive ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
-                      >
-                        {m.isActive ? 'Deactivate' : 'Reactivate'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+      <DataTable
+        caption="Team members"
+        columns={columns}
+        rows={members}
+        rowKey={(m) => m.userId}
+        loading={loading}
+        defaultSort={{ key: 'name', direction: 'asc' }}
+        pagination={{ page, pageSize: TEAM_TABLE_PAGE_SIZE, onPageChange: setPage }}
+        empty={{ icon: <User className="h-5 w-5" />, title: 'No team members yet', description: 'Add a team member to give them access to this company.' }}
+      />
 
       <ConfirmDialog
         open={!!pendingDeactivate}

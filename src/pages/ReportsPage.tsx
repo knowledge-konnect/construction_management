@@ -194,21 +194,21 @@ export default function ReportsPage() {
                 }
             />
 
-            {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+            {error && <div className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-fg)]">{error}</div>}
 
             <PremiumCard className="p-5">
-                <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#17243A]"><Filter className="h-4 w-4" /> Filters</div>
+                <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text)]"><Filter className="h-4 w-4" /> Filters</div>
                 <div className="grid gap-3 md:grid-cols-4">
                     <label className="block">
-                        <span className="mb-1 block text-xs text-[#667085]">Project</span>
-                        <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]">
+                        <span className="mb-1 block text-xs text-[var(--text-muted)]">Project</span>
+                        <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]">
                             <option value="">All projects</option>
                             {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
                         </select>
                     </label>
                     <label className="block">
-                        <span className="mb-1 block text-xs text-[#667085]">Status</span>
-                        <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]">
+                        <span className="mb-1 block text-xs text-[var(--text-muted)]">Status</span>
+                        <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]">
                             <option value="">All</option>
                             <option value="planned">Planned</option>
                             <option value="in_progress">In progress</option>
@@ -218,12 +218,12 @@ export default function ReportsPage() {
                         </select>
                     </label>
                     <label className="block">
-                        <span className="mb-1 block text-xs text-[#667085]">From</span>
-                        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]" />
+                        <span className="mb-1 block text-xs text-[var(--text-muted)]">From</span>
+                        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]" />
                     </label>
                     <label className="block">
-                        <span className="mb-1 block text-xs text-[#667085]">To</span>
-                        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]" />
+                        <span className="mb-1 block text-xs text-[var(--text-muted)]">To</span>
+                        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]" />
                     </label>
                 </div>
                 <div className="mt-4">
@@ -248,37 +248,37 @@ export default function ReportsPage() {
             <PremiumCard className="p-5">
                 <div className="flex items-center justify-between gap-2">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Budget vs actual</p>
-                        <p className="mt-1 text-sm text-[#667085]">Expense utilization against project budgets.</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Budget vs actual</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">Expense utilization against project budgets.</p>
                     </div>
                     <StatusPill
                         label={financialHealth.budgetOverrun > 0 ? 'Over budget' : 'Within budget'}
                         tone={financialHealth.budgetOverrun > 0 ? 'warning' : 'success'}
                     />
                 </div>
-                <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
-                    <div className={`h-full rounded-full ${financialHealth.utilizationPct > 100 ? 'bg-red-500' : 'bg-[#1D4ED8]'}`} style={{ width: `${Math.max(4, Math.min(financialHealth.utilizationPct, 100))}%` }} />
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-[var(--surface-muted)]">
+                    <div className={`h-full rounded-full ${financialHealth.utilizationPct > 100 ? 'bg-[var(--danger)]' : 'bg-[var(--primary)]'}`} style={{ width: `${Math.max(4, Math.min(financialHealth.utilizationPct, 100))}%` }} />
                 </div>
-                <p className="mt-2 text-xs text-[#667085]">{financialHealth.utilizationPct}% of budget consumed by current expenses.</p>
+                <p className="mt-2 text-xs text-[var(--text-muted)]">{financialHealth.utilizationPct}% of budget consumed by current expenses.</p>
             </PremiumCard>
 
             <div className="grid gap-6 xl:grid-cols-2">
                 <PremiumCard className="overflow-hidden">
-                    <div className="border-b border-[#E6E8EC] px-5 py-4">
-                        <h2 className="text-base font-semibold text-[#17243A]">Client follow-ups</h2>
+                    <div className="border-b border-[var(--border)] px-5 py-4">
+                        <h2 className="text-base font-semibold text-[var(--text)]">Client follow-ups</h2>
                     </div>
                     {followUps.client.length === 0 ? (
-                        <div className="px-5 py-8 text-sm text-slate-500">No pending collection follow-ups.</div>
+                        <div className="px-5 py-8 text-sm text-[var(--text-muted)]">No pending collection follow-ups.</div>
                     ) : (
-                        <div className="divide-y divide-[#E6E8EC]">
+                        <div className="divide-y divide-[var(--border)]">
                             {followUps.client.map((item) => (
                                 <div key={item.id} className="flex items-center justify-between px-5 py-3">
                                     <div>
-                                        <p className="text-sm font-semibold text-[#17243A]">{item.label}</p>
-                                        <p className="text-xs text-[#667085]">Due {item.dueDate ? formatDate(item.dueDate) : 'date not set'}</p>
+                                        <p className="text-sm font-semibold text-[var(--text)]">{item.label}</p>
+                                        <p className="text-xs text-[var(--text-muted)]">Due {item.dueDate ? formatDate(item.dueDate) : 'date not set'}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-semibold text-[#17243A]">{formatINR(item.amount)}</p>
+                                        <p className="text-sm font-semibold text-[var(--text)]">{formatINR(item.amount)}</p>
                                         <StatusPill label={item.urgency} tone={item.urgency === 'Overdue' ? 'warning' : item.urgency === 'Due soon' ? 'info' : 'neutral'} />
                                     </div>
                                 </div>
@@ -288,21 +288,21 @@ export default function ReportsPage() {
                 </PremiumCard>
 
                 <PremiumCard className="overflow-hidden">
-                    <div className="border-b border-[#E6E8EC] px-5 py-4">
-                        <h2 className="text-base font-semibold text-[#17243A]">Supplier follow-ups</h2>
+                    <div className="border-b border-[var(--border)] px-5 py-4">
+                        <h2 className="text-base font-semibold text-[var(--text)]">Supplier follow-ups</h2>
                     </div>
                     {followUps.supplier.length === 0 ? (
-                        <div className="px-5 py-8 text-sm text-slate-500">No pending supplier follow-ups.</div>
+                        <div className="px-5 py-8 text-sm text-[var(--text-muted)]">No pending supplier follow-ups.</div>
                     ) : (
-                        <div className="divide-y divide-[#E6E8EC]">
+                        <div className="divide-y divide-[var(--border)]">
                             {followUps.supplier.map((item) => (
                                 <div key={item.id} className="flex items-center justify-between px-5 py-3">
                                     <div>
-                                        <p className="text-sm font-semibold text-[#17243A]">{item.label}</p>
-                                        <p className="text-xs text-[#667085]">Due {item.dueDate ? formatDate(item.dueDate) : 'date not set'}</p>
+                                        <p className="text-sm font-semibold text-[var(--text)]">{item.label}</p>
+                                        <p className="text-xs text-[var(--text-muted)]">Due {item.dueDate ? formatDate(item.dueDate) : 'date not set'}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-semibold text-[#17243A]">{formatINR(item.amount)}</p>
+                                        <p className="text-sm font-semibold text-[var(--text)]">{formatINR(item.amount)}</p>
                                         <StatusPill label={item.urgency} tone={item.urgency === 'Overdue' ? 'warning' : item.urgency === 'Due soon' ? 'info' : 'neutral'} />
                                     </div>
                                 </div>
@@ -314,23 +314,23 @@ export default function ReportsPage() {
 
             <div className="grid gap-6 xl:grid-cols-2">
                 <PremiumCard className="overflow-hidden">
-                    <div className="border-b border-[#E6E8EC] px-5 py-4">
-                        <h2 className="text-base font-semibold text-[#17243A]">Projects ({projectRows.length})</h2>
+                    <div className="border-b border-[var(--border)] px-5 py-4">
+                        <h2 className="text-base font-semibold text-[var(--text)]">Projects ({projectRows.length})</h2>
                     </div>
                     {loading ? (
                         <div className="px-5 py-4"><SkeletonLoader variant="table" rows={4} /></div>
                     ) : projectRows.length === 0 ? (
-                        <div className="px-5 py-8 text-sm text-slate-500">No projects for selected filters.</div>
+                        <div className="px-5 py-8 text-sm text-[var(--text-muted)]">No projects for selected filters.</div>
                     ) : (
-                        <div className="divide-y divide-[#E6E8EC]">
+                        <div className="divide-y divide-[var(--border)]">
                             {projectRows.slice(0, 8).map((row) => (
                                 <div key={row.id} className="flex items-center justify-between px-5 py-3">
                                     <div>
-                                        <p className="text-sm font-semibold text-[#17243A]">{row.name}</p>
-                                        <p className="text-xs text-[#667085]">{row.project_number}</p>
+                                        <p className="text-sm font-semibold text-[var(--text)]">{row.name}</p>
+                                        <p className="text-xs text-[var(--text-muted)]">{row.project_number}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-semibold text-[#17243A]">{formatINR(Number(row.contract_amount ?? 0))}</p>
+                                        <p className="text-sm font-semibold text-[var(--text)]">{formatINR(Number(row.contract_amount ?? 0))}</p>
                                         <StatusPill label={String(row.status ?? 'planned').replace('_', ' ')} tone={row.status === 'completed' ? 'success' : row.status === 'on_hold' ? 'warning' : 'info'} />
                                     </div>
                                 </div>
@@ -340,22 +340,22 @@ export default function ReportsPage() {
                 </PremiumCard>
 
                 <PremiumCard className="overflow-hidden">
-                    <div className="border-b border-[#E6E8EC] px-5 py-4">
-                        <h2 className="text-base font-semibold text-[#17243A]">Collections ({receipts.length})</h2>
+                    <div className="border-b border-[var(--border)] px-5 py-4">
+                        <h2 className="text-base font-semibold text-[var(--text)]">Collections ({receipts.length})</h2>
                     </div>
                     {loading ? (
                         <div className="px-5 py-4"><SkeletonLoader variant="table" rows={4} /></div>
                     ) : receipts.length === 0 ? (
-                        <div className="px-5 py-8 text-sm text-slate-500">No collections for selected filters.</div>
+                        <div className="px-5 py-8 text-sm text-[var(--text-muted)]">No collections for selected filters.</div>
                     ) : (
-                        <div className="divide-y divide-[#E6E8EC]">
+                        <div className="divide-y divide-[var(--border)]">
                             {receipts.slice(0, 8).map((row) => (
                                 <div key={row.id} className="flex items-center justify-between px-5 py-3">
                                     <div>
-                                        <p className="text-sm font-semibold text-[#17243A]">{row.receipt_number ?? 'Receipt'}</p>
-                                        <p className="text-xs text-[#667085]">{row.received_date ? formatDate(row.received_date) : 'Date not set'}</p>
+                                        <p className="text-sm font-semibold text-[var(--text)]">{row.receipt_number ?? 'Receipt'}</p>
+                                        <p className="text-xs text-[var(--text-muted)]">{row.received_date ? formatDate(row.received_date) : 'Date not set'}</p>
                                     </div>
-                                    <p className="text-sm font-semibold text-[#17243A]">{formatINR(Number(row.amount ?? 0))}</p>
+                                    <p className="text-sm font-semibold text-[var(--text)]">{formatINR(Number(row.amount ?? 0))}</p>
                                 </div>
                             ))}
                         </div>

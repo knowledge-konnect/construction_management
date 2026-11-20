@@ -109,16 +109,30 @@ export function BuilderProvider({ children }: { children: ReactNode }) {
       const result = await saveDocument(updated, savingCompanyId, savingUserId);
       if (!result.ok) {
         setSaveStatus('error');
-        push('error', result.error || 'Could not save quotation.');
+        if (result.code === 'VERSION_CONFLICT') {
+          // Someone else (another tab/device) saved this quotation first. Stop
+          // autosaving this stale copy rather than overwrite their change on
+          // the next tick — the user needs to reload to see the current version.
+          push('error', 'This quotation was changed elsewhere. Reload the page to see the latest version before continuing.');
+        } else {
+          push('error', result.error || 'Could not save quotation.');
+        }
         return;
       }
-      if (result.documentNumber && result.documentNumber !== updated.quotationNumber) {
-        // The backend is the source of truth for numbering (atomic
-        // allocation via document_sequences) — sync it back so the UI
-        // reflects the actual saved number, not just the client-side preview.
-        updated.quotationNumber = result.documentNumber;
-        setQuotationState((prev) => (prev && prev.id === updated.id ? { ...prev, quotationNumber: result.documentNumber! } : prev));
-      }
+      // The backend is the source of truth for both numbering (atomic allocation via
+      // document_sequences) and the row version (optimistic concurrency) — sync both
+      // back so the UI reflects what was actually saved, and so the NEXT save carries
+      // the correct expectedVersion instead of a stale one.
+      setQuotationState((prev) => {
+        if (!prev || prev.id !== updated.id) return prev;
+        return {
+          ...prev,
+          quotationNumber: result.documentNumber ?? prev.quotationNumber,
+          version: result.version ?? prev.version,
+        };
+      });
+      updated.quotationNumber = result.documentNumber ?? updated.quotationNumber;
+      updated.version = result.version ?? updated.version;
       setLastSaved(updated.updatedAt);
       setSaveStatus('saved');
       if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);

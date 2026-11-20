@@ -1,4 +1,5 @@
-﻿import { InlineLoader } from '@/components/loading/Loaders';
+import { InlineLoader } from '@/components/loading/Loaders';
+import DataTable, { CellStack, type Column } from '@/components/ui/DataTable';
 import { AppButton, EmptyState, PageHeader, PremiumCard, SkeletonRow, StatCardButton, StatusPill } from '@/components/ui/DesignSystem';
 import { BUSINESS_MODEL_FORM_CONFIG } from '@/lib/businessModels';
 import { formatDate, formatINR, formatTime } from '@/lib/utils';
@@ -36,6 +37,16 @@ import { useNavigate } from 'react-router-dom';
 const formatStatus = (status: string) => {
     const label = status.replace(/_/g, ' ');
     return label.charAt(0).toUpperCase() + label.slice(1);
+};
+
+// One icon per KPI card (instead of the same rupee icon on all six).
+const kpiIcons: Record<string, ReactNode> = {
+    'Active Projects': <FolderKanban className="h-5 w-5 text-[var(--primary)]" />,
+    'Total Billed': <IndianRupee className="h-5 w-5 text-[var(--primary)]" />,
+    'Collected': <Wallet className="h-5 w-5 text-[var(--primary)]" />,
+    'Outstanding': <CalendarClock className="h-5 w-5 text-[var(--primary)]" />,
+    'Actual Expenses': <WalletCards className="h-5 w-5 text-[var(--primary)]" />,
+    'Net Cash Flow': <BarChart3 className="h-5 w-5 text-[var(--primary)]" />,
 };
 
 type DashboardTransaction = {
@@ -368,25 +379,30 @@ export default function DashboardPage() {
 
         let cancelled = false;
         const loadInvestorContributions = async () => {
-            const rows = await Promise.all(projects.map(async (project) => {
-                const investors = await listProjectInvestors(project.id);
-                const contributions = await Promise.all(investors.map(async (investor) => {
-                    const entries = await listInvestorContributions(investor.id);
-                    return entries.map((entry) => ({
-                        id: entry.id,
-                        projectId: project.id,
-                        projectName: project.name,
-                        investorName: investor.name || 'Investor',
-                        amount: Number(entry.amount ?? 0),
-                        contributionDate: entry.contributionDate ?? entry.createdAt ?? null,
-                        referenceNumber: entry.referenceNumber ?? 'Investor contribution',
+            try {
+                const rows = await Promise.all(projects.map(async (project) => {
+                    const investors = await listProjectInvestors(project.id);
+                    const contributions = await Promise.all(investors.map(async (investor) => {
+                        const entries = await listInvestorContributions(investor.id);
+                        return entries.map((entry) => ({
+                            id: entry.id,
+                            projectId: project.id,
+                            projectName: project.name,
+                            investorName: investor.name || 'Investor',
+                            amount: Number(entry.amount ?? 0),
+                            contributionDate: entry.contributionDate ?? entry.createdAt ?? null,
+                            referenceNumber: entry.referenceNumber ?? 'Investor contribution',
+                        }));
                     }));
+                    return contributions.flat();
                 }));
-                return contributions.flat();
-            }));
 
-            if (!cancelled) {
-                setInvestorContributionRows(rows.flat());
+                if (!cancelled) {
+                    setInvestorContributionRows(rows.flat());
+                }
+            } catch (err) {
+                console.error(err);
+                if (!cancelled) setInvestorContributionRows([]);
             }
         };
 
@@ -447,60 +463,67 @@ export default function DashboardPage() {
     const kpiCards = useMemo(() => {
         if (!dashboard) {
             return [
-                { label: 'Active Projects', value: 'N/A', sub: 'Projects currently in progress', accent: 'bg-[#EAF1FF] text-[#1D4ED8]', tooltip: 'Current active and planned project count from the company project list.' },
-                { label: 'Total Billed', value: 'N/A', sub: 'Actual valid invoices issued', accent: 'bg-[#F5F3FF] text-[#6D28D9]', tooltip: 'Sum of non-voided invoice totals after excluding cancelled invoices.' },
-                { label: 'Collections Received', value: 'N/A', sub: 'Actual customer payments received', accent: 'bg-[#ECFDF5] text-[#0F766E]', tooltip: 'Customer receipts only; excludes investor contributions and voided receipts.' },
-                { label: 'Customer Outstanding', value: 'N/A', sub: 'Unpaid customer balances after allocations', accent: 'bg-amber-50 text-amber-700', tooltip: 'Open invoice value after valid payment allocations, excluding cancelled invoices.' },
-                { label: 'Actual Expenses', value: 'N/A', sub: 'Recorded project expenses', accent: 'bg-rose-50 text-rose-700', tooltip: 'Expense bills excluding voided entries; does not include unpaid supplier bills as cash outflows.' },
-                { label: 'Net Cash Flow', value: 'N/A', sub: 'Collections minus actual expenses', accent: 'bg-sky-50 text-sky-700', tooltip: 'Actual customer cash received minus actual expense cash paid; investor funding is tracked separately.' },
+                { label: 'Active Projects', value: 'N/A', sub: 'Projects currently in progress', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Projects with an in-progress status.' },
+                { label: 'Total Billed', value: 'N/A', sub: 'Actual valid invoices issued', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Sum of non-voided invoice totals after excluding cancelled invoices.' },
+                { label: 'Collected', value: 'N/A', sub: 'Actual customer payments received', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Customer receipts only; excludes investor contributions and voided receipts.' },
+                { label: 'Outstanding', value: 'N/A', sub: 'Unpaid customer balances after allocations', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Open invoice value after valid payment allocations, excluding cancelled invoices.' },
+                { label: 'Actual Expenses', value: 'N/A', sub: 'Recorded project expenses', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Expense bills excluding voided entries; does not include unpaid supplier bills as cash outflows.' },
+                { label: 'Net Cash Flow', value: 'N/A', sub: 'Collections minus actual expenses', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Actual customer cash received minus actual expense cash paid; investor funding is tracked separately.' },
             ];
         }
+
+        // Count in-progress projects from the project list so this card agrees with the
+        // "Active" filter and the Planned count in the snapshot. Fall back to the report value.
+        const inProgressCount = projects.filter((project) => project.status === 'in_progress').length;
+        const activeProjectsValue = projects.length > 0
+            ? String(inProgressCount)
+            : dashboard.activeProjects == null ? 'N/A' : String(dashboard.activeProjects);
 
         return [
             {
                 label: 'Active Projects',
-                value: dashboard.activeProjects == null ? 'N/A' : String(dashboard.activeProjects),
+                value: activeProjectsValue,
                 sub: 'Projects currently in progress',
-                accent: 'bg-[#EAF1FF] text-[#1D4ED8]',
-                tooltip: 'Count of projects with an active or planned status from the live project list.',
+                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
+                tooltip: 'Projects with an in-progress status. Planned projects are counted separately in the snapshot.',
             },
             {
                 label: 'Total Billed',
                 value: formatCurrencyValue(dashboard.totalBilled),
                 sub: 'Actual valid invoices issued',
-                accent: 'bg-[#F5F3FF] text-[#6D28D9]',
+                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
                 tooltip: 'Sum of all non-cancelled invoice totals; excludes voided records and projected values.',
             },
             {
-                label: 'Collections Received',
+                label: 'Collected',
                 value: formatCurrencyValue(dashboard.totalCollected),
                 sub: 'Actual customer payments received',
-                accent: 'bg-[#ECFDF5] text-[#0F766E]',
+                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
                 tooltip: 'Customer collections only; investor contributions are kept separate and are not included here.',
             },
             {
-                label: 'Customer Outstanding',
+                label: 'Outstanding',
                 value: formatCurrencyValue(dashboard.totalOutstanding),
                 sub: 'Unpaid invoice balances after allocations',
-                accent: 'bg-amber-50 text-amber-700',
+                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
                 tooltip: 'Open invoice balance after valid payment allocations; excludes cancelled invoices and projected values.',
             },
             {
                 label: 'Actual Expenses',
                 value: formatCurrencyValue(dashboard.totalExpenses),
                 sub: 'Recorded project expenses',
-                accent: 'bg-rose-50 text-rose-700',
+                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
                 tooltip: 'Expense bills excluding voided entries. Unpaid supplier bills are not treated as cash outflows here.',
             },
             {
                 label: 'Net Cash Flow',
                 value: formatCurrencyValue(dashboard.netCashFlow),
                 sub: 'Collections minus actual expenses',
-                accent: 'bg-sky-50 text-sky-700',
+                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
                 tooltip: 'Actual cash received from customers minus actual cash paid for approved expense bills.',
             },
         ];
-    }, [dashboard]);
+    }, [dashboard, projects]);
 
     const projectFinancialRows = useMemo(() => projects.map((project) => {
         const summary = projectMetrics[project.id] ?? {
@@ -624,6 +647,34 @@ export default function DashboardPage() {
         { label: 'Supplier Outstanding', value: dashboard && dashboard.supplierOutstanding !== null && dashboard.supplierOutstanding !== undefined ? formatCurrencyValue(dashboard.supplierOutstanding) : 'N/A' },
     ];
 
+
+    type ProjectFinancialRow = (typeof projectFinancialRows)[number];
+    const moneyCell = (value: number | null | undefined) => <span className="tabular-nums text-[var(--text)]">{formatCurrencyValue(value)}</span>;
+    const projectColumns: Column<ProjectFinancialRow>[] = [
+        {
+            key: 'project',
+            header: 'Project',
+            sortValue: (p) => p.name,
+            cell: (p) => <CellStack title={p.name} subtitle={p.type || 'Project'} />,
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            sortValue: (p) => formatStatus(p.status),
+            cell: (p) => (
+                <StatusPill
+                    label={formatStatus(p.status)}
+                    tone={p.status === 'completed' ? 'success' : p.status === 'on_hold' || p.status === 'cancelled' ? 'warning' : 'info'}
+                />
+            ),
+        },
+        { key: 'value', header: 'Value', align: 'right', sortValue: (p) => p.projectValue, cell: (p) => moneyCell(p.projectValue) },
+        { key: 'budget', header: 'Budget', align: 'right', sortValue: (p) => p.projectBudget, cell: (p) => moneyCell(p.projectBudget) },
+        { key: 'expenses', header: 'Expenses', align: 'right', sortValue: (p) => p.actualExpenses, cell: (p) => moneyCell(p.actualExpenses) },
+        { key: 'collected', header: 'Collected', align: 'right', sortValue: (p) => p.customerCollections, cell: (p) => moneyCell(p.customerCollections) },
+        { key: 'outstanding', header: 'Outstanding', align: 'right', sortValue: (p) => p.customerOutstanding, cell: (p) => moneyCell(p.customerOutstanding) },
+    ];
+
     return (
         <div className="space-y-5 lg:space-y-7">
             <PageHeader
@@ -634,7 +685,7 @@ export default function DashboardPage() {
                         Live summary from project, billing, expense, and receipt ledgers.
                         {(loadingDashboard || loadingTransactions) && <span className="ml-2"><InlineLoader label="Refreshing…" /></span>}
                         {syncedAt && !loadingDashboard && (
-                            <span className="ml-1.5 whitespace-nowrap text-xs text-[#667085]">Last synced {formatDate(syncedAt)}</span>
+                            <span className="ml-1.5 whitespace-nowrap text-xs text-[var(--text-muted)]">Last synced {formatDate(syncedAt)}</span>
                         )}
                     </>
                 }
@@ -657,7 +708,7 @@ export default function DashboardPage() {
             />
 
             {error && (
-                <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+                <div role="alert" className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-fg)]">{error}</div>
             )}
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
@@ -667,7 +718,7 @@ export default function DashboardPage() {
                             label={card.label}
                             value={card.value}
                             sub={card.sub}
-                            icon={<IndianRupee className="h-5 w-5 text-[#1D4ED8]" />}
+                            icon={kpiIcons[card.label] ?? <IndianRupee className="h-5 w-5 text-[var(--primary)]" />}
                             iconTone={card.accent}
                             onClick={() => navigate('/reports')}
                         />
@@ -676,77 +727,40 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid gap-5 xl:grid-cols-[1.5fr_0.9fr]">
-                <PremiumCard className="overflow-hidden">
-                    <div className="flex items-center justify-between gap-3 border-b border-[#E6E8EC] px-5 py-4">
+                <PremiumCard className="self-start overflow-hidden">
+                    <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
                         <div>
-                            <h2 className="text-base font-semibold text-[#17243A]">Project financial summary</h2>
-                            <p className="mt-1 text-xs text-[#667085]">Business-model-specific value and actual cash movement by project.</p>
+                            <h2 className="text-base font-semibold text-[var(--text)]">Project financial summary</h2>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">Business-model-specific value and actual cash movement by project.</p>
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[560px] divide-y divide-[#E6E8EC] text-left text-sm">
-                            <thead className="bg-slate-50 text-[#667085]">
-                                <tr>
-                                    <th className="px-3 py-3 text-left font-medium">Project</th>
-                                    <th className="px-3 py-3 text-left font-medium">Status</th>
-                                    <th className="px-3 py-3 text-left font-medium">Value</th>
-                                    <th className="px-3 py-3 text-left font-medium">Budget</th>
-                                    <th className="px-3 py-3 text-left font-medium">Exp.</th>
-                                    <th className="px-3 py-3 text-left font-medium">Coll.</th>
-                                    <th className="px-3 py-3 text-left font-medium">O/S</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#E6E8EC] text-[#17243A]">
-                                {projectFinancialRows.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="px-4 py-6 text-center text-[#667085]">No project summary is available yet.</td>
-                                    </tr>
-                                ) : (
-                                    projectFinancialRows.map((project) => (
-                                        <tr key={project.id} className="align-top leading-tight hover:bg-slate-50/60">
-                                            <td className="px-3 py-2.5 align-middle">
-                                                <button type="button" onClick={() => navigate(`/projects/${project.id}`)} className="block max-w-[220px] truncate text-left font-semibold text-[#17243A] hover:underline">
-                                                    {project.name}
-                                                </button>
-                                                <div className="mt-0.5 text-[10px] text-[#667085]">
-                                                    {project.type || 'Project'}
-                                                </div>
-                                            </td>
-                                            <td className="px-3 py-2.5">
-                                                <StatusPill
-                                                    label={formatStatus(project.status)}
-                                                    tone={project.status === 'completed' ? 'success' : project.status === 'on_hold' || project.status === 'cancelled' ? 'warning' : 'info'}
-                                                />
-                                            </td>
-                                            <td className="px-3 py-2.5 tabular-nums text-[#17243A]" title={`${project.projectValueLabel}: ${formatCurrencyValue(project.projectValue)}`}>
-                                                {formatCurrencyValue(project.projectValue)}
-                                            </td>
-                                            <td className="px-3 py-2.5 tabular-nums text-[#17243A]">{formatCurrencyValue(project.projectBudget)}</td>
-                                            <td className="px-3 py-2.5 tabular-nums text-[#17243A]">{formatCurrencyValue(project.actualExpenses)}</td>
-                                            <td className="px-3 py-2.5 tabular-nums text-[#17243A]">{formatCurrencyValue(project.customerCollections)}</td>
-                                            <td className="px-3 py-2.5 tabular-nums text-[#17243A]">{formatCurrencyValue(project.customerOutstanding)}</td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable
+                        bare
+                        dense
+                        mobileLayout="scroll"
+                        caption="Project financial summary"
+                        columns={projectColumns}
+                        rows={projectFinancialRows}
+                        rowKey={(project) => project.id}
+                        onRowClick={(project) => navigate(`/projects/${project.id}`)}
+                        empty={{ title: 'No project summary yet', description: 'Project values, expenses and collections will appear here once you add projects.' }}
+                    />
                 </PremiumCard>
 
                 <div className="space-y-5">
                     <PremiumCard className="min-w-0 self-start p-5">
-                        <h2 className="text-base font-semibold text-[#17243A]">Operational snapshot</h2>
+                        <h2 className="text-base font-semibold text-[var(--text)]">Operational snapshot</h2>
                         <div className="mt-4 space-y-2.5">
                             {operationalSnapshot.map((item) => (
                                 <SnapshotRow
                                     key={item.label}
                                     icon={
-                                        item.label === 'Total Projects' ? <FolderKanban className="h-4 w-4 text-[#1D4ED8]" /> :
-                                            item.label === 'Completed Projects' ? <CalendarClock className="h-4 w-4 text-[#0F766E]" /> :
-                                                item.label === 'Planned Projects' ? <CalendarClock className="h-4 w-4 text-[#1D4ED8]" /> :
-                                                    item.label === 'Projects At Risk' ? <WalletCards className="h-4 w-4 text-amber-600" /> :
-                                                        <Wallet className="h-4 w-4 text-amber-600" />
+                                        item.label === 'Total Projects' ? <FolderKanban className="h-4 w-4 text-[var(--primary)]" /> :
+                                            item.label === 'Completed Projects' ? <CalendarClock className="h-4 w-4 text-[var(--success)]" /> :
+                                                item.label === 'Planned Projects' ? <CalendarClock className="h-4 w-4 text-[var(--primary)]" /> :
+                                                    item.label === 'Projects At Risk' ? <WalletCards className="h-4 w-4 text-[var(--warning-fg)]" /> :
+                                                        <Wallet className="h-4 w-4 text-[var(--warning-fg)]" />
                                     }
                                     label={item.label}
                                     value={item.value}
@@ -757,22 +771,22 @@ export default function DashboardPage() {
 
                     <PremiumCard className="min-w-0 self-start p-5">
                         <div className="flex items-center justify-between gap-3">
-                            <h2 className="text-base font-semibold text-[#17243A]">At-risk accounts</h2>
+                            <h2 className="text-base font-semibold text-[var(--text)]">At-risk accounts</h2>
                             {topDefaulters.length > 0 && <StatusPill label={`${topDefaulters.length} flagged`} tone="warning" />}
                         </div>
                         {topDefaulters.length === 0 ? (
-                            <div className="mt-4 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-4 text-sm text-[#667085]">
+                            <div className="mt-4 rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-soft)] p-4 text-sm text-[var(--text-muted)]">
                                 No overdue customer balances are currently showing in the live reports.
                             </div>
                         ) : (
                             <div className="mt-4 space-y-3">
                                 {topDefaulters.map((row) => (
-                                    <div key={row.customerId} className="rounded-xl border border-[#E6E8EC] bg-[#F8FAFC] p-3">
+                                    <div key={row.customerId} className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
                                         <div className="flex items-center justify-between gap-3">
-                                            <p className="truncate text-sm font-semibold text-[#17243A]">{row.customerName}</p>
+                                            <p className="truncate text-sm font-semibold text-[var(--text)]">{row.customerName}</p>
                                             <StatusPill label={`${row.dueInvoices} due`} tone="warning" />
                                         </div>
-                                        <p className="mt-2 text-xs text-[#667085]">Outstanding {formatCurrencyValue(Number(row.outstanding ?? 0))} • {row.invoices} invoice(s)</p>
+                                        <p className="mt-2 text-xs text-[var(--text-muted)]">Outstanding {formatCurrencyValue(Number(row.outstanding ?? 0))} • {row.invoices} invoice(s)</p>
                                     </div>
                                 ))}
                             </div>
@@ -783,12 +797,12 @@ export default function DashboardPage() {
 
             <div className="grid gap-5 xl:grid-cols-[1.3fr_0.9fr]">
                 <PremiumCard className="overflow-hidden">
-                    <div className="flex items-center justify-between gap-3 border-b border-[#E6E8EC] px-5 py-4">
+                    <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
                         <div>
-                            <h2 className="text-base font-semibold text-[#17243A]">Monthly financial performance</h2>
-                            <p className="mt-1 text-xs text-[#667085]">Latest six months of billed, collected and expense activity.</p>
+                            <h2 className="text-base font-semibold text-[var(--text)]">Monthly financial performance</h2>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">Latest six months of billed, collected and expense activity.</p>
                         </div>
-                        <button type="button" onClick={() => navigate('/reports')} className="shrink-0 rounded-md text-sm font-medium text-[#1D4ED8] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D4ED8]/40">
+                        <button type="button" onClick={() => navigate('/reports')} className="shrink-0 rounded-md text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
                             View report
                         </button>
                     </div>
@@ -804,14 +818,17 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     ) : monthlyChartData.length === 0 ? (
-                        <div className="p-5 text-sm text-[#667085]">No monthly financial data is available yet.</div>
+                        <div className="p-5 text-sm text-[var(--text-muted)]">No monthly financial data is available yet.</div>
                     ) : (
                         <div className="p-5">
-                            <div className="mb-4 flex flex-wrap items-center gap-3 text-xs text-[#667085]">
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#1D4ED8]" />Billed</span>
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#0F766E]" />Collected</span>
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#F59E0B]" />Expenses</span>
+                            <div className="mb-4 flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--chart-1)]" />Billed</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--chart-2)]" />Collected</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--chart-3)]" />Expenses</span>
                             </div>
+                            {maxMonthlyValue === 0 && (
+                                <p className="mb-3 text-xs text-[var(--text-muted)]">No billing, collections or expenses recorded in the last six months.</p>
+                            )}
                             <div className="flex h-48 items-end gap-3">
                                 {monthlyChartData.map((entry) => {
                                     const billedHeight = maxMonthlyValue > 0 ? (entry.billed / maxMonthlyValue) * 100 : 0;
@@ -819,12 +836,12 @@ export default function DashboardPage() {
                                     const expenseHeight = maxMonthlyValue > 0 ? (entry.expenses / maxMonthlyValue) * 100 : 0;
                                     return (
                                         <div key={`${entry.month}-chart`} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                                            <div className="flex h-36 w-full items-end justify-center gap-1" aria-label={`${chartMonthLabel(entry.month)} billed ${formatINR(entry.billed)}, collected ${formatINR(entry.collected)}, expenses ${formatINR(entry.expenses)}`}>
-                                                <span className="block w-1/3 rounded-t-md bg-[#1D4ED8]/80" style={{ height: `${billedHeight}%` }} title={`Billed ${formatINR(entry.billed)}`} />
-                                                <span className="block w-1/3 rounded-t-md bg-[#0F766E]/85" style={{ height: `${collectedHeight}%` }} title={`Collected ${formatINR(entry.collected)}`} />
-                                                <span className="block w-1/3 rounded-t-md bg-[#F59E0B]/85" style={{ height: `${expenseHeight}%` }} title={`Expenses ${formatINR(entry.expenses)}`} />
+                                            <div className="flex h-36 w-full items-end justify-center gap-1 border-b border-[var(--border)]" aria-label={`${chartMonthLabel(entry.month)} billed ${formatINR(entry.billed)}, collected ${formatINR(entry.collected)}, expenses ${formatINR(entry.expenses)}`}>
+                                                <span className="block w-1/3 rounded-t-md bg-[var(--chart-1)] opacity-85" style={{ height: `${billedHeight}%` }} title={`Billed ${formatINR(entry.billed)}`} />
+                                                <span className="block w-1/3 rounded-t-md bg-[var(--chart-2)] opacity-85" style={{ height: `${collectedHeight}%` }} title={`Collected ${formatINR(entry.collected)}`} />
+                                                <span className="block w-1/3 rounded-t-md bg-[var(--chart-3)] opacity-85" style={{ height: `${expenseHeight}%` }} title={`Expenses ${formatINR(entry.expenses)}`} />
                                             </div>
-                                            <span className="text-[10px] font-medium uppercase tracking-wide text-[#667085]">{chartMonthLabel(entry.month)}</span>
+                                            <span className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{chartMonthLabel(entry.month)}</span>
                                         </div>
                                     );
                                 })}
@@ -834,24 +851,24 @@ export default function DashboardPage() {
                 </PremiumCard>
 
                 <PremiumCard className="min-w-0 overflow-hidden">
-                    <div className="flex items-center justify-between gap-3 border-b border-[#E6E8EC] px-5 py-4">
+                    <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
                         <div>
-                            <h2 className="text-base font-semibold text-[#17243A]">Projects</h2>
-                            <p className="mt-1 text-xs text-[#667085]">Prioritized by overdue balances, overrun risk, and recent activity.</p>
+                            <h2 className="text-base font-semibold text-[var(--text)]">Projects</h2>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">Prioritized by overdue balances, overrun risk, and recent activity.</p>
                         </div>
-                        <button type="button" onClick={() => navigate('/projects')} className="shrink-0 rounded-md text-sm font-medium text-[#1D4ED8] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D4ED8]/40">
+                        <button type="button" onClick={() => navigate('/projects')} className="shrink-0 rounded-md text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
                             View all
                         </button>
                     </div>
 
-                    <div className="border-b border-[#E6E8EC] px-5 py-3">
+                    <div className="border-b border-[var(--border)] px-5 py-3">
                         <div className="flex flex-wrap gap-2">
                             {projectFilterOptions.map((option) => (
                                 <button
                                     key={option.value}
                                     type="button"
                                     onClick={() => setProjectFilter(option.value)}
-                                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${projectFilter === option.value ? 'bg-[#1D4ED8] text-white' : 'bg-slate-100 text-[#344054] hover:bg-slate-200'}`}
+                                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${projectFilter === option.value ? 'bg-[var(--primary)] text-white' : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:bg-[var(--border)]'}`}
                                 >
                                     {option.label}
                                 </button>
@@ -860,7 +877,7 @@ export default function DashboardPage() {
                     </div>
 
                     {loadingDashboard ? (
-                        <div className="divide-y divide-[#E6E8EC]" aria-busy="true" aria-label="Loading projects">
+                        <div className="divide-y divide-[var(--border)]" aria-busy="true" aria-label="Loading projects">
                             {[0, 1, 2].map((i) => (
                                 <div key={i} className="flex items-center justify-between gap-4 px-5 py-4">
                                     <div className="space-y-2">
@@ -886,32 +903,38 @@ export default function DashboardPage() {
                             />
                         </div>
                     ) : (
-                        <ol className="divide-y divide-[#E6E8EC]">
+                        <ol className="divide-y divide-[var(--border)]">
                             {visibleProjects.map((project, index) => (
                                 <li key={project.id}>
                                     <button
                                         type="button"
                                         onClick={() => navigate(`/projects/${project.id}`)}
-                                        className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1D4ED8]/40"
+                                        className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-[var(--surface-soft)] focus-visible:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]"
                                     >
-                                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-[#344054]" aria-hidden="true">
+                                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-muted)] text-xs font-semibold text-[var(--text-secondary)]" aria-hidden="true">
                                             {index + 1}
                                         </span>
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-2">
-                                                <p className="truncate text-sm font-semibold text-[#17243A]">{project.name}</p>
+                                                <p className="truncate text-sm font-semibold text-[var(--text)]">{project.name}</p>
                                                 {project.isOverdue && <StatusPill label="Overdue" tone="warning" />}
                                                 {project.actualCost > project.budgetValue && project.budgetValue > 0 && <StatusPill label="Over budget" tone="warning" />}
                                             </div>
-                                            <p className="mt-0.5 truncate text-xs text-[#667085]">
+                                            <p className="mt-0.5 truncate text-xs text-[var(--text-muted)]">
                                                 {project.projectTypeSnapshot || 'General'} • {project.businessModel ? BUSINESS_MODEL_FORM_CONFIG[project.businessModel].contractValueLabel : 'Project value'}
                                             </p>
                                         </div>
                                         <div className="hidden shrink-0 text-right sm:block">
-                                            <p className="text-sm font-semibold tabular-nums text-[#17243A]">{project.projectValue?.value != null ? formatCurrencyValue(project.projectValue.value) : 'N/A'}</p>
-                                            <p className="text-[11px] text-[#667085]">{project.customerOutstanding > 0 ? `${formatCurrencyValue(project.customerOutstanding)} outstanding` : 'Healthy collections'}</p>
+                                            <p className="text-sm font-semibold tabular-nums text-[var(--text)]">{project.projectValue?.value != null ? formatCurrencyValue(project.projectValue.value) : 'N/A'}</p>
+                                            <p className="text-xs text-[var(--text-muted)]">
+                                                {project.customerOutstanding > 0
+                                                    ? `${formatCurrencyValue(project.customerOutstanding)} outstanding`
+                                                    : project.customerCollections > 0
+                                                        ? 'Collections up to date'
+                                                        : 'No billing yet'}
+                                            </p>
                                         </div>
-                                        <ChevronRight className="hidden h-4 w-4 shrink-0 text-slate-400 sm:block" aria-hidden="true" />
+                                        <ChevronRight className="hidden h-4 w-4 shrink-0 text-[var(--text-subtle)] sm:block" aria-hidden="true" />
                                     </button>
                                 </li>
                             ))}
@@ -921,22 +944,22 @@ export default function DashboardPage() {
             </div>
 
             <PremiumCard className="overflow-hidden">
-                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#E6E8EC] px-5 py-4">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
                     <div>
-                        <h2 className="text-base font-semibold text-[#17243A]">Recent transactions</h2>
-                        <p className="mt-1 text-xs text-[#667085]">Actual cash movements from receipts and expenses; investor funding stays separate.</p>
+                        <h2 className="text-base font-semibold text-[var(--text)]">Recent transactions</h2>
+                        <p className="mt-1 text-xs text-[var(--text-muted)]">Cash movements from receipts, expenses and investor contributions.</p>
                     </div>
-                    <button type="button" onClick={() => navigate('/reports')} className="shrink-0 rounded-md text-sm font-medium text-[#1D4ED8] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D4ED8]/40">
+                    <button type="button" onClick={() => navigate('/reports')} className="shrink-0 rounded-md text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
                         View all
                     </button>
                 </div>
 
                 {transactionError && (
-                    <div role="alert" className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">{transactionError}</div>
+                    <div role="alert" className="border-b border-[var(--danger-border)] bg-[var(--danger-soft)] px-5 py-3 text-sm text-[var(--danger-fg)]">{transactionError}</div>
                 )}
 
                 {loadingTransactions ? (
-                    <div className="divide-y divide-[#E6E8EC] px-5 py-2" aria-busy="true" aria-label="Loading transactions">
+                    <div className="divide-y divide-[var(--border)] px-5 py-2" aria-busy="true" aria-label="Loading transactions">
                         {[0, 1, 2, 3].map((i) => (
                             <div key={i} className="flex items-center justify-between gap-4 py-3">
                                 <div className="space-y-2">
@@ -951,8 +974,8 @@ export default function DashboardPage() {
                     <div className="p-5">
                         <EmptyState
                             icon={<Wallet className="h-6 w-6" />}
-                            title="No transactions in this period"
-                            description="Try widening the date range or record a new receipt or expense to populate this feed."
+                            title="No transactions yet"
+                            description="Record a new receipt or expense to populate this feed."
                             action={
                                 <div className="flex flex-wrap items-center justify-center gap-2">
                                     <AppButton variant="secondary" onClick={() => navigate('/reports')}>
@@ -968,7 +991,7 @@ export default function DashboardPage() {
                         />
                     </div>
                 ) : (
-                    <ol className="divide-y divide-[#E6E8EC]">
+                    <ol className="divide-y divide-[var(--border)]">
                         {recentTransactions.map((row) => (
                             <li key={row.id}>
                                 <button
@@ -980,26 +1003,30 @@ export default function DashboardPage() {
                                         }
                                         navigate(row.kind === 'expense' ? '/expenses' : '/reports');
                                     }}
-                                    className="flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1D4ED8]/40"
+                                    className="flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-[var(--surface-soft)] focus-visible:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]"
                                 >
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <p className="truncate text-sm font-semibold text-[#17243A]">{row.reference}</p>
-                                            <StatusPill label={row.kind === 'collection' ? 'Collection' : 'Expense'} tone={row.kind === 'collection' ? 'success' : 'info'} />
+                                            <p className="truncate text-sm font-semibold text-[var(--text)]">{row.reference}</p>
+                                            <StatusPill
+                                                label={row.kind === 'collection' ? 'Collection' : row.kind === 'investment' ? 'Investment' : 'Expense'}
+                                                tone={row.kind === 'collection' ? 'success' : 'info'}
+                                            />
                                             {row.isCompanyLevel && <StatusPill label="Company-level" tone="neutral" />}
+                                            {dateValue(row.occurredOn) > Date.now() && <StatusPill label="Future date" tone="warning" />}
                                         </div>
-                                        <p className="mt-1 truncate text-xs text-[#667085]">
+                                        <p className="mt-1 truncate text-xs text-[var(--text-muted)]">
                                             {row.counterparty} • {row.projectName} • {row.occurredOn ? `${formatDate(row.occurredOn)} ${formatTime(row.occurredOn)}` : 'Date not set'}
                                         </p>
                                     </div>
                                     <div className="flex shrink-0 items-center gap-3">
                                         <div className="text-right">
-                                            <p className={`text-sm font-semibold tabular-nums ${row.kind === 'investment' ? 'text-[#1D4ED8]' : row.kind === 'collection' ? 'text-[#0F766E]' : 'text-[#B42318]'}`}>
+                                            <p className={`text-sm font-semibold tabular-nums ${row.kind === 'investment' ? 'text-[var(--primary)]' : row.kind === 'collection' ? 'text-[var(--success)]' : 'text-[var(--danger-fg)]'}`}>
                                                 {row.kind === 'expense' ? '-' : '+'} {formatINR(row.amount)}
                                             </p>
                                             <StatusPill label={row.kind === 'investment' ? 'Investor' : row.statusLabel} tone={row.statusTone} />
                                         </div>
-                                        <ChevronRight className="hidden h-4 w-4 text-slate-400 sm:block" aria-hidden="true" />
+                                        <ChevronRight className="hidden h-4 w-4 text-[var(--text-subtle)] sm:block" aria-hidden="true" />
                                     </div>
                                 </button>
                             </li>
@@ -1013,17 +1040,16 @@ export default function DashboardPage() {
 
 function SnapshotRow({ icon, label, value }: { icon: ReactNode; label: string; value: string | null }) {
     return (
-        <div className="flex min-h-[44px] items-center justify-between gap-3 rounded-xl border border-[#E6E8EC] bg-slate-50 px-3">
-            <div className="flex min-w-0 items-center gap-2 text-sm text-[#344054]">
+        <div className="flex min-h-[44px] items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3">
+            <div className="flex min-w-0 items-center gap-2 text-sm text-[var(--text-secondary)]">
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center">{icon}</span>
                 <span className="truncate">{label}</span>
             </div>
             {value === null ? (
                 <SkeletonRow className="h-4 w-16" />
             ) : (
-                <span className="shrink-0 text-sm font-semibold tabular-nums text-[#17243A]">{value}</span>
+                <span className="shrink-0 text-sm font-semibold tabular-nums text-[var(--text)]">{value}</span>
             )}
         </div>
     );
 }
-

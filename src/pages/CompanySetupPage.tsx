@@ -105,12 +105,12 @@ function UploadArea({
     return (
         <div>
             <div className="mb-1 flex items-center justify-between gap-2">
-                <p className="text-xs text-slate-500">{hint}</p>
+                <p className="text-xs text-[var(--text-muted)]">{hint}</p>
                 {hasImage ? (
                     <button
                         type="button"
                         onClick={onRemove}
-                        className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-1.5 py-0.5 text-[11px] font-medium text-red-600 transition hover:bg-red-100"
+                        className="inline-flex items-center gap-1 rounded-md border border-[var(--danger-border)] bg-[var(--danger-soft)] px-1.5 py-0.5 text-xs font-medium text-[var(--danger-fg)] transition hover:bg-[var(--danger-soft)]"
                     >
                         <X className="h-3.5 w-3.5" /> Remove
                     </button>
@@ -118,13 +118,13 @@ function UploadArea({
             </div>
 
             {hasImage ? (
-                <div className="relative inline-block rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm">
+                <div className="relative inline-block rounded-lg border border-[var(--border)] bg-white p-1.5 shadow-sm">
                     {variant === 'logo' ? (
-                        <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-[#E2E8F0] bg-white">
+                        <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-white">
                             <img src={currentUrl} alt={label} className="h-full w-full object-contain" />
                         </div>
                     ) : (
-                        <img src={currentUrl} alt={label} className="h-12 max-w-[180px] rounded-md border border-[#E2E8F0] bg-slate-50 object-contain p-1" />
+                        <img src={currentUrl} alt={label} className="h-12 max-w-[180px] rounded-md border border-[var(--border)] bg-[var(--surface-soft)] object-contain p-1" />
                     )}
                     <span className="absolute bottom-1.5 right-1.5 rounded-full bg-[#17243A]/80 px-1 py-0.5 text-[8px] font-medium text-white">
                         {formatBytes(dataUrlBytes(currentUrl ?? ''))}
@@ -135,7 +135,7 @@ function UploadArea({
                     type="button"
                     onClick={() => inputRef.current?.click()}
                     disabled={processing}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[#A7B6D8] bg-[#F8FAFF] px-3 py-3 text-xs font-medium text-[#1D4ED8] transition hover:border-[#1D4ED8] hover:bg-[#EEF4FF] disabled:cursor-not-allowed disabled:opacity-70"
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[#A7B6D8] bg-[var(--surface-soft)] px-3 py-3 text-xs font-medium text-[var(--primary)] transition hover:border-[var(--primary)] hover:bg-[var(--surface-alt)] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                     {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                     {processing ? 'Processing…' : hasImage ? 'Replace file' : 'Choose file'}
@@ -310,8 +310,8 @@ export default function CompanySetupPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F7F9FC]">
-            <header className="bg-[#17243A]">
+        <div className="min-h-screen bg-[var(--surface-soft)]">
+            <header className="bg-[var(--navy)]">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
                     <BrandLogo size="md" onDark />
                     <button onClick={handleSignOut} className="text-sm font-medium text-white/70 transition hover:text-white">
@@ -320,15 +320,15 @@ export default function CompanySetupPage() {
                 </div>
             </header>
 
-            <div className="mx-auto max-w-6xl space-y-3 px-4 py-4 pb-24 sm:px-5 [&_.input-shell]:min-h-[36px] [&_.input-shell]:rounded-lg [&_.input-shell]:px-2.5 [&_.input-shell]:py-1.5 [&_.input-shell]:text-[13px] [&_.surface-card>div:first-child]:px-4 [&_.surface-card>div:first-child]:py-2.5 [&_.surface-card>div:last-child]:p-3 md:[&_.surface-card>div:last-child]:p-4 [&_label]:mb-0.5 [&_label]:text-[11px] [&_label]:tracking-[0.04em]">
+            <div className="mx-auto max-w-6xl space-y-3 px-4 py-4 pb-24 sm:px-5 [&_.input-shell]:min-h-[36px] [&_.input-shell]:rounded-lg [&_.input-shell]:px-2.5 [&_.input-shell]:py-1.5 [&_.input-shell]:text-sm [&_.surface-card>div:first-child]:px-4 [&_.surface-card>div:first-child]:py-2.5 [&_.surface-card>div:last-child]:p-3 md:[&_.surface-card>div:last-child]:p-4 [&_label]:mb-0.5 [&_label]:text-xs [&_label]:tracking-[0.04em]">
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <div>
-                        <h1 className="text-lg font-bold text-[#0B234A]">Company Setup</h1>
-                        <p className="text-[11px] text-slate-500">Complete essentials now and add optional branding and banking later.</p>
+                        <h1 className="text-lg font-bold text-[var(--text)]">Company Setup</h1>
+                        <p className="text-xs text-[var(--text-muted)]">Complete essentials now and add optional branding and banking later.</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {hasUnsavedChanges ? (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+                            <span className="inline-flex items-center gap-1 rounded-full border border-[var(--warning-border)] bg-[var(--warning-soft)] px-2.5 py-1 text-xs font-medium text-[var(--warning-fg)]">
                                 <Info className="h-3.5 w-3.5" /> Unsaved changes
                             </span>
                         ) : null}
@@ -469,71 +469,71 @@ export default function CompanySetupPage() {
                             </Field>
 
                             <Field label="Brand Colors" className="md:col-span-2 lg:col-span-3 xl:col-span-2">
-                                <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-white p-2">
-                                    <div className="flex items-center gap-2 rounded-md border border-slate-100 px-2 py-1.5">
-                                        <span className="text-[10px] font-semibold uppercase tracking-[0.04em] text-slate-500">Primary</span>
+                                <div className="grid grid-cols-2 gap-2 rounded-lg border border-[var(--border)] bg-white p-2">
+                                    <div className="flex items-center gap-2 rounded-md border border-[var(--border)] px-2 py-1.5">
+                                        <span className="text-xs font-semibold uppercase tracking-[0.04em] text-[var(--text-muted)]">Primary</span>
                                         <input
                                             type="color"
                                             value={settings.primaryColor}
                                             onChange={(e) => update({ primaryColor: e.target.value })}
                                             className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
                                         />
-                                        <span className="text-[11px] text-slate-600">{settings.primaryColor}</span>
+                                        <span className="text-xs text-[var(--text-secondary)]">{settings.primaryColor}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 rounded-md border border-slate-100 px-2 py-1.5">
-                                        <span className="text-[10px] font-semibold uppercase tracking-[0.04em] text-slate-500">Accent</span>
+                                    <div className="flex items-center gap-2 rounded-md border border-[var(--border)] px-2 py-1.5">
+                                        <span className="text-xs font-semibold uppercase tracking-[0.04em] text-[var(--text-muted)]">Accent</span>
                                         <input
                                             type="color"
                                             value={settings.secondaryColor}
                                             onChange={(e) => update({ secondaryColor: e.target.value })}
                                             className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
                                         />
-                                        <span className="text-[11px] text-slate-600">{settings.secondaryColor}</span>
+                                        <span className="text-xs text-[var(--text-secondary)]">{settings.secondaryColor}</span>
                                     </div>
                                 </div>
                             </Field>
                         </div>
 
-                        <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm xl:min-h-[380px]">
+                        <div className="rounded-xl border border-[var(--border)] bg-white p-3 shadow-sm xl:min-h-[380px]">
                             <div className="mb-2 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-[#1D4ED8]" />
-                                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-500">Document preview</span>
+                                    <FileText className="h-4 w-4 text-[var(--primary)]" />
+                                    <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">Document preview</span>
                                 </div>
-                                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[8px] font-medium text-emerald-700">Live</span>
+                                <span className="rounded-full bg-[var(--success-soft)] px-2 py-0.5 text-[8px] font-medium text-[var(--success-fg)]">Live</span>
                             </div>
 
-                            <div className="overflow-hidden rounded-lg border border-slate-200">
+                            <div className="overflow-hidden rounded-lg border border-[var(--border)]">
                                 <div className="flex items-center justify-between gap-3 px-3 py-3" style={{ background: settings.primaryColor, color: '#fff' }}>
                                     <div className="flex items-center gap-2.5">
                                         {settings.logoUrl ? (
                                             <img src={settings.logoUrl} alt="Preview logo" className="h-10 w-10 rounded-full border border-white/50 bg-white object-contain p-1" />
                                         ) : (
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/10 text-[10px] font-bold">Logo</div>
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/10 text-xs font-bold">Logo</div>
                                         )}
                                         <div>
                                             <div className="text-sm font-bold">{settings.companyName || 'Your Company Name'}</div>
-                                            <div className="text-[10px] opacity-80">{settings.city || 'City'} • {settings.state}</div>
+                                            <div className="text-xs opacity-80">{settings.city || 'City'} • {settings.state}</div>
                                         </div>
                                     </div>
-                                    <div className="text-right text-[10px] font-medium opacity-90">
+                                    <div className="text-right text-xs font-medium opacity-90">
                                         <div>QTN-001</div>
                                         <div>RCP-001</div>
                                     </div>
                                 </div>
-                                <div className="space-y-1.5 p-3 text-[11px] text-slate-700">
-                                    <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                                        <span className="text-slate-500">Email</span>
+                                <div className="space-y-1.5 p-3 text-xs text-[var(--text-secondary)]">
+                                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-1.5">
+                                        <span className="text-[var(--text-muted)]">Email</span>
                                         <span>{settings.email || 'hello@company.com'}</span>
                                     </div>
-                                    <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                                        <span className="text-slate-500">Phone</span>
+                                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-1.5">
+                                        <span className="text-[var(--text-muted)]">Phone</span>
                                         <span>{settings.mobile || '98765 43210'}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-slate-500">Brand accent</span>
+                                        <span className="text-[var(--text-muted)]">Brand accent</span>
                                         <span className="inline-flex items-center gap-1.5">
-                                            <span className="h-3.5 w-3.5 rounded-full border border-slate-200" style={{ background: settings.secondaryColor }} />
+                                            <span className="h-3.5 w-3.5 rounded-full border border-[var(--border)]" style={{ background: settings.secondaryColor }} />
                                             {settings.secondaryColor || '#F4B72B'}
                                         </span>
                                     </div>
@@ -570,7 +570,7 @@ export default function CompanySetupPage() {
                                             }
                                             setShowBankNumber((prev) => !prev);
                                         }}
-                                        className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded text-slate-500 hover:text-slate-700"
+                                        className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                                         aria-label="Toggle account number visibility"
                                     >
                                         {showBankNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -652,20 +652,20 @@ export default function CompanySetupPage() {
                     </div>
                 </SectionCard>
 
-                <div className="flex flex-wrap items-center justify-between rounded-xl border border-[#DCE7FF] bg-[#F4F8FF] px-3 py-2 text-xs text-slate-600">
-                    <div className="flex items-center gap-2 text-[#0B234A]">
-                        <ShieldCheck className="h-3.5 w-3.5 text-[#1D4ED8]" />
+                <div className="flex flex-wrap items-center justify-between rounded-xl border border-[#DCE7FF] bg-[#F4F8FF] px-3 py-2 text-xs text-[var(--text-secondary)]">
+                    <div className="flex items-center gap-2 text-[var(--text)]">
+                        <ShieldCheck className="h-3.5 w-3.5 text-[var(--primary)]" />
                         Basic company details are saved independently from optional branding, banking, and GST details.
                     </div>
-                    <div className="inline-flex items-center gap-2 text-slate-500">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    <div className="inline-flex items-center gap-2 text-[var(--text-muted)]">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-[var(--success-fg)]" />
                         Save is not blocked by missing logo, signature, GSTIN, PAN, or bank details.
                     </div>
                 </div>
 
                 <div className="sticky bottom-0 z-20 border-t border-[#D9E3FF] bg-white/95 px-3 py-2 shadow-[0_-8px_24px_rgba(23,36,58,0.08)] backdrop-blur-sm">
                     <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-[var(--text-muted)]">
                             {hasUnsavedChanges ? 'You have unsaved changes.' : 'All changes saved.'}
                         </div>
                         <AppButton onClick={handleSave} loading={saving} loadingText="Saving company…" className="min-w-[150px] py-2 text-sm">

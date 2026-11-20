@@ -1,4 +1,4 @@
-﻿import BrandLogo from '@/components/BrandLogo';
+import BrandLogo from '@/components/BrandLogo';
 import { AppButton, StatCard } from '@/components/ui/DesignSystem';
 import {
   ArrowRight, BarChart3, CalendarClock, Check, CheckCircle2, ChevronDown, FileText, FolderKanban,
@@ -99,10 +99,10 @@ const previewNav = [
 ];
 
 const previewMetrics = [
-  { label: 'Projects', value: '24', icon: FolderKanban, tone: 'bg-[#EAF1FF] text-[#1D4ED8]' },
-  { label: 'Active', value: '18', icon: CalendarClock, tone: 'bg-[#EAF1FF] text-[#1D4ED8]' },
-  { label: 'Contract value', value: '₹48.2L', icon: IndianRupee, tone: 'bg-[#ECFDF5] text-[#0F766E]' },
-  { label: 'Supplier cost', value: '₹21.6L', icon: WalletCards, tone: 'bg-[#ECFDF5] text-[#0F766E]' },
+  { label: 'Projects', value: '24', icon: FolderKanban, tone: 'bg-[var(--primary-soft)] text-[var(--primary)]' },
+  { label: 'Active', value: '18', icon: CalendarClock, tone: 'bg-[var(--primary-soft)] text-[var(--primary)]' },
+  { label: 'Contract value', value: '₹48.2L', icon: IndianRupee, tone: 'bg-[var(--success-soft)] text-[var(--success)]' },
+  { label: 'Supplier cost', value: '₹21.6L', icon: WalletCards, tone: 'bg-[var(--success-soft)] text-[var(--success)]' },
 ];
 
 const previewProjects = [
@@ -113,14 +113,14 @@ const previewProjects = [
 ];
 
 const previewFinanceRows = [
-  { label: 'Customer collections', value: '₹26.4L', tone: 'text-[#0F766E]' },
-  { label: 'Project expenses', value: '₹21.6L', tone: 'text-[#17243A]' },
-  { label: 'Supplier outstanding', value: '₹4.8L', tone: 'text-[#1D4ED8]' },
+  { label: 'Customer collections', value: '₹26.4L', tone: 'text-[var(--success)]' },
+  { label: 'Project expenses', value: '₹21.6L', tone: 'text-[var(--text)]' },
+  { label: 'Supplier outstanding', value: '₹4.8L', tone: 'text-[var(--primary)]' },
 ];
 
 const previewStatusStyles: Record<string, string> = {
-  'In progress': 'bg-[#EAF1FF] text-[#1D4ED8]',
-  Completed: 'bg-[#ECFDF5] text-[#0F766E]',
+  'In progress': 'bg-[var(--primary-soft)] text-[var(--primary)]',
+  Completed: 'bg-[var(--success-soft)] text-[var(--success)]',
   'On hold': 'bg-[#EEF2FF] text-[#3730A3]',
 };
 
@@ -131,8 +131,8 @@ const previewTrend = [35, 55, 42, 68, 74, 61, 82];
 function SectionHead({ eyebrow, title }: { eyebrow: string; title: ReactNode }) {
   return (
     <div className="mx-auto max-w-3xl text-center">
-      <p className="text-sm font-semibold text-[#1D4ED8]">{eyebrow}</p>
-      <h2 className="mt-2 text-balance text-3xl font-bold tracking-[-0.04em] text-[#17243A] sm:text-4xl">{title}</h2>
+      <p className="text-sm font-semibold text-[var(--primary)]">{eyebrow}</p>
+      <h2 className="mt-2 text-balance text-3xl font-bold tracking-[-0.04em] text-[var(--text)] sm:text-4xl">{title}</h2>
     </div>
   );
 }
@@ -152,25 +152,25 @@ function DashboardPreviewCard() {
   return (
     <div role="img" aria-label="Illustrative BuilderDocs dashboard preview with sample data" className="w-full">
       <div className="overflow-hidden rounded-2xl border border-[#DDE3EC] bg-white shadow-[0_24px_56px_rgba(23,36,58,0.14)]">
-        <div className="flex items-center gap-3 border-b border-[#E6E8EC] bg-[#F8FAFC] px-4 py-2.5">
+        <div className="flex items-center gap-3 border-b border-[var(--border)] bg-[var(--surface-soft)] px-4 py-2.5">
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[#F8B4B4]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#FCD9A0]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#A7E3C4]" />
           </div>
-          <div className="mx-auto max-w-[16rem] flex-1 truncate rounded-md border border-[#E6E8EC] bg-white px-3 py-1 text-center text-[11px] font-medium text-[#667085]">
+          <div className="mx-auto max-w-[16rem] flex-1 truncate rounded-md border border-[var(--border)] bg-white px-3 py-1 text-center text-xs font-medium text-[var(--text-muted)]">
             app.builderdocs.in/dashboard
           </div>
           <span className="w-12 shrink-0 max-sm:hidden" aria-hidden />
         </div>
 
         <div className="flex">
-          <aside className="hidden w-36 shrink-0 flex-col gap-1 bg-[#17243A] p-3 md:flex">
-            <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold text-[#93B4F5]">Workspace</p>
+          <aside className="hidden w-36 shrink-0 flex-col gap-1 bg-[var(--navy)] p-3 md:flex">
+            <p className="px-2.5 pb-2 pt-1 text-xs font-semibold text-[#93B4F5]">Workspace</p>
             {previewNav.map(({ label, icon: Icon, active }) => (
               <div
                 key={label}
-                className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium ${active ? 'bg-[#1D4ED8] text-white' : 'text-slate-300'}`}
+                className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium ${active ? 'bg-[var(--primary)] text-white' : 'text-slate-300'}`}
               >
                 <Icon className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{label}</span>
@@ -178,13 +178,13 @@ function DashboardPreviewCard() {
             ))}
           </aside>
 
-          <div className="min-w-0 flex-1 bg-[#F8FAFC] p-4 sm:p-5">
+          <div className="min-w-0 flex-1 bg-[var(--surface-soft)] p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-base font-semibold text-[#17243A]">Dashboard</p>
-                <p className="text-xs text-[#667085]">Workspace overview</p>
+                <p className="text-base font-semibold text-[var(--text)]">Dashboard</p>
+                <p className="text-xs text-[var(--text-muted)]">Workspace overview</p>
               </div>
-              <span className="shrink-0 rounded-full border border-[#E6E8EC] bg-white px-2.5 py-1 text-[11px] font-medium text-[#667085]">Sample data</span>
+              <span className="shrink-0 rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-xs font-medium text-[var(--text-muted)]">Sample data</span>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
@@ -194,38 +194,38 @@ function DashboardPreviewCard() {
             </div>
 
             <div className="mt-3 grid gap-3 xl:grid-cols-2">
-              <div className="rounded-xl border border-[#E6E8EC] bg-white p-4">
-                <p className="text-sm font-semibold text-[#17243A]">Recent projects</p>
+              <div className="rounded-xl border border-[var(--border)] bg-white p-4">
+                <p className="text-sm font-semibold text-[var(--text)]">Recent projects</p>
                 <div className="mt-3 space-y-3">
                   {previewProjects.map((project) => (
                     <div key={project.name}>
                       <div className="flex items-center justify-between gap-2">
-                        <span className="min-w-0 truncate text-xs font-medium text-[#17243A]">{project.name}</span>
-                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${previewStatusStyles[project.status]}`}>{project.status}</span>
+                        <span className="min-w-0 truncate text-xs font-medium text-[var(--text)]">{project.name}</span>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${previewStatusStyles[project.status]}`}>{project.status}</span>
                       </div>
                       <div className="mt-1.5 flex items-center gap-2">
-                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#E6E8EC]">
-                          <div className={`h-full rounded-full ${project.status === 'Completed' ? 'bg-[#0F766E]' : 'bg-[#1D4ED8]'}`} style={{ width: `${project.progress}%` }} />
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--border)]">
+                          <div className={`h-full rounded-full ${project.status === 'Completed' ? 'bg-[var(--success)]' : 'bg-[var(--primary)]'}`} style={{ width: `${project.progress}%` }} />
                         </div>
-                        <span className="w-8 shrink-0 text-right text-[11px] tabular-nums text-[#667085]">{project.progress}%</span>
+                        <span className="w-8 shrink-0 text-right text-xs tabular-nums text-[var(--text-muted)]">{project.progress}%</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-xl border border-[#E6E8EC] bg-white p-4">
-                <p className="text-sm font-semibold text-[#17243A]">Finance snapshot</p>
+              <div className="rounded-xl border border-[var(--border)] bg-white p-4">
+                <p className="text-sm font-semibold text-[var(--text)]">Finance snapshot</p>
                 <div className="mt-3 space-y-2">
                   {previewFinanceRows.map((row) => (
-                    <div key={row.label} className="flex items-center justify-between gap-2 rounded-lg border border-[#EEF2F6] bg-[#F8FAFC] px-3 py-2">
-                      <p className="min-w-0 truncate text-[11px] font-medium text-[#667085]">{row.label}</p>
+                    <div key={row.label} className="flex items-center justify-between gap-2 rounded-lg border border-[#EEF2F6] bg-[var(--surface-soft)] px-3 py-2">
+                      <p className="min-w-0 truncate text-xs font-medium text-[var(--text-muted)]">{row.label}</p>
                       <p className={`shrink-0 text-sm font-semibold tabular-nums ${row.tone}`}>{row.value}</p>
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 rounded-lg border border-[#E6E8EC] px-3 py-2.5">
-                  <p className="text-[11px] font-medium text-[#667085]">Collection trend</p>
+                <div className="mt-3 rounded-lg border border-[var(--border)] px-3 py-2.5">
+                  <p className="text-xs font-medium text-[var(--text-muted)]">Collection trend</p>
                   <svg viewBox="0 0 120 40" className="mt-1.5 h-10 w-full" preserveAspectRatio="none" aria-hidden>
                     <defs>
                       <linearGradient id="bd-trend" x1="0" y1="0" x2="0" y2="1">
@@ -292,8 +292,8 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] text-[#17243A]">
-      <header className={`sticky top-0 z-40 border-b bg-white/90 backdrop-blur-xl transition-shadow ${scrolled ? 'border-[#E6E8EC] shadow-[0_6px_24px_rgba(23,36,58,0.06)]' : 'border-transparent'}`}>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <header className={`sticky top-0 z-40 border-b bg-white/90 backdrop-blur-xl transition-shadow ${scrolled ? 'border-[var(--border)] shadow-[0_6px_24px_rgba(23,36,58,0.06)]' : 'border-transparent'}`}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <button type="button" onClick={() => navigate('/')} className="text-left" aria-label="BuilderDocs home">
             <BrandLogo size="sm" onDark={false} />
@@ -305,23 +305,23 @@ export default function LandingPage() {
                 key={item.label}
                 type="button"
                 onClick={() => scrollToSection(item.href)}
-                className={`relative py-1 text-sm font-medium transition hover:text-[#17243A] ${active === item.href ? 'text-[#17243A]' : 'text-[#475467]'}`}
+                className={`relative py-1 text-sm font-medium transition hover:text-[var(--text)] ${active === item.href ? 'text-[var(--text)]' : 'text-[var(--text-secondary)]'}`}
               >
                 {item.label}
-                <span className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-[#1D4ED8] transition-all duration-200 ${active === item.href ? 'w-full' : 'w-0'}`} />
+                <span className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-[var(--primary)] transition-all duration-200 ${active === item.href ? 'w-full' : 'w-0'}`} />
               </button>
             ))}
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <AppButton variant="secondary" onClick={goToLogin} className="border-[#E6E8EC] px-4 py-2.5 text-sm">Sign In</AppButton>
+            <AppButton variant="secondary" onClick={goToLogin} className="border-[var(--border)] px-4 py-2.5 text-sm">Sign In</AppButton>
             <AppButton onClick={goToSignup} className="px-4 py-2.5 text-sm">Get Started Free</AppButton>
           </div>
 
           <button
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#E6E8EC] bg-white text-[#17243A] lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-white text-[var(--text)] lg:hidden"
             aria-label="Toggle navigation menu"
             aria-expanded={mobileMenuOpen}
           >
@@ -330,14 +330,14 @@ export default function LandingPage() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="border-t border-[#E6E8EC] bg-white lg:hidden">
+          <div className="border-t border-[var(--border)] bg-white lg:hidden">
             <nav className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6" aria-label="Mobile navigation">
               {navItems.map((item) => (
                 <button
                   key={item.label}
                   type="button"
                   onClick={() => scrollToSection(item.href)}
-                  className="rounded-xl px-3 py-2 text-left text-sm font-medium text-[#475467] transition hover:bg-[#F5F7FA] hover:text-[#17243A]"
+                  className="rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--text-secondary)] transition hover:bg-[var(--bg)] hover:text-[var(--text)]"
                 >
                   {item.label}
                 </button>
@@ -357,22 +357,22 @@ export default function LandingPage() {
           <div className="bd-grid pointer-events-none absolute inset-0 -z-10" aria-hidden />
           <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12 lg:px-8 lg:py-16">
             <div className="min-w-0">
-              <div className="bd-rise inline-flex items-center gap-2 rounded-full border border-[#D9E7FF] bg-white px-3 py-1.5 text-xs font-semibold text-[#1D4ED8] shadow-sm">
+              <div className="bd-rise inline-flex items-center gap-2 rounded-full border border-[#D9E7FF] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--primary)] shadow-sm">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1D4ED8] opacity-40" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#1D4ED8]" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-40" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
                 </span>
                 Construction business management
               </div>
 
-              <h1 className="bd-rise bd-d1 mt-5 text-4xl font-bold leading-[1.08] tracking-[-0.04em] text-[#17243A] sm:text-5xl xl:text-6xl">
+              <h1 className="bd-rise bd-d1 mt-5 text-4xl font-bold leading-[1.08] tracking-[-0.04em] text-[var(--text)] sm:text-5xl xl:text-6xl">
                 <span className="block">Build Better.</span>
-                <span className="block text-[#1D4ED8]">Manage Smarter.</span>
+                <span className="block text-[var(--primary)]">Manage Smarter.</span>
               </h1>
 
-              <p className="bd-rise bd-d2 mt-4 text-xl font-semibold tracking-[-0.02em] text-[#17243A] sm:text-2xl">Your entire construction business. One workspace.</p>
+              <p className="bd-rise bd-d2 mt-4 text-xl font-semibold tracking-[-0.02em] text-[var(--text)] sm:text-2xl">Your entire construction business. One workspace.</p>
 
-              <p className="bd-rise bd-d2 mt-4 max-w-xl text-base leading-7 text-[#475467] sm:text-lg">
+              <p className="bd-rise bd-d2 mt-4 max-w-xl text-base leading-7 text-[var(--text-secondary)] sm:text-lg">
                 Manage projects, quotations, customers, suppliers, expenses and payments from one centralized platform.
               </p>
 
@@ -388,8 +388,8 @@ export default function LandingPage() {
 
               <ul className="bd-rise bd-d3 mt-5 flex flex-wrap gap-x-5 gap-y-2">
                 {heroBenefits.map((benefit) => (
-                  <li key={benefit} className="flex items-center gap-2 text-sm text-[#475467]">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#0F766E]" />
+                  <li key={benefit} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--success)]" />
                     <span>{benefit}</span>
                   </li>
                 ))}
@@ -404,18 +404,18 @@ export default function LandingPage() {
         </section>
 
         {/* Features */}
-        <section id="features" className="bg-[#F5F7FA] py-12 sm:py-16">
+        <section id="features" className="bg-[var(--bg)] py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <SectionHead eyebrow="Features" title="Everything you need to run your construction business" />
 
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {features.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="rounded-2xl border border-[#E6E8EC] bg-white p-6 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF4FF] text-[#1D4ED8]">
+                <div key={title} className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--surface-alt)] text-[var(--primary)]">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold text-[#17243A]">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#475467]">{description}</p>
+                  <h3 className="mt-4 text-lg font-semibold text-[var(--text)]">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{description}</p>
                 </div>
               ))}
             </div>
@@ -423,15 +423,15 @@ export default function LandingPage() {
         </section>
 
         {/* Business types */}
-        <section className="border-y border-[#E6E8EC] bg-white py-12 sm:py-16">
+        <section className="border-y border-[var(--border)] bg-white py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <SectionHead eyebrow="Built for your construction business" title="Workflows for real construction teams" />
 
             <div className="mt-10 grid gap-4 md:grid-cols-2">
               {businessTypes.map(({ title, workflow }) => (
-                <div key={title} className="rounded-2xl border border-[#E6E8EC] bg-[#F8FAFC] p-5">
-                  <h3 className="text-lg font-semibold text-[#17243A]">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#475467]">{workflow}</p>
+                <div key={title} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)] p-5">
+                  <h3 className="text-lg font-semibold text-[var(--text)]">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{workflow}</p>
                 </div>
               ))}
             </div>
@@ -439,7 +439,7 @@ export default function LandingPage() {
         </section>
 
         {/* How it works */}
-        <section id="how-it-works" className="bg-[#F5F7FA] py-12 sm:py-16">
+        <section id="how-it-works" className="bg-[var(--bg)] py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <SectionHead eyebrow="How it works" title="From quotation to project completion" />
 
@@ -448,11 +448,11 @@ export default function LandingPage() {
               <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
                 {steps.map(({ step, title, description }) => (
                   <div key={step} className="relative">
-                    <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#D9E7FF] bg-white text-sm font-bold text-[#1D4ED8] shadow-sm">
+                    <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#D9E7FF] bg-white text-sm font-bold text-[var(--primary)] shadow-sm">
                       {step}
                     </div>
-                    <h3 className="mt-4 text-lg font-semibold leading-snug text-[#17243A]">{title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-[#475467]">{description}</p>
+                    <h3 className="mt-4 text-lg font-semibold leading-snug text-[var(--text)]">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{description}</p>
                   </div>
                 ))}
               </div>
@@ -461,17 +461,17 @@ export default function LandingPage() {
         </section>
 
         {/* Financial visibility */}
-        <section className="border-y border-[#E6E8EC] bg-white py-12 sm:py-16">
+        <section className="border-y border-[var(--border)] bg-white py-12 sm:py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <SectionHead eyebrow="Financial visibility" title="Know where every rupee is moving" />
 
             <div className="mt-10 grid gap-6 md:grid-cols-2">
-              <div className="rounded-2xl border border-[#E6E8EC] bg-white p-6">
-                <p className="text-sm font-semibold text-[#667085]">Financial blind spots</p>
+              <div className="rounded-2xl border border-[var(--border)] bg-white p-6">
+                <p className="text-sm font-semibold text-[var(--text-muted)]">Financial blind spots</p>
                 <ul className="mt-5 space-y-4">
                   {financeBlindSpots.map((point) => (
-                    <li key={point} className="flex items-center gap-3 text-sm text-[#475467]">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FEE2E2] text-[#B91C1C]">
+                    <li key={point} className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--danger-soft)] text-[var(--danger-fg)]">
                         <X className="h-3.5 w-3.5" />
                       </span>
                       {point}
@@ -481,10 +481,10 @@ export default function LandingPage() {
               </div>
 
               <div className="rounded-2xl border-2 border-[#D9E7FF] bg-[#F8FBFF] p-6">
-                <p className="text-sm font-semibold text-[#1D4ED8]">BuilderDocs financial view</p>
+                <p className="text-sm font-semibold text-[var(--primary)]">BuilderDocs financial view</p>
                 <ul className="mt-5 space-y-4">
                   {financeSolutions.map((point) => (
-                    <li key={point} className="flex items-center gap-3 text-sm text-[#17243A]">
+                    <li key={point} className="flex items-center gap-3 text-sm text-[var(--text)]">
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#DCFCE7] text-[#166534]">
                         <Check className="h-3.5 w-3.5" />
                       </span>
@@ -498,23 +498,23 @@ export default function LandingPage() {
         </section>
 
         {/* Pricing */}
-        <section id="pricing" className="bg-[#F5F7FA] py-12 sm:py-16">
+        <section id="pricing" className="bg-[var(--bg)] py-12 sm:py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <SectionHead eyebrow="Pricing" title="Simple, transparent plans." />
 
             <div className="mt-6 flex justify-center">
-              <div role="group" aria-label="Billing period" className="inline-flex rounded-full border border-[#E6E8EC] bg-white p-1 text-sm font-medium">
+              <div role="group" aria-label="Billing period" className="inline-flex rounded-full border border-[var(--border)] bg-white p-1 text-sm font-medium">
                 {[{ k: false, l: 'Monthly' }, { k: true, l: 'Annual' }].map(({ k, l }) => (
                   <button
                     key={l}
                     type="button"
                     aria-pressed={annual === k}
                     onClick={() => setAnnual(k)}
-                    className={`rounded-full px-4 py-1.5 transition ${annual === k ? 'bg-[#1D4ED8] text-white' : 'text-[#475467] hover:text-[#17243A]'}`}
+                    className={`rounded-full px-4 py-1.5 transition ${annual === k ? 'bg-[var(--primary)] text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text)]'}`}
                   >
                     {l}
                     {k && (
-                      <span className={`ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${annual ? 'bg-white/20 text-white' : 'bg-[#ECFDF5] text-[#0F766E]'}`}>
+                      <span className={`ml-2 rounded-full px-1.5 py-0.5 text-xs font-semibold ${annual ? 'bg-white/20 text-white' : 'bg-[var(--success-soft)] text-[var(--success)]'}`}>
                         Save 17%
                       </span>
                     )}
@@ -524,18 +524,18 @@ export default function LandingPage() {
             </div>
 
             <div className="mt-8 grid gap-6 md:grid-cols-2">
-              <div className="flex flex-col rounded-3xl border border-[#E6E8EC] bg-white p-8">
-                <p className="text-sm font-semibold text-[#667085]">Free</p>
+              <div className="flex flex-col rounded-3xl border border-[var(--border)] bg-white p-8">
+                <p className="text-sm font-semibold text-[var(--text-muted)]">Free</p>
                 <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-[#17243A]">₹0</span>
-                  <span className="text-sm text-[#667085]">/ month</span>
+                  <span className="text-4xl font-bold text-[var(--text)]">₹0</span>
+                  <span className="text-sm text-[var(--text-muted)]">/ month</span>
                 </div>
-                <p className="mt-2 h-5 text-xs text-[#667085]">For trying quotations before you upgrade</p>
+                <p className="mt-2 h-5 text-xs text-[var(--text-muted)]">For trying quotations before you upgrade</p>
 
                 <ul className="mt-6 space-y-3">
                   {freePlanFeatures.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm text-[#475467]">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0F766E]" />
+                    <li key={feature} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--success)]" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -546,15 +546,15 @@ export default function LandingPage() {
 
               <div className="flex flex-col rounded-3xl border-2 border-[#D9E7FF] bg-white p-8 shadow-[0_18px_42px_rgba(29,78,216,0.12)]">
                 <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-semibold text-[#1D4ED8]">Pro</p>
-                  <span className="rounded-full bg-[#EAF1FF] px-2.5 py-1 text-xs font-semibold text-[#1D4ED8]">Recommended</span>
+                  <p className="text-sm font-semibold text-[var(--primary)]">Pro</p>
+                  <span className="rounded-full bg-[var(--primary-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--primary)]">Recommended</span>
                 </div>
 
                 <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-4xl font-bold tabular-nums text-[#17243A]">₹{(annual ? PRO_ANNUAL : PRO_MONTHLY).toLocaleString('en-IN')}</span>
-                  <span className="text-sm text-[#667085]">/ {annual ? 'year' : 'month'}</span>
+                  <span className="text-4xl font-bold tabular-nums text-[var(--text)]">₹{(annual ? PRO_ANNUAL : PRO_MONTHLY).toLocaleString('en-IN')}</span>
+                  <span className="text-sm text-[var(--text-muted)]">/ {annual ? 'year' : 'month'}</span>
                 </div>
-                <p className={`mt-2 h-5 text-xs ${annual ? 'text-[#0F766E]' : 'text-[#667085]'}`}>
+                <p className={`mt-2 h-5 text-xs ${annual ? 'text-[var(--success)]' : 'text-[var(--text-muted)]'}`}>
                   {annual
                     ? `About ₹${PRO_ANNUAL_PER_MONTH} a month. You save ₹${PRO_ANNUAL_SAVING}.`
                     : `Or ₹${PRO_ANNUAL.toLocaleString('en-IN')} / year with annual billing`}
@@ -562,8 +562,8 @@ export default function LandingPage() {
 
                 <ul className="mt-6 space-y-3">
                   {proPlanFeatures.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm text-[#475467]">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0F766E]" />
+                    <li key={feature} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--success)]" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -578,16 +578,16 @@ export default function LandingPage() {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="border-t border-[#E6E8EC] bg-white py-12 sm:py-16">
+        <section id="faq" className="border-t border-[var(--border)] bg-white py-12 sm:py-16">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <SectionHead eyebrow="FAQ" title="Everything you need to know" />
 
-            <div className="mt-8 overflow-hidden rounded-2xl border border-[#E6E8EC] bg-white">
+            <div className="mt-8 overflow-hidden rounded-2xl border border-[var(--border)] bg-white">
               {faqs.map(({ question, answer }, index) => {
                 const isOpen = openFaq === index;
 
                 return (
-                  <div key={question} className={`border-b border-[#E6E8EC] transition-colors last:border-none ${isOpen ? 'bg-[#F8FAFC]' : ''}`}>
+                  <div key={question} className={`border-b border-[var(--border)] transition-colors last:border-none ${isOpen ? 'bg-[var(--surface-soft)]' : ''}`}>
                     <button
                       type="button"
                       onClick={() => setOpenFaq(isOpen ? null : index)}
@@ -595,8 +595,8 @@ export default function LandingPage() {
                       aria-expanded={isOpen}
                       aria-controls={`faq-panel-${index}`}
                     >
-                      <span className="text-base font-medium text-[#17243A]">{question}</span>
-                      <ChevronDown className={`h-5 w-5 shrink-0 text-[#475467] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      <span className="text-base font-medium text-[var(--text)]">{question}</span>
+                      <ChevronDown className={`h-5 w-5 shrink-0 text-[var(--text-secondary)] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     <div
@@ -605,7 +605,7 @@ export default function LandingPage() {
                       className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
                     >
                       <div className="overflow-hidden">
-                        <p className="px-5 pb-5 text-sm leading-6 text-[#475467] sm:px-6">{answer}</p>
+                        <p className="px-5 pb-5 text-sm leading-6 text-[var(--text-secondary)] sm:px-6">{answer}</p>
                       </div>
                     </div>
                   </div>
@@ -616,7 +616,7 @@ export default function LandingPage() {
         </section>
 
         {/* Closing CTA */}
-        <section className="relative overflow-hidden bg-[#17243A] py-14 text-white sm:py-16">
+        <section className="relative overflow-hidden bg-[var(--navy)] py-14 text-white sm:py-16">
           <div className="bd-grid absolute inset-0 opacity-40 [filter:invert(1)_brightness(2)]" aria-hidden />
           <div className="pointer-events-none absolute left-1/2 top-0 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-[#1D4ED8]/30 blur-3xl" aria-hidden />
           <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
@@ -624,7 +624,7 @@ export default function LandingPage() {
             <p className="mx-auto mt-4 max-w-2xl text-base text-slate-300">
               Bring your quotations, projects, expenses, and payment tracking into one organized workspace.
             </p>
-            <AppButton onClick={goToSignup} className="group mt-7 bg-[#1D4ED8] px-6 py-3.5 text-sm hover:bg-[#1E40AF]">
+            <AppButton onClick={goToSignup} className="group mt-7 bg-[var(--primary)] px-6 py-3.5 text-sm hover:bg-[var(--primary-hover)]">
               Get Started Free
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </AppButton>
@@ -632,27 +632,27 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-[#E6E8EC] bg-white">
+      <footer className="border-t border-[var(--border)] bg-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div>
             <BrandLogo size="sm" onDark={false} />
-            <div className="mt-1 text-xs text-[#667085]">Construction business management</div>
+            <div className="mt-1 text-xs text-[var(--text-muted)]">Construction business management</div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-5 text-sm text-[#475467]">
+          <div className="flex flex-wrap items-center gap-5 text-sm text-[var(--text-secondary)]">
             {navItems.map((item) => (
-              <button key={item.label} type="button" onClick={() => scrollToSection(item.href)} className="transition hover:text-[#17243A]">
+              <button key={item.label} type="button" onClick={() => scrollToSection(item.href)} className="transition hover:text-[var(--text)]">
                 {item.label}
               </button>
             ))}
           </div>
 
-          <div className="flex items-center gap-5 text-sm text-[#475467]">
-            <button type="button" onClick={goToLogin} className="transition hover:text-[#17243A]">Sign In</button>
-            <button type="button" onClick={goToSignup} className="transition hover:text-[#17243A]">Get Started</button>
+          <div className="flex items-center gap-5 text-sm text-[var(--text-secondary)]">
+            <button type="button" onClick={goToLogin} className="transition hover:text-[var(--text)]">Sign In</button>
+            <button type="button" onClick={goToSignup} className="transition hover:text-[var(--text)]">Get Started</button>
           </div>
         </div>
-        <div className="border-t border-[#E6E8EC] py-4 text-center text-xs text-[#667085]">
+        <div className="border-t border-[var(--border)] py-4 text-center text-xs text-[var(--text-muted)]">
           © {new Date().getFullYear()} BuilderDocs. All rights reserved.
         </div>
       </footer>

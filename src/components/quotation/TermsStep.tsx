@@ -35,23 +35,23 @@ export default function TermsStep() {
   return (
     <div className="space-y-6">
       <SectionCard title="Terms & Conditions" description="Editable quotation terms."
-        actions={<button onClick={loadDefaults} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#1D4ED8] border border-[#1D4ED8] hover:bg-[#1D4ED8]/5 rounded-lg"><Upload className="w-4 h-4" /> Load Defaults</button>}>
+        actions={<button onClick={loadDefaults} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[var(--primary)] border border-[var(--primary)] hover:bg-[#1D4ED8]/5 rounded-lg"><Upload className="w-4 h-4" /> Load Defaults</button>}>
         <div className="flex justify-end mb-3">
-          <button onClick={addTerm} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg"><Plus className="w-4 h-4" /> Add Term</button>
+          <button onClick={addTerm} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-lg"><Plus className="w-4 h-4" /> Add Term</button>
         </div>
         {quotation.terms.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 text-sm border-2 border-dashed border-slate-200 rounded-lg">No terms added yet. Load defaults or add your own.</div>
+          <div className="text-center py-8 text-[var(--text-muted)] text-sm border-2 border-dashed border-[var(--border)] rounded-lg">No terms added yet. Load defaults or add your own.</div>
         ) : (
           <div className="space-y-3">
             {quotation.terms.map((term, idx) => (
-              <div key={term.id} className="flex items-start gap-2 border border-slate-200 rounded-lg p-3">
+              <div key={term.id} className="flex items-start gap-2 border border-[var(--border)] rounded-lg p-3">
                 <div className="flex flex-col gap-0.5">
                   <button onClick={() => moveTerm(term.id, -1)} disabled={idx === 0} aria-label="Move term up" className="p-0.5 text-slate-400 disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
                   <button onClick={() => moveTerm(term.id, 1)} disabled={idx === quotation.terms.length - 1} aria-label="Move term down" className="p-0.5 text-slate-400 disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
                 </div>
                 <span className="text-sm font-bold text-slate-400 mt-1">{idx + 1}.</span>
                 <TextArea rows={2} value={term.text} onChange={(e) => updateTerm(term.id, { text: e.target.value })} placeholder="Enter the term text…" className="flex-1" />
-                <button onClick={() => deleteTerm(term.id)} aria-label="Delete term" className="p-2 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => deleteTerm(term.id)} aria-label="Delete term" className="p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)] rounded"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
           </div>

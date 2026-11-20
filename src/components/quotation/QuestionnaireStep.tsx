@@ -1,17 +1,24 @@
-﻿import { useState } from 'react';
+﻿import { Field, Select, TextArea } from '@/components/ui/Form';
 import { useBuilder } from '@/context/BuilderContext';
-import { Field, Select, TextArea, SectionCard } from '@/components/ui/Form';
-import { ChevronDown } from 'lucide-react';
-import type { Questionnaire } from '@/lib/models';
 import {
-  Q_STRUCTURE_TYPES, Q_FOUNDATION_TYPES,
-  Q_CEMENT_BRANDS, Q_STEEL_BRANDS, Q_STEEL_GRADES, Q_CONCRETE_MIXES,
-  Q_FLOORING_TYPES, Q_FLOORING_BRANDS, Q_WALL_FINISHES,
+  Q_CEMENT_BRANDS,
+  Q_CONCRETE_MIXES,
+  Q_DOORS_TYPES,
+  Q_FLOORING_BRANDS,
+  Q_FLOORING_TYPES,
+  Q_FOUNDATION_TYPES,
   Q_PAINT_BRANDS, Q_PAINT_TYPES,
-  Q_DOORS_TYPES, Q_WINDOWS_TYPES,
-  Q_WIRING_BRANDS, Q_SWITCHES_BRANDS,
   Q_PLUMBING_PIPES, Q_SANITARY_BRANDS,
+  Q_STEEL_BRANDS, Q_STEEL_GRADES,
+  Q_STRUCTURE_TYPES,
+  Q_SWITCHES_BRANDS,
+  Q_WALL_FINISHES,
+  Q_WINDOWS_TYPES,
+  Q_WIRING_BRANDS,
 } from '@/lib/constants';
+import type { Questionnaire } from '@/lib/models';
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 function Collapsible({
   title, description, children, defaultOpen = false,
@@ -23,18 +30,18 @@ function Collapsible({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-white border border-[var(--border)] rounded-xl shadow-sm overflow-hidden">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-slate-50 transition-colors"
+        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-[var(--surface-soft)] transition-colors"
       >
         <div>
-          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-          {description && <p className="text-sm text-slate-500 mt-0.5">{description}</p>}
+          <h3 className="text-base font-semibold text-[var(--text)]">{title}</h3>
+          {description && <p className="text-sm text-[var(--text-muted)] mt-0.5">{description}</p>}
         </div>
-        <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 text-[var(--text-subtle)] transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && <div className="px-5 pb-5 pt-1 border-t border-slate-100">{children}</div>}
+      {open && <div className="px-5 pb-5 pt-1 border-t border-[var(--border)]">{children}</div>}
     </div>
   );
 }
@@ -49,7 +56,7 @@ export default function QuestionnaireStep() {
   return (
     <div className="space-y-4">
       <div className="bg-[#1D4ED8]/5 border border-[#1D4ED8]/10 rounded-lg p-4">
-        <p className="text-sm text-slate-700">
+        <p className="text-sm text-[var(--text-secondary)]">
           Capture the client's material and finish preferences. These answers feed the
           Material &amp; Work Specifications section of the PDF. Leave any field blank if
           not applicable.
@@ -76,7 +83,7 @@ export default function QuestionnaireStep() {
               value={quotation.questionnaire.floorsPlanned}
               onChange={(e) => update({ floorsPlanned: e.target.value })}
               placeholder="e.g. G+1"
-              className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
+              className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-[var(--text)] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-[var(--primary)]"
             />
           </Field>
           <Field label="Plot Size">
@@ -85,7 +92,7 @@ export default function QuestionnaireStep() {
               value={quotation.questionnaire.plotSize}
               onChange={(e) => update({ plotSize: e.target.value })}
               placeholder="e.g. 30x40 ft"
-              className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
+              className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-[var(--text)] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-[var(--primary)]"
             />
           </Field>
         </div>

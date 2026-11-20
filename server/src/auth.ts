@@ -89,11 +89,19 @@ export function verifyJwt(token: string): Record<string, unknown> | null {
 
 // ─── User queries (public.users) ───────────────────────────────────────────────
 
+// Emails are matched and stored case-insensitively — "A@x.com" and "a@x.com" are the
+// same account. This is the single place that normalization happens; every caller
+// (signup, login, password reset) goes through findUserByEmail/createUser, so there is
+// no other path that could create or look up an email differently.
+export function normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+}
+
 export async function findUserByEmail(email: string) {
     const { data, error } = await supabaseAdmin
         .from('users')
         .select('id, email, password_hash, role, is_active, must_change_password')
-        .eq('email', email)
+        .eq('email', normalizeEmail(email))
         .maybeSingle();
 
     if (error) throw error;
@@ -114,7 +122,7 @@ export async function findUserById(id: string) {
 export async function createUser(email: string, passwordHash: string, mustChangePassword = false) {
     const { data, error } = await supabaseAdmin
         .from('users')
-        .insert({ email, password_hash: passwordHash, must_change_password: mustChangePassword })
+        .insert({ email: normalizeEmail(email), password_hash: passwordHash, must_change_password: mustChangePassword })
         .select('id, email, role, must_change_password')
         .single();
 
@@ -144,14 +152,35 @@ export async function updateUserPassword(userId: string, passwordHash: string, c
 
 export async function createUserProfile(
     userId: string,
-    fullName: string | null
+    fullName: string | null,
+    phone: string | null = null,
 ): Promise<void> {
     const { error } = await supabaseAdmin
         .from('user_profiles')
         .insert({
             user_id: userId,           // FK → public.users.id
             full_name: fullName,
+            phone,
         });
+
+    if (error) throw error;
+}
+
+export async function updateUserProfile(
+    userId: string,
+    fullName: string,
+    phone: string | null,
+): Promise<void> {
+    const { error } = await supabaseAdmin
+        .from('user_profiles')
+        .upsert(
+            {
+                user_id: userId,
+                full_name: fullName,
+                phone,
+            },
+            { onConflict: 'user_id' },
+        );
 
     if (error) throw error;
 }

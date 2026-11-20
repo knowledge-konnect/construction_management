@@ -1,8 +1,24 @@
 export const BUSINESS_MODEL_OPTIONS = [
-    { value: 'contract_construction', label: 'Contract Construction', description: 'Traditional construction contract project execution.' },
-    { value: 'property_development', label: 'Property Development', description: 'Property, land, and site development opportunities.' },
-    { value: 'civil_works_contract', label: 'Civil Works Contract', description: 'Civil works and infrastructure contract delivery.' },
-    { value: 'material_supply', label: 'Material Supply', description: 'Material supply and trade-led procurement workflows.' },
+    {
+        value: 'contract_construction',
+        label: 'Contract Construction',
+        description: 'Construction of residential, commercial and other buildings for customers or landowners under an agreed construction contract.',
+    },
+    {
+        value: 'property_development',
+        label: 'Property Development',
+        description: 'Development of properties for sale, including self-development and joint development agreements (JDA).',
+    },
+    {
+        value: 'civil_works_contract',
+        label: 'Civil Works Contracting',
+        description: 'Execution of civil engineering and infrastructure works under contracts.',
+    },
+    {
+        value: 'material_supply',
+        label: 'Construction Material Supply',
+        description: 'Supply of construction materials to builders, contractors and customers.',
+    },
 ] as const;
 
 export type BusinessModel = (typeof BUSINESS_MODEL_OPTIONS)[number]['value'];

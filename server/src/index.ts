@@ -1,4 +1,6 @@
 ﻿import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import Fastify from 'fastify';
 import {
     comparePassword,
@@ -14,7 +16,7 @@ import {
     supabaseAdmin,
     updateLastLogin,
     updateUserPassword,
-    verifyJwt,
+    updateUserProfile
 } from './auth.js';
 import type { CompanyMembership } from './authz.js';
 import {
@@ -26,7 +28,7 @@ import {
     getPrimaryMembership,
     QUOTATION_ROLES,
     requireAuth,
-    resolveProjectScopedAccess,
+    resolveProjectScopedAccess
 } from './authz.js';
 import {
     BUSINESS_MODEL_VALUES,
@@ -144,6 +146,7 @@ import {
     updatePurchaseOrderForProject,
     updatePurchaseOrderStatus,
 } from './purchaseOrders.js';
+import { buildSavePayload, toSaveError, type SaveQuotationRpcResult } from './quotationPayload.js';
 import {
     createReceiptAllocationForInvoice,
     createReceiptForCompany,
@@ -154,7 +157,7 @@ import {
     listReceiptsForCompany,
     updateReceiptRow,
 } from './receipts.js';
-import { allocateDocumentNumber, peekNextDocumentNumber } from './sequence.js';
+import { peekNextDocumentNumber } from './sequence.js';
 import {
     applySuccessfulPayment,
     cancelSubscription,
@@ -185,15 +188,14 @@ import {
     revokeRefreshToken,
 } from './tokens.js';
 import {
-    isNonEmptyString,
-    validateAddTeamMemberPayload,
+    isNonEmptyString, isValidEmail, validateAddTeamMemberPayload,
     validateCompanyPayload,
     validateCustomerPayload,
     validateFlatBillingPayload,
     validatePartyPayload,
     validateProjectPayload,
     validateQuotationPayload,
-    validateSupplierPayload,
+    validateSupplierPayload
 } from './validation.js';
 
 const app = Fastify({ logger: true, bodyLimit: 10 * 1024 * 1024 }); // 10 MB — safer headroom for base64-encoded logo/signature payloads
@@ -628,57 +630,10 @@ function mapStatusToDb(status: string): string {
     }
 }
 
-function buildDocumentPayload(quotation: any, companyId: string, documentNumber: string, customerId: string | null, partyId: string | null) {
-    const additionalCharges = (quotation.additionalCharges ?? []).reduce((total: number, item: any) => total + Number(item?.amount ?? 0), 0);
-    const taxAmount = quotation.tax?.applicable
-        ? Math.round((Number(quotation.subtotal ?? 0) * Number(quotation.tax?.rate ?? 0)) / 100 * 100) / 100
-        : 0;
-
-    return {
-        id: quotation.id,
-        company_id: companyId,
-        customer_id: customerId,
-        party_id: partyId,
-        document_type: 'Quotation',
-        document_number: documentNumber,
-        status: mapStatusToDb(quotation.status),
-        quotation_date: quotation.quotationDate || null,
-        valid_until: quotation.validUntil || null,
-        project_type_id: quotation.projectTypeId ?? quotation.project_type_id ?? null,
-        project_name: quotation.project?.name ?? '',
-        project_type: quotation.project?.projectType ?? '',
-        project_location: quotation.project?.address ?? '',
-        area_unit_id: quotation.areaUnitId ?? quotation.area_unit_id ?? null,
-        builtup_area: parseNumber(quotation.project?.builtupArea),
-        area_unit: quotation.project?.builtupAreaUnit ?? '',
-        floors: quotation.project?.floors ?? '',
-        subtotal: quotation.subtotal ?? 0,
-        additional_charges: additionalCharges,
-        discount: quotation.discount?.value ?? 0,
-        tax_rate_id: quotation.taxRateId ?? quotation.tax_rate_id ?? null,
-        tax_name: quotation.tax?.name ?? null,
-        tax_percentage: quotation.tax?.rate ?? 0,
-        tax_amount: taxAmount,
-        grand_total: quotation.grandTotal ?? 0,
-        notes: quotation.customerNotes ?? '',
-        created_at: quotation.createdAt ?? new Date().toISOString(),
-        updated_at: quotation.updatedAt ?? new Date().toISOString(),
-    };
-}
-
-function buildTermsPayload(documentId: string, terms: any[]) {
-    return (terms ?? []).map((term: any) => ({
-        id: term.id,
-        document_id: documentId,
-        description: term.text,
-        display_order: term.displayOrder,
-    }));
-}
-
 async function getQuotationRowsForCompany(companyId: string) {
     const { data, error } = await supabaseAdmin
         .from('documents')
-        .select(`*, customers(name,mobile,email,address), document_sections(id,section_name,display_order,document_items(*)), document_specifications(*), document_inclusions(*), document_exclusions(*), payment_schedules(*), document_terms(*)`)
+        .select(`*, customers(name,mobile,email,address,city,state,pincode), document_sections(id,section_name,display_order,document_items(*)), document_specifications(*), document_inclusions(*), document_exclusions(*), payment_schedules(*), document_terms(*)`)
         .eq('company_id', companyId)
         .eq('is_deleted', false)
         .order('updated_at', { ascending: false });
@@ -690,7 +645,7 @@ async function getQuotationRowsForCompany(companyId: string) {
 async function getQuotationRowById(id: string) {
     const { data, error } = await supabaseAdmin
         .from('documents')
-        .select(`*, customers(name,mobile,email,address), document_sections(id,section_name,display_order,document_items(*)), document_specifications(*), document_inclusions(*), document_exclusions(*), payment_schedules(*), document_terms(*)`)
+        .select(`*, customers(name,mobile,email,address,city,state,pincode), document_sections(id,section_name,display_order,document_items(*)), document_specifications(*), document_inclusions(*), document_exclusions(*), payment_schedules(*), document_terms(*)`)
         .eq('id', id)
         .eq('is_deleted', false)
         .maybeSingle();
@@ -699,7 +654,7 @@ async function getQuotationRowById(id: string) {
     return data;
 }
 
-async function saveQuotationToDatabase(quotation: any, companyId: string) {
+async function saveQuotationToDatabase(quotation: any, companyId: string, expectedVersion?: number) {
 
     // The row may already exist (an autosave/draft update). Load it first to
     // find (a) whether it already belongs to a DIFFERENT company — which
@@ -743,10 +698,6 @@ async function saveQuotationToDatabase(quotation: any, companyId: string) {
     }
 
     try {
-        const documentNumber = existingDoc
-            ? existingDoc.document_number
-            : await allocateDocumentNumber(companyId, 'Quotation');
-
         // Resolve/keep-in-sync a customers-table row backing this quotation's
         // embedded customer info, and link it via documents.customer_id. The
         // quotation's own customer fields (used for PDF/display) are left
@@ -818,149 +769,22 @@ async function saveQuotationToDatabase(quotation: any, companyId: string) {
             }
         }
 
-        const documentPayload = buildDocumentPayload(quotation, companyId, documentNumber, customerId, normalizedPartyId);
+        // One database transaction: document number allocation, server-side totals, the
+        // document row and every child table (sections, items, specs, scope, payments,
+        // terms). Any failure rolls the whole save back — no half-saved BOQ and no burned
+        // document number (see migrations/0022 and server/tests/0022_save_quotation.test.sql).
+        // p_expected_version is left NULL until the client carries the version through its
+        // editor state; the function still locks the row, so concurrent saves are serialised.
+        const savePayload = buildSavePayload(quotation, mapStatusToDb(quotation.status), customerId, normalizedPartyId);
+        const { data: saved, error: saveError } = await supabaseAdmin.rpc('save_quotation', {
+            p_company_id: companyId,
+            p_payload: savePayload,
+            p_expected_version: isNewQuotation ? null : (expectedVersion ?? null),
+        });
+        if (saveError) throw toSaveError(saveError);
 
-        const { data: documentData, error: documentError } = await supabaseAdmin
-            .from('documents')
-            .upsert(documentPayload, { onConflict: 'id' })
-            .select('id, document_number')
-            .single();
-
-        if (documentError) {
-            throw new Error(`documents insert failed: ${documentError.message}`);
-        }
-
-        const documentId = documentData?.id ?? quotation.id;
-
-        // Delete existing child rows before re-inserting the current state.
-        // Order matters: document_items reference document_sections via
-        // section_id, so items must be deleted BEFORE their parent sections —
-        // deleting a section while its items still reference it would either
-        // fail on a foreign-key constraint or (if no FK exists) leave orphaned
-        // item rows pointing at a section_id that no longer exists. Every step
-        // checks its error and throws immediately, so a failure here stops the
-        // operation rather than silently continuing to delete/insert further
-        // tables (which is what could previously leave partial/orphaned data).
-        const { data: existingSections, error: existingSectionsError } = await supabaseAdmin
-            .from('document_sections')
-            .select('id')
-            .eq('document_id', documentId);
-        if (existingSectionsError) throw existingSectionsError;
-
-        const existingSectionIds = (existingSections ?? []).map((s: any) => s.id);
-        if (existingSectionIds.length > 0) {
-            const { error } = await supabaseAdmin.from('document_items').delete().in('section_id', existingSectionIds);
-            if (error) throw new Error(`document_items delete failed: ${error.message}`);
-        }
-
-        {
-            const { error } = await supabaseAdmin.from('document_sections').delete().eq('document_id', documentId);
-            if (error) throw new Error(`document_sections delete failed: ${error.message}`);
-        }
-        {
-            const { error } = await supabaseAdmin.from('document_terms').delete().eq('document_id', documentId);
-            if (error) throw new Error(`document_terms delete failed: ${error.message}`);
-        }
-        {
-            const { error } = await supabaseAdmin.from('document_specifications').delete().eq('document_id', documentId);
-            if (error) throw new Error(`document_specifications delete failed: ${error.message}`);
-        }
-        {
-            const { error } = await supabaseAdmin.from('document_inclusions').delete().eq('document_id', documentId);
-            if (error) throw new Error(`document_inclusions delete failed: ${error.message}`);
-        }
-        {
-            const { error } = await supabaseAdmin.from('document_exclusions').delete().eq('document_id', documentId);
-            if (error) throw new Error(`document_exclusions delete failed: ${error.message}`);
-        }
-        {
-            const { error } = await supabaseAdmin.from('payment_schedules').delete().eq('document_id', documentId);
-            if (error) throw new Error(`payment_schedules delete failed: ${error.message}`);
-        }
-
-        const sectionRows = (quotation.boqSections ?? []).map((section: any) => ({
-            id: section.id,
-            document_id: documentId,
-            section_name: section.title,
-            display_order: section.displayOrder,
-        }));
-
-        const itemRows = (quotation.boqSections ?? []).flatMap((section: any) =>
-            (section.items ?? []).map((item: any) => ({
-                id: item.id,
-                section_id: section.id,
-                description: item.description,
-                quantity: item.quantity,
-                unit: item.unit,
-                rate: item.rate,
-                amount: item.amount,
-                display_order: item.displayOrder,
-            })),
-        );
-
-        const specificationRows = (quotation.specifications ?? []).map((spec: any) => ({
-            id: spec.id,
-            document_id: documentId,
-            specification_type: spec.title,
-            description: spec.description,
-            display_order: spec.displayOrder,
-        }));
-
-        const inclusionRows = (quotation.inclusions ?? []).map((description: string) => ({
-            document_id: documentId,
-            description,
-        }));
-
-        const exclusionRows = (quotation.exclusions ?? []).map((description: string) => ({
-            document_id: documentId,
-            description,
-        }));
-
-        const paymentRows = (quotation.paymentSchedule ?? []).map((stage: any) => ({
-            id: stage.id,
-            document_id: documentId,
-            stage_name: stage.name,
-            percentage: stage.percentage,
-            amount: stage.amount,
-            due_date: stage.dueDate || null,
-            status: stage.status ?? null,
-            display_order: stage.displayOrder,
-        }));
-
-        const termRows = buildTermsPayload(documentId, quotation.terms ?? []);
-
-        // Insert order mirrors delete order's dependency: sections BEFORE items,
-        // since items reference section_id.
-        if (sectionRows.length > 0) {
-            const { error } = await supabaseAdmin.from('document_sections').insert(sectionRows);
-            if (error) throw new Error(`document_sections insert failed: ${error.message}`);
-        }
-        if (itemRows.length > 0) {
-            const { error } = await supabaseAdmin.from('document_items').insert(itemRows);
-            if (error) throw new Error(`document_items insert failed: ${error.message}`);
-        }
-        if (specificationRows.length > 0) {
-            const { error } = await supabaseAdmin.from('document_specifications').insert(specificationRows);
-            if (error) throw new Error(`document_specifications insert failed: ${error.message}`);
-        }
-        if (inclusionRows.length > 0) {
-            const { error } = await supabaseAdmin.from('document_inclusions').insert(inclusionRows);
-            if (error) throw new Error(`document_inclusions insert failed: ${error.message}`);
-        }
-        if (exclusionRows.length > 0) {
-            const { error } = await supabaseAdmin.from('document_exclusions').insert(exclusionRows);
-            if (error) throw new Error(`document_exclusions insert failed: ${error.message}`);
-        }
-        if (paymentRows.length > 0) {
-            const { error } = await supabaseAdmin.from('payment_schedules').insert(paymentRows);
-            if (error) throw new Error(`payment_schedules insert failed: ${error.message}`);
-        }
-        if (termRows.length > 0) {
-            const { error } = await supabaseAdmin.from('document_terms').insert(termRows);
-            if (error) throw new Error(`document_terms insert failed: ${error.message}`);
-        }
-
-        return { ok: true, id: documentId, documentNumber: documentData?.document_number ?? documentNumber };
+        const result = saved as SaveQuotationRpcResult;
+        return { ok: true, id: result.id, documentNumber: result.document_number, version: result.version, grandTotal: result.grand_total };
     } catch (err) {
         if (isNewQuotation) {
             // The slot was reserved but this new quotation failed to
@@ -973,9 +797,35 @@ async function saveQuotationToDatabase(quotation: any, companyId: string) {
     }
 }
 
+// Comma-separated list in the server's .env, e.g. ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
+// Falls back to Vite's local dev server so `npm run dev` keeps working out of the box;
+// in production, set ALLOWED_ORIGINS explicitly — the fallback alone would reflect only
+// localhost and reject every real deployed frontend origin.
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+if (!process.env.ALLOWED_ORIGINS) {
+    app.log.warn('ALLOWED_ORIGINS is not set — CORS is only allowing http://localhost:5173. Set it in .env for any other frontend origin.');
+}
+
 await app.register(cors, {
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
+});
+
+await app.register(helmet, {
+    // The API only ever returns JSON — the default CSP is written for serving HTML and
+    // would just add noise to every response header for no benefit here.
+    contentSecurityPolicy: false,
+});
+
+// Global ceiling so no single client can exhaust the server; auth routes below set
+// their own tighter limits on top of this, since they're the ones worth protecting
+// against brute-force/credential-stuffing specifically.
+await app.register(rateLimit, {
+    max: 300,
+    timeWindow: '1 minute',
 });
 
 // ─── Auth helper ───────────────────────────────────────────────────────────────
@@ -986,11 +836,18 @@ await app.register(cors, {
 
 // ─── POST /api/signup ──────────────────────────────────────────────────────────
 
-app.post('/api/signup', async (request, reply) => {
+app.post('/api/signup', { config: { rateLimit: { max: 10, timeWindow: '15 minutes' } } }, async (request, reply) => {
     const body = request.body as { email?: string; password?: string; fullName?: string };
 
     if (!body.email || !body.password) {
         return reply.status(400).send({ error: 'Email and password are required.' });
+    }
+    if (!isValidEmail(body.email)) {
+        return reply.status(400).send({ error: 'Please enter a valid email address.' });
+    }
+    // Same minimum password-reset/confirm already enforces, applied consistently at signup too.
+    if (body.password.length < 8) {
+        return reply.status(400).send({ error: 'Password must be at least 8 characters.' });
     }
 
     try {
@@ -1037,6 +894,7 @@ app.post('/api/signup', async (request, reply) => {
                 id: user.id,
                 email: user.email,
                 fullName: body.fullName ?? null,
+                phone: null,
                 role: user.role,
                 mustChangePassword: false,
             },
@@ -1053,7 +911,7 @@ app.post('/api/signup', async (request, reply) => {
 
 // ─── POST /api/login ───────────────────────────────────────────────────────────
 
-app.post('/api/login', async (request, reply) => {
+app.post('/api/login', { config: { rateLimit: { max: 10, timeWindow: '15 minutes' } } }, async (request, reply) => {
     const body = request.body as { email?: string; password?: string };
 
     if (!body.email || !body.password) {
@@ -1102,6 +960,7 @@ app.post('/api/login', async (request, reply) => {
                 id: user.id,
                 email: user.email,
                 fullName: profile?.full_name ?? null,
+                phone: profile?.phone ?? null,
                 role: user.role,
                 mustChangePassword: !!user.must_change_password,
             },
@@ -1122,7 +981,7 @@ app.post('/api/login', async (request, reply) => {
 // every use, so a leaked-and-reused old token is immediately detectable as
 // invalid the next time the legitimate client tries to use it.
 
-app.post('/api/refresh', async (request, reply) => {
+app.post('/api/refresh', { config: { rateLimit: { max: 10, timeWindow: '15 minutes' } } }, async (request, reply) => {
     const body = request.body as { refreshToken?: string };
     if (!isNonEmptyString(body?.refreshToken)) {
         return reply.status(401).send({ error: 'Refresh token is required.' });
@@ -1171,7 +1030,7 @@ app.post('/api/logout', async (request, reply) => {
 
 // ─── Password reset ─────────────────────────────────────────────────────────────
 
-app.post('/api/password-reset/request', async (request, reply) => {
+app.post('/api/password-reset/request', { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } }, async (request, reply) => {
     const body = request.body as { email?: string };
     if (!isNonEmptyString(body?.email)) {
         return reply.status(400).send({ error: 'Email is required.' });
@@ -1214,7 +1073,7 @@ app.post('/api/password-reset/request', async (request, reply) => {
     }
 });
 
-app.post('/api/password-reset/confirm', async (request, reply) => {
+app.post('/api/password-reset/confirm', { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } }, async (request, reply) => {
     const body = request.body as { token?: string; newPassword?: string };
     if (!isNonEmptyString(body?.token) || !isNonEmptyString(body?.newPassword)) {
         return reply.status(400).send({ error: 'Reset token and new password are required.' });
@@ -1246,18 +1105,10 @@ app.post('/api/password-reset/confirm', async (request, reply) => {
 // ─── GET /api/me ───────────────────────────────────────────────────────────────
 
 app.get('/api/me', async (request, reply) => {
-    const authHeader = request.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
-        return reply.status(401).send({ error: 'Missing or malformed authorization header.' });
-    }
+    const userId = requireAuth(request, reply);
+    if (!userId) return;
 
-    const token = authHeader.slice(7);
-    const payload = verifyJwt(token) as { sub?: string } | null;
-    if (!payload?.sub) {
-        return reply.status(401).send({ error: 'Invalid or expired token.' });
-    }
-
-    const user = await findUserById(payload.sub);
+    const user = await findUserById(userId);
     if (!user) {
         return reply.status(404).send({ error: 'User not found.' });
     }
@@ -1273,10 +1124,73 @@ app.get('/api/me', async (request, reply) => {
             id: user.id,
             email: user.email,
             fullName: profile?.full_name ?? null,
+            phone: profile?.phone ?? null,
             role: user.role,
             mustChangePassword: !!user.must_change_password,
         },
     });
+});
+
+// ─── PATCH /api/me ─────────────────────────────────────────────────────────────
+
+app.patch('/api/me', async (request, reply) => {
+    const userId = requireAuth(request, reply);
+    if (!userId) return;
+
+    const body = (request.body ?? {}) as Record<string, unknown>;
+
+    const rawFullName = body.fullName;
+    if (typeof rawFullName !== 'string') {
+        return reply.status(400).send({ error: 'fullName is required and must be text.' });
+    }
+    const fullName = rawFullName.trim();
+    if (fullName.length < 2 || fullName.length > 100) {
+        return reply.status(400).send({ error: 'fullName must be between 2 and 100 characters.' });
+    }
+
+    let phone: string | null;
+    const rawPhone = body.phone;
+    if (rawPhone === null || rawPhone === undefined) {
+        phone = null;
+    } else if (typeof rawPhone === 'string') {
+        const trimmedPhone = rawPhone.trim();
+        if (!trimmedPhone) {
+            phone = null;
+        } else if (!/^[6-9]\d{9}$/.test(trimmedPhone)) {
+            return reply.status(400).send({ error: 'phone must be empty or a valid 10-digit mobile number starting with 6-9.' });
+        } else {
+            phone = trimmedPhone;
+        }
+    } else {
+        return reply.status(400).send({ error: 'phone must be empty or a valid 10-digit mobile number starting with 6-9.' });
+    }
+
+    try {
+        const user = await findUserById(userId);
+        if (!user) {
+            return reply.status(404).send({ error: 'User not found.' });
+        }
+        if (!user.is_active) {
+            return reply.status(403).send({ error: 'This account has been deactivated.' });
+        }
+
+        // Only fullName + phone are persisted; email/role and any extra fields are ignored.
+        await updateUserProfile(user.id, fullName, phone);
+
+        return reply.send({
+            user: {
+                id: user.id,
+                email: user.email,
+                fullName,
+                phone,
+                role: user.role,
+                mustChangePassword: !!user.must_change_password,
+            },
+        });
+    } catch (err: any) {
+        app.log.error(err, 'Failed to update profile for user %s', userId);
+        return reply.status(500).send({ error: 'Failed to update profile.' });
+    }
 });
 
 // ─── POST /api/change-password ─────────────────────────────────────────────────
@@ -2092,10 +2006,13 @@ app.post('/api/receipts', async (request, reply) => {
     } catch (err: any) {
         app.log.error(err, 'Failed to create receipt');
         const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
-            return reply.status(statusCode).send({ error: err.message });
-        }
-        return reply.status(500).send({ error: 'Failed to save receipt.' });
+        if (statusCode === 403) return reply.status(403).send({ error: err.message || 'Forbidden.' });
+        if (statusCode === 404) return reply.status(404).send({ error: err.message || 'Resource not found.' });
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        const isProduction = process.env.NODE_ENV === 'production';
+        return reply.status(500).send({
+            error: isProduction ? 'Failed to save receipt.' : (err.message || 'Failed to save receipt.'),
+        });
     }
 });
 
@@ -2142,8 +2059,8 @@ app.delete('/api/receipts/:id', async (request, reply) => {
     if (!membership) return;
 
     try {
-        const result = await deleteReceiptRow(id, membership.companyId);
-        return reply.send(result);
+        await deleteReceiptRow(id, membership.companyId);
+        return reply.send({ ok: true });
     } catch (err: any) {
         app.log.error(err, 'Failed to delete receipt');
         const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
@@ -2874,7 +2791,7 @@ app.get('/api/project-expenses', async (request, reply) => {
     try {
         const expenses = await Promise.all(finalProjectIds.map(async (id) => {
             const project = await getProjectRowById(id);
-            if (!project || !projectScope.projectIds.has(id)) return [];
+            if (!project || !projectScope.projectIds.has(id)) return [] as any[];
             return listProjectExpensesForCompany(project.company_id, id);
         }));
         return reply.send({ expenses: expenses.flat() });
@@ -3018,15 +2935,18 @@ app.post('/api/project-receipts', async (request, reply) => {
     }
 
     try {
-        const result = await createProjectReceiptForProject(payload.projectId, membership.companyId, payload, membership.userId);
-        return reply.status(201).send({ receipt: result });
+        const receipt = await createProjectReceiptForProject(payload.projectId, membership.companyId, payload, membership.userId);
+        return reply.status(201).send({ receipt });
     } catch (err: any) {
         app.log.error(err, 'Failed to create project receipt');
         const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-        if (statusCode === 400 || statusCode === 404 || statusCode === 403) {
-            return reply.status(statusCode).send({ error: err.message });
-        }
-        return reply.status(500).send({ error: 'Failed to save client receipt.' });
+        if (statusCode === 403) return reply.status(403).send({ error: err.message || 'Forbidden.' });
+        if (statusCode === 404) return reply.status(404).send({ error: err.message || 'Resource not found.' });
+        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        const isProduction = process.env.NODE_ENV === 'production';
+        return reply.status(500).send({
+            error: isProduction ? 'Failed to save client receipt.' : (err.message || 'Failed to save client receipt.'),
+        });
     }
 });
 
@@ -3052,7 +2972,7 @@ app.put('/api/project-receipts/:id', async (request, reply) => {
     } catch (err: any) {
         app.log.error(err, 'Failed to update project receipt');
         const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-        if (statusCode === 400 || statusCode === 404 || statusCode === 403) {
+        if (statusCode === 400 || statusCode === 403 || statusCode === 404 || statusCode === 409) {
             return reply.status(statusCode).send({ error: err.message });
         }
         return reply.status(500).send({ error: 'Failed to update client receipt.' });
@@ -3079,9 +2999,7 @@ app.delete('/api/project-receipts/:id', async (request, reply) => {
     } catch (err: any) {
         app.log.error(err, 'Failed to delete project receipt');
         const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-        if (statusCode === 400 || statusCode === 404 || statusCode === 403) {
-            return reply.status(statusCode).send({ error: err.message });
-        }
+        if (statusCode === 403 || statusCode === 404) return reply.status(statusCode).send({ error: err.message });
         return reply.status(500).send({ error: 'Failed to delete client receipt.' });
     }
 });
@@ -3374,8 +3292,12 @@ app.post('/api/project-stages', async (request, reply) => {
         return reply.status(201).send({ stage: result });
     } catch (err: any) {
         app.log.error(err, 'Failed to create project stage');
-        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-        if (statusCode === 400 || statusCode === 404 || statusCode === 403) {
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 404 || statusCode === 403 || statusCode === 409) {
             return reply.status(statusCode).send({ error: err.message });
         }
         return reply.status(500).send({ error: 'Failed to save project stage.' });
@@ -3403,8 +3325,12 @@ app.put('/api/project-stages/:id', async (request, reply) => {
         return reply.send({ stage: result });
     } catch (err: any) {
         app.log.error(err, 'Failed to update project stage');
-        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-        if (statusCode === 400 || statusCode === 404 || statusCode === 403) {
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 404 || statusCode === 403 || statusCode === 409) {
             return reply.status(statusCode).send({ error: err.message });
         }
         return reply.status(500).send({ error: 'Failed to update project stage.' });
@@ -3430,8 +3356,12 @@ app.delete('/api/project-stages/:id', async (request, reply) => {
         return reply.send({ ok: true });
     } catch (err: any) {
         app.log.error(err, 'Failed to delete project stage');
-        const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
-        if (statusCode === 400 || statusCode === 404 || statusCode === 403) {
+        const statusCode = typeof err?.statusCode === 'number'
+            ? err.statusCode
+            : err?.code === '23505'
+                ? 409
+                : 500;
+        if (statusCode === 400 || statusCode === 404 || statusCode === 403 || statusCode === 409) {
             return reply.status(statusCode).send({ error: err.message });
         }
         return reply.status(500).send({ error: 'Failed to delete project stage.' });
@@ -4025,7 +3955,7 @@ function mergeMasterRows(rows: any[], table: string, companyId: string): any[] {
 }
 
 app.get('/api/masters/:type', async (request, reply) => {
-    const membership = await authorizeCompany(request, reply, { allowedRoles: COMPANY_READ_ROLES });
+    const membership = await authorizeCompany(request, reply, { allowedRoles: QUOTATION_ROLES });
     if (!membership) return;
 
     const { type } = request.params as { type: string };
@@ -4896,6 +4826,9 @@ app.get('/api/flat-billings/next-sequence', async (request, reply) => {
     const userId = requireAuth(request, reply);
     if (!userId) return;
 
+    // The query-string companyId is frontend-supplied context ONLY — it is
+    // never used directly as a filter. It must first be verified against
+    // company_users, exactly like every other companyId in this file.
     const queryCompanyId = (request.query as { companyId?: string }).companyId;
     const requestedCompanyId = queryCompanyId && queryCompanyId !== 'local-company' ? queryCompanyId : null;
 
@@ -4903,6 +4836,8 @@ app.get('/api/flat-billings/next-sequence', async (request, reply) => {
         const membership = await getPrimaryMembership(userId);
 
         if (!membership) {
+            // No company yet — mirrors the previous 'local-company' behaviour
+            // of starting numbering at 1 rather than treating this as an error.
             return reply.send({ nextSequence: 1 });
         }
 
@@ -4910,6 +4845,9 @@ app.get('/api/flat-billings/next-sequence', async (request, reply) => {
             return reply.status(403).send({ error: 'Forbidden.' });
         }
 
+        // Preview only — does not consume/reserve a number. The real,
+        // race-free allocation happens in allocateDocumentNumber (sequence.ts)
+        // when the document is actually first saved.
         const preview = await peekNextDocumentNumber(membership.companyId, 'BookingReceipt');
         const match = preview.match(/(\d+)$/);
         return reply.send({ nextSequence: match ? Number(match[1]) : 1 });
@@ -4925,7 +4863,7 @@ app.post('/api/quotations', async (request, reply) => {
     const userId = requireAuth(request, reply);
     if (!userId) return;
 
-    const body = request.body as { quotation?: any; companyId?: string };
+    const body = request.body as { quotation?: any; companyId?: string; expectedVersion?: number };
     if (!body?.quotation) {
         return reply.status(400).send({ error: 'Quotation payload is required.' });
     }
@@ -4956,7 +4894,7 @@ app.post('/api/quotations', async (request, reply) => {
             return reply.status(403).send({ error: 'Forbidden.' });
         }
 
-        const result = await saveQuotationToDatabase(body.quotation, membership.companyId);
+        const result = await saveQuotationToDatabase(body.quotation, membership.companyId, body.expectedVersion);
         return reply.send(result);
     } catch (err: any) {
         app.log.error(err, 'Failed to save quotation');
@@ -4965,7 +4903,8 @@ app.post('/api/quotations', async (request, reply) => {
         }
         const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
         if (statusCode === 403) return reply.status(403).send({ error: 'Forbidden.' });
-        if (statusCode === 409) return reply.status(409).send({ error: err.message });
+        if (statusCode === 409) return reply.status(409).send({ error: err.message, code: err.code });
+        if (statusCode === 400) return reply.status(400).send({ error: err.message });
         return reply.status(500).send({ error: 'Failed to save quotation.' });
     }
 });

@@ -127,26 +127,61 @@ export function validateAddTeamMemberPayload(body: any): string | null {
 export function validateFlatBillingPayload(billing: any): string | null {
     if (!billing || typeof billing !== 'object') return 'Receipt payload is required.';
     if (!isNonEmptyString(billing.id)) return 'Receipt id is required.';
+    if (!isNonEmptyString(billing.projectId)) return 'Linked project is required.';
+    if (!isNonEmptyString(billing.projectName)) return 'Project name is required.';
     if (!isNonEmptyString(billing.buyerName)) return 'Buyer name is required.';
+    if (!isNonEmptyString(billing.buyerPhone)) return 'Buyer phone is required.';
+    if (!isValidMobile(billing.buyerPhone)) return 'Buyer phone must be a valid 10-digit number.';
+    if (!isNonEmptyString(billing.flatNo)) return 'Flat number is required.';
+    if (billing.bookingStatus !== undefined && billing.bookingStatus !== null && billing.bookingStatus !== '' && !['Draft', 'Confirmed', 'Cancelled', 'Completed'].includes(String(billing.bookingStatus))) {
+        return 'Invalid booking status.';
+    }
+    if (billing.projectUnitId !== undefined && billing.projectUnitId !== null && billing.projectUnitId !== '' && typeof billing.projectUnitId !== 'string') {
+        return 'Invalid selected project unit.';
+    }
     if (billing.projectId !== undefined && billing.projectId !== null && billing.projectId !== '' && typeof billing.projectId !== 'string') {
         return 'Invalid project selection.';
     }
     if (billing.projectName !== undefined && billing.projectName !== null && billing.projectName !== '' && typeof billing.projectName !== 'string') {
         return 'Invalid project name.';
     }
+    if (billing.buyerAddress !== undefined && billing.buyerAddress !== null && billing.buyerAddress !== '' && typeof billing.buyerAddress !== 'string') {
+        return 'Buyer address must be text.';
+    }
+    if (billing.buyerPanAadhar !== undefined && billing.buyerPanAadhar !== null && billing.buyerPanAadhar !== '' && typeof billing.buyerPanAadhar !== 'string') {
+        return 'Buyer PAN / Aadhar must be text.';
+    }
+    if (billing.blockTower !== undefined && billing.blockTower !== null && billing.blockTower !== '' && typeof billing.blockTower !== 'string') {
+        return 'Block / tower must be text.';
+    }
+    if (billing.floor !== undefined && billing.floor !== null && billing.floor !== '' && typeof billing.floor !== 'string') {
+        return 'Floor must be text.';
+    }
 
-    if (billing.areaSqft !== undefined && billing.areaSqft !== '' && (!isFiniteNumber(Number(billing.areaSqft)) || Number(billing.areaSqft) < 0)) {
-        return 'Invalid area (sq ft).';
-    }
-    if (billing.ratePerSqft !== undefined && billing.ratePerSqft !== '' && (!isFiniteNumber(Number(billing.ratePerSqft)) || Number(billing.ratePerSqft) < 0)) {
-        return 'Invalid rate per sq ft.';
-    }
-    for (const stage of billing.payments ?? []) {
-        if (stage?.amount !== undefined && stage.amount !== '' && (!isFiniteNumber(Number(stage.amount)) || Number(stage.amount) < 0)) {
-            return `Invalid amount for payment stage "${stage?.stage ?? ''}".`;
+    if (billing.areaSqft === undefined || billing.areaSqft === null || billing.areaSqft === '') return 'Area (sq ft) is required.';
+    if (!isFiniteNumber(Number(billing.areaSqft)) || Number(billing.areaSqft) <= 0) return 'Invalid area (sq ft).';
+    if (billing.ratePerSqft === undefined || billing.ratePerSqft === null || billing.ratePerSqft === '') return 'Rate per sq ft is required.';
+    if (!isFiniteNumber(Number(billing.ratePerSqft)) || Number(billing.ratePerSqft) <= 0) return 'Invalid rate per sq ft.';
+    if (billing.date === undefined || billing.date === null || billing.date === '') return 'Receipt date is required.';
+    if (!isValidDateString(billing.date)) return 'Invalid receipt date.';
+
+    if (!Array.isArray(billing.payments)) return 'Payment schedule must be an array.';
+    if (billing.payments.length === 0) return 'Add at least one payment stage.';
+
+    for (const stage of billing.payments) {
+        if (!stage || typeof stage !== 'object') return 'Each payment row must be a valid object.';
+        const stageName = typeof stage.stage === 'string' ? stage.stage.trim() : '';
+        const amountValue = stage.amount;
+        if (stageName && (amountValue === undefined || amountValue === '' || !isFiniteNumber(Number(amountValue)) || Number(amountValue) < 0)) {
+            return `Invalid amount for payment stage "${stageName}".`;
+        }
+        if (!stageName && (amountValue !== undefined && amountValue !== null && amountValue !== '' && Number(amountValue) > 0)) {
+            return 'Payment stages with amounts must have a valid stage name.';
+        }
+        if (stage.dueDate !== undefined && stage.dueDate !== null && stage.dueDate !== '' && !isValidDateString(stage.dueDate)) {
+            return `Invalid due date for payment stage "${stageName || 'unnamed'}".`;
         }
     }
-    if (!isValidDateString(billing.date)) return 'Invalid receipt date.';
 
     return null;
 }

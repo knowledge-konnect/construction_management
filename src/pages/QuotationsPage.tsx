@@ -43,9 +43,9 @@ export default function QuotationsPage() {
 
       {sub?.plan === 'free' && (
         limitReached ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6 px-4 py-3 bg-[var(--warning-soft)] border border-[var(--warning-border)] rounded-lg text-sm text-[var(--warning-fg)]">
             <span>You've reached your 3 quotation limit for this month. Upgrade to BuilderDocs for unlimited quotations.</span>
-            <button onClick={() => navigate('/billing')} className="inline-flex items-center gap-1 font-semibold text-[#1D4ED8] hover:text-[#1E40AF] shrink-0">
+            <button onClick={() => navigate('/billing')} className="inline-flex items-center gap-1 font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)] shrink-0">
               <Zap className="w-3.5 h-3.5" /> Upgrade
             </button>
           </div>

@@ -1,7 +1,9 @@
-// Professional PDF generation — generic construction quotation template.
+// Quotation PDF — brand-themed (per-company logo & colors), width-safe layout.
+// Building blocks live in pdfTheme.ts / pdfKit.ts / pdfFonts.ts and are shared by
+// every PDF type; this file only decides what goes where on a quotation.
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { CompanySettings, Quotation } from './models';
+import type { BOQSection, CompanySettings, Quotation } from './models';
 import {
   amountToWords,
   calcBOQSubtotal,
@@ -11,45 +13,53 @@ import {
   calcPaymentPercentTotal,
   calcSectionSubtotal,
   formatDate,
-  formatINR,
-  formatNumber,
   questionnaireToSpecs,
   sanitizeFilename,
 } from './utils';
+import { createPdfTheme } from './pdfTheme';
+import { loadPdfFonts, registerPdfFonts, type PdfFontData } from './pdfFonts';
+import {
+  CONTENT_W, MARGIN, MAX_Y, PAGE_W, TABLE_MARGIN,
+  addFooters, cardLayout, drawDefaultLogo, drawImageFit, ensureContHeader, ensureSpace, fitText, glueFragileTokens,
+  money, newPage, num2, qtyFmt, sectionHeading, sectionLetter, setFont, unitLabel, wrapShrink,
+  type PdfCtx,
+} from './pdfKit';
 
-// jsPDF Helvetica does not support the ₹ Unicode glyph — use Rs. in PDFs.
-function pdfINR(amount: number): string {
-  return formatINR(amount).replace('₹', 'Rs.');
+// ── Public API ──────────────────────────────────────────────────────────────────
+
+export async function downloadQuotationPDF(q: Quotation, settings: CompanySettings) {
+  const doc = await renderQuotation(q, settings);
+  doc.save(quotationPdfFilename(q));
 }
 
-const NAVY: [number, number, number] = [11, 40, 87];
-const DARK_NAVY: [number, number, number] = [7, 28, 63];
-const GOLD: [number, number, number] = [244, 183, 43];
-const TEXT: [number, number, number] = [11, 35, 74];
-const MUTED: [number, number, number] = [100, 116, 139];
-const LIGHT_BG: [number, number, number] = [247, 249, 252];
-const BORDER: [number, number, number] = [226, 232, 240];
+// Suggested filename for a quotation PDF (used by download/share flows).
+export function quotationPdfFilename(q: Quotation): string {
+  const name = q.customer.name || 'Customer';
+  const num = q.quotationNumber.replace(/[/\\]/g, '-');
+  return `${num}-${sanitizeFilename(name)}.pdf`;
+}
 
-const PAGE_W = 210;
-const PAGE_H = 297;
-const MARGIN = 15;
-const CONTENT_W = PAGE_W - MARGIN * 2;
-const FOOTER_Y = PAGE_H - 18;
-const MAX_Y = FOOTER_Y - 4;   // last usable y before footer
-const CONT_START = 15;             // y to start content after continuation header
-const AUTO_BOTTOM = PAGE_H - FOOTER_Y + 4; // autoTable bottom margin
+// Builds the PDF without saving it — used for the in-app preview modal.
+export async function buildQuotationPDFBlob(q: Quotation, settings: CompanySettings): Promise<Blob> {
+  const doc = await renderQuotation(q, settings);
+  return doc.output('blob');
+}
 
-// ── Image loader ──────────────────────────────────────────────────────────────
-// Fetches a remote image URL and converts it to a base64 data URL for jsPDF.
-// Returns null on any failure so callers fall back gracefully.
+async function renderQuotation(q: Quotation, settings: CompanySettings): Promise<jsPDF> {
+  const [fonts, resolved] = await Promise.all([loadPdfFonts(), resolveSettingsImages(settings)]);
+  return generateQuotationPDF(q, resolved, fonts);
+}
+
+// ── Image loading ───────────────────────────────────────────────────────────────
+
 async function loadImageAsDataUrl(url: string): Promise<string | null> {
   if (!url) return null;
-  if (url.startsWith('data:')) return url; // already base64
+  if (url.startsWith('data:')) return url;
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
     const blob = await res.blob();
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = () => resolve(null);
@@ -60,835 +70,607 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
   }
 }
 
-export async function downloadQuotationPDF(q: Quotation, settings: CompanySettings) {
-  const resolved = await resolveSettingsImages(settings);
-  const doc = generateQuotationPDF(q, resolved);
-  const name = q.customer.name || 'Customer';
-  const num = q.quotationNumber.replace(/[/\\]/g, '-');
-  doc.save(`${num}-${sanitizeFilename(name)}.pdf`);
-}
-
-// Suggested filename for a quotation PDF (used by download/share flows).
-export function quotationPdfFilename(q: Quotation): string {
-  const name = q.customer.name || 'Customer';
-  const num = q.quotationNumber.replace(/[/\\]/g, '-');
-  return `${num}-${sanitizeFilename(name)}.pdf`;
-}
-
-// Pre-load logo and signature images so jsPDF can embed them synchronously.
+// Pre-load logo and signature so jsPDF can embed them synchronously.
 async function resolveSettingsImages(settings: CompanySettings): Promise<CompanySettings> {
-  const [logoData, signatureData] = await Promise.all([
+  const [logo, signature] = await Promise.all([
     settings.logoUrl ? loadImageAsDataUrl(settings.logoUrl) : Promise.resolve(null),
     settings.signatureImage ? loadImageAsDataUrl(settings.signatureImage) : Promise.resolve(null),
   ]);
-  return {
-    ...settings,
-    logoUrl: logoData ?? undefined,
-    signatureImage: signatureData ?? undefined,
-  };
-}
-
-// Builds the PDF without saving it — used for the in-app preview modal.
-export async function buildQuotationPDFBlob(q: Quotation, settings: CompanySettings): Promise<Blob> {
-  const resolved = await resolveSettingsImages(settings);
-  const doc = generateQuotationPDF(q, resolved);
-  return doc.output('blob');
+  return { ...settings, logoUrl: logo ?? undefined, signatureImage: signature ?? undefined };
 }
 
 // Merge manually-added specifications with those generated from the questionnaire.
 function mergedSpecs(q: Quotation): Quotation['specifications'] {
-  const qSpecs = questionnaireToSpecs(q.questionnaire);
-  return [...qSpecs, ...q.specifications];
+  return [...questionnaireToSpecs(q.questionnaire), ...q.specifications];
 }
 
-function generateQuotationPDF(q: Quotation, settings: CompanySettings): jsPDF {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+const splitLines = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean);
+
+// A BOQ row with no quantity and no rate carries text only (engineer's note, remark) —
+// it is shown as a full-width note instead of a "Qty 0 / Rs.0" line item.
+const isNoteItem = (item: BOQSection['items'][number]) =>
+  !(Number(item.quantity) || 0) && !(Number(item.rate) || 0);
+
+// ── Generator ───────────────────────────────────────────────────────────────────
+
+function generateQuotationPDF(q: Quotation, settings: CompanySettings, fonts: PdfFontData | null): jsPDF {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true });
+  if (fonts) registerPdfFonts(doc, fonts);
+  const theme = createPdfTheme(
+    { primaryColor: settings.primaryColor, secondaryColor: settings.secondaryColor },
+    !!fonts,
+  );
+  const ctx: PdfCtx = {
+    doc, theme, headed: new Set(),
+    docRef: q.quotationNumber,
+    companyName: settings.companyName || 'Construction Documents',
+    phone: settings.mobile,
+  };
   const commercial = calcCommercial(q);
 
-  drawCoverPage(doc, q, settings, commercial);
+  // Page 1 — letterhead, parties, cost summary, totals
+  let y = drawLetterhead(ctx, q, settings);
+  y = drawParties(ctx, q, y + 6);
+  y = drawCostSummary(ctx, q, commercial, y + 7);
 
-  let y = CONT_START;
-
-  // BOQ always gets a fresh page
+  // BOQ detail — starts on a fresh page
   if (q.boqSections.length > 0) {
-    doc.addPage();
-    drawContHeader(doc, q, settings);
-    y = drawBOQ(doc, q, settings, y);
+    y = newPage(ctx);
+    y = drawBOQ(ctx, q, y);
   }
 
-  // Specifications (manual + questionnaire-generated)
   const specs = mergedSpecs(q);
-  if (specs.length > 0) {
-    y = gapOrPage(doc, q, settings, y, 30);
-    y = drawSpecs(doc, q, settings, y, specs);
-  }
+  if (specs.length > 0) y = drawSpecs(ctx, ensureSpace(ctx, y + 9, 30), specs);
 
-  // Scope & exclusions (checkbox lists + questionnaire extras)
-  const extraInc = q.questionnaire.extraInclusions.split('\n').map((s) => s.trim()).filter(Boolean);
-  const extraExc = q.questionnaire.extraExclusions.split('\n').map((s) => s.trim()).filter(Boolean);
-  const allInc = [...q.inclusions, ...extraInc];
-  const allExc = [...q.exclusions, ...extraExc];
-  if (allInc.length > 0 || allExc.length > 0) {
-    y = gapOrPage(doc, q, settings, y, 30);
-    y = drawScope(doc, q, settings, y, allInc, allExc);
-  }
+  const allInc = [...q.inclusions, ...splitLines(q.questionnaire.extraInclusions)];
+  const allExc = [...q.exclusions, ...splitLines(q.questionnaire.extraExclusions)];
+  if (allInc.length || allExc.length) y = drawScope(ctx, ensureSpace(ctx, y + 9, 40), allInc, allExc);
 
-  // Payment schedule
-  if (q.paymentSchedule.length > 0) {
-    y = gapOrPage(doc, q, settings, y, 35);
-    y = drawPayment(doc, q, settings, commercial, y);
-  }
+  if (q.paymentSchedule.length > 0) y = drawPayment(ctx, q, commercial.grandTotal, ensureSpace(ctx, y + 9, 45));
 
-  // Commercial summary
-  y = gapOrPage(doc, q, settings, y, 55);
-  y = drawCommercial(doc, q, settings, commercial, y);
+  if (settings.showBankOnPdf) y = drawBank(ctx, settings, y + 8);
 
-  // Terms & conditions
-  if (q.terms.length > 0) {
-    y = gapOrPage(doc, q, settings, y, 25);
-    y = drawTerms(doc, q, settings, y);
-  }
+  if (q.terms.length > 0) y = drawTerms(ctx, q, ensureSpace(ctx, y + 9, 30));
 
-  // Customer notes
-  if (q.customerNotes.trim()) {
-    y = gapOrPage(doc, q, settings, y, 25);
-    y = drawNotes(doc, q, settings, y);
-  }
+  if (q.customerNotes.trim()) y = drawNotes(ctx, q, ensureSpace(ctx, y + 9, 25));
 
-  // Signature / acceptance
-  y = gapOrPage(doc, q, settings, y, 55);
-  drawAcceptance(doc, q, settings, y);
+  drawAcceptance(ctx, settings, ensureSpace(ctx, y + 10, 62));
 
-  addFooters(doc, q, settings);
+  addFooters(ctx, settings.footerText);
   return doc;
 }
 
-// If `needed` mm doesn't fit on current page, add a new page and return CONT_START.
-// Otherwise return y + a visual gap between sections on the same page.
-function gapOrPage(
-  doc: jsPDF,
-  q: Quotation,
-  settings: CompanySettings,
-  y: number,
-  needed: number,
-): number {
-  if (y + needed > MAX_Y) {
-    doc.addPage();
-    drawContHeader(doc, q, settings);
-    return CONT_START;
+// ── Page 1: letterhead ──────────────────────────────────────────────────────────
+
+function drawLetterhead(ctx: PdfCtx, q: Quotation, s: CompanySettings): number {
+  const { doc, theme } = ctx;
+  doc.setFillColor(...theme.primary);
+  doc.rect(0, 0, PAGE_W, 4, 'F');
+  doc.setFillColor(...theme.rule);
+  doc.rect(0, 4, PAGE_W, 1.2, 'F');
+
+  const top = 12;
+  const rightW = 58;
+  const rightX = PAGE_W - MARGIN;
+
+  // Logo (aspect-correct, never stretched — fitted inside a 32x20mm box) or, if the
+  // company hasn't uploaded one, a generic brand-colored placeholder mark so the header
+  // never looks empty.
+  let textX = MARGIN;
+  let logoBottom = top;
+  const logo = s.logoUrl
+    ? drawImageFit(doc, s.logoUrl, MARGIN, top, 32, 20)
+    : drawDefaultLogo(doc, theme.primary, theme.rule, theme.onPrimary, MARGIN, top, 32, 20);
+  if (logo) {
+    textX = MARGIN + logo.w + 6;
+    logoBottom = top + logo.h;
   }
-  return y + 9;
+
+  // Company block — width-limited so it can never reach the right-hand title block
+  const nameW = rightX - rightW - 6 - textX;
+  const name = wrapShrink(doc, theme, ctx.companyName, nameW, 2, 15, 10);
+  setFont(doc, theme, 'bold', name.size, theme.heading);
+  let ly = top + 5;
+  const lineH = name.size * 0.42;
+  name.lines.forEach((line) => { doc.text(line, textX, ly); ly += lineH; });
+  ly -= lineH - 4;
+
+  if (s.tagline) {
+    setFont(doc, theme, 'italic', 8, theme.muted);
+    doc.text(fitText(doc, theme, s.tagline, nameW), textX, ly);
+    ly += 4;
+  }
+  setFont(doc, theme, 'normal', 8, theme.muted);
+  const addr = [s.address, s.city, [s.state, s.pincode].filter(Boolean).join(' - ')].filter(Boolean).join(', ');
+  if (addr) {
+    (doc.splitTextToSize(addr, nameW) as string[]).slice(0, 2).forEach((line) => { doc.text(line, textX, ly); ly += 3.7; });
+  }
+  const contact = [s.mobile && `Ph: ${s.mobile}`, s.email, s.website].filter(Boolean).join('   |   ');
+  if (contact) { doc.text(fitText(doc, theme, contact, nameW), textX, ly); ly += 3.7; }
+  const ids = [s.gstin && `GSTIN: ${s.gstin}`, s.pan && `PAN: ${s.pan}`].filter(Boolean).join('   |   ');
+  if (ids) { doc.text(fitText(doc, theme, ids, nameW), textX, ly); ly += 3.7; }
+
+  // Title block
+  setFont(doc, theme, 'bold', 18, theme.heading);
+  doc.text('QUOTATION', rightX, top + 6, { align: 'right' });
+  setFont(doc, theme, 'bold', 10, theme.text);
+  doc.text(fitText(doc, theme, q.quotationNumber, rightW), rightX, top + 13, { align: 'right' });
+  setFont(doc, theme, 'normal', 8.5, theme.muted);
+  doc.text(`Date: ${formatDate(q.quotationDate)}`, rightX, top + 19, { align: 'right' });
+  doc.text(`Valid until: ${formatDate(q.validUntil)}`, rightX, top + 24, { align: 'right' });
+  const rightBottom = top + 25;
+
+  const bottom = Math.max(logoBottom, ly, rightBottom) + 3;
+  doc.setDrawColor(...theme.border);
+  doc.setLineWidth(0.3);
+  doc.line(MARGIN, bottom, PAGE_W - MARGIN, bottom);
+  return bottom;
 }
 
-// ─── Cover page ────────────────────────────────────────────────────────────────
+// ── Page 1: customer & project cards ────────────────────────────────────────────
 
-function drawCoverPage(
-  doc: jsPDF,
-  q: Quotation,
-  settings: CompanySettings,
-  commercial: ReturnType<typeof calcCommercial>,
-) {
-  // Header band
-  doc.setFillColor(...DARK_NAVY);
-  doc.rect(0, 0, PAGE_W, 40, 'F');
-  doc.setFillColor(...GOLD);
-  doc.rect(0, 40, PAGE_W, 1.5, 'F');
-
-  // Logo — prefer configured logo image; fall back to mark
-  if (settings.logoUrl) {
-    try {
-      const fmt = settings.logoUrl.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
-      doc.addImage(settings.logoUrl, fmt, MARGIN, 12, 14, 14);
-    } catch {
-      drawLogoMark(doc, MARGIN, 19);
-    }
-  } else {
-    drawLogoMark(doc, MARGIN, 19);
-  }
-
-  // Company name + tagline
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  const companyName = (settings.companyName || 'CONSTRUCTION DOCUMENTS').toUpperCase();
-  doc.text(companyName, MARGIN + 14, 24);
-
-  if (settings.tagline) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(...GOLD);
-    doc.text(settings.tagline.toUpperCase(), MARGIN + 14, 30);
-  }
-
-  const idLines = [
-    settings.gstin ? `GSTIN: ${settings.gstin}` : null,
-    settings.pan ? `PAN: ${settings.pan}` : null,
-  ].filter(Boolean);
-  if (idLines.length) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(...GOLD);
-    doc.text(idLines.join('  |  '), PAGE_W - MARGIN, 38, { align: 'right' });
-  }
-
-  // Right: QUOTATION label + number
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text('QUOTATION', PAGE_W - MARGIN, 22, { align: 'right' });
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text(q.quotationNumber, PAGE_W - MARGIN, 30, { align: 'right' });
-
-  let y = 50;
-
-  // ── Left column: Quotation Details + Prepared For ──
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...MUTED);
-  doc.text('QUOTATION DETAILS', MARGIN, y);
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.5);
-  doc.line(MARGIN, y + 1.5, MARGIN + 46, y + 1.5);
-  y += 6;
-
-  const meta: [string, string][] = [
-    ['Quotation No.', q.quotationNumber],
-    ['Quotation Date', formatDate(q.quotationDate)],
-    ['Valid Until', formatDate(q.validUntil)],
-  ];
-  doc.setFontSize(9);
-  meta.forEach(([label, val]) => {
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...MUTED);
-    doc.text(label, MARGIN, y);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...TEXT);
-    doc.text(val || '-', MARGIN + 32, y);
-    y += 5;
-  });
-
-  y += 4;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...MUTED);
-  doc.text('PREPARED FOR', MARGIN, y);
-  doc.setDrawColor(...GOLD);
-  doc.line(MARGIN, y + 1.5, MARGIN + 36, y + 1.5);
-  y += 6;
-
+function drawParties(ctx: PdfCtx, q: Quotation, y: number): number {
   const c = q.customer;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(...TEXT);
-  doc.text(c.name || '-', MARGIN, y);
-  y += 5;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...MUTED);
-  if (c.mobile) { doc.text(`Mobile: ${c.mobile}`, MARGIN, y); y += 4.2; }
-  if (c.email) { doc.text(`Email: ${c.email}`, MARGIN, y); y += 4.2; }
-  const addrParts = [
-    c.address,
-    c.city,
-    [c.state, c.pincode].filter(Boolean).join(' - '),
-  ].filter(Boolean);
-  addrParts.forEach((line) => { doc.text(line, MARGIN, y); y += 4.2; });
-
-  // ── Right column: Project Details ──
-  let py = 50;
-  const px = PAGE_W / 2 + 5;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...MUTED);
-  doc.text('PROJECT DETAILS', px, py);
-  doc.setDrawColor(...GOLD);
-  doc.line(px, py + 1.5, px + 46, py + 1.5);
-  py += 6;
-
   const p = q.project;
-  const pmeta: [string, string][] = [
-    ['Project', p.name || '-'],
-    ['Project Type', p.projectType],
-    ['Built-up Area', p.builtupArea ? `${formatNumber(Number(p.builtupArea))} ${p.builtupAreaUnit}` : '-'],
-    ['Floors', p.floors],
-    ['Location', [p.city, p.state].filter(Boolean).join(', ') || '-'],
-  ];
-  const valW = PAGE_W - MARGIN - px - 33;
-  pmeta.forEach(([label, val]) => {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    doc.text(label, px, py);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...TEXT);
-    const valLines = doc.splitTextToSize(String(val || '-'), valW);
-    doc.text(valLines[0] || '-', px + 33, py);
-    py += 5;
-  });
+  const w = (CONTENT_W - 6) / 2;
 
-  // ── Summary box ──
-  const boxTop = Math.max(y, py) + 7;
-  drawSummaryBox(doc, MARGIN, boxTop, commercial, q);
+  const customerAddr = [c.address, c.city, [c.state, c.pincode].filter(Boolean).join(' - ')].filter(Boolean).join(', ');
+  const left = cardLayout(ctx, w, 'Prepared for', [
+    { value: c.name || '-', strong: true },
+    { label: 'Mobile', value: c.mobile },
+    { label: 'Email', value: c.email },
+    { label: 'Address', value: customerAddr },
+  ]);
 
-  const boxBottom = boxTop + getSummaryBoxH(commercial, q);
+  const location = [p.address, p.city, p.state].filter(Boolean).join(', ');
+  const area = p.builtupArea ? `${qtyFmt(Number(p.builtupArea))} ${p.builtupAreaUnit}`.trim() : '';
+  const right = cardLayout(ctx, w, 'Project details', [
+    { label: 'Project', value: p.name || '-' },
+    { label: 'Project type', value: p.projectType },
+    { label: 'Built-up area', value: area },
+    { label: 'Floors', value: p.floors },
+    { label: 'Location', value: location || '-' },
+  ]);
 
-  // Amount in words
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...MUTED);
-  const wordsLines = doc.splitTextToSize(
-    `Amount in Words: ${amountToWords(commercial.grandTotal)}`,
-    CONTENT_W,
-  );
-  doc.text(wordsLines, MARGIN, boxBottom + 5);
+  const h = Math.max(left.height, right.height);
+  left.draw(MARGIN, y, h);
+  right.draw(MARGIN + w + 6, y, h);
+  return y + h;
+}
 
-  // Compact company contact strip — right below amount-in-words
-  const hasContact = settings.address || settings.mobile || settings.email;
-  if (hasContact) {
-    const stripY = boxBottom + 5 + wordsLines.length * 4.5 + 5;
-    doc.setFillColor(...LIGHT_BG);
-    doc.rect(MARGIN, stripY, CONTENT_W, 14, 'F');
-    doc.setDrawColor(...BORDER);
-    doc.setLineWidth(0.2);
-    doc.rect(MARGIN, stripY, CONTENT_W, 14);
+// ── Page 1: section-wise cost summary + totals ──────────────────────────────────
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(...NAVY);
-    doc.text(settings.companyName || '', MARGIN + 3, stripY + 4.5);
+function drawCostSummary(
+  ctx: PdfCtx, q: Quotation, commercial: ReturnType<typeof calcCommercial>, y: number,
+): number {
+  const { doc, theme } = ctx;
+  const cur = theme.rupee;
 
-    const contactParts: string[] = [];
-    if (settings.mobile) contactParts.push(`Ph: ${settings.mobile}`);
-    if (settings.email) contactParts.push(settings.email);
-    if (settings.website) contactParts.push(settings.website);
-
-    const addrLine = [
-      settings.address,
-      settings.city,
-      [settings.state, settings.pincode].filter(Boolean).join(' - '),
-    ].filter(Boolean).join(', ');
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...MUTED);
-    if (addrLine) doc.text(addrLine, MARGIN + 3, stripY + 8.5);
-    if (contactParts.length) doc.text(contactParts.join('  |  '), MARGIN + 3, stripY + 12.5);
+  if (q.boqSections.length > 0) {
+    y = sectionHeading(ctx, 'Cost summary', y);
+    const R = (content: string) => ({ content, styles: { halign: 'right' as const } });
+    const boq = calcBOQSubtotal(q.boqSections);
+    const compact = q.boqSections.length > 14;
+    autoTable(doc, {
+      startY: y,
+      head: [['Ref', 'Description of work', `Amount (${cur})`, '% of BOQ']],
+      body: q.boqSections.map((s, i) => {
+        const total = calcSectionSubtotal(s);
+        return [
+          sectionLetter(i),
+          s.title,
+          total > 0 ? num2(total) : '—',
+          total > 0 && boq > 0 ? `${((total / boq) * 100).toFixed(1)}%` : '—',
+        ];
+      }),
+      foot: [['', 'BOQ total', R(num2(boq)), R(boq > 0 ? '100%' : '—')]],
+      showFoot: 'lastPage', // the total is only correct once every section row has rendered
+      rowPageBreak: 'avoid',
+      theme: 'striped',
+      styles: { font: theme.font, fontSize: compact ? 8 : 8.5, textColor: theme.text, cellPadding: { top: compact ? 1.3 : 1.9, bottom: compact ? 1.3 : 1.9, left: 2.5, right: 2.5 }, lineWidth: 0 },
+      headStyles: { fillColor: theme.primary, textColor: theme.onPrimary, fontStyle: 'bold' },
+      footStyles: { fillColor: theme.tint, textColor: theme.heading, fontStyle: 'bold', lineColor: theme.border, lineWidth: { top: 0.4, right: 0, bottom: 0, left: 0 } as any },
+      alternateRowStyles: { fillColor: theme.tint },
+      columnStyles: {
+        0: { cellWidth: 14, halign: 'center', fontStyle: 'bold', textColor: theme.heading },
+        1: { cellWidth: 'auto' },
+        2: { cellWidth: 38, halign: 'right' },
+        3: { cellWidth: 22, halign: 'right', textColor: theme.muted },
+      },
+      margin: TABLE_MARGIN,
+      willDrawPage: () => ensureContHeader(ctx),
+    });
+    y = (doc as any).lastAutoTable.finalY + 7;
   }
+
+  return drawTotals(ctx, q, commercial, y);
 }
 
-function getSummaryBoxH(commercial: ReturnType<typeof calcCommercial>, q: Quotation): number {
-  const rowH = 6;
-  let rows = 2; // BOQ base + taxable
-  if (commercial.additionalCharges > 0) rows++;
-  if (commercial.discountAmount > 0) rows++;
-  if (commercial.taxAmount > 0) rows++;
-  return rows * rowH + 10 + 11; // content + padding + grand total bar
-}
+function drawTotals(
+  ctx: PdfCtx, q: Quotation, commercial: ReturnType<typeof calcCommercial>, y: number,
+): number {
+  const { doc, theme } = ctx;
+  const boxW = 92;
+  const x = PAGE_W - MARGIN - boxW;
 
-function drawSummaryBox(
-  doc: jsPDF,
-  x: number,
-  y: number,
-  commercial: ReturnType<typeof calcCommercial>,
-  q: Quotation,
-) {
-  const w = CONTENT_W;
-  const rowH = 6;
-  const rows: [string, string][] = [['BOQ / Base Cost', pdfINR(commercial.boqSubtotal)]];
-  if (commercial.additionalCharges > 0) rows.push(['Additional Charges', pdfINR(commercial.additionalCharges)]);
-  if (commercial.discountAmount > 0) rows.push(['Discount', `- ${pdfINR(commercial.discountAmount)}`]);
-  rows.push(['Taxable Amount', pdfINR(commercial.taxableAmount)]);
-  if (commercial.taxAmount > 0) rows.push([q.tax.name || 'Tax', pdfINR(commercial.taxAmount)]);
+  const rows: [string, string][] = [['BOQ / base cost', money(theme, commercial.boqSubtotal)]];
+  if (commercial.additionalCharges > 0) rows.push(['Additional charges', money(theme, commercial.additionalCharges)]);
+  if (commercial.discountAmount > 0) rows.push(['Discount', `- ${money(theme, commercial.discountAmount)}`]);
+  rows.push(['Taxable amount', money(theme, commercial.taxableAmount)]);
+  if (commercial.taxAmount > 0) {
+    rows.push([`${q.tax.name || 'Tax'} @ ${qtyFmt(q.tax.rate)}%`, money(theme, commercial.taxAmount)]);
+  }
 
-  const boxH = rows.length * rowH + 10;
-  doc.setFillColor(...LIGHT_BG);
-  doc.rect(x, y, w, boxH, 'F');
-  doc.setDrawColor(...BORDER);
-  doc.setLineWidth(0.2);
-  doc.rect(x, y, w, boxH);
+  const rowH = 6.4;
+  const bodyH = rows.length * rowH + 4;
+  const barH = 12;
+  y = ensureSpace(ctx, y, bodyH + barH + 2);
 
-  let cy = y + 7;
-  doc.setFontSize(9.5);
-  rows.forEach(([label, val]) => {
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...MUTED);
+  // Left: amount in words
+  setFont(doc, theme, 'bold', 7.5, theme.heading);
+  doc.text('AMOUNT IN WORDS', MARGIN, y + 4);
+  doc.setDrawColor(...theme.rule);
+  doc.setLineWidth(0.7);
+  doc.line(MARGIN, y + 5.6, MARGIN + 12, y + 5.6);
+  setFont(doc, theme, 'italic', 9, theme.text);
+  doc.text(doc.splitTextToSize(amountToWords(commercial.grandTotal), CONTENT_W - boxW - 10), MARGIN, y + 11);
+
+  // Right: totals
+  doc.setFillColor(...theme.tint);
+  doc.setDrawColor(...theme.border);
+  doc.setLineWidth(0.25);
+  doc.rect(x, y, boxW, bodyH, 'FD');
+  let cy = y + 6;
+  rows.forEach(([label, value]) => {
+    setFont(doc, theme, 'normal', 9.5, theme.muted);
     doc.text(label, x + 4, cy);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...TEXT);
-    doc.text(val, x + w - 4, cy, { align: 'right' });
+    setFont(doc, theme, 'bold', 9.5, theme.text);
+    doc.text(value, x + boxW - 4, cy, { align: 'right' });
     cy += rowH;
   });
-
-  // Grand total bar
-  doc.setFillColor(...NAVY);
-  doc.rect(x, cy, w, 11, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(255, 255, 255);
-  doc.text('GRAND TOTAL', x + 4, cy + 7);
-  doc.setTextColor(...GOLD);
-  doc.text(pdfINR(commercial.grandTotal), x + w - 4, cy + 7, { align: 'right' });
+  const barY = y + bodyH;
+  doc.setFillColor(...theme.primary);
+  doc.rect(x, barY, boxW, barH, 'F');
+  setFont(doc, theme, 'bold', 10, theme.onPrimary);
+  doc.text('GRAND TOTAL', x + 4, barY + 7.8);
+  setFont(doc, theme, 'bold', 12, theme.accentOnPrimary);
+  doc.text(money(theme, commercial.grandTotal), x + boxW - 4, barY + 8, { align: 'right' });
+  return barY + barH;
 }
 
-// ─── Logo mark ─────────────────────────────────────────────────────────────────
+// ── BOQ ─────────────────────────────────────────────────────────────────────────
 
-function drawLogoMark(doc: jsPDF, x: number, y: number) {
-  const s = 10;
-  doc.setFillColor(...GOLD);
-  doc.roundedRect(x, y, s, s, 1.5, 1.5, 'F');
-  doc.setDrawColor(...DARK_NAVY);
-  doc.setLineWidth(0.8);
-  // House / building outline
-  doc.line(x + 2, y + s - 2, x + 2, y + 3.5);
-  doc.line(x + 2, y + 3.5, x + s / 2, y + 1.5);
-  doc.line(x + s / 2, y + 1.5, x + s - 2, y + 3.5);
-  doc.line(x + s - 2, y + 3.5, x + s - 2, y + s - 2);
-  // Door
-  doc.line(x + 3.5, y + s - 2, x + 3.5, y + 5.5);
-  doc.line(x + 3.5, y + 5.5, x + s - 3.5, y + 5.5);
-  doc.line(x + s - 3.5, y + 5.5, x + s - 3.5, y + s - 2);
-  // Base line
-  doc.line(x + 1.5, y + s - 2, x + s - 1.5, y + s - 2);
+const BOQ_COLS = { sno: 12, qty: 17, unit: 16, rate: 27, amount: 30 };
+const BOQ_DESC_W = CONTENT_W - Object.values(BOQ_COLS).reduce((a, b) => a + b, 0);
+
+// Height autoTable will give a row of wrapped text at `size` pt (used to avoid orphaned section titles).
+// Proper layout measurement, not a hardcoded guess: mirrors autoTable's own line-height
+// (1.15x font size, pt→mm via 0.3528) and each row style's real cell padding, so a row's
+// height can be estimated accurately before autoTable ever lays it out. `padding` is the
+// row's top+bottom cellPadding — pass the same numbers used in that row's own styles.
+function measureRowHeight(ctx: PdfCtx, text: string, colW: number, fontSize: number, padding: number): number {
+  setFont(ctx.doc, ctx.theme, 'normal', fontSize);
+  const lines = (ctx.doc.splitTextToSize(text, colW - 4) as string[]).length;
+  return lines * fontSize * 1.15 * 0.3528 + padding;
 }
 
-// ─── BOQ ───────────────────────────────────────────────────────────────────────
+// BOQ row styles, kept in sync with the autoTable config in drawBOQ below — these are
+// the exact font sizes and cellPadding (top+bottom) used there, so the estimate matches
+// what autoTable will actually draw.
+const BOQ_ROW_FONT = 8.5;
+const BOQ_BODY_PAD = 1.9 + 1.9;
+const BOQ_HEAD_TITLE_FONT = 9;
+const BOQ_HEAD_TITLE_PAD = 2.4 + 2.4;
+const BOQ_HEAD_COL_FONT = 7.5;
+const BOQ_HEAD_COL_PAD = 1.8 + 1.8;
+// Small bias toward over-estimating a section's height: costs an occasional extra page
+// break in a borderline case, but never risks the opposite — an under-estimate that lets
+// a section start somewhere it doesn't actually fit, splitting it after all.
+const SECTION_HEIGHT_SAFETY_MARGIN = 2;
 
-function drawBOQ(doc: jsPDF, q: Quotation, settings: CompanySettings, startY: number): number {
-  let y = startY;
+// The full height a section's table would take — title bar + column headers + every
+// item (note rows use the wider no-sno column) + the section-total row, if it has any
+// priced items. Computed from the section's complete item list, not just the first row,
+// so the caller can decide up front whether the WHOLE section fits where the cursor is.
+function measureSectionHeight(ctx: PdfCtx, section: BOQSection, titleText: string): number {
+  const titleH = measureRowHeight(ctx, titleText, CONTENT_W, BOQ_HEAD_TITLE_FONT, BOQ_HEAD_TITLE_PAD);
+  const colHeadH = measureRowHeight(ctx, 'Description', BOQ_DESC_W, BOQ_HEAD_COL_FONT, BOQ_HEAD_COL_PAD);
+  let bodyH = 0;
+  let hasPriced = false;
+  section.items.forEach((item) => {
+    const note = isNoteItem(item);
+    if (!note) hasPriced = true;
+    const colW = note ? CONTENT_W - BOQ_COLS.sno : BOQ_DESC_W;
+    bodyH += measureRowHeight(ctx, glueFragileTokens(item.description), colW, BOQ_ROW_FONT, BOQ_BODY_PAD);
+  });
+  const footH = hasPriced ? measureRowHeight(ctx, 'Section total', BOQ_COLS.amount, BOQ_ROW_FONT, BOQ_BODY_PAD) : 0;
+  return titleH + colHeadH + bodyH + footH + SECTION_HEIGHT_SAFETY_MARGIN;
+}
+
+function drawBOQ(ctx: PdfCtx, q: Quotation, startY: number): number {
+  const { doc, theme } = ctx;
+  const cur = theme.rupee;
+  let y = sectionHeading(ctx, 'Bill of quantities', startY);
 
   q.boqSections.forEach((section, sIdx) => {
-    if (y > MAX_Y - 40) {
-      doc.addPage();
-      drawContHeader(doc, q, settings);
-      y = CONT_START;
+    const letter = sectionLetter(sIdx);
+    const titleText = `${letter}.  ${section.title.toUpperCase()}`;
+
+    // Measure the WHOLE section — heading, column headers, every item, and its total —
+    // before drawing anything. A section that fits in what's left on the page (or on a
+    // fresh one) always stays together; only a section taller than a full page's
+    // content area is ever allowed to span pages (and that's a natural consequence of
+    // starting it on a fresh page and still running out of room — no special-casing
+    // needed for it below).
+    const sectionH = measureSectionHeight(ctx, section, titleText);
+    // The first section always starts right after the "Bill of Quantities" heading,
+    // itself always on a fresh page — so moving section 0 to ANOTHER fresh page would
+    // gain it no extra room, and would strand the already-drawn heading alone on the
+    // page it left behind. Only sections after the first (where the current page may
+    // genuinely have less space left than a full fresh one) can meaningfully benefit
+    // from moving.
+    if (sIdx > 0 && sectionH > MAX_Y - y) {
+      y = newPage(ctx);
     }
 
-    const letter = String.fromCharCode(65 + sIdx);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10.5);
-    doc.setTextColor(...NAVY);
-    doc.text(`${letter}. ${section.title.toUpperCase()}`, MARGIN, y);
-    doc.setDrawColor(...GOLD);
-    doc.setLineWidth(0.5);
-    doc.line(MARGIN, y + 1.5, PAGE_W - MARGIN, y + 1.5);
-    y += 5;
-
-    const rows = section.items.map((item, idx) => [
-      String(idx + 1),
-      item.description,
-      formatNumber(item.quantity),
-      item.unit,
-      pdfINR(item.rate),
-      pdfINR(calcItemAmount(item)),
-    ]);
+    let n = 0;
+    const body = section.items.map((item) => {
+      if (isNoteItem(item)) {
+        return [
+          '',
+          { content: glueFragileTokens(item.description), colSpan: 5, styles: { fontStyle: 'italic', textColor: theme.muted } },
+        ];
+      }
+      n += 1;
+      return [
+        String(n),
+        glueFragileTokens(item.description),
+        qtyFmt(Number(item.quantity)),
+        unitLabel(item.unit),
+        num2(Number(item.rate)),
+        num2(calcItemAmount(item)),
+      ];
+    });
+    const total = calcSectionSubtotal(section);
+    const hasPriced = section.items.some((i) => !isNoteItem(i));
 
     autoTable(doc, {
       startY: y,
-      head: [['S.No', 'Description', 'Qty', 'Unit', 'Rate', 'Amount']],
-      body: rows,
+      head: [
+        [{ content: `${letter}.  ${section.title.toUpperCase()}`, colSpan: 6, styles: { fillColor: theme.primary, textColor: theme.onPrimary, fontStyle: 'bold', fontSize: 9, halign: 'left', cellPadding: { top: 2.4, bottom: 2.4, left: 3, right: 2 } } }],
+        [
+          { content: 'S.No', styles: { halign: 'center' } },
+          { content: 'Description', styles: { halign: 'left' } },
+          { content: 'Qty', styles: { halign: 'right' } },
+          { content: 'Unit', styles: { halign: 'center' } },
+          { content: `Rate (${cur})`, styles: { halign: 'right' } },
+          { content: `Amount (${cur})`, styles: { halign: 'right' } },
+        ],
+      ],
+      body: body as any,
+      foot: hasPriced ? [[{ content: 'Section total', colSpan: 5, styles: { halign: 'right' } }, num2(total)]] : undefined,
       theme: 'grid',
-      headStyles: { fillColor: NAVY, textColor: 255, fontSize: 8.5, fontStyle: 'bold', cellPadding: 2 },
-      bodyStyles: { fontSize: 8.5, textColor: TEXT, lineColor: BORDER, lineWidth: 0.1, cellPadding: 2 },
+      showHead: 'everyPage',
+      // The total must appear exactly once, after the section's last item — not at the
+      // bottom of every page the section happens to span (autoTable's default).
+      showFoot: 'lastPage',
+      rowPageBreak: 'avoid',
+      styles: { font: theme.font, fontSize: 8.5, textColor: theme.text, lineColor: theme.border, lineWidth: 0.15, valign: 'top', overflow: 'linebreak', cellPadding: { top: 1.9, bottom: 1.9, left: 2, right: 2 } },
+      headStyles: { fillColor: theme.tint, textColor: theme.muted, fontStyle: 'bold', fontSize: 7.5, valign: 'middle', cellPadding: { top: 1.8, bottom: 1.8, left: 1.5, right: 1.5 } },
+      footStyles: { fillColor: theme.tint, textColor: theme.heading, fontStyle: 'bold', halign: 'right' },
       columnStyles: {
-        0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 13, halign: 'right' },
-        3: { cellWidth: 15, halign: 'center' },
-        4: { cellWidth: 30, halign: 'right' },
-        5: { cellWidth: 30, halign: 'right' },
+        0: { cellWidth: BOQ_COLS.sno, halign: 'center' },
+        1: { cellWidth: BOQ_DESC_W },
+        2: { cellWidth: BOQ_COLS.qty, halign: 'right' },
+        3: { cellWidth: BOQ_COLS.unit, halign: 'center' },
+        4: { cellWidth: BOQ_COLS.rate, halign: 'right' },
+        5: { cellWidth: BOQ_COLS.amount, halign: 'right' },
       },
-      margin: { left: MARGIN, right: MARGIN, top: CONT_START + 4, bottom: AUTO_BOTTOM },
-      willDrawPage: () => { drawContHeader(doc, q, settings); },
+      margin: TABLE_MARGIN,
+      willDrawPage: () => ensureContHeader(ctx),
+      // Only reached when a section is genuinely taller than a full page (the measured-
+      // height check above already keeps every other section on one page) — marks the
+      // repeated heading on each later page as a continuation, not a second section.
+      // willDrawCell (not didParseCell) because the head row is one shared cell model
+      // redrawn once per physical page it lands on; didParseCell runs once at parse
+      // time, before pagination exists, so it can't tell pages apart. data.pageNumber
+      // here is relative to THIS table's own pagination (1 for its first page, 2 for
+      // its second, ...), not the absolute document page — so > 1 is "a later page of
+      // this same section", regardless of which document page that actually is.
+      willDrawCell: (data: any) => {
+        if (data.row.section === 'head' && data.row.index === 0) {
+          data.cell.text = [data.pageNumber > 1 ? `${titleText}  (CONTINUED)` : titleText];
+        }
+      },
     });
-
-    y = (doc as any).lastAutoTable.finalY + 3;
-
-    // Section total — right-aligned below the table
-    if (y > MAX_Y - 8) {
-      doc.addPage();
-      drawContHeader(doc, q, settings);
-      y = CONT_START;
-    }
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...NAVY);
-    doc.text(`Section Total: ${pdfINR(calcSectionSubtotal(section))}`, PAGE_W - MARGIN, y, { align: 'right' });
-    y += 7;
+    y = (doc as any).lastAutoTable.finalY + 6;
   });
 
-  // BOQ Grand Total bar
-  if (y > MAX_Y - 12) {
-    doc.addPage();
-    drawContHeader(doc, q, settings);
-    y = CONT_START;
-  }
-  doc.setFillColor(...NAVY);
-  doc.rect(MARGIN, y, CONTENT_W, 10, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(255, 255, 255);
-  doc.text('BOQ GRAND TOTAL', MARGIN + 3, y + 7);
-  doc.setTextColor(...GOLD);
-  doc.text(pdfINR(calcBOQSubtotal(q.boqSections)), PAGE_W - MARGIN - 3, y + 7, { align: 'right' });
-
-  return y + 10;
+  // Grand total bar — never orphaned from the last section
+  y = ensureSpace(ctx, y, 14);
+  doc.setFillColor(...theme.primary);
+  doc.rect(MARGIN, y, CONTENT_W, 11, 'F');
+  setFont(doc, theme, 'bold', 10, theme.onPrimary);
+  doc.text('BOQ GRAND TOTAL', MARGIN + 4, y + 7.3);
+  setFont(doc, theme, 'bold', 11, theme.accentOnPrimary);
+  doc.text(money(theme, calcBOQSubtotal(q.boqSections)), PAGE_W - MARGIN - 4, y + 7.5, { align: 'right' });
+  return y + 11;
 }
 
-// ─── Specifications ────────────────────────────────────────────────────────────
+// ── Text sections ───────────────────────────────────────────────────────────────
 
-// Not exported — only drawSpecs
-function drawSpecs(doc: jsPDF, q: Quotation, settings: CompanySettings, y: number, specs: Quotation['specifications']): number {
-  y = sectionHeading(doc, 'MATERIAL & WORK SPECIFICATIONS', y);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...TEXT);
+function drawSpecs(ctx: PdfCtx, y: number, specs: Quotation['specifications']): number {
+  const { doc, theme } = ctx;
+  y = sectionHeading(ctx, 'Material & work specifications', y);
   specs.forEach((s) => {
     if (s.title) {
-      if (y > MAX_Y - 12) { y = pageBreak(doc, q, settings); }
-      doc.setFont('helvetica', 'bold');
+      y = ensureSpace(ctx, y, 14);
+      setFont(doc, theme, 'bold', 9, theme.heading);
       doc.text(s.title, MARGIN, y);
-      y += 4.5;
+      y += 4.6;
     }
-    doc.setFont('helvetica', 'normal');
-    const lines = doc.splitTextToSize(s.description, CONTENT_W);
-    lines.forEach((line: string) => {
-      if (y > MAX_Y - 8) { y = pageBreak(doc, q, settings); }
+    setFont(doc, theme, 'normal', 9, theme.text);
+    (doc.splitTextToSize(glueFragileTokens(s.description), CONTENT_W) as string[]).forEach((line) => {
+      y = ensureSpace(ctx, y, 6);
       doc.text(line, MARGIN, y);
       y += 4.5;
     });
-    y += 2;
+    y += 2.5;
   });
   return y;
 }
 
-// ─── Scope & Exclusions ────────────────────────────────────────────────────────
+// Inclusions and exclusions side by side — halves the vertical space and aligns the rows.
+function drawScope(ctx: PdfCtx, y0: number, inc: string[], exc: string[]): number {
+  const { doc, theme } = ctx;
+  let y = sectionHeading(ctx, 'Scope of work', y0);
+  const both = inc.length > 0 && exc.length > 0;
+  const rows = Math.max(inc.length, exc.length);
+  const label = (list: string[], i: number) => (list[i] ? `${i + 1}.  ${list[i]}` : '');
 
-function drawScope(doc: jsPDF, q: Quotation, settings: CompanySettings, y: number, inclusions: string[], exclusions: string[]): number {
-  if (inclusions.length > 0) {
-    y = sectionHeading(doc, 'SCOPE OF WORK / INCLUSIONS', y);
-    y = drawListItems(doc, q, settings, inclusions, y);
-    if (exclusions.length > 0) y += 6;
-  }
-
-  if (exclusions.length > 0) {
-    if (y > MAX_Y - 20) { y = pageBreak(doc, q, settings); }
-    y = sectionHeading(doc, 'EXCLUSIONS / CLIENT SCOPE', y);
-    y = drawListItems(doc, q, settings, exclusions, y);
-  }
-
-  return y;
-}
-
-function drawListItems(
-  doc: jsPDF,
-  q: Quotation,
-  settings: CompanySettings,
-  items: string[],
-  y: number,
-): number {
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...TEXT);
-  items.forEach((item, i) => {
-    const lines = doc.splitTextToSize(`${i + 1}. ${item}`, CONTENT_W - 4);
-    lines.forEach((line: string) => {
-      if (y > MAX_Y - 8) { y = pageBreak(doc, q, settings); }
-      doc.text(line, MARGIN, y);
-      y += 4.5;
-    });
-    y += 1;
-  });
-  return y;
-}
-
-// ─── Payment Schedule ──────────────────────────────────────────────────────────
-
-function drawPayment(
-  doc: jsPDF,
-  q: Quotation,
-  settings: CompanySettings,
-  commercial: ReturnType<typeof calcCommercial>,
-  y: number,
-): number {
-  y = sectionHeading(doc, 'PAYMENT SCHEDULE', y);
-
-  const rows = q.paymentSchedule.map((stage, i) => [
-    String(i + 1),
-    stage.name,
-    `${formatNumber(stage.percentage)}%`,
-    pdfINR(calcPaymentAmount(stage, commercial.grandTotal)),
-    stage.notes || '',
-  ]);
-  const totalAmt = q.paymentSchedule.reduce(
-    (s, st) => s + calcPaymentAmount(st, commercial.grandTotal),
-    0,
-  );
+  const head = both
+    ? [['Inclusions', 'Exclusions / client scope']]
+    : [[inc.length ? 'Inclusions' : 'Exclusions / client scope']];
+  const body = Array.from({ length: rows }, (_, i) =>
+    both ? [label(inc, i), label(exc, i)] : [label(inc.length ? inc : exc, i)]);
 
   autoTable(doc, {
     startY: y,
-    head: [['#', 'Stage', 'Percentage', 'Payable Amount', 'Notes']],
-    body: rows,
-    foot: [['', 'Total', `${formatNumber(calcPaymentPercentTotal(q.paymentSchedule))}%`, pdfINR(totalAmt), '']],
+    head,
+    body,
     theme: 'grid',
-    headStyles: { fillColor: NAVY, textColor: 255, fontSize: 8.5, fontStyle: 'bold', cellPadding: 2 },
-    footStyles: { fillColor: LIGHT_BG, textColor: NAVY, fontStyle: 'bold', fontSize: 8.5 },
-    bodyStyles: { fontSize: 8.5, textColor: TEXT, lineColor: BORDER, cellPadding: 2 },
+    styles: { font: theme.font, fontSize: 8.5, textColor: theme.text, lineColor: theme.border, lineWidth: 0.15, cellPadding: { top: 1.6, bottom: 1.6, left: 2.5, right: 2.5 }, valign: 'top' },
+    headStyles: { fillColor: theme.primary, textColor: theme.onPrimary, fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [255, 255, 255] },
+    rowPageBreak: 'avoid',
+    margin: TABLE_MARGIN,
+    willDrawPage: () => ensureContHeader(ctx),
+  });
+  return (doc as any).lastAutoTable.finalY;
+}
+
+function drawPayment(ctx: PdfCtx, q: Quotation, grandTotal: number, y: number): number {
+  const { doc, theme } = ctx;
+  y = sectionHeading(ctx, 'Payment schedule', y);
+  const totalAmt = q.paymentSchedule.reduce((s, st) => s + calcPaymentAmount(st, grandTotal), 0);
+
+  autoTable(doc, {
+    startY: y,
+    head: [['#', 'Stage', '%', `Payable amount (${theme.rupee})`, 'Notes']],
+    body: q.paymentSchedule.map((st, i) => [
+      String(i + 1), st.name, `${qtyFmt(st.percentage)}%`, num2(calcPaymentAmount(st, grandTotal)), st.notes || '',
+    ]),
+    foot: [['', 'Total', `${qtyFmt(calcPaymentPercentTotal(q.paymentSchedule))}%`, num2(totalAmt), '']],
+    showFoot: 'lastPage',
+    theme: 'grid',
+    styles: { font: theme.font, fontSize: 8.5, textColor: theme.text, lineColor: theme.border, lineWidth: 0.15, cellPadding: { top: 1.9, bottom: 1.9, left: 2, right: 2 }, valign: 'top' },
+    headStyles: { fillColor: theme.primary, textColor: theme.onPrimary, fontStyle: 'bold' },
+    footStyles: { fillColor: theme.tint, textColor: theme.heading, fontStyle: 'bold' },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      2: { cellWidth: 25, halign: 'right' },
-      3: { cellWidth: 32, halign: 'right' },
+      2: { cellWidth: 16, halign: 'right' },
+      3: { cellWidth: 40, halign: 'right' },
     },
-    margin: { left: MARGIN, right: MARGIN, top: CONT_START + 4, bottom: AUTO_BOTTOM },
-    willDrawPage: () => { drawContHeader(doc, q, settings); },
+    rowPageBreak: 'avoid',
+    margin: TABLE_MARGIN,
+    willDrawPage: () => ensureContHeader(ctx),
   });
-
-  return (doc as any).lastAutoTable.finalY + 3;
+  return (doc as any).lastAutoTable.finalY;
 }
 
-// ─── Commercial Summary ────────────────────────────────────────────────────────
-
-function drawCommercial(
-  doc: jsPDF,
-  q: Quotation,
-  settings: CompanySettings,
-  commercial: ReturnType<typeof calcCommercial>,
-  y: number,
-): number {
-  y = sectionHeading(doc, 'COMMERCIAL SUMMARY', y);
-
-  const rows: [string, string][] = [['BOQ / Base Cost', pdfINR(commercial.boqSubtotal)]];
-  if (commercial.additionalCharges > 0) rows.push(['Additional Charges', pdfINR(commercial.additionalCharges)]);
-  if (commercial.discountAmount > 0) rows.push(['Discount', `- ${pdfINR(commercial.discountAmount)}`]);
-  rows.push(['Taxable Amount', pdfINR(commercial.taxableAmount)]);
-  if (commercial.taxAmount > 0) rows.push([q.tax.name || 'Tax', pdfINR(commercial.taxAmount)]);
-
-  autoTable(doc, {
-    startY: y,
-    body: rows,
-    theme: 'plain',
-    bodyStyles: { fontSize: 10, textColor: TEXT, cellPadding: { top: 2, bottom: 2, left: 4, right: 4 } },
-    columnStyles: {
-      0: { cellWidth: CONTENT_W - 50 },
-      1: { cellWidth: 50, halign: 'right' },
-    },
-    margin: { left: MARGIN, right: MARGIN, bottom: AUTO_BOTTOM },
-    willDrawPage: () => { drawContHeader(doc, q, settings); },
-  });
-
-  y = (doc as any).lastAutoTable.finalY + 2;
-
-  // Grand total bar
-  doc.setFillColor(...NAVY);
-  doc.rect(MARGIN, y, CONTENT_W, 11, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(255, 255, 255);
-  doc.text('GRAND TOTAL', MARGIN + 4, y + 7.5);
-  doc.setTextColor(...GOLD);
-  doc.text(pdfINR(commercial.grandTotal), PAGE_W - MARGIN - 4, y + 7.5, { align: 'right' });
-  y += 14;
-
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...MUTED);
-  const wordsLines = doc.splitTextToSize(
-    `Amount in Words: ${amountToWords(commercial.grandTotal)}`,
-    CONTENT_W,
-  );
-  wordsLines.forEach((line: string) => { doc.text(line, MARGIN, y); y += 4.5; });
-
-  return y;
+function drawBank(ctx: PdfCtx, s: CompanySettings, y: number): number {
+  const rows = [
+    { label: 'Account name', value: s.accountName },
+    { label: 'Bank', value: s.bankName },
+    { label: 'Account no.', value: s.accountNumber },
+    { label: 'IFSC', value: s.ifsc },
+    { label: 'Branch', value: s.branch },
+    { label: 'UPI ID', value: s.upiId },
+  ].filter((r) => r.value);
+  if (rows.length === 0) return y - 8;
+  const card = cardLayout(ctx, CONTENT_W, 'Payment details', rows, 30);
+  y = ensureSpace(ctx, y, card.height + 2);
+  card.draw(MARGIN, y);
+  return y + card.height;
 }
 
-// ─── Terms & Conditions ────────────────────────────────────────────────────────
-
-function drawTerms(doc: jsPDF, q: Quotation, settings: CompanySettings, y: number): number {
-  y = sectionHeading(doc, 'TERMS & CONDITIONS', y);
-  doc.setFontSize(9);
-  doc.setTextColor(...TEXT);
-
+function drawTerms(ctx: PdfCtx, q: Quotation, y: number): number {
+  const { doc, theme } = ctx;
+  y = sectionHeading(ctx, 'Terms & conditions', y);
   q.terms.forEach((term, i) => {
-    if (y > MAX_Y - 14) { y = pageBreak(doc, q, settings); }
-    doc.setFont('helvetica', 'bold');
+    const lines = doc.splitTextToSize(glueFragileTokens(term.text), CONTENT_W - 8) as string[];
+    y = ensureSpace(ctx, y, Math.min(lines.length, 2) * 4.5 + 2);
+    setFont(doc, theme, 'bold', 9, theme.heading);
     doc.text(`${i + 1}.`, MARGIN, y);
-    doc.setFont('helvetica', 'normal');
-    const lines = doc.splitTextToSize(term.text, CONTENT_W - 8);
-    lines.forEach((line: string) => {
-      if (y > MAX_Y - 8) { y = pageBreak(doc, q, settings); }
-      doc.text(line, MARGIN + 6, y);
+    setFont(doc, theme, 'normal', 9, theme.text);
+    lines.forEach((line) => {
+      y = ensureSpace(ctx, y, 6);
+      doc.text(line, MARGIN + 7, y);
       y += 4.5;
     });
-    y += 2;
+    y += 1.8;
   });
-
   return y;
 }
 
-// ─── Customer Notes ────────────────────────────────────────────────────────────
-
-function drawNotes(doc: jsPDF, q: Quotation, settings: CompanySettings, y: number): number {
-  y = sectionHeading(doc, 'NOTES', y);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...TEXT);
-  const lines = doc.splitTextToSize(q.customerNotes, CONTENT_W);
-  lines.forEach((line: string) => {
-    if (y > MAX_Y - 8) { y = pageBreak(doc, q, settings); }
+function drawNotes(ctx: PdfCtx, q: Quotation, y: number): number {
+  const { doc, theme } = ctx;
+  y = sectionHeading(ctx, 'Notes', y);
+  setFont(doc, theme, 'normal', 9, theme.text);
+  (doc.splitTextToSize(q.customerNotes, CONTENT_W) as string[]).forEach((line) => {
+    y = ensureSpace(ctx, y, 6);
     doc.text(line, MARGIN, y);
     y += 4.5;
   });
   return y;
 }
 
-// ─── Acceptance / Signature ────────────────────────────────────────────────────
+// ── Acceptance & signature ──────────────────────────────────────────────────────
 
-function drawAcceptance(doc: jsPDF, q: Quotation, settings: CompanySettings, y: number) {
-  // Terms preamble
-  if (y > MAX_Y - 45) { y = pageBreak(doc, q, settings); }
+function drawAcceptance(ctx: PdfCtx, s: CompanySettings, y: number) {
+  const { doc, theme } = ctx;
+  y = sectionHeading(ctx, 'Acceptance & signature', y);
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(...NAVY);
-  doc.text('Acceptance & Signature', MARGIN, y);
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.5);
-  doc.line(MARGIN, y + 1.5, PAGE_W - MARGIN, y + 1.5);
-  y += 8;
+  const leftW = 88;
+  const rightW = 76;
+  const rightX = PAGE_W - MARGIN - rightW;
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...MUTED);
-  const acceptLines = doc.splitTextToSize(
+  // Client acceptance (left)
+  setFont(doc, theme, 'normal', 8.5, theme.muted);
+  const accept = doc.splitTextToSize(
     'I/We hereby accept the above quotation and agree to the terms and conditions. The work shall commence upon receipt of the first payment.',
-    CONTENT_W,
-  );
-  doc.text(acceptLines, MARGIN, y);
-  y += acceptLines.length * 4.5 + 18;
+    leftW,
+  ) as string[];
+  doc.text(accept, MARGIN, y);
+  let ly = y + accept.length * 4.3 + 10;
+  ['Name', 'Signature', 'Date'].forEach((label) => {
+    doc.setDrawColor(...theme.border);
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN + 20, ly, MARGIN + leftW, ly);
+    setFont(doc, theme, 'normal', 8.5, theme.muted);
+    doc.text(label, MARGIN, ly - 1);
+    ly += 11;
+  });
 
-  // Signature block — right-aligned
-  if (y > MAX_Y - 35) { y = pageBreak(doc, q, settings); }
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(...NAVY);
-  const sigRight = PAGE_W - MARGIN;
-  const sigLeft = sigRight - 60;
-  doc.text(`For ${settings.companyName || 'Construction Documents'}`, sigLeft, y);
-  y += 18;
+  // Authorized signatory (right) — company name wraps/shrinks instead of running off the page
+  const forName = wrapShrink(doc, theme, `For ${ctx.companyName}`, rightW, 2, 9.5, 8);
+  setFont(doc, theme, 'bold', forName.size, theme.heading);
+  let ry = y + 1;
+  forName.lines.forEach((line) => { doc.text(line, rightX, ry); ry += forName.size * 0.45; });
 
-  doc.setDrawColor(...BORDER);
+  const sigTop = ry + 1;
+  if (s.signatureImage) drawImageFit(doc, s.signatureImage, rightX, sigTop, 44, 17);
+  const lineY = sigTop + 19;
+  doc.setDrawColor(...theme.border);
   doc.setLineWidth(0.3);
-  doc.line(sigLeft, y, sigRight, y);
-  y += 4.5;
+  doc.line(rightX, lineY, rightX + rightW, lineY);
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...TEXT);
-  doc.text(settings.authorizedPersonName || 'Authorized Person', sigLeft, y);
-  y += 4.5;
-
-  if (settings.designation) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...MUTED);
-    doc.text(settings.designation, sigLeft, y);
+  let sy = lineY + 4.5;
+  if (s.authorizedPersonName) {
+    setFont(doc, theme, 'bold', 9, theme.text);
+    doc.text(fitText(doc, theme, s.authorizedPersonName, rightW), rightX, sy);
+    sy += 4.3;
   }
-
-  // Signature image (if provided)
-  if (settings.signatureImage) {
-    try {
-      const fmt = settings.signatureImage.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
-      doc.addImage(settings.signatureImage, fmt, sigLeft, y - 28, 40, 20);
-    } catch {
-      // ignore image errors
-    }
-  }
-
-  // Bank details (if configured)
-  if (settings.showBankOnPdf && (settings.bankName || settings.accountName || settings.accountNumber)) {
-    y += 10;
-    y = sectionHeading(doc, 'PAYMENT DETAILS', y);
-    const bankRows: [string, string][] = ([
-      ['Account Name', settings.accountName],
-      ['Bank', settings.bankName],
-      ['Account Number', settings.accountNumber],
-      ['IFSC', settings.ifsc],
-      ['Branch', settings.branch],
-      ['UPI ID', settings.upiId],
-    ] as [string, string][]).filter(([, v]) => v);
-
-    doc.setFontSize(9);
-    bankRows.forEach(([label, val]) => {
-      if (y > MAX_Y - 8) { y = pageBreak(doc, q, settings); }
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...MUTED);
-      doc.text(`${label}:`, MARGIN, y);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...TEXT);
-      doc.text(val, MARGIN + 34, y);
-      y += 5;
-    });
-    y += 6;
-  }
-}
-
-// ─── Shared helpers ────────────────────────────────────────────────────────────
-
-function sectionHeading(doc: jsPDF, title: string, y: number): number {
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11.5);
-  doc.setTextColor(...NAVY);
-  doc.text(title, MARGIN, y);
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.7);
-  doc.line(MARGIN, y + 4, PAGE_W - MARGIN, y + 4);
-  return y + 12;
-}
-
-// Add a new page, draw the continuation header, and return the content start y.
-function pageBreak(doc: jsPDF, q: Quotation, settings: CompanySettings): number {
-  doc.addPage();
-  drawContHeader(doc, q, settings);
-  return CONT_START;
-}
-
-function drawContHeader(doc: jsPDF, q: Quotation, settings: CompanySettings) {
-  if (doc.getNumberOfPages() <= 1) return;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...NAVY);
-  doc.text((settings.companyName || 'CONSTRUCTION DOCUMENTS').toUpperCase(), MARGIN, 8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...MUTED);
-  doc.text(q.quotationNumber, PAGE_W - MARGIN, 8, { align: 'right' });
-  doc.setDrawColor(...BORDER);
-  doc.setLineWidth(0.2);
-  doc.line(MARGIN, 10.5, PAGE_W - MARGIN, 10.5);
-}
-
-// ─── Footer on every page ──────────────────────────────────────────────────────
-
-function addFooters(doc: jsPDF, q: Quotation, settings: CompanySettings) {
-  const total = doc.getNumberOfPages();
-  for (let i = 1; i <= total; i++) {
-    doc.setPage(i);
-    const y = FOOTER_Y;
-    doc.setDrawColor(...BORDER);
-    doc.setLineWidth(0.2);
-    doc.line(MARGIN, y - 2, PAGE_W - MARGIN, y - 2);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...MUTED);
-    const left = settings.mobile
-      ? `${settings.companyName}  |  ${settings.mobile}`
-      : (settings.companyName || 'Construction Documents');
-    doc.text(left, MARGIN, y);
-    doc.text(`Quotation: ${q.quotationNumber}`, PAGE_W / 2, y, { align: 'center' });
-    doc.text(`Page ${i} of ${total}`, PAGE_W - MARGIN, y, { align: 'right' });
-    if (settings.footerText && i === total) {
-      doc.setFont('helvetica', 'italic');
-      const fLines = doc.splitTextToSize(settings.footerText, CONTENT_W);
-      doc.text(fLines[0] || '', PAGE_W / 2, y + 4, { align: 'center' });
-    }
-  }
+  setFont(doc, theme, 'normal', 8.5, theme.muted);
+  doc.text(fitText(doc, theme, s.designation || 'Authorized Signatory', rightW), rightX, sy);
 }

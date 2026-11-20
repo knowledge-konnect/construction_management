@@ -48,6 +48,7 @@ function parseFlatBillingRow(row: any): FlatBilling {
     bookingId: details?.booking_id ?? '',
     date: row.quotation_date ?? '',
     projectId: row.project_id ?? row.projectId ?? '',
+    projectUnitId: details?.project_unit_id ?? '',
     projectName: row.project_name ?? row.projectName ?? row.projects?.name ?? '',
     buyerName: customer?.name ?? '',
     buyerAddress: customer?.address ?? '',
@@ -66,6 +67,7 @@ function parseFlatBillingRow(row: any): FlatBilling {
     terms,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    bookingStatus: ['Draft', 'Confirmed', 'Cancelled', 'Completed'].includes(details?.booking_status) ? details.booking_status : 'Draft',
   };
 }
 
@@ -106,6 +108,7 @@ export async function saveFlatBilling(billing: FlatBilling, companyId: string, _
     flatBilling: {
       ...billing,
       projectId: billing.projectId ?? null,
+      projectUnitId: billing.projectUnitId ?? null,
       projectName: billing.projectName ?? '',
     },
     companyId,

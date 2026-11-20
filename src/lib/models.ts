@@ -138,6 +138,10 @@ export interface QuestionnaireRecord {
 export interface Quotation {
   id: string;
   quotationNumber: string;
+  /** Row version from the last successful save (see migrations/0022). Undefined for a
+   *  quotation that has never been saved. Sent back as expectedVersion on the next save
+   *  so the server can detect and reject a stale edit instead of silently overwriting it. */
+  version?: number;
   status: QuotationStatus;
   projectTypeId?: string | null;
   areaUnitId?: string | null;

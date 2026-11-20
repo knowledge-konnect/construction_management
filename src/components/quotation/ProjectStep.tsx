@@ -171,7 +171,7 @@ export default function ProjectStep() {
               <button
                 type="button"
                 onClick={useMatchedCustomer}
-                className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-medium text-[#1D4ED8] bg-[#1D4ED8]/5 hover:bg-[#1D4ED8]/10 px-2 py-1 rounded-md"
+                className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--primary)] bg-[#1D4ED8]/5 hover:bg-[#1D4ED8]/10 px-2 py-1 rounded-md"
               >
                 <UserCheck className="w-3.5 h-3.5" /> Existing customer found: {matchedCustomer.name} — use their details
               </button>

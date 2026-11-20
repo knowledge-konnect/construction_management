@@ -15,7 +15,7 @@ import {
 import { ShieldCheck, Trash2, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
-const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]';
+const inputClass = 'w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]';
 
 export default function AccessManagementPage() {
     const { push } = useToast();
@@ -197,11 +197,11 @@ export default function AccessManagementPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between gap-3">
                 <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#667085]">Security</p>
-                    <h1 className="mt-2 text-2xl font-bold tracking-[-0.02em] text-[#17243A]">Access management</h1>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Security</p>
+                    <h1 className="mt-2 text-2xl font-bold tracking-[-0.02em] text-[var(--text)]">Access management</h1>
                 </div>
-                <div className="flex items-center gap-2 rounded-full border border-[#E6E8EC] bg-white px-3 py-2 text-sm text-[#344054]">
-                    <ShieldCheck className="h-4 w-4 text-[#1D4ED8]" />
+                <div className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text-secondary)]">
+                    <ShieldCheck className="h-4 w-4 text-[var(--primary)]" />
                     Project access control
                 </div>
             </div>
@@ -210,13 +210,13 @@ export default function AccessManagementPage() {
                 <PremiumCard className="p-5">
                     <div className="space-y-4">
                         <div>
-                            <p className="text-base font-semibold text-[#17243A]">Grant project access</p>
-                            <p className="mt-1 text-sm text-[#667085]">Choose the project and pick an existing customer or investor.</p>
+                            <p className="text-base font-semibold text-[var(--text)]">Grant project access</p>
+                            <p className="mt-1 text-sm text-[var(--text-muted)]">Choose the project and pick an existing customer or investor.</p>
                         </div>
 
                         <form onSubmit={handleCreateAccess} className="space-y-4">
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">Project</span>
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Project</span>
                                 <select
                                     className={inputClass}
                                     value={selectedProjectId}
@@ -231,7 +231,7 @@ export default function AccessManagementPage() {
                             </label>
 
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">Access type</span>
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Access type</span>
                                 <select
                                     className={inputClass}
                                     value={accessType}
@@ -243,7 +243,7 @@ export default function AccessManagementPage() {
                             </label>
 
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">Existing {accessType === 'customer' ? 'customer' : 'investor'}</span>
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Existing {accessType === 'customer' ? 'customer' : 'investor'}</span>
                                 <select
                                     className={inputClass}
                                     value={selectedPartyId}
@@ -259,17 +259,17 @@ export default function AccessManagementPage() {
 
                             {accessType === 'investor' && (
                                 <label className="block">
-                                    <span className="mb-1.5 block text-sm font-medium text-[#344054]">Investor name</span>
+                                    <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Investor name</span>
                                     <input className={inputClass} value={name} onChange={(event) => setName(event.target.value)} placeholder="Investor name" />
                                 </label>
                             )}
 
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">{accessType === 'customer' ? 'Customer email' : 'Investor email'}</span>
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">{accessType === 'customer' ? 'Customer email' : 'Investor email'}</span>
                                 <input type="email" className={inputClass} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" />
                             </label>
 
-                            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                            <div className="rounded-xl border border-[var(--warning-border)] bg-[var(--warning-soft)] px-3 py-2 text-xs text-[var(--warning-fg)]">
                                 The person must already have an application account with the same email. If not, create or invite them first.
                             </div>
 
@@ -286,36 +286,36 @@ export default function AccessManagementPage() {
                     <PremiumCard className="p-5">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <p className="text-base font-semibold text-[#17243A]">{selectedProjectName}</p>
-                                <p className="mt-1 text-sm text-[#667085]">Current access for this project</p>
+                                <p className="text-base font-semibold text-[var(--text)]">{selectedProjectName}</p>
+                                <p className="mt-1 text-sm text-[var(--text-muted)]">Current access for this project</p>
                             </div>
-                            <div className="rounded-full bg-[#EEF4FF] px-2.5 py-1 text-xs font-semibold text-[#1D4ED8]">
+                            <div className="rounded-full bg-[var(--surface-alt)] px-2.5 py-1 text-xs font-semibold text-[var(--primary)]">
                                 {customerAccessRows.length + investorAccessRows.length} active
                             </div>
                         </div>
 
                         {loadingAccess ? (
-                            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Loading access data...</div>
+                            <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-4 text-sm text-[var(--text-muted)]">Loading access data...</div>
                         ) : (
                             <div className="mt-5 space-y-5">
                                 <div>
-                                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#17243A]">
-                                        <Users className="h-4 w-4 text-[#1D4ED8]" />
+                                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
+                                        <Users className="h-4 w-4 text-[var(--primary)]" />
                                         Customer access
                                     </div>
                                     {customerAccessRows.length === 0 ? (
-                                        <div className="rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-3 text-sm text-[#667085]">No customer access added yet.</div>
+                                        <div className="rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-soft)] p-3 text-sm text-[var(--text-muted)]">No customer access added yet.</div>
                                     ) : (
                                         <div className="space-y-2">
                                             {customerAccessRows.map((row) => (
-                                                <div key={row.id} className="flex items-center justify-between rounded-xl border border-[#E6E8EC] bg-white px-3 py-2.5">
+                                                <div key={row.id} className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-white px-3 py-2.5">
                                                     <div>
-                                                        <p className="text-sm font-medium text-[#17243A]">{row.email}</p>
-                                                        <p className="text-xs text-[#667085]">{row.invitationStatus}</p>
+                                                        <p className="text-sm font-medium text-[var(--text)]">{row.email}</p>
+                                                        <p className="text-xs text-[var(--text-muted)]">{row.invitationStatus}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <StatusPill label={row.invitationStatus} tone={row.invitationStatus === 'accepted' ? 'success' : row.invitationStatus === 'pending' ? 'info' : 'warning'} />
-                                                        <button type="button" onClick={() => handleRevokeCustomer(row.id)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100">
+                                                        <button type="button" onClick={() => handleRevokeCustomer(row.id)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-fg)] hover:bg-[var(--danger-soft)]">
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
                                                     </div>
@@ -326,23 +326,23 @@ export default function AccessManagementPage() {
                                 </div>
 
                                 <div>
-                                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#17243A]">
-                                        <Users className="h-4 w-4 text-[#1D4ED8]" />
+                                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
+                                        <Users className="h-4 w-4 text-[var(--primary)]" />
                                         Investor access
                                     </div>
                                     {investorAccessRows.length === 0 ? (
-                                        <div className="rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-3 text-sm text-[#667085]">No investor access added yet.</div>
+                                        <div className="rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-soft)] p-3 text-sm text-[var(--text-muted)]">No investor access added yet.</div>
                                     ) : (
                                         <div className="space-y-2">
                                             {investorAccessRows.map((row) => (
-                                                <div key={row.id} className="flex items-center justify-between rounded-xl border border-[#E6E8EC] bg-white px-3 py-2.5">
+                                                <div key={row.id} className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-white px-3 py-2.5">
                                                     <div>
-                                                        <p className="text-sm font-medium text-[#17243A]">{row.name}</p>
-                                                        <p className="text-xs text-[#667085]">{row.email || 'No email linked'}</p>
+                                                        <p className="text-sm font-medium text-[var(--text)]">{row.name}</p>
+                                                        <p className="text-xs text-[var(--text-muted)]">{row.email || 'No email linked'}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <StatusPill label={row.isActive ? 'Active' : 'Revoked'} tone={row.isActive ? 'success' : 'warning'} />
-                                                        <button type="button" onClick={() => handleRevokeInvestor(row.id)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100">
+                                                        <button type="button" onClick={() => handleRevokeInvestor(row.id)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-fg)] hover:bg-[var(--danger-soft)]">
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
                                                     </div>

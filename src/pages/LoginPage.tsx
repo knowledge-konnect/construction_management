@@ -1,23 +1,29 @@
-﻿import BrandLogo from '@/components/BrandLogo';
+import BrandLogo from '@/components/BrandLogo';
 import { AppButton } from '@/components/ui/DesignSystem';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { tidyName } from '@/lib/avatar';
 import { getSafeRedirectPath } from '@/lib/utils';
-import {
-  Eye,
-  EyeOff,
-  FileText,
-  Lock,
-  Mail,
-  ShieldCheck,
-  Sparkles,
-  User
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { AlertCircle, ArrowLeft, Eye, EyeOff, FileText, Lock, Mail, User, Users, WalletCards } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
+type Mode = 'login' | 'register';
+
+const highlights = [
+  { icon: FileText, title: 'Quotations', text: 'Prepare estimates and customer-ready document packages.' },
+  { icon: Users, title: 'Customers', text: 'Keep customer details, communication, and project context in one place.' },
+  { icon: WalletCards, title: 'Finance', text: 'Track expenses and payment records alongside each project.' },
+];
+
+// Shares the look of the other forms (.input-shell in index.css); the login page keeps a taller 44px field.
+const inputClass = 'input-shell min-h-[44px]';
+
+const MIN_PASSWORD_LENGTH = 8;
+const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
+
 export default function LoginPage() {
-  const { login, register, resetPassword } = useAuth();
+  const { user, loading, login, register, resetPassword } = useAuth();
   const { push } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,202 +33,286 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mode, setMode] = useState<'login' | 'register'>(searchParams.get('mode') === 'register' ? 'register' : 'login');
+  const [formError, setFormError] = useState('');
+  const [mode, setMode] = useState<Mode>(searchParams.get('mode') === 'register' ? 'register' : 'login');
 
   const trimmedEmail = useMemo(() => email.trim(), [email]);
+  const isRegister = mode === 'register';
 
-  const canSubmit = useMemo(() => {
-    if (isSubmitting) return false;
-    if (!trimmedEmail || !password) return false;
-    return true;
-  }, [isSubmitting, trimmedEmail, password]);
+  // Someone who is already signed in has no reason to be on this page.
+  // The app's route guard then sends a user without a company to Company Setup.
+  useEffect(() => {
+    if (!loading && user) {
+      navigate(getSafeRedirectPath(location, '/dashboard'), { replace: true });
+    }
+  }, [loading, user, location, navigate]);
 
-  const updateMode = (nextMode: 'login' | 'register') => {
+  const updateMode = (nextMode: Mode) => {
     setMode(nextMode);
+    setFormError('');
     setSearchParams(nextMode === 'register' ? { mode: 'register' } : {});
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError('');
+
     if (!trimmedEmail || !password) {
-      push('error', 'Email and password are required.');
+      setFormError('Enter your email and password.');
+      return;
+    }
+    if (!EMAIL_PATTERN.test(trimmedEmail)) {
+      setFormError('Enter a valid email address.');
       return;
     }
 
+    const cleanName = tidyName(fullName);
+    if (isRegister) {
+      if (cleanName.length < 2) {
+        setFormError('Enter your full name.');
+        return;
+      }
+      if (password.length < MIN_PASSWORD_LENGTH) {
+        setFormError(`Use a password with at least ${MIN_PASSWORD_LENGTH} characters.`);
+        return;
+      }
+    }
+
     setIsSubmitting(true);
-    const result = mode === 'register'
-      ? await register(trimmedEmail, password, fullName.trim() || undefined)
-      : await login(trimmedEmail, password);
+    const result = isRegister ? await register(trimmedEmail, password, cleanName) : await login(trimmedEmail, password);
     setIsSubmitting(false);
+
     if (result.ok) {
-      push('success', mode === 'register' ? 'Account created successfully.' : 'Signed in successfully.');
-      if (mode === 'register') {
-        setPassword('');
-        setFullName('');
-        updateMode('login');
+      if (isRegister) {
+        // register() already signs the user in. A new account has no company yet,
+        // so go through the app guard, which sends them to Company Setup.
+        push('success', 'Account created. Next, set up your company.');
+        navigate('/dashboard', { replace: true });
       } else {
-        navigate(getSafeRedirectPath(location, '/dashboard'));
+        push('success', 'Signed in successfully.');
+        navigate(getSafeRedirectPath(location, '/dashboard'), { replace: true });
       }
     } else {
-      push('error', result.error || (mode === 'register'
-        ? 'We could not create your account right now. Please try again.'
-        : 'We could not sign you in. Check your email and password, then try again.'));
+      setFormError(
+        result.error ||
+        (isRegister
+          ? 'We could not create your account right now. Please try again.'
+          : 'We could not sign you in. Check your email and password, then try again.'),
+      );
     }
   };
 
   const handleForgotPassword = async () => {
+    setFormError('');
     if (!trimmedEmail) {
-      push('error', 'Enter your email address to reset your password.');
+      setFormError('Enter your email address first, then choose “Forgot password?”.');
+      return;
+    }
+    if (!EMAIL_PATTERN.test(trimmedEmail)) {
+      setFormError('Enter a valid email address.');
       return;
     }
     setIsSubmitting(true);
     const result = await resetPassword(trimmedEmail);
     setIsSubmitting(false);
     if (result.ok) {
-      push('success', result.message || 'If an account exists for that email, reset instructions have been generated.');
+      push('success', result.message || 'If an account exists for that email, you’ll receive reset instructions.');
     } else {
-      push('error', result.error || 'We could not start password reset right now. Please try again.');
+      setFormError(result.error || 'We could not start password reset right now. Please try again.');
     }
   };
 
-  const featureCards = [
-    { title: 'Quotations', text: 'Prepare estimates and customer-ready document packages.' },
-    { title: 'Customers', text: 'Keep customer details, communication, and project context in one place.' },
-    { title: 'Finance', text: 'Track expenses and payment records alongside each project.' },
-  ];
+  const tabClass = (active: boolean) =>
+    `flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-white text-[var(--text)] shadow-sm' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
+    }`;
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#F3F6FB]">
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="grid w-full bg-white lg:min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="relative hidden overflow-hidden bg-[#17243A] p-8 text-white lg:flex lg:flex-col lg:justify-between">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(96,132,255,0.35),_transparent_38%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.18),_transparent_28%)]" />
-            <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)', backgroundSize: '34px 34px' }} />
+    <div className="min-h-screen bg-[var(--bg)]">
+      <div className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
+        {/* Brand panel (desktop) */}
+        <aside className="relative hidden overflow-hidden bg-[var(--navy)] p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-12">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(96,132,255,0.32),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.16),transparent_30%)]" />
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.07]"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+            }}
+          />
 
-            <div className="relative z-10 flex flex-col gap-8">
-              <button onClick={() => navigate('/')} aria-label="Back to home" className="inline-flex w-fit cursor-pointer items-center">
-                <BrandLogo size="lg" onDark />
-              </button>
+          <button onClick={() => navigate('/')} aria-label="Back to home" className="relative z-10 inline-flex w-fit items-center rounded-lg">
+            <BrandLogo size="lg" onDark />
+          </button>
 
-              <div className="max-w-md space-y-5">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#93B4F5]/30 bg-[#EAF1FF]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#D9E4FF]">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  BuilderDocs workspace
-                </div>
-                <div>
-                  <h1 className="text-4xl font-black leading-tight tracking-[-0.06em] text-white">Build better.<br />Manage smarter.</h1>
-                  <p className="mt-4 max-w-md text-base leading-7 text-slate-300">
-                    Manage quotations, customers, projects, expenses, and payment records in one place with a streamlined workflow built for construction businesses.
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="relative z-10 max-w-lg">
+            <h1 className="text-4xl font-bold leading-[1.1] tracking-[-0.03em] xl:text-5xl">
+              Build better.
+              <br />
+              Manage smarter.
+            </h1>
+            <p className="mt-5 text-base leading-7 text-slate-300">
+              Manage quotations, customers, projects, expenses, and payment records in one place with a streamlined workflow built for construction businesses.
+            </p>
 
-            <div className="relative z-10 mt-8 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-              <div className="mb-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#93B4F5]">Business flow</p>
-                <p className="mt-1 text-lg font-semibold text-white">Construction operations, simplified</p>
-              </div>
-
-              <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-3">
-                {featureCards.map(({ title, text }) => (
-                  <div key={title} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                    <span className="inline-flex rounded-full border border-[#93B4F5]/20 bg-[#1D4ED8]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#D9E4FF]">
-                      {title}
-                    </span>
-                    <p className="mt-2 text-sm leading-5 text-slate-200">{text}</p>
+            <ul className="mt-9 space-y-5">
+              {highlights.map(({ icon: Icon, title, text }) => (
+                <li key={title} className="flex items-start gap-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#93B4F5] ring-1 ring-white/10">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{title}</p>
+                    <p className="mt-0.5 text-sm leading-6 text-slate-300">{text}</p>
                   </div>
-                ))}
-              </div>
-            </div>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] p-5 sm:p-7 lg:min-h-0 lg:p-10">
-            <div className="w-full max-w-md">
-              <div className="mb-8 flex flex-col items-center lg:hidden">
-                <button onClick={() => navigate('/')} aria-label="Back to home" className="cursor-pointer">
-                  <BrandLogo size="lg" />
+          <p className="relative z-10 text-xs text-slate-400">© {new Date().getFullYear()} BuilderDocs</p>
+        </aside>
+
+        {/* Form panel */}
+        <main className="flex flex-col px-5 py-6 sm:px-8 lg:px-12">
+          <div className="flex items-center justify-between">
+            <button onClick={() => navigate('/')} aria-label="Back to home" className="rounded-lg lg:hidden">
+              <BrandLogo size="md" />
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to home
+            </button>
+          </div>
+
+          <div className="flex flex-1 items-center justify-center py-8">
+            <div className="w-full max-w-[420px]">
+              <div role="group" aria-label="Sign in or create account" className="mb-7 flex rounded-xl bg-[var(--surface-muted)] p-1">
+                <button type="button" aria-pressed={!isRegister} onClick={() => updateMode('login')} className={tabClass(!isRegister)}>
+                  Sign In
                 </button>
-                <p className="mt-3 text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#1D4ED8]">Construction Quotations & Business Documents</p>
+                <button type="button" aria-pressed={isRegister} onClick={() => updateMode('register')} className={tabClass(isRegister)}>
+                  Create Account
+                </button>
               </div>
 
-              <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-[0_16px_36px_rgba(15,23,42,0.06)] sm:p-6">
-                <div className="mb-6 flex rounded-xl border border-slate-200 bg-slate-100 p-1">
-                  <button type="button" onClick={() => updateMode('login')} className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${mode === 'login' ? 'bg-[#1D4ED8] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'}`}>
-                    Sign In
-                  </button>
-                  <button type="button" onClick={() => updateMode('register')} className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${mode === 'register' ? 'bg-[#1D4ED8] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'}`}>
-                    Create Account
-                  </button>
-                </div>
+              <h2 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text)]">
+                {isRegister ? 'Create your account' : 'Welcome back'}
+              </h2>
+              <p className="mt-1.5 text-sm text-[var(--text-secondary)]">
+                {isRegister ? 'Set up your workspace to start creating quotes.' : 'Sign in to continue managing your projects.'}
+              </p>
 
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EAF1FF] text-[#1D4ED8]">
-                    {mode === 'login' ? <ShieldCheck className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold tracking-[-0.04em] text-[#0B234A]">{mode === 'register' ? 'Create Account' : 'Welcome back'}</h2>
-                    <p className="text-sm text-slate-500">{mode === 'register' ? 'Set up your workspace to start creating quotes.' : 'Sign in to continue managing your projects.'}</p>
-                  </div>
+              {formError && (
+                <div role="alert" className="mt-5 flex items-start gap-2.5 rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3.5 py-3 text-sm text-[var(--danger-fg)]">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>{formError}</p>
                 </div>
+              )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+                {isRegister && (
                   <div>
-                    <label htmlFor="auth-email" className="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
+                    <label htmlFor="auth-full-name" className="mb-1.5 block text-sm font-medium text-[var(--text)]">Full name</label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                      <input id="auth-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" spellCheck={false} className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-4 focus:ring-[#1D4ED8]/10" placeholder="Enter your email" required />
+                      <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-subtle)]" />
+                      <input
+                        id="auth-full-name"
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        autoComplete="name"
+                        autoFocus
+                        aria-invalid={Boolean(formError) && tidyName(fullName).length < 2}
+                        className={`${inputClass} pl-10 pr-3`}
+                        placeholder="Your name"
+                      />
                     </div>
                   </div>
+                )}
 
-                  {mode === 'register' && (
-                    <div>
-                      <div className="mb-1.5 flex items-center justify-between">
-                        <label htmlFor="auth-full-name" className="block text-sm font-medium text-slate-700">Full Name</label>
-                        <span className="text-xs text-slate-400">Optional</span>
-                      </div>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                        <input id="auth-full-name" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-4 focus:ring-[#1D4ED8]/10" placeholder="Enter full name" />
-                      </div>
-                    </div>
-                  )}
+                <div>
+                  <label htmlFor="auth-email" className="mb-1.5 block text-sm font-medium text-[var(--text)]">Email</label>
+                  <div className="relative">
+                    <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-subtle)]" />
+                    <input
+                      id="auth-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="email"
+                      autoFocus={!isRegister}
+                      spellCheck={false}
+                      aria-invalid={Boolean(formError) && !trimmedEmail}
+                      className={`${inputClass} pl-10 pr-3`}
+                      placeholder="you@company.com"
+                    />
+                  </div>
+                </div>
 
-                  <div>
-                    <label htmlFor="auth-password" className="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                      <input id="auth-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-4 focus:ring-[#1D4ED8]/10" placeholder="Enter your password" required />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600" aria-label={showPassword ? 'Hide password' : 'Show password'}>
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label htmlFor="auth-password" className="block text-sm font-medium text-[var(--text)]">Password</label>
+                    {!isRegister && (
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        disabled={isSubmitting}
+                        className="rounded text-sm font-medium text-[var(--primary)] transition-colors hover:text-[var(--primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:text-[var(--text-subtle)]"
+                      >
+                        Forgot password?
                       </button>
-                    </div>
+                    )}
                   </div>
-
-                  <AppButton type="submit" disabled={!canSubmit} className="w-full justify-center py-3 text-sm">
-                    {isSubmitting ? (mode === 'register' ? 'Creating account…' : 'Signing in…') : (mode === 'register' ? 'Create Account' : 'Sign In')}
-                  </AppButton>
-                </form>
-
-                <div className="mt-5 flex items-center justify-between gap-3 text-sm">
-                  {mode === 'login' ? (
-                    <button type="button" onClick={handleForgotPassword} disabled={isSubmitting || !trimmedEmail} className="font-medium text-[#1D4ED8] transition-colors hover:text-[#1E40AF] disabled:cursor-not-allowed disabled:text-slate-400">
-                      Forgot password?
+                  <div className="relative">
+                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-subtle)]" />
+                    <input
+                      id="auth-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete={isRegister ? 'new-password' : 'current-password'}
+                      aria-invalid={Boolean(formError) && !password}
+                      aria-describedby={isRegister ? 'auth-password-help' : undefined}
+                      className={`${inputClass} pl-10 pr-11`}
+                      placeholder={isRegister ? 'Create a password' : 'Enter your password'}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-1.5 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--text-subtle)] transition-colors hover:bg-[var(--surface-soft)] hover:text-[var(--text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
-                  ) : (
-                    <span className="text-slate-400">Already have an account?</span>
+                  </div>
+                  {isRegister && (
+                    <p id="auth-password-help" className="mt-1.5 text-xs text-[var(--text-muted)]">
+                      At least {MIN_PASSWORD_LENGTH} characters.
+                    </p>
                   )}
-
-                  <button type="button" onClick={() => updateMode(mode === 'login' ? 'register' : 'login')} className="font-medium text-[#1D4ED8] transition-colors hover:text-[#1E40AF]">
-                    {mode === 'login' ? 'Create account' : 'Back to sign in'}
-                  </button>
                 </div>
-              </div>
+
+                <AppButton
+                  type="submit"
+                  loading={isSubmitting}
+                  loadingText={isRegister ? 'Creating account…' : 'Signing in…'}
+                  className="mt-2 min-h-[46px] w-full"
+                >
+                  {isRegister ? 'Create account' : 'Sign in'}
+                </AppButton>
+
+                {isRegister && (
+                  <p className="text-center text-xs text-[var(--text-muted)]">Next, you’ll add your company details.</p>
+                )}
+              </form>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
 }
-

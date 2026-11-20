@@ -21,6 +21,7 @@ export type AuthRole = 'user' | 'owner' | 'admin' | 'staff' | 'client' | 'invest
 export interface AuthUser {
     id: string;
     email: string | null;
+    phone?: string | null;
     userName: string;
     role: AuthRole;
     mustChangePassword: boolean;
@@ -74,7 +75,7 @@ export function clearTokens() {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
-function buildAuthUser(raw: { id: string; email: string; fullName?: string | null; role?: AuthRole; mustChangePassword?: boolean }): AuthUser {
+function buildAuthUser(raw: { id: string; email?: string | null; phone?: string | null; fullName?: string | null; role?: AuthRole; mustChangePassword?: boolean }): AuthUser {
     const role = raw.role === 'client' || raw.role === 'investor' || raw.role === 'owner' || raw.role === 'admin' || raw.role === 'staff' || raw.role === 'user'
         ? raw.role
         : 'user';
@@ -82,6 +83,7 @@ function buildAuthUser(raw: { id: string; email: string; fullName?: string | nul
     return {
         id: raw.id,
         email: raw.email ?? null,
+        phone: raw.phone ?? null,
         userName: raw.fullName ?? raw.email?.split('@')[0] ?? 'User',
         role,
         mustChangePassword: !!raw.mustChangePassword,
@@ -93,11 +95,14 @@ function buildAuthUser(raw: { id: string; email: string; fullName?: string | nul
 // refresh-and-retry logic calls back into refreshAccessToken() below, so
 // this file must not depend on apiClient to avoid a circular refresh loop.
 
-async function apiPost<T>(path: string, body: unknown): Promise<{ data?: T; error?: string }> {
+async function apiPost<T>(path: string, body: unknown, token?: string | null): Promise<{ data?: T; error?: string }> {
     try {
         const res = await fetch(`${API_BASE}${path}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
             body: JSON.stringify(body),
         });
         const json = await res.json().catch(() => null);
@@ -160,7 +165,7 @@ export async function refreshAccessToken(): Promise<string | null> {
 // ─── Public API ────────────────────────────────────────────────────────────────
 
 export async function login(email: string, password: string): Promise<AuthResult> {
-    const { data, error } = await apiPost<{ token: string; refreshToken?: string; user: { id: string; email: string; fullName?: string | null; mustChangePassword?: boolean } }>(
+    const { data, error } = await apiPost<{ token: string; refreshToken?: string; user: { id: string; email: string | null; phone?: string | null; fullName?: string | null; mustChangePassword?: boolean } }>(
         '/api/login',
         { email, password },
     );
@@ -170,7 +175,7 @@ export async function login(email: string, password: string): Promise<AuthResult
 }
 
 export async function register(email: string, password: string, fullName?: string): Promise<AuthResult> {
-    const { data, error } = await apiPost<{ token: string; refreshToken?: string; user: { id: string; email: string; fullName?: string | null; mustChangePassword?: boolean } }>(
+    const { data, error } = await apiPost<{ token: string; refreshToken?: string; user: { id: string; email: string | null; phone?: string | null; fullName?: string | null; mustChangePassword?: boolean } }>(
         '/api/signup',
         { email, password, fullName },
     );
@@ -213,7 +218,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
     const token = getToken();
     if (!token) return { ok: false, error: 'Not signed in.' };
 
-    const { data, error } = await apiPost<{ ok: boolean; token?: string }>('/api/change-password', { currentPassword, newPassword });
+    const { data, error } = await apiPost<{ ok: boolean; token?: string }>('/api/change-password', { currentPassword, newPassword }, token);
     if (error || !data) return { ok: false, error: error ?? 'Could not change password.' };
     if (data.token) {
         // Swap in the freshly-signed access token (mustChangePassword now
@@ -227,13 +232,13 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     const token = getToken();
     if (!token) return null;
 
-    let { data, error } = await apiGet<{ user: { id: string; email: string; fullName?: string | null; mustChangePassword?: boolean } }>('/api/me', token);
+    let { data, error } = await apiGet<{ user: { id: string; email: string | null; phone?: string | null; fullName?: string | null; mustChangePassword?: boolean } }>('/api/me', token);
 
     if (error && !data) {
         // Access token may simply have expired — try a silent refresh before giving up.
         const refreshed = await refreshAccessToken();
         if (refreshed) {
-            ({ data, error } = await apiGet<{ user: { id: string; email: string; fullName?: string | null; mustChangePassword?: boolean } }>('/api/me', refreshed));
+            ({ data, error } = await apiGet<{ user: { id: string; email: string | null; phone?: string | null; fullName?: string | null; mustChangePassword?: boolean } }>('/api/me', refreshed));
         }
     }
 
@@ -242,4 +247,27 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
         return null;
     }
     return buildAuthUser(data.user);
+}
+
+export async function updateProfile(input: { fullName: string; phone: string | null }): Promise<AuthResult> {
+    const token = getToken();
+    if (!token) return { ok: false, error: 'Not signed in.' };
+
+    try {
+        const res = await fetch(`${API_BASE}/api/me`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(input),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok) {
+            return { ok: false, error: toUserFacingApiError({ status: res.status, error: json?.error }) };
+        }
+        return { ok: true, user: buildAuthUser(json.user) };
+    } catch {
+        return { ok: false, error: networkErrorMessage() };
+    }
 }

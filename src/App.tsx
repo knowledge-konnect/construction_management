@@ -24,6 +24,7 @@ import InvoicesPage from '@/pages/InvoicesPage';
 import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/LoginPage';
 import PartiesPage from '@/pages/PartiesPage';
+import ProfilePage from '@/pages/ProfilePage';
 import ProjectsPage, { ProjectCreatePage, ProjectDetailPage, ProjectEditPage } from '@/pages/ProjectsPage';
 import QuotationsPage from '@/pages/QuotationsPage';
 import ReceiptsPage from '@/pages/ReceiptsPage';
@@ -84,6 +85,16 @@ export default function App() {
                         <DashboardPage />
                       </Layout>
                     </RequireCompany>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ProfilePage />
+                    </Layout>
                   </ProtectedRoute>
                 }
               />

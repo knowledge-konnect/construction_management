@@ -14,7 +14,9 @@ export interface FlatBillingPayload {
     id: string;
     date?: string | null;
     bookingId?: string | null;
+    bookingStatus?: string | null;
     projectId?: string | null;
+    projectUnitId?: string | null;
     projectName?: string | null;
     buyerName: string;
     buyerAddress?: string | null;
@@ -25,6 +27,10 @@ export interface FlatBillingPayload {
     blockTower?: string | null;
     areaSqft?: string | number | null;
     ratePerSqft?: string | number | null;
+    agreementValue?: string | number | null;
+    balanceDue?: string | number | null;
+    paymentMode?: string | null;
+    dueDate?: string | null;
     payments?: FlatBillingPaymentPayload[];
     terms?: string[];
 }
@@ -66,6 +72,156 @@ function toNullableNumber(value: unknown): number | null {
     if (value === undefined || value === null || value === '') return null;
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
+}
+
+function normalizeBookingStatus(value: unknown): string | null {
+    const raw = typeof value === 'string' ? value.trim() : '';
+    if (!raw) return null;
+    const normalized = raw.toLowerCase();
+    if (normalized === 'draft') return 'Draft';
+    if (normalized === 'confirmed') return 'Confirmed';
+    if (normalized === 'cancelled') return 'Cancelled';
+    if (normalized === 'completed') return 'Completed';
+    return null;
+}
+
+function formatInventoryFloorLabel(value: number | null | undefined): string {
+    if (value === null || value === undefined || !Number.isFinite(value)) return '';
+    if (value === 0) return 'Ground Floor';
+    if (value === -1) return 'Basement -1';
+    if (value === -2) return 'Basement -2';
+
+    const suffix = value % 100 >= 11 && value % 100 <= 13
+        ? 'th'
+        : ['th', 'st', 'nd', 'rd'][Math.min((value % 10), 3)] ?? 'th';
+
+    return `${value}${suffix} Floor`;
+}
+
+async function ensureBookingInventoryConsistency(billing: FlatBillingPayload, companyId: string): Promise<void> {
+    const selectedUnitId = typeof billing.projectUnitId === 'string' && billing.projectUnitId.trim()
+        ? billing.projectUnitId.trim()
+        : null;
+
+    if (!selectedUnitId) return;
+
+    const { data: unit, error: unitError } = await supabaseAdmin
+        .from('project_units')
+        .select('id, project_id, company_id, flat_no, floor, block_tower')
+        .eq('id', selectedUnitId)
+        .maybeSingle();
+
+    if (unitError) throw unitError;
+
+    if (!unit) {
+        const err: any = new Error('Selected project unit was not found.');
+        err.statusCode = 404;
+        throw err;
+    }
+
+    if (unit.company_id !== companyId) {
+        const err: any = new Error('Selected project unit does not belong to the current company.');
+        err.statusCode = 403;
+        throw err;
+    }
+
+    if (billing.projectId && unit.project_id !== billing.projectId) {
+        const err: any = new Error('Selected unit does not belong to the chosen project.');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    if (billing.flatNo && String(unit.flat_no ?? '').trim().toLowerCase() !== billing.flatNo.trim().toLowerCase()) {
+        const err: any = new Error('Selected unit does not match the provided flat number.');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    if (billing.blockTower && unit.block_tower && String(unit.block_tower).trim().toLowerCase() !== billing.blockTower.trim().toLowerCase()) {
+        const err: any = new Error('Selected unit does not match the provided tower / block.');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    if (billing.floor) {
+        const expectedFloor = formatInventoryFloorLabel(unit.floor == null ? null : Number(unit.floor));
+        if (!expectedFloor || expectedFloor !== billing.floor.trim()) {
+            const err: any = new Error('Selected floor does not match the inventory floor for this unit.');
+            err.statusCode = 400;
+            throw err;
+        }
+    }
+}
+
+async function ensurePropertyDevelopmentBookingEligibility(projectId: string | null, companyId: string): Promise<void> {
+    if (!projectId) return;
+
+    const { data: project, error: projectError } = await supabaseAdmin
+        .from('projects')
+        .select('id, company_id, business_model')
+        .eq('id', projectId)
+        .maybeSingle();
+
+    if (projectError) throw projectError;
+    if (!project) {
+        const err: any = new Error('Project not found for this booking.');
+        err.statusCode = 404;
+        throw err;
+    }
+    if (project.company_id !== companyId) {
+        const err: any = new Error('This project does not belong to the current company.');
+        err.statusCode = 403;
+        throw err;
+    }
+    if (project.business_model !== 'property_development') {
+        const err: any = new Error('Booking receipts are only allowed for property development projects.');
+        err.statusCode = 403;
+        throw err;
+    }
+
+    const { data: companySettings, error: companySettingsError } = await supabaseAdmin
+        .from('company_settings')
+        .select('enabled_business_models')
+        .eq('company_id', companyId)
+        .maybeSingle();
+
+    if (companySettingsError) throw companySettingsError;
+    const enabledModels = Array.isArray(companySettings?.enabled_business_models)
+        ? companySettings.enabled_business_models.map((value: unknown) => String(value).trim().toLowerCase())
+        : [];
+
+    if (!enabledModels.includes('property_development')) {
+        const err: any = new Error('Property development is not enabled for this company.');
+        err.statusCode = 403;
+        throw err;
+    }
+}
+
+async function confirmBookingUnitAssignment(documentId: string, projectUnitId: string | null): Promise<void> {
+    if (!projectUnitId) return;
+
+    const { error } = await supabaseAdmin.rpc('confirm_booking_receipt_unit', {
+        p_document_id: documentId,
+        p_project_unit_id: projectUnitId,
+    });
+
+    if (error) {
+        const err: any = new Error(error.message || 'Unable to confirm booking unit assignment.');
+        err.statusCode = 409;
+        throw err;
+    }
+}
+
+async function cancelBookingUnitAssignment(documentId: string): Promise<void> {
+    const { error } = await supabaseAdmin.rpc('cancel_booking_receipt_unit', {
+        p_document_id: documentId,
+    });
+
+    if (error) {
+        const err: any = new Error(error.message || 'Unable to cancel booking unit assignment.');
+        err.statusCode = 409;
+        throw err;
+    }
 }
 
 export async function saveFlatBillingToDatabase(billing: FlatBillingPayload, companyId: string) {
@@ -127,21 +283,32 @@ export async function saveFlatBillingToDatabase(billing: FlatBillingPayload, com
 
     const areaSqft = toNullableNumber(billing.areaSqft);
     const ratePerSqft = toNullableNumber(billing.ratePerSqft);
-    const grandTotal = areaSqft !== null && ratePerSqft !== null ? Math.round(areaSqft * ratePerSqft * 100) / 100 : 0;
+    const agreementValue = toNullableNumber(billing.agreementValue) ?? (areaSqft !== null && ratePerSqft !== null ? Math.round(areaSqft * ratePerSqft * 100) / 100 : null);
+    const balanceDue = toNullableNumber(billing.balanceDue);
+    const dueDate = typeof billing.dueDate === 'string' && billing.dueDate.trim() ? billing.dueDate.trim() : null;
+    const paymentMode = typeof billing.paymentMode === 'string' && billing.paymentMode.trim() ? billing.paymentMode.trim() : null;
+    const grandTotal = agreementValue ?? 0;
 
     if (billing.projectId) {
-        const { data: projectRow, error: projectError } = await supabaseAdmin
-            .from('projects')
-            .select('id, company_id')
-            .eq('id', billing.projectId)
-            .maybeSingle();
+        await ensurePropertyDevelopmentBookingEligibility(billing.projectId, companyId);
+    }
 
-        if (projectError) throw projectError;
-        if (!projectRow || projectRow.company_id !== companyId) {
-            const err: any = new Error('This project does not belong to the current company.');
-            err.statusCode = 403;
-            throw err;
-        }
+    await ensureBookingInventoryConsistency(billing, companyId);
+
+    const { data: previousDetails } = await supabaseAdmin
+        .from('booking_receipt_details')
+        .select('project_unit_id, booking_status')
+        .eq('document_id', billing.id)
+        .maybeSingle();
+
+    const normalizedBookingStatus = normalizeBookingStatus(billing.bookingStatus ?? 'Draft') ?? 'Draft';
+    const previousStatus = normalizeBookingStatus(previousDetails?.booking_status);
+    const previousUnitId = typeof previousDetails?.project_unit_id === 'string' ? previousDetails.project_unit_id : null;
+    const previousWasActive = previousStatus === 'Confirmed' || previousStatus === 'Completed';
+    const nextIsActive = normalizedBookingStatus === 'Confirmed' || normalizedBookingStatus === 'Completed';
+
+    if (previousWasActive && (!nextIsActive || previousUnitId !== (billing.projectUnitId || null))) {
+        await cancelBookingUnitAssignment(billing.id);
     }
 
     const documentPayload = {
@@ -178,15 +345,70 @@ export async function saveFlatBillingToDatabase(billing: FlatBillingPayload, com
                 {
                     document_id: documentId,
                     booking_id: billing.bookingId || null,
+                    project_unit_id: billing.projectUnitId || null,
+                    booking_status: normalizedBookingStatus,
+                    prior_unit_status: null,
                     flat_no: billing.flatNo || null,
                     floor: billing.floor || null,
                     block_tower: billing.blockTower || null,
                     rate_per_sqft: ratePerSqft,
                     buyer_pan_aadhar: billing.buyerPanAadhar || null,
+                    agreement_value: agreementValue,
+                    balance_due: balanceDue,
+                    payment_mode: paymentMode,
+                    due_date: dueDate,
                 },
                 { onConflict: 'document_id' },
             );
         if (error) throw new Error(`booking_receipt_details upsert failed: ${error.message}`);
+    }
+
+    const detailsPayload: Record<string, unknown> = {
+        document_id: documentId,
+        booking_id: billing.bookingId || null,
+        project_unit_id: billing.projectUnitId || null,
+        booking_status: normalizedBookingStatus,
+        prior_unit_status: null,
+        flat_no: billing.flatNo || null,
+        floor: billing.floor || null,
+        block_tower: billing.blockTower || null,
+        rate_per_sqft: ratePerSqft,
+        buyer_pan_aadhar: billing.buyerPanAadhar || null,
+        agreement_value: agreementValue,
+        balance_due: balanceDue,
+        payment_mode: paymentMode,
+        due_date: dueDate,
+    };
+
+    {
+        let { error } = await supabaseAdmin
+            .from('booking_receipt_details')
+            .upsert(detailsPayload, { onConflict: 'document_id' });
+
+        if (error && /agreement_value|balance_due|payment_mode|due_date/i.test(error.message)) {
+            const legacyPayload = { ...detailsPayload };
+            delete legacyPayload.agreement_value;
+            delete legacyPayload.balance_due;
+            delete legacyPayload.payment_mode;
+            delete legacyPayload.due_date;
+            ({ error } = await supabaseAdmin
+                .from('booking_receipt_details')
+                .upsert(legacyPayload, { onConflict: 'document_id' }));
+        }
+
+        if (error) throw new Error(`booking_receipt_details upsert failed: ${error.message}`);
+    }
+
+    const unchangedActiveAssignment = previousWasActive
+        && previousUnitId === (billing.projectUnitId || null)
+        && nextIsActive;
+
+    if (nextIsActive && !unchangedActiveAssignment) {
+        await confirmBookingUnitAssignment(documentId, billing.projectUnitId ?? null);
+    }
+
+    if (normalizedBookingStatus === 'Cancelled') {
+        await cancelBookingUnitAssignment(documentId);
     }
 
     // Delete-then-reinsert payment_schedules/document_terms, same safe
@@ -202,7 +424,6 @@ export async function saveFlatBillingToDatabase(billing: FlatBillingPayload, com
     }
 
     const paymentRows = (billing.payments ?? []).map((p, idx) => ({
-        id: p.id,
         document_id: documentId,
         stage_name: p.stage,
         amount: p.amount,
@@ -227,10 +448,14 @@ export async function saveFlatBillingToDatabase(billing: FlatBillingPayload, com
 }
 
 export async function softDeleteFlatBilling(id: string, userId: string): Promise<void> {
+    await cancelBookingUnitAssignment(id);
+
     const { error } = await supabaseAdmin
         .from('documents')
         .update({ is_deleted: true, deleted_at: new Date().toISOString(), deleted_by: userId })
         .eq('id', id)
-        .eq('document_type', 'BookingReceipt');
+        .eq('document_type', 'BookingReceipt')
+        .eq('is_deleted', false);
     if (error) throw error;
+
 }

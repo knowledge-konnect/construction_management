@@ -48,12 +48,12 @@ export default function QuestionnairesPage() {
       />
 
       {records.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#D8DEE8] bg-slate-50/80 p-10 text-center">
+        <div className="rounded-2xl border border-dashed border-[var(--border-strong)] bg-slate-50/80 p-10 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#1D4ED8]/10">
-            <ClipboardList className="h-8 w-8 text-[#1D4ED8]" />
+            <ClipboardList className="h-8 w-8 text-[var(--primary)]" />
           </div>
-          <h3 className="mb-1 text-lg font-semibold text-[#17243A]">No requirements sheets yet</h3>
-          <p className="mb-4 text-sm text-[#667085]">Create one to capture client preferences for materials and finishes.</p>
+          <h3 className="mb-1 text-lg font-semibold text-[var(--text)]">No requirements sheets yet</h3>
+          <p className="mb-4 text-sm text-[var(--text-muted)]">Create one to capture client preferences for materials and finishes.</p>
           <AppButton onClick={() => navigate('/questionnaire/new')}>
             <Plus className="h-4 w-4" />
             New Requirements
@@ -63,11 +63,11 @@ export default function QuestionnairesPage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {records.map((rec) => (
             <PremiumCard key={rec.id} className="flex flex-col p-5">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#1D4ED8]/10 text-[#1D4ED8]">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#1D4ED8]/10 text-[var(--primary)]">
                 <ClipboardList className="h-5 w-5" />
               </div>
-              <h3 className="font-semibold text-[#17243A]">{rec.title || 'Untitled Requirements'}</h3>
-              <p className="mt-0.5 text-xs text-[#667085]">
+              <h3 className="font-semibold text-[var(--text)]">{rec.title || 'Untitled Requirements'}</h3>
+              <p className="mt-0.5 text-xs text-[var(--text-muted)]">
                 {rec.customerName || '—'}{rec.projectName ? ` · ${rec.projectName}` : ''}
               </p>
               <p className="mt-2 text-xs text-[#98A2B3]">Updated {formatDate(rec.updatedAt.slice(0, 10))}</p>
