@@ -229,6 +229,11 @@ export async function getDocument(id: string, companyId?: string): Promise<Quota
 export interface SaveDocumentResult {
     ok: boolean;
     documentNumber?: string;
+    /** Row version returned by save_quotation (see migrations/0022). Pass this back on
+     *  the next save so a stale edit (another tab, another device) is rejected instead
+     *  of silently overwriting someone else's changes. */
+    version?: number;
+    grandTotal?: number;
     error?: string;
     code?: string;
 }
@@ -238,17 +243,19 @@ export async function saveDocument(quotation: Quotation, companyId: string, user
     // fails, the user's edits aren't lost and can be recovered on retry.
     quotationRepo.save(currentStorageScope(companyId), quotation);
 
-    const { data, error, code } = await apiPost<{ ok: boolean; id: string; documentNumber?: string }>('/api/quotations', {
-        quotation,
-        companyId,
-    });
+    const { data, error, code } = await apiPost<{ ok: boolean; id: string; documentNumber?: string; version?: number; grandTotal?: number }>(
+        '/api/quotations',
+        { quotation, companyId, expectedVersion: quotation.version },
+    );
 
     if (error || !data?.ok) {
+        // A stale edit (someone else saved first) surfaces here with code VERSION_CONFLICT —
+        // the caller should reload the quotation rather than retry the same payload.
         console.warn('Failed to save document to the server; it remains cached locally until the next successful save', error);
         return { ok: false, error, code };
     }
 
-    return { ok: true, documentNumber: data.documentNumber };
+    return { ok: true, documentNumber: data.documentNumber, version: data.version, grandTotal: data.grandTotal };
 }
 
 export async function deleteDocument(id: string, companyId?: string): Promise<boolean> {

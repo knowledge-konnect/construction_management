@@ -17,7 +17,9 @@ export interface FlatBilling {
   bookingId: string;
   date: string;
   projectId?: string;
+  projectUnitId?: string;
   projectName?: string;
+  bookingStatus?: 'Draft' | 'Confirmed' | 'Cancelled' | 'Completed';
 
   // Buyer
   buyerName: string;
@@ -126,7 +128,9 @@ export function defaultFlatBilling(): Omit<FlatBilling, 'id' | 'receiptNumber' |
     bookingId: '',
     date: new Date().toISOString().slice(0, 10),
     projectId: '',
+    projectUnitId: '',
     projectName: '',
+    bookingStatus: 'Draft',
     buyerName: '',
     buyerAddress: '',
     buyerPhone: '',

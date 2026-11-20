@@ -41,15 +41,18 @@ export const BOQ_UNITS = [
 ];
 
 export const PROJECT_TYPES = [
-  'Individual House',
-  'Villa',
-  'Apartment Building',
-  'Commercial Building',
-  'Renovation',
-  'Extension / Additional Floor',
-  'Interior Works',
-  'Civil Works Only',
-  'Other',
+  'Independent House Construction',
+  'Villa Construction',
+  'Apartment Construction',
+  'Commercial Building Construction',
+  'Industrial & Warehouse Construction',
+  'Renovation & Remodeling',
+  'Building Extension & Additional Floor',
+  'Interior Fit-out & Works',
+  'Structural Construction Works',
+  'Civil Infrastructure Works',
+  'Road & Drainage Works',
+  'Other / Custom Project',
 ];
 
 export const AREA_UNITS = ['Sq.ft', 'Sq.m', 'Sq.yd'];

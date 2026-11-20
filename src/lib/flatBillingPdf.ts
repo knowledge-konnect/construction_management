@@ -6,6 +6,8 @@ import type { FlatBilling } from './flatBilling';
 import { calcFlatTotal } from './flatBilling';
 import type { CompanySettings } from './models';
 import { amountToWords, formatDate } from './utils';
+import { createPdfTheme } from './pdfTheme';
+import { drawDefaultLogo, drawImageFit, glueFragileTokens } from './pdfKit';
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 const PAGE_W = 210;
@@ -15,13 +17,13 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 
 // ── Colour palette ────────────────────────────────────────────────────────────
 type RGB = [number, number, number];
-const NAVY: RGB = [11, 40, 87];
-const GOLD: RGB = [244, 183, 43];
+let NAVY: RGB = [11, 40, 87];
+let GOLD: RGB = [244, 183, 43];
 const TEXT: RGB = [30, 30, 30];
 const MUTED: RGB = [100, 100, 100];
 const BORDER: RGB = [200, 210, 220];
-const WHITE: RGB = [255, 255, 255];
-const ORANGE: RGB = [200, 80, 30];
+let WHITE: RGB = [255, 255, 255];
+const ORANGE: RGB = [200, 80, 30]; // status color (balance due), not a brand color — unaffected by theme
 const LIGHT_BG: RGB = [245, 248, 255];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -35,21 +37,6 @@ function fmtAmtShort(n: number): string {
   return new Intl.NumberFormat('en-IN').format(Math.round(n));
 }
 
-// ── Fallback logo mark (geometric) ───────────────────────────────────────────
-function drawLogoMark(doc: jsPDF, x: number, y: number) {
-  doc.setFillColor(220, 90, 30);
-  doc.rect(x, y, 8, 10, 'F');
-  doc.setFillColor(...NAVY);
-  doc.rect(x + 9, y + 3, 5, 7, 'F');
-  doc.setFillColor(220, 90, 30);
-  doc.rect(x + 15, y + 5, 3, 5, 'F');
-  doc.setFillColor(255, 255, 255);
-  doc.rect(x + 1, y + 1, 2, 2, 'F');
-  doc.rect(x + 4, y + 1, 2, 2, 'F');
-  doc.rect(x + 1, y + 5, 2, 2, 'F');
-  doc.rect(x + 4, y + 5, 2, 2, 'F');
-}
-
 // ── Header ────────────────────────────────────────────────────────────────────
 // Returns the y position of the separator line (dynamic based on address length).
 function drawHeader(doc: jsPDF, settings: CompanySettings): number {
@@ -60,21 +47,16 @@ function drawHeader(doc: jsPDF, settings: CompanySettings): number {
   // ── Left: Logo + Company Info ──────────────────────────────────────────────
   const logoX = MARGIN;
   const logoY = 5;
-  const logoW = 16;
-  const logoH = 16;
-  const textStartX = MARGIN + logoW + 4;
-
-  // Logo image or fallback mark
-  if (settings.logoUrl) {
-    try {
-      const fmt = settings.logoUrl.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
-      doc.addImage(settings.logoUrl, fmt, logoX, logoY, logoW, logoH);
-    } catch {
-      drawLogoMark(doc, logoX, logoY + 3);
-    }
-  } else {
-    drawLogoMark(doc, logoX, logoY + 3);
-  }
+  const logoBoxW = 16;
+  const logoBoxH = 16;
+  // Aspect-correct (never stretched) — fitted inside the same box the header always
+  // reserved, so a non-square logo no longer gets squashed into a 16x16 square. A
+  // company with no logo uploaded gets a generic brand-colored placeholder mark
+  // instead, so the header is never left blank.
+  const logo = settings.logoUrl
+    ? drawImageFit(doc, settings.logoUrl, logoX, logoY, logoBoxW, logoBoxH)
+    : drawDefaultLogo(doc, NAVY, GOLD, WHITE, logoX, logoY, logoBoxW, logoBoxH);
+  const textStartX = MARGIN + (logo?.w ?? logoBoxW) + 4;
 
   // Company name
   doc.setFont('helvetica', 'bold');
@@ -248,7 +230,7 @@ function drawBuyerDetails(doc: jsPDF, billing: FlatBilling, y: number, settings:
 
   const rows: [string, string][] = [
     ['Name', billing.buyerName],
-    ['Address', billing.buyerAddress],
+    ['Address', glueFragileTokens(billing.buyerAddress)],
     ['Phone', billing.buyerPhone],
     ['PAN / Aadhar', billing.buyerPanAadhar],
   ];
@@ -455,7 +437,7 @@ function drawTerms(doc: jsPDF, billing: FlatBilling, y: number, settings: Compan
 
   billing.terms.forEach((term, i) => {
     if (!term.trim()) return;
-    const lines = doc.splitTextToSize(`${i + 1}. ${term}`, CONTENT_W - 2);
+    const lines = doc.splitTextToSize(`${i + 1}. ${glueFragileTokens(term)}`, CONTENT_W - 2);
     if (y + lines.length * 5 > PAGE_H - 20) {
       y = newPage(doc, settings);
     }
@@ -486,15 +468,10 @@ function drawSignatureBlock(doc: jsPDF, billing: FlatBilling, settings: CompanyS
   doc.setTextColor(...MUTED);
   doc.text(`For ${settings.companyName || 'Construction Documents'}`, MARGIN, y);
 
-  // Signature image (if provided) — shown above the signature line
+  // Signature image (if provided) — shown above the signature line, aspect-fit inside
+  // the same 35x18mm box so it is never stretched or distorted.
   if (settings.signatureImage) {
-    try {
-      const fmt = settings.signatureImage.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
-      // Draw image above the line: 35mm wide × 18mm tall, positioned so bottom aligns with line
-      doc.addImage(settings.signatureImage, fmt, MARGIN, y + 2, 35, 18);
-    } catch {
-      // silently fall back to blank space
-    }
+    drawImageFit(doc, settings.signatureImage, MARGIN, y + 2, 35, 18);
   }
 
   // ── Right: Buyer side ──
@@ -584,6 +561,16 @@ export async function generateFlatBillingPDFImpl(billing: FlatBilling, settings:
     logoUrl: logoData ?? undefined,
     signatureImage: signatureData ?? undefined,
   };
+
+  // Per-company branding (same theme engine the quotation PDF uses): every draw*
+  // function below reads NAVY/GOLD/WHITE at call time, so reassigning them here,
+  // before any drawing happens, is enough to brand the whole receipt — nothing else
+  // in this file changes. Falls back to the original navy/gold when a company hasn't
+  // set its own colors.
+  const theme = createPdfTheme({ primaryColor: settings.primaryColor, secondaryColor: settings.secondaryColor }, false);
+  NAVY = theme.primary;
+  GOLD = theme.rule;
+  WHITE = theme.onPrimary;
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 

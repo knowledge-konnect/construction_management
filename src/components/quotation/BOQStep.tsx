@@ -9,10 +9,35 @@ import { ChevronDown, ChevronUp, Copy, FileText, Plus, Trash2 } from 'lucide-rea
 import { useCallback, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
+// Lowercase, trim, and collapse punctuation/extra spaces — e.g. "Electrical-Works " and
+// "electrical works" both normalize to "electrical works". Used for both the exact-match
+// block and the near-match nudge below.
+const normalizeTitle = (title: string) => title.trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+
+// Cheap, dependency-free "looks like the same section" check: one normalized title
+// contains the other (e.g. "Masonry" vs "Masonry Work"), or they share the same first
+// significant word (e.g. "Electrical Works" vs "Electrical Works - Phase 2"). This is
+// intentionally loose — it's used to ask, not to block — so false positives just mean
+// an extra confirm click, not a refused add.
+const STOPWORDS = new Set(['the', 'and', 'of', 'for', 'work', 'works']);
+function isSimilarTitle(a: string, b: string): boolean {
+  const na = normalizeTitle(a);
+  const nb = normalizeTitle(b);
+  if (!na || !nb || na === nb) return false; // exact match is handled separately
+  if (na.includes(nb) || nb.includes(na)) return true;
+  const firstWord = (s: string) => s.split(' ').find((w) => w && !STOPWORDS.has(w));
+  const wa = firstWord(na);
+  const wb = firstWord(nb);
+  return !!wa && !!wb && wa === wb;
+}
+
 export default function BOQStep() {
   const { quotation, setQuotation } = useBuilder();
   const { push } = useToast();
   const [deleteSectionId, setDeleteSectionId] = useState<string | null>(null);
+  // A proposed new section whose title looks similar (not identical) to an existing
+  // one — set while we wait for the person to confirm they really want both.
+  const [pendingSection, setPendingSection] = useState<{ title: string; similarTo: string } | null>(null);
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const focusItem = useCallback((id: string) => {
@@ -25,12 +50,33 @@ export default function BOQStep() {
   if (!quotation) return null;
   const sections = quotation.boqSections;
 
-  const addSection = (title?: string) => {
+  const insertSection = (title: string) => {
     const newId = uuid();
     setQuotation((prev) => ({
       ...prev,
-      boqSections: [...prev.boqSections, { id: newId, title: title || 'New Section', displayOrder: prev.boqSections.length, items: [] }],
+      boqSections: [...prev.boqSections, { id: newId, title, displayOrder: prev.boqSections.length, items: [] }],
     }));
+  };
+
+  const addSection = (title?: string) => {
+    const trimmed = (title || 'New Section').trim();
+    // The #1 cause of a quotation showing the same section twice (two separate totals,
+    // both counted in the grand total) is this title already being in use — most often
+    // from picking the same preset from the dropdown a second time. Block this outright;
+    // nobody intentionally wants two sections both literally named "Masonry".
+    if (sections.some((s) => s.title.trim().toLowerCase() === trimmed.toLowerCase())) {
+      push('error', `A section named "${trimmed}" already exists. Rename it, or edit the existing one instead of adding a duplicate.`);
+      return;
+    }
+    // A near-match ("Masonry" vs "Masonry Work", or re-using a preset with a suffix
+    // added) is often legitimate — a phased or deliberately split section — so ask
+    // rather than block.
+    const similar = sections.find((s) => isSimilarTitle(s.title, trimmed));
+    if (similar) {
+      setPendingSection({ title: trimmed, similarTo: similar.title });
+      return;
+    }
+    insertSection(trimmed);
   };
 
   const updateSection = (id: string, patch: Partial<BOQSection>) => {
@@ -144,26 +190,26 @@ export default function BOQStep() {
       <SectionCard
         title="Bill of Quantities"
         description="Add sections and items. Amount = Quantity × Rate. Press Enter on the rate field to add a new row."
-        actions={<span className="text-sm font-semibold text-[#1D4ED8]">Subtotal: {formatINR(calcBOQSubtotal(sections))}</span>}
+        actions={<span className="text-sm font-semibold text-[var(--primary)]">Subtotal: {formatINR(calcBOQSubtotal(sections))}</span>}
       >
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <button onClick={() => addSection()} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg">
+          <button onClick={() => addSection()} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-lg">
             <Plus className="w-4 h-4" /> Add Section
           </button>
-          <select onChange={(e) => { if (e.target.value) { addSection(e.target.value); e.target.value = ''; } }} className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white" defaultValue="" aria-label="Add section from preset">
+          <select onChange={(e) => { if (e.target.value) { addSection(e.target.value); e.target.value = ''; } }} className="px-3 py-1.5 text-sm border border-[var(--border-strong)] rounded-lg bg-white" defaultValue="" aria-label="Add section from preset">
             <option value="">Add from preset…</option>
             {DEFAULT_BOQ_SECTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
 
         {sections.length === 0 && (
-          <div className="text-center py-10 border-2 border-dashed border-slate-200 rounded-lg">
+          <div className="text-center py-10 border-2 border-dashed border-[var(--border)] rounded-lg">
             <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-600 font-medium">No sections yet</p>
+            <p className="text-[var(--text-secondary)] font-medium">No sections yet</p>
             <p className="text-sm text-slate-400 mb-4">Add a section manually or pick from common presets above.</p>
             <div className="flex flex-wrap justify-center gap-2">
               {DEFAULT_BOQ_SECTIONS.slice(0, 5).map((s) => (
-                <button key={s} onClick={() => addSection(s)} className="px-3 py-1.5 text-xs font-medium text-[#1D4ED8] border border-[#1D4ED8] hover:bg-[#1D4ED8]/5 rounded-lg">
+                <button key={s} onClick={() => addSection(s)} className="px-3 py-1.5 text-xs font-medium text-[var(--primary)] border border-[var(--primary)] hover:bg-[#1D4ED8]/5 rounded-lg">
                   {s}
                 </button>
               ))}
@@ -172,27 +218,27 @@ export default function BOQStep() {
         )}
 
         {sections.map((section, sIdx) => (
-          <div key={section.id} className="mb-6 border border-slate-200 rounded-lg overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 border-b border-slate-200">
+          <div key={section.id} className="mb-6 border border-[var(--border)] rounded-lg overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 bg-[var(--surface-soft)] border-b border-[var(--border)]">
               <input
                 value={section.title}
                 onChange={(e) => updateSection(section.id, { title: e.target.value })}
                 aria-label="Section title"
-                className="flex-1 bg-transparent text-sm font-semibold text-[#1D4ED8] focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30 rounded px-1"
+                className="flex-1 bg-transparent text-sm font-semibold text-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] rounded px-1"
               />
-              <span className="text-sm text-slate-500 font-medium">{formatINR(calcSectionSubtotal(section))}</span>
+              <span className="text-sm text-[var(--text-muted)] font-medium">{formatINR(calcSectionSubtotal(section))}</span>
               <div className="flex items-center gap-0.5">
-                <button onClick={() => moveSection(section.id, -1)} disabled={sIdx === 0} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded disabled:opacity-30" aria-label="Move section up"><ChevronUp className="w-4 h-4" /></button>
-                <button onClick={() => moveSection(section.id, 1)} disabled={sIdx === sections.length - 1} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded disabled:opacity-30" aria-label="Move section down"><ChevronDown className="w-4 h-4" /></button>
-                <button onClick={() => duplicateSection(section.id)} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded" aria-label="Duplicate section"><Copy className="w-4 h-4" /></button>
-                <button onClick={() => setDeleteSectionId(section.id)} className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded" aria-label="Delete section"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => moveSection(section.id, -1)} disabled={sIdx === 0} className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--border)] rounded disabled:opacity-30" aria-label="Move section up"><ChevronUp className="w-4 h-4" /></button>
+                <button onClick={() => moveSection(section.id, 1)} disabled={sIdx === sections.length - 1} className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--border)] rounded disabled:opacity-30" aria-label="Move section down"><ChevronDown className="w-4 h-4" /></button>
+                <button onClick={() => duplicateSection(section.id)} className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--border)] rounded" aria-label="Duplicate section"><Copy className="w-4 h-4" /></button>
+                <button onClick={() => setDeleteSectionId(section.id)} className="p-1.5 text-[var(--danger)] hover:text-[var(--danger-fg)] hover:bg-[var(--danger-soft)] rounded" aria-label="Delete section"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
 
             {section.items.length > 0 && (
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#1D4ED8] text-white text-xs">
+                  <thead className="bg-[var(--primary)] text-white text-xs">
                     <tr>
                       <th className="px-2 py-2 text-left font-medium w-8">#</th>
                       <th className="px-2 py-2 text-left font-medium">Description</th>
@@ -205,15 +251,15 @@ export default function BOQStep() {
                   </thead>
                   <tbody>
                     {section.items.map((item, iIdx) => (
-                      <tr key={item.id} className="border-t border-slate-100">
-                        <td className="px-2 py-1.5 text-slate-500">{iIdx + 1}</td>
+                      <tr key={item.id} className="border-t border-[var(--border)]">
+                        <td className="px-2 py-1.5 text-[var(--text-muted)]">{iIdx + 1}</td>
                         <td className="px-2 py-1.5">
                           <input
                             ref={(el) => { inputRefs.current[item.id] = el; }}
                             value={item.description}
                             onChange={(e) => updateItem(section.id, item.id, { description: e.target.value })}
                             aria-label={`Description, row ${iIdx + 1}`}
-                            className="w-full px-1.5 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30"
+                            className="w-full px-1.5 py-1 text-xs border border-[var(--border)] rounded focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
                           />
                         </td>
                         <td className="px-2 py-1.5">
@@ -222,7 +268,7 @@ export default function BOQStep() {
                             value={item.quantity}
                             onChange={(e) => updateItem(section.id, item.id, { quantity: Number(e.target.value) })}
                             aria-label={`Quantity, row ${iIdx + 1}`}
-                            className="w-full px-1.5 py-1 text-xs text-right border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30"
+                            className="w-full px-1.5 py-1 text-xs text-right border border-[var(--border)] rounded focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
                           />
                         </td>
                         <td className="px-2 py-1.5">
@@ -230,7 +276,7 @@ export default function BOQStep() {
                             value={item.unit}
                             onChange={(e) => updateItem(section.id, item.id, { unit: e.target.value })}
                             aria-label={`Unit, row ${iIdx + 1}`}
-                            className="w-full px-1.5 py-1 text-xs border border-slate-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30"
+                            className="w-full px-1.5 py-1 text-xs border border-[var(--border)] rounded bg-white focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
                           >
                             {BOQ_UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
                           </select>
@@ -242,25 +288,25 @@ export default function BOQStep() {
                             onChange={(e) => updateItem(section.id, item.id, { rate: Number(e.target.value) })}
                             onKeyDown={(e) => handleItemKeyDown(e, section.id, true)}
                             aria-label={`Rate, row ${iIdx + 1}`}
-                            className="w-full px-1.5 py-1 text-xs text-right border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#1D4ED8]/30"
+                            className="w-full px-1.5 py-1 text-xs text-right border border-[var(--border)] rounded focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
                           />
                         </td>
-                        <td className="px-2 py-1.5 text-right font-medium text-[#1D4ED8]">{formatINR(calcItemAmount(item))}</td>
+                        <td className="px-2 py-1.5 text-right font-medium text-[var(--primary)]">{formatINR(calcItemAmount(item))}</td>
                         <td className="px-2 py-1.5">
                           <div className="flex items-center justify-center gap-0.5">
-                            <button onClick={() => moveItem(section.id, item.id, -1)} disabled={iIdx === 0} tabIndex={-1} className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30" aria-label={`Move row ${iIdx + 1} up`}><ChevronUp className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => moveItem(section.id, item.id, 1)} disabled={iIdx === section.items.length - 1} tabIndex={-1} className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30" aria-label={`Move row ${iIdx + 1} down`}><ChevronDown className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => duplicateItem(section.id, item.id)} tabIndex={-1} className="p-1 text-slate-400 hover:text-slate-700" aria-label={`Duplicate row ${iIdx + 1}`}><Copy className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => deleteItem(section.id, item.id)} tabIndex={-1} className="p-1 text-red-400 hover:text-red-600" aria-label={`Delete row ${iIdx + 1}`}><Trash2 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => moveItem(section.id, item.id, -1)} disabled={iIdx === 0} tabIndex={-1} className="p-1 text-slate-400 hover:text-[var(--text-secondary)] disabled:opacity-30" aria-label={`Move row ${iIdx + 1} up`}><ChevronUp className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => moveItem(section.id, item.id, 1)} disabled={iIdx === section.items.length - 1} tabIndex={-1} className="p-1 text-slate-400 hover:text-[var(--text-secondary)] disabled:opacity-30" aria-label={`Move row ${iIdx + 1} down`}><ChevronDown className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => duplicateItem(section.id, item.id)} tabIndex={-1} className="p-1 text-slate-400 hover:text-[var(--text-secondary)]" aria-label={`Duplicate row ${iIdx + 1}`}><Copy className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => deleteItem(section.id, item.id)} tabIndex={-1} className="p-1 text-red-400 hover:text-[var(--danger-fg)]" aria-label={`Delete row ${iIdx + 1}`}><Trash2 className="w-3.5 h-3.5" /></button>
                           </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t-2 border-slate-200 bg-slate-50">
-                      <td colSpan={5} className="px-2 py-2 text-right text-xs font-semibold text-slate-600">Section Subtotal:</td>
-                      <td className="px-2 py-2 text-right text-sm font-bold text-[#1D4ED8]">{formatINR(calcSectionSubtotal(section))}</td>
+                    <tr className="border-t-2 border-[var(--border)] bg-[var(--surface-soft)]">
+                      <td colSpan={5} className="px-2 py-2 text-right text-xs font-semibold text-[var(--text-secondary)]">Section Subtotal:</td>
+                      <td className="px-2 py-2 text-right text-sm font-bold text-[var(--primary)]">{formatINR(calcSectionSubtotal(section))}</td>
                       <td></td>
                     </tr>
                   </tfoot>
@@ -270,11 +316,11 @@ export default function BOQStep() {
 
             {/* Mobile cards */}
             {section.items.length > 0 && (
-              <div className="md:hidden divide-y divide-slate-100">
+              <div className="md:hidden divide-y divide-[var(--border)]">
                 {section.items.map((item, iIdx) => (
                   <div key={item.id} className="p-3">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <span className="text-xs text-slate-500">#{iIdx + 1}</span>
+                      <span className="text-xs text-[var(--text-muted)]">#{iIdx + 1}</span>
                       <div className="flex gap-1">
                         <button onClick={() => moveItem(section.id, item.id, -1)} disabled={iIdx === 0} className="p-1 text-slate-400 disabled:opacity-30" aria-label="Move up"><ChevronUp className="w-4 h-4" /></button>
                         <button onClick={() => moveItem(section.id, item.id, 1)} disabled={iIdx === section.items.length - 1} className="p-1 text-slate-400 disabled:opacity-30" aria-label="Move down"><ChevronDown className="w-4 h-4" /></button>
@@ -288,42 +334,42 @@ export default function BOQStep() {
                       onChange={(e) => updateItem(section.id, item.id, { description: e.target.value })}
                       placeholder="Description"
                       aria-label={`Description, row ${iIdx + 1}`}
-                      className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded mb-2"
+                      className="w-full px-2 py-1.5 text-sm border border-[var(--border)] rounded mb-2"
                     />
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="text-xs text-slate-500">Qty</label>
-                        <input type="number" value={item.quantity} onChange={(e) => updateItem(section.id, item.id, { quantity: Number(e.target.value) })} aria-label={`Quantity, row ${iIdx + 1}`} className="w-full px-2 py-1 text-sm border border-slate-200 rounded" />
+                        <label className="text-xs text-[var(--text-muted)]">Qty</label>
+                        <input type="number" value={item.quantity} onChange={(e) => updateItem(section.id, item.id, { quantity: Number(e.target.value) })} aria-label={`Quantity, row ${iIdx + 1}`} className="w-full px-2 py-1 text-sm border border-[var(--border)] rounded" />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-500">Unit</label>
-                        <select value={item.unit} onChange={(e) => updateItem(section.id, item.id, { unit: e.target.value })} aria-label={`Unit, row ${iIdx + 1}`} className="w-full px-1 py-1 text-sm border border-slate-200 rounded bg-white">{BOQ_UNITS.map((u) => <option key={u} value={u}>{u}</option>)}</select>
+                        <label className="text-xs text-[var(--text-muted)]">Unit</label>
+                        <select value={item.unit} onChange={(e) => updateItem(section.id, item.id, { unit: e.target.value })} aria-label={`Unit, row ${iIdx + 1}`} className="w-full px-1 py-1 text-sm border border-[var(--border)] rounded bg-white">{BOQ_UNITS.map((u) => <option key={u} value={u}>{u}</option>)}</select>
                       </div>
                       <div>
-                        <label className="text-xs text-slate-500">Rate</label>
+                        <label className="text-xs text-[var(--text-muted)]">Rate</label>
                         <input
                           type="number"
                           value={item.rate}
                           onChange={(e) => updateItem(section.id, item.id, { rate: Number(e.target.value) })}
                           onKeyDown={(e) => handleItemKeyDown(e, section.id, true)}
                           aria-label={`Rate, row ${iIdx + 1}`}
-                          className="w-full px-2 py-1 text-sm border border-slate-200 rounded"
+                          className="w-full px-2 py-1 text-sm border border-[var(--border)] rounded"
                         />
                       </div>
                     </div>
-                    <div className="flex justify-end mt-2"><span className="text-sm font-semibold text-[#1D4ED8]">{formatINR(calcItemAmount(item))}</span></div>
+                    <div className="flex justify-end mt-2"><span className="text-sm font-semibold text-[var(--primary)]">{formatINR(calcItemAmount(item))}</span></div>
                   </div>
                 ))}
-                <div className="flex justify-between px-3 py-2 bg-slate-50 text-sm font-semibold">
-                  <span>Section Subtotal:</span><span className="text-[#1D4ED8]">{formatINR(calcSectionSubtotal(section))}</span>
+                <div className="flex justify-between px-3 py-2 bg-[var(--surface-soft)] text-sm font-semibold">
+                  <span>Section Subtotal:</span><span className="text-[var(--primary)]">{formatINR(calcSectionSubtotal(section))}</span>
                 </div>
               </div>
             )}
 
             {section.items.length === 0 && <div className="px-4 py-6 text-center text-sm text-slate-400">No items in this section yet.</div>}
 
-            <div className="px-4 py-2 border-t border-slate-100 bg-slate-50">
-              <button onClick={() => addItem(section.id, true)} className="inline-flex items-center gap-1.5 text-sm text-[#1D4ED8] font-medium hover:underline">
+            <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--surface-soft)]">
+              <button onClick={() => addItem(section.id, true)} className="inline-flex items-center gap-1.5 text-sm text-[var(--primary)] font-medium hover:underline">
                 <Plus className="w-4 h-4" /> Add Item
               </button>
             </div>
@@ -331,14 +377,22 @@ export default function BOQStep() {
         ))}
 
         {sections.length > 0 && (
-          <div className="flex justify-between items-center px-4 py-3 bg-[#1D4ED8] text-white rounded-lg mt-2">
+          <div className="flex justify-between items-center px-4 py-3 bg-[var(--primary)] text-white rounded-lg mt-2">
             <span className="text-sm font-semibold">BOQ Grand Total</span>
-            <span className="text-lg font-bold text-[#F4B72B]">{formatINR(calcBOQSubtotal(sections))}</span>
+            <span className="text-lg font-bold text-[var(--primary)]">{formatINR(calcBOQSubtotal(sections))}</span>
           </div>
         )}
       </SectionCard>
 
       <ConfirmDialog open={!!deleteSectionId} title="Delete BOQ section?" message="This will permanently remove this section and all items inside it." danger confirmLabel="Delete section" onConfirm={() => deleteSectionId && deleteSection(deleteSectionId)} onCancel={() => setDeleteSectionId(null)} />
+      <ConfirmDialog
+        open={!!pendingSection}
+        title="Similar section already exists"
+        message={pendingSection && `This looks similar to the existing section "${pendingSection.similarTo}". Add "${pendingSection.title}" as a separate section anyway?`}
+        confirmLabel="Add anyway"
+        onConfirm={() => { if (pendingSection) insertSection(pendingSection.title); setPendingSection(null); }}
+        onCancel={() => setPendingSection(null)}
+      />
     </div>
   );
 }

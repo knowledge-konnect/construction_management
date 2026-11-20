@@ -20,6 +20,7 @@ import {
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
+  refreshUser: () => Promise<void>;
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (email: string, password: string, fullName?: string) => Promise<AuthResult>;
   logout: () => Promise<AuthResult>;
@@ -33,6 +34,11 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshUser = useCallback(async () => {
+    const current = await getCurrentUser();
+    setUser(current);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -87,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, resetPassword, confirmPasswordReset, changePassword }}>
+    <AuthContext.Provider value={{ user, loading, refreshUser, login, register, logout, resetPassword, confirmPasswordReset, changePassword }}>
       {children}
     </AuthContext.Provider>
   );

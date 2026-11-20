@@ -1,4 +1,5 @@
 import ConfirmDialog from '@/components/ConfirmDialog';
+import DataTable, { CellText, RowActionButton, RowActions, type Column } from '@/components/ui/DataTable';
 import { AppButton, EmptyState, Modal, PremiumCard, SkeletonRow, StatusPill } from '@/components/ui/DesignSystem';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
@@ -65,19 +66,28 @@ import {
     type ProjectStageStatus,
     type PurchaseOrderRecord
 } from '@/services/projectCost.service';
-import { createProjectUnit, deleteProjectUnit, listProjectUnits, updateProjectUnit, type ProjectUnitRecord } from '@/services/projectUnit.service';
+import {
+    createProjectUnit,
+    deleteProjectUnit,
+    listProjectUnits,
+    updateProjectUnit,
+    type ProjectUnitRecord,
+    type ProjectUnitShareType,
+    type ProjectUnitStatus,
+    type ProjectUnitSummary,
+} from '@/services/projectUnit.service';
 import { ArrowUpRight, CalendarClock, FileText, FolderKanban, Link2, MessageCircle, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
-const stageStatuses: ProjectStageStatus[] = ['pending', 'in_progress', 'completed', 'on_hold'];
+const stageStatuses: ProjectStageStatus[] = ['pending', 'in_progress', 'completed', 'on_hold', 'skipped'];
 const progressVisibilityStatuses: ProjectProgressVisibility[] = ['draft', 'published'];
 const expenseStatuses: ProjectExpenseStatus[] = ['unpaid', 'partially_paid', 'paid', 'void'];
 const receiptMethods: ProjectReceiptPaymentMethod[] = ['cash', 'upi', 'bank_transfer', 'cheque', 'other'];
 
-const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]';
-const labelClass = 'mb-1.5 block text-sm font-medium text-[#344054]';
-const tableEditButtonClass = '!px-2.5 !py-1.5 !bg-slate-100 hover:!bg-slate-200 !border !border-slate-200';
-const tableDeleteButtonClass = '!px-2.5 !py-1.5 !bg-red-100 hover:!bg-red-200 !border !border-red-200';
+const inputClass = 'w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]';
+const labelClass = 'mb-1.5 block text-sm font-medium text-[var(--text-secondary)]';
+const tableEditButtonClass = '!px-2.5 !py-1.5 !bg-[var(--surface-muted)] hover:!bg-[var(--border)] !border !border-[var(--border)]';
+const tableDeleteButtonClass = '!px-2.5 !py-1.5 !bg-[var(--danger-soft)] hover:!bg-red-200 !border !border-[var(--danger-border)]';
 
 const asInputDate = (value?: string | null) => (value ? value.slice(0, 10) : '');
 
@@ -95,7 +105,7 @@ const parseOptionalNumber = (value: string) => {
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
     return (
         <label className="block">
-            <span className={labelClass}>{label}{required ? <span className="text-red-600"> *</span> : null}</span>
+            <span className={labelClass}>{label}{required ? <span className="text-[var(--danger-fg)]"> *</span> : null}</span>
             {children}
         </label>
     );
@@ -133,6 +143,7 @@ const stageStatusLabelMap: Record<ProjectStageStatus, string> = {
     in_progress: 'In Progress',
     completed: 'Completed',
     on_hold: 'On Hold',
+    skipped: 'Skipped',
 };
 
 export function ProjectOverviewPanel({ project }: { project: ProjectRecord }) {
@@ -148,6 +159,27 @@ export function ProjectOverviewPanel({ project }: { project: ProjectRecord }) {
         pendingDeliveryQuantity: null,
         deliveryStatus: null,
     });
+    const [projectProgress, setProjectProgress] = useState<{
+        overallCompletion: number | null;
+        completedStages: number;
+        currentStage: string | null;
+        upcomingStages: string[];
+        expectedCompletionDate: string | null;
+    }>({
+        overallCompletion: null,
+        completedStages: 0,
+        currentStage: null,
+        upcomingStages: [],
+        expectedCompletionDate: null,
+    });
+    const [recentActivity, setRecentActivity] = useState<Array<{
+        id: string;
+        label: string;
+        description: string;
+        date: string | null;
+        tone: 'info' | 'success' | 'warning';
+        href: string;
+    }>>([]);
 
     useEffect(() => {
         let active = true;
@@ -162,6 +194,13 @@ export function ProjectOverviewPanel({ project }: { project: ProjectRecord }) {
                     pendingDeliveryQuantity: null as number | null,
                     deliveryStatus: null as string | null,
                 };
+
+                const [stages, expenseRows, receiptRows, progressUpdates] = await Promise.all([
+                    listProjectStages(project.id),
+                    listProjectExpenses(project.id),
+                    listProjectReceipts(project.id),
+                    listProjectProgressUpdates(project.id),
+                ]);
 
                 if (project.businessModel === 'property_development' && project.developmentArrangement === 'joint_development' && project.landownerPartyId) {
                     const parties = await listParties();
@@ -210,9 +249,67 @@ export function ProjectOverviewPanel({ project }: { project: ProjectRecord }) {
                     };
                 }
 
+                const orderedStages = [...stages].sort((left, right) => Number(left.sequenceNumber ?? 0) - Number(right.sequenceNumber ?? 0));
+                const currentStage = orderedStages.find((row) => row.status === 'in_progress')
+                    ?? orderedStages.find((row) => row.status === 'pending')
+                    ?? orderedStages.find((row) => row.status === 'on_hold')
+                    ?? null;
+                const upcomingStages = orderedStages
+                    .filter((row) => row.status !== 'completed' && row.status !== 'skipped')
+                    .slice(0, 2)
+                    .map((row) => row.name);
+                const overallCompletion = orderedStages.length > 0
+                    ? Math.round(orderedStages.reduce((sum, row) => sum + Number(row.completionPercentage ?? 0), 0) / orderedStages.length)
+                    : null;
+                const plannedCompletionStages = orderedStages
+                    .filter((row) => row.plannedEndDate)
+                    .sort((left, right) => new Date(left.plannedEndDate ?? 0).getTime() - new Date(right.plannedEndDate ?? 0).getTime());
+                const expectedCompletionDate = project.expectedEndDate ?? (plannedCompletionStages.length > 0 ? plannedCompletionStages[plannedCompletionStages.length - 1].plannedEndDate ?? null : null);
+
+                const activity = [
+                    ...progressUpdates.slice(0, 3).map((update) => ({
+                        id: `progress-${update.id}`,
+                        label: update.title || 'Site update',
+                        description: update.description || 'Progress update recorded.',
+                        date: update.updateDate ?? update.updatedAt ?? update.createdAt ?? null,
+                        tone: 'info' as const,
+                        href: `?tab=Execution`,
+                    })),
+                    ...expenseRows.slice(0, 2).map((expense) => ({
+                        id: `expense-${expense.id}`,
+                        label: expense.supplierName || 'Expense',
+                        description: `${expense.category || 'Expense'} • ${formatINR(Number(expense.billAmount ?? 0))}`,
+                        date: expense.createdAt ?? null,
+                        tone: 'warning' as const,
+                        href: `?tab=Finance`,
+                    })),
+                    ...receiptRows.slice(0, 2).map((receipt) => ({
+                        id: `receipt-${receipt.id}`,
+                        label: receipt.receiptNumber || 'Payment received',
+                        description: `${receipt.paymentMethod} • ${formatINR(Number(receipt.amount ?? 0))}`,
+                        date: receipt.receivedDate ?? receipt.createdAt ?? null,
+                        tone: 'success' as const,
+                        href: `?tab=Finance`,
+                    })),
+                ]
+                    .sort((left, right) => {
+                        const leftDate = left.date ? new Date(left.date).getTime() : 0;
+                        const rightDate = right.date ? new Date(right.date).getTime() : 0;
+                        return rightDate - leftDate;
+                    })
+                    .slice(0, 5);
+
                 if (!active) return;
                 setLandownerParty(nextLandowner);
                 setMaterialSupplySnapshot(nextMaterialSupplySnapshot);
+                setProjectProgress({
+                    overallCompletion: overallCompletion,
+                    completedStages: orderedStages.filter((row) => row.status === 'completed' || row.status === 'skipped').length,
+                    currentStage: currentStage ? currentStage.name : null,
+                    upcomingStages,
+                    expectedCompletionDate,
+                });
+                setRecentActivity(activity);
             } catch (err) {
                 console.error(err);
                 if (!active) return;
@@ -226,7 +323,7 @@ export function ProjectOverviewPanel({ project }: { project: ProjectRecord }) {
         return () => {
             active = false;
         };
-    }, [project.id, project.businessModel, project.developmentArrangement, project.landownerPartyId]);
+    }, [project.id, project.businessModel, project.developmentArrangement, project.expectedEndDate, project.landownerPartyId]);
 
     const businessTypeLabel = BUSINESS_MODEL_OPTIONS.find((option) => option.value === project.businessModel)?.label ?? 'Not selected';
     const developmentTypeLabel = project.businessModel === 'property_development'
@@ -311,83 +408,172 @@ export function ProjectOverviewPanel({ project }: { project: ProjectRecord }) {
         { label: 'Expected completion', value: project.expectedEndDate ? formatDate(project.expectedEndDate) : 'Pending' },
     ];
 
+    const quickNavigation = [
+        { label: 'Execution', href: `?tab=Execution`, helper: 'Stages and updates' },
+        { label: 'Finance', href: `?tab=Finance`, helper: 'Costs and receipts' },
+        ...(project.businessModel === 'property_development' ? [{ label: 'Inventory', href: `?tab=Inventory`, helper: 'Units and allocation' }] : []),
+        { label: 'Documents', href: `?tab=Documents`, helper: 'Files and attachments' },
+    ];
+
     return (
         <div className="space-y-6">
-            {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+            {error && <div className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-fg)]">{error}</div>}
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {kpiCards.map((item) => (
                     <PremiumCard key={item.label} className="p-5">
                         <div className="flex items-start justify-between gap-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085]">{item.label}</p>
-                            <span className="rounded-full border border-[#DBEAFE] bg-[#EFF6FF] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#1D4ED8]">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">{item.label}</p>
+                            <span className="rounded-full border border-[var(--info-border)] bg-[var(--primary-soft)] px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--primary)]">
                                 {item.tone}
                             </span>
                         </div>
-                        {loading ? <SkeletonRow className="mt-4 h-7 w-24" /> : <p className="mt-4 text-xl font-semibold text-[#17243A]">{item.value}</p>}
+                        {loading ? <SkeletonRow className="mt-4 h-7 w-24" /> : <p className="mt-4 text-xl font-semibold text-[var(--text)]">{item.value}</p>}
                     </PremiumCard>
                 ))}
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-4 xl:grid-cols-[1.5fr_0.9fr]">
                 <PremiumCard className="p-5">
                     <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085]">Project overview</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Project overview</p>
                         <StatusPill label={statusLabelMap[project.status] ?? project.status} tone={statusToneMap[project.status] ?? 'neutral'} />
                     </div>
-                    <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-[#17243A]">{project.name}</h2>
+                    <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-[var(--text)]">{project.name}</h2>
                     <dl className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         {overviewFields.map((field) => (
-                            <div key={field.label} className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5">
-                                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">{field.label}</dt>
-                                <dd className="mt-1 text-sm font-medium text-[#17243A]">{field.value}</dd>
+                            <div key={field.label} className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5">
+                                <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">{field.label}</dt>
+                                <dd className="mt-1 text-sm font-medium text-[var(--text)]">{field.value}</dd>
                             </div>
                         ))}
                     </dl>
-                    <div className="mt-4 rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Project notes</p>
-                        <p className="mt-2 text-sm text-[#344054]">{project.description || 'No notes yet.'}</p>
+                    <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Project notes</p>
+                        <p className="mt-2 text-xs text-[var(--text-secondary)]">{project.description || 'No notes yet.'}</p>
+                    </div>
+                </PremiumCard>
+
+                <PremiumCard className="p-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Quick navigation</p>
+                    <div className="mt-4 space-y-2">
+                        {quickNavigation.map((item) => (
+                            <a key={item.label} href={item.href} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5 text-left transition hover:border-[var(--primary)] hover:bg-[var(--primary-soft)]">
+                                <div>
+                                    <p className="text-sm font-semibold text-[var(--text)]">{item.label}</p>
+                                    <p className="text-xs text-[var(--text-muted)]">{item.helper}</p>
+                                </div>
+                                <ArrowUpRight className="h-4 w-4 text-[var(--primary)]" />
+                            </a>
+                        ))}
+                    </div>
+                </PremiumCard>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                <PremiumCard className="p-5">
+                    <div className="flex items-center justify-between gap-3">
+                        <p className="text-base font-semibold text-[var(--text)]">Project progress</p>
+                        {projectProgress.overallCompletion !== null ? (
+                            <div className="rounded-full border border-[var(--info-border)] bg-[var(--primary-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--primary)]">
+                                {projectProgress.overallCompletion}% complete
+                            </div>
+                        ) : null}
+                    </div>
+
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Completed</p>
+                            <p className="mt-2 text-xl font-semibold text-[var(--text)]">{projectProgress.completedStages}</p>
+                        </div>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Current stage</p>
+                            <p className="mt-2 text-sm font-semibold text-[var(--text)]">{projectProgress.currentStage || 'Not started'}</p>
+                        </div>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Expected completion</p>
+                            <p className="mt-2 text-sm font-semibold text-[var(--text)]">{projectProgress.expectedCompletionDate ? formatDate(projectProgress.expectedCompletionDate) : (project.expectedEndDate ? formatDate(project.expectedEndDate) : 'Pending')}</p>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Upcoming stages</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            {projectProgress.upcomingStages.length > 0 ? (
+                                projectProgress.upcomingStages.map((stage) => (
+                                    <span key={stage} className="rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-xs font-medium text-[var(--text)]">{stage}</span>
+                                ))
+                            ) : (
+                                <span className="text-sm text-[var(--text-muted)]">No upcoming stages pending.</span>
+                            )}
+                        </div>
+                    </div>
+                </PremiumCard>
+
+                <PremiumCard className="p-5">
+                    <p className="text-base font-semibold text-[var(--text)]">Recent activity</p>
+                    <div className="mt-4 space-y-3">
+                        {recentActivity.length > 0 ? (
+                            recentActivity.map((item) => (
+                                <a key={item.id} href={item.href} className="flex items-start justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3 text-left hover:border-[var(--primary)]">
+                                    <div>
+                                        <p className="text-sm font-semibold text-[var(--text)]">{item.label}</p>
+                                        <p className="mt-1 text-xs text-[var(--text-muted)]">{item.description}</p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-2">
+                                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.08em] ${item.tone === 'success' ? 'border border-[var(--success-border)] bg-[var(--success-soft)] text-[var(--success-fg)]' : item.tone === 'warning' ? 'border border-[var(--warning-border)] bg-[var(--warning-soft)] text-[var(--warning-fg)]' : 'border border-[var(--info-border)] bg-[var(--primary-soft)] text-[var(--primary)]'}`}>
+                                            {item.tone}
+                                        </span>
+                                        <span className="text-xs text-[var(--text-muted)]">{item.date ? formatDate(item.date) : 'Recent'}</span>
+                                    </div>
+                                </a>
+                            ))
+                        ) : (
+                            <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-soft)] p-3 text-sm text-[var(--text-muted)]">
+                                No recent activity is available yet for this project.
+                            </div>
+                        )}
                     </div>
                 </PremiumCard>
             </div>
 
             {project.businessModel === 'property_development' && project.developmentArrangement === 'joint_development' && (
                 <PremiumCard className="p-5">
-                    <p className="text-base font-semibold text-[#17243A]">Joint development details</p>
+                    <p className="text-base font-semibold text-[var(--text)]">Joint development details</p>
                     <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                        <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Landowner</p>
-                            <p className="mt-1 text-sm font-medium text-[#17243A]">{landownerParty?.name || 'Not assigned'}</p>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Landowner</p>
+                            <p className="mt-1 text-sm font-medium text-[var(--text)]">{landownerParty?.name || 'Not assigned'}</p>
                         </div>
-                        <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Total flats</p>
-                            <p className="mt-1 text-sm font-medium text-[#17243A]">{project.totalProjectFlats ?? 'N/A'}</p>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Total flats</p>
+                            <p className="mt-1 text-sm font-medium text-[var(--text)]">{project.totalProjectFlats ?? 'N/A'}</p>
                         </div>
-                        <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Builder's flats</p>
-                            <p className="mt-1 text-sm font-medium text-[#17243A]">{project.builderShareUnits ?? 'N/A'}</p>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Builder's flats</p>
+                            <p className="mt-1 text-sm font-medium text-[var(--text)]">{project.builderShareUnits ?? 'N/A'}</p>
                         </div>
-                        <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Landowner's flats</p>
-                            <p className="mt-1 text-sm font-medium text-[#17243A]">{project.landownerShareUnits ?? 'N/A'}</p>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft] px-3 py-2.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Landowner's flats</p>
+                            <p className="mt-1 text-sm font-medium text-[var(--text)]">{project.landownerShareUnits ?? 'N/A'}</p>
                         </div>
-                        <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">JDA agreement number</p>
-                            <p className="mt-1 text-sm font-medium text-[#17243A]">{project.jdaAgreementReference || 'N/A'}</p>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">JDA agreement number</p>
+                            <p className="mt-1 text-sm font-medium text-[var(--text)]">{project.jdaAgreementReference || 'N/A'}</p>
                         </div>
-                        <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">JDA agreement date</p>
-                            <p className="mt-1 text-sm font-medium text-[#17243A]">{project.jdaAgreementDate ? formatDate(project.jdaAgreementDate) : 'N/A'}</p>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">JDA agreement date</p>
+                            <p className="mt-1 text-sm font-medium text-[var(--text)]">{project.jdaAgreementDate ? formatDate(project.jdaAgreementDate) : 'N/A'}</p>
                         </div>
-                        <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5 md:col-span-2 xl:col-span-2">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">JDA document link</p>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5 md:col-span-2 xl:col-span-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">JDA document link</p>
                             {project.jdaAgreementDocumentUrl ? (
-                                <a href={project.jdaAgreementDocumentUrl} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[#1D4ED8] underline-offset-2 hover:underline">
+                                <a href={project.jdaAgreementDocumentUrl} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[var(--primary)] underline-offset-2 hover:underline">
                                     {project.jdaAgreementDocumentUrl}
                                     <Link2 className="h-3.5 w-3.5" />
                                 </a>
                             ) : (
-                                <p className="mt-1 text-sm font-medium text-[#17243A]">N/A</p>
+                                <p className="mt-1 text-sm font-medium text-[var(--text)]">N/A</p>
                             )}
                         </div>
                     </div>
@@ -401,8 +587,8 @@ export function ProjectExecutionPanel({ projectId }: { projectId: string }) {
     return (
         <div className="space-y-4">
             <PremiumCard className="p-4">
-                <p className="text-base font-semibold text-[#17243A]">Execution</p>
-                <p className="mt-1 text-sm text-[#667085]">Track stages and site updates.</p>
+                <p className="text-base font-semibold text-[var(--text)]">Execution</p>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">Track stages and site updates.</p>
             </PremiumCard>
             <ProjectStagePanel projectId={projectId} />
             <ProjectProgressPanel projectId={projectId} />
@@ -534,7 +720,7 @@ export function ProjectFinancePanel({
         <div className="space-y-6">
             <PremiumCard className="p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-base font-semibold text-[#17243A]">Financial summary</p>
+                    <p className="text-base font-semibold text-[var(--text)]">Financial summary</p>
                     <div className="flex flex-wrap gap-2">
                         <AppButton variant="secondary" onClick={onManageInvoices}>Open Invoices</AppButton>
                         <AppButton variant="secondary" onClick={onManageReceipts}>Open Receipts</AppButton>
@@ -542,44 +728,44 @@ export function ProjectFinancePanel({
                 </div>
                 <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
                     {financialSummaryCards.map((item) => (
-                        <div key={item.label} className="rounded-xl border border-[#E6E8EC] bg-slate-50 p-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">{item.label}</p>
-                            <p className="mt-2 text-base font-semibold text-[#17243A]">{loading ? '…' : item.value}</p>
+                        <div key={item.label} className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">{item.label}</p>
+                            <p className="mt-2 text-base font-semibold text-[var(--text)]">{loading ? '…' : item.value}</p>
                         </div>
                     ))}
                 </div>
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                    <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 p-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Budget remaining</p>
-                        <p className="mt-2 text-base font-semibold text-[#17243A]">{loading ? '…' : formatINR(budgetRemaining)}</p>
+                    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Budget remaining</p>
+                        <p className="mt-2 text-base font-semibold text-[var(--text)]">{loading ? '…' : formatINR(budgetRemaining)}</p>
                     </div>
-                    <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 p-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Supplier payments settled</p>
-                        <p className="mt-2 text-base font-semibold text-[#17243A]">{loading ? '…' : formatINR(summary.supplierPayments)}</p>
+                    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Supplier payments settled</p>
+                        <p className="mt-2 text-base font-semibold text-[var(--text)]">{loading ? '…' : formatINR(summary.supplierPayments)}</p>
                     </div>
                 </div>
-                <div className="mt-4 rounded-xl border border-[#E6E8EC] bg-slate-50 p-3">
+                <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">Budget status</p>
-                            <p className="mt-1 text-sm text-[#344054]">{loading ? 'Loading budget summary…' : `${formatINR(Math.max(budgetRemaining, 0))} remaining against the project budget`}</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Budget status</p>
+                            <p className="mt-1 text-sm text-[var(--text-secondary)]">{loading ? 'Loading budget summary…' : `${formatINR(Math.max(budgetRemaining, 0))} remaining against the project budget`}</p>
                         </div>
                         <StatusPill label={budgetRemaining >= 0 ? 'On track' : 'Over budget'} tone={budgetRemaining >= 0 ? 'success' : 'warning'} />
                     </div>
-                    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
-                        <div className="h-full rounded-full bg-[#1D4ED8]" style={{ width: `${summary.projectBudget > 0 ? Math.max(6, Math.min(100, budgetUtilization)) : 0}%` }} />
+                    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[var(--border)]">
+                        <div className="h-full rounded-full bg-[var(--primary)]" style={{ width: `${summary.projectBudget > 0 ? Math.max(6, Math.min(100, budgetUtilization)) : 0}%` }} />
                     </div>
-                    <p className="mt-2 text-xs text-[#667085]">Budget utilization: {loading ? '…' : `${Math.min(100, Math.max(0, Math.round(budgetUtilization)))}%`}</p>
+                    <p className="mt-2 text-xs text-[var(--text-muted)]">Budget utilization: {loading ? '…' : `${Math.min(100, Math.max(0, Math.round(budgetUtilization)))}%`}</p>
                 </div>
             </PremiumCard>
 
             <PremiumCard className="p-4 sm:p-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-sm font-semibold text-[#17243A]">Supplier expenses</p>
+                        <p className="text-sm font-semibold text-[var(--text)]">Supplier expenses</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
-                            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-[#667085]">Read-only</span>
-                            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-[#667085]">Project records only</span>
+                            <span className="rounded-md border border-[var(--border)] bg-[var(--surface-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-muted)]">Read-only</span>
+                            <span className="rounded-md border border-[var(--border)] bg-[var(--surface-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-muted)]">Project records only</span>
                         </div>
                     </div>
                     <AppButton variant="secondary" onClick={onManageExpenses}>
@@ -593,10 +779,10 @@ export function ProjectFinancePanel({
             <PremiumCard className="p-4 sm:p-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-sm font-semibold text-[#17243A]">Customer receipts</p>
+                        <p className="text-sm font-semibold text-[var(--text)]">Customer receipts</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
-                            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-[#667085]">Read-only</span>
-                            <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-[#667085]">Project records only</span>
+                            <span className="rounded-md border border-[var(--border)] bg-[var(--surface-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-muted)]">Read-only</span>
+                            <span className="rounded-md border border-[var(--border)] bg-[var(--surface-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-muted)]">Project records only</span>
                         </div>
                     </div>
                     <AppButton variant="secondary" onClick={onManageReceipts}>
@@ -610,9 +796,9 @@ export function ProjectFinancePanel({
             <PremiumCard className="p-4 sm:p-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-sm font-semibold text-[#17243A]">Procurement and delivery</p>
+                        <p className="text-sm font-semibold text-[var(--text)]">Procurement and delivery</p>
                     </div>
-                    <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-[#667085]">
+                    <span className="rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)]">
                         Commitment only
                     </span>
                 </div>
@@ -622,16 +808,282 @@ export function ProjectFinancePanel({
             <PremiumCard className="p-4 sm:p-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-sm font-semibold text-[#17243A]">Investors and contributions</p>
-                        <p className="text-xs text-[#667085]">Investor funding linked to this project.</p>
+                        <p className="text-sm font-semibold text-[var(--text)]">Investors and contributions</p>
+                        <p className="text-xs text-[var(--text-muted)]">Investor funding linked to this project.</p>
                     </div>
-                    <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-[#667085]">
+                    <span className="rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)]">
                         Project-scoped module
                     </span>
                 </div>
                 <ProjectInvestorsPanel projectId={projectId} />
             </PremiumCard>
         </div>
+    );
+}
+
+export function ProjectInventoryPanel({ project }: { project: ProjectRecord }) {
+    if (project.businessModel === 'material_supply') {
+        return <ProjectMaterialReceiptPanel projectId={project.id} />;
+    }
+
+    if (project.businessModel === 'property_development') {
+        return <ProjectUnitInventoryPanel projectId={project.id} />;
+    }
+
+    return (
+        <PremiumCard className="p-5">
+            <p className="text-base font-semibold text-[var(--text)]">Inventory</p>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
+                Detailed inventory records for this project type are not yet configured in this workspace.
+            </p>
+        </PremiumCard>
+    );
+}
+
+function ProjectUnitInventoryPanel({ projectId }: { projectId: string }) {
+    const [units, setUnits] = useState<ProjectUnitRecord[]>([]);
+    const [summary, setSummary] = useState<ProjectUnitSummary | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editing, setEditing] = useState<ProjectUnitRecord | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
+    const [form, setForm] = useState<{
+        flatNo: string;
+        floor: string;
+        blockTower: string;
+        shareType: ProjectUnitShareType;
+        status: ProjectUnitStatus;
+    }>({
+        flatNo: '',
+        floor: '',
+        blockTower: '',
+        shareType: 'builder',
+        status: 'available',
+    });
+    const { push } = useToast();
+
+    const loadUnits = async () => {
+        setLoading(true);
+        const result = await listProjectUnits(projectId);
+        setUnits(result.units);
+        setSummary(result.summary);
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        void loadUnits();
+    }, [projectId]);
+
+    const openCreate = () => {
+        setEditing(null);
+        setForm({
+            flatNo: '',
+            floor: '',
+            blockTower: '',
+            shareType: 'builder',
+            status: 'available',
+        });
+        setModalOpen(true);
+    };
+
+    const openEdit = (unit: ProjectUnitRecord) => {
+        setEditing(unit);
+        setForm({
+            flatNo: unit.flatNo,
+            floor: unit.floor == null ? '' : String(unit.floor),
+            blockTower: unit.blockTower ?? '',
+            shareType: unit.shareType,
+            status: unit.status,
+        });
+        setModalOpen(true);
+    };
+
+    const handleSave = async (event: React.FormEvent) => {
+        event.preventDefault();
+
+        if (!form.flatNo.trim()) {
+            push('error', 'Unit number is required.');
+            return;
+        }
+
+        const parsedFloor = parseOptionalNumber(form.floor);
+        if (form.floor.trim() && (parsedFloor == null || !Number.isInteger(parsedFloor))) {
+            push('error', 'Floor must be a whole number.');
+            return;
+        }
+
+        setSaving(true);
+        const payload = {
+            flatNo: form.flatNo.trim(),
+            floor: form.floor.trim() ? Number(form.floor) : null,
+            blockTower: form.blockTower.trim() || null,
+            shareType: form.shareType,
+            status: form.status,
+        };
+
+        const result = editing
+            ? await updateProjectUnit(projectId, editing.id, payload)
+            : await createProjectUnit(projectId, payload);
+        setSaving(false);
+
+        if (!result) {
+            push('error', editing ? 'Could not update this unit right now. Please try again.' : 'Could not add this unit right now. Please try again.');
+            return;
+        }
+
+        push('success', editing ? 'Unit updated successfully.' : 'Unit added successfully.');
+        setModalOpen(false);
+        await loadUnits();
+    };
+
+    const handleDelete = async () => {
+        if (!deleteId) return;
+
+        const ok = await deleteProjectUnit(projectId, deleteId);
+        setDeleteId(null);
+        if (!ok) {
+            push('error', 'Could not delete this unit right now. Please try again.');
+            return;
+        }
+
+        push('success', 'Unit deleted successfully.');
+        await loadUnits();
+    };
+
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading inventory units...</div>;
+
+    const unitColumns: Column<(typeof units)[number]>[] = [
+        {
+            key: 'flatNo',
+            header: 'Unit no',
+            cell: (unit) => <span className="font-medium text-[var(--text)]">{unit.flatNo}</span>,
+        },
+        { key: 'floor', header: 'Floor', cell: (unit) => <CellText>{unit.floor ?? '-'}</CellText> },
+        { key: 'blockTower', header: 'Tower/Block', cell: (unit) => <CellText>{unit.blockTower || '-'}</CellText> },
+        {
+            key: 'shareType',
+            header: 'Share',
+            cell: (unit) => <StatusPill label={unit.shareType === 'landowner' ? 'Landowner' : 'Builder'} tone={unit.shareType === 'landowner' ? 'info' : 'neutral'} />,
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            cell: (unit) => (
+                <StatusPill
+                    label={unit.status === 'available' ? 'Available' : unit.status === 'allocated' ? 'Allocated' : 'Booked'}
+                    tone={unit.status === 'booked' ? 'success' : unit.status === 'allocated' ? 'warning' : 'neutral'}
+                />
+            ),
+        },
+        {
+            key: 'actions',
+            header: 'Actions',
+            kind: 'actions',
+            cell: (unit) => (
+                <RowActions>
+                    <RowActionButton label="Edit" icon={<Pencil className="h-4 w-4" />} onClick={() => openEdit(unit)} />
+                    <RowActionButton label="Delete" tone="danger" icon={<Trash2 className="h-4 w-4" />} onClick={() => setDeleteId(unit.id)} />
+                </RowActions>
+            ),
+        },
+    ];
+
+    return (
+        <>
+            <PremiumCard className="p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p className="text-base font-semibold text-[var(--text)]">Flat inventory</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">Add and maintain project units for allocation and booking workflows.</p>
+                    </div>
+                    <AppButton variant="primary" onClick={openCreate}><Plus className="h-4 w-4" /> Add unit</AppButton>
+                </div>
+
+                {summary ? (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Registered</p>
+                            <p className="mt-2 text-base font-semibold text-[var(--text)]">{summary.registered} / {summary.total}</p>
+                        </div>
+                        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Builder share</p>
+                            <p className="mt-2 text-base font-semibold text-[var(--text)]">{summary.builder}</p>
+                        </div>
+                        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Landowner share</p>
+                            <p className="mt-2 text-base font-semibold text-[var(--text)]">{summary.landowner}</p>
+                        </div>
+                        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Available</p>
+                            <p className="mt-2 text-base font-semibold text-[var(--text)]">{summary.available}</p>
+                        </div>
+                        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Booked</p>
+                            <p className="mt-2 text-base font-semibold text-[var(--text)]">{summary.booked}</p>
+                        </div>
+                    </div>
+                ) : null}
+
+                {units.length === 0 ? (
+                    <div className="mt-4">
+                        <EmptyState
+                            icon={<FolderKanban className="h-5 w-5" />}
+                            title="No units added yet"
+                            description="Add your first unit to start tracking inventory allocation and bookings."
+                        />
+                    </div>
+                ) : (
+                    <DataTable className="mt-4" caption="Project units" columns={unitColumns} rows={units} rowKey={(unit) => String(unit.id)} />
+                )}
+            </PremiumCard>
+
+            {modalOpen && (
+                <Modal eyebrow="Inventory" title={editing ? 'Edit unit' : 'Add unit'} onClose={() => setModalOpen(false)} size="lg">
+                    <form onSubmit={handleSave} className="space-y-4">
+                        <div className="grid gap-3 md:grid-cols-2">
+                            <Field label="Unit number" required>
+                                <input className={inputClass} value={form.flatNo} onChange={(event) => setForm((prev) => ({ ...prev, flatNo: event.target.value }))} />
+                            </Field>
+                            <Field label="Floor">
+                                <input type="number" step="1" className={inputClass} value={form.floor} onChange={(event) => setForm((prev) => ({ ...prev, floor: event.target.value }))} />
+                            </Field>
+                            <Field label="Tower/Block">
+                                <input className={inputClass} value={form.blockTower} onChange={(event) => setForm((prev) => ({ ...prev, blockTower: event.target.value }))} />
+                            </Field>
+                            <Field label="Share type">
+                                <select className={inputClass} value={form.shareType} onChange={(event) => setForm((prev) => ({ ...prev, shareType: event.target.value as ProjectUnitShareType }))}>
+                                    <option value="builder">Builder</option>
+                                    <option value="landowner">Landowner</option>
+                                </select>
+                            </Field>
+                            <Field label="Status">
+                                <select className={inputClass} value={form.status} onChange={(event) => setForm((prev) => ({ ...prev, status: event.target.value as ProjectUnitStatus }))}>
+                                    <option value="available">Available</option>
+                                    <option value="allocated">Allocated</option>
+                                    <option value="booked">Booked</option>
+                                </select>
+                            </Field>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-1">
+                            <AppButton variant="secondary" onClick={() => setModalOpen(false)}>Cancel</AppButton>
+                            <AppButton type="submit" disabled={saving}>{saving ? 'Saving...' : editing ? 'Update unit' : 'Add unit'}</AppButton>
+                        </div>
+                    </form>
+                </Modal>
+            )}
+
+            <ConfirmDialog
+                open={!!deleteId}
+                title="Delete inventory unit?"
+                message="This will permanently remove the selected unit from project inventory."
+                danger
+                confirmLabel="Delete unit"
+                onConfirm={handleDelete}
+                onCancel={() => setDeleteId(null)}
+            />
+        </>
     );
 }
 
@@ -908,7 +1360,7 @@ export function ProjectMaterialReceiptPanel({ projectId }: { projectId: string }
         await loadData();
     };
 
-    if (loading) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading purchase orders and deliveries...</div>;
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading purchase orders and deliveries...</div>;
 
     return (
         <div className="space-y-4">
@@ -931,32 +1383,32 @@ export function ProjectMaterialReceiptPanel({ projectId }: { projectId: string }
             </div>
 
             {purchaseOrders.length === 0 ? (
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+                <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">
                     No purchase orders are available for this project yet. Create your first purchase order to start delivery tracking.
                 </div>
             ) : null}
 
             {selectedPo && (
-                <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 p-4">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-4">
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <p className="text-sm font-semibold text-[#17243A]">{selectedPo.poNumber}</p>
-                            <p className="text-xs text-[#667085]">{selectedPo.supplierName || 'Supplier'} • {selectedPo.status}</p>
+                            <p className="text-sm font-semibold text-[var(--text)]">{selectedPo.poNumber}</p>
+                            <p className="text-xs text-[var(--text-muted)]">{selectedPo.supplierName || 'Supplier'} • {selectedPo.status}</p>
                         </div>
                         <StatusPill label={selectedPo.status} tone={selectedPo.status === 'closed' ? 'success' : selectedPo.status === 'cancelled' ? 'warning' : 'info'} />
                     </div>
                     <div className="mt-3 grid gap-3 md:grid-cols-3">
-                        <div className="rounded-lg border border-[#E6E8EC] bg-white p-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Ordered</p>
-                            <p className="mt-2 text-base font-semibold text-[#17243A]">{formatINR(selectedPo.totalAmount)}</p>
+                        <div className="rounded-lg border border-[var(--border)] bg-white p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Ordered</p>
+                            <p className="mt-2 text-base font-semibold text-[var(--text)]">{formatINR(selectedPo.totalAmount)}</p>
                         </div>
-                        <div className="rounded-lg border border-[#E6E8EC] bg-white p-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Lines</p>
-                            <p className="mt-2 text-base font-semibold text-[#17243A]">{selectedPo.lineItems.length}</p>
+                        <div className="rounded-lg border border-[var(--border)] bg-white p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Lines</p>
+                            <p className="mt-2 text-base font-semibold text-[var(--text)]">{selectedPo.lineItems.length}</p>
                         </div>
-                        <div className="rounded-lg border border-[#E6E8EC] bg-white p-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Receipts</p>
-                            <p className="mt-2 text-base font-semibold text-[#17243A]">{selectedPoReceipts.length}</p>
+                        <div className="rounded-lg border border-[var(--border)] bg-white p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Receipts</p>
+                            <p className="mt-2 text-base font-semibold text-[var(--text)]">{selectedPoReceipts.length}</p>
                         </div>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -980,7 +1432,7 @@ export function ProjectMaterialReceiptPanel({ projectId }: { projectId: string }
             )}
 
             {selectedPo && (
-                <form onSubmit={handleCreateReceipt} className="space-y-4 rounded-xl border border-[#E6E8EC] bg-white p-4">
+                <form onSubmit={handleCreateReceipt} className="space-y-4 rounded-xl border border-[var(--border)] bg-white p-4">
                     <div className="grid gap-3 md:grid-cols-3">
                         <Field label="Receipt number" required>
                             <input className={inputClass} value={form.receiptNumber} onChange={(event) => setForm((prev) => ({ ...prev, receiptNumber: event.target.value }))} />
@@ -999,7 +1451,7 @@ export function ProjectMaterialReceiptPanel({ projectId }: { projectId: string }
 
                     {selectedPo && (
                         <div className="space-y-3">
-                            <p className="text-sm font-semibold text-[#17243A]">Line acceptance</p>
+                            <p className="text-sm font-semibold text-[var(--text)]">Line acceptance</p>
                             {selectedPo.lineItems.map((line) => {
                                 const previousAccepted = selectedPoReceipts.reduce((sum, receipt) => {
                                     const matching = receipt.lineItems.find((item) => item.purchaseOrderLineId === line.id);
@@ -1009,11 +1461,11 @@ export function ProjectMaterialReceiptPanel({ projectId }: { projectId: string }
                                 const currentInput = currentLineInputs[line.id] ?? { acceptedQuantity: String(remaining), rejectedQuantity: '0', notes: '' };
 
                                 return (
-                                    <div key={line.id} className="rounded-xl border border-[#E6E8EC] p-3">
+                                    <div key={line.id} className="rounded-xl border border-[var(--border)] p-3">
                                         <div className="mb-2 flex items-center justify-between gap-3">
                                             <div>
-                                                <p className="font-medium text-[#17243A]">{line.description}</p>
-                                                <p className="text-xs text-[#667085]">Ordered: {line.quantity} • Previously received: {previousAccepted} • Remaining: {remaining}</p>
+                                                <p className="font-medium text-[var(--text)]">{line.description}</p>
+                                                <p className="text-xs text-[var(--text-muted)]">Ordered: {line.quantity} • Previously received: {previousAccepted} • Remaining: {remaining}</p>
                                             </div>
                                         </div>
                                         <div className="grid gap-3 md:grid-cols-3">
@@ -1042,12 +1494,12 @@ export function ProjectMaterialReceiptPanel({ projectId }: { projectId: string }
             )}
 
             {selectedPo && materialReceipts.length > 0 && (
-                <div className="space-y-3 rounded-xl border border-[#E6E8EC] bg-white p-4">
-                    <p className="text-sm font-semibold text-[#17243A]">Receipt history</p>
+                <div className="space-y-3 rounded-xl border border-[var(--border)] bg-white p-4">
+                    <p className="text-sm font-semibold text-[var(--text)]">Receipt history</p>
                     {materialReceipts.filter((receipt) => receipt.purchaseOrderId === (selectedPo?.id ?? '')).map((receipt) => (
-                        <div key={receipt.id} className="rounded-xl border border-[#E6E8EC] p-3">
+                        <div key={receipt.id} className="rounded-xl border border-[var(--border)] p-3">
                             <div className="flex items-center justify-between gap-3">
-                                <p className="font-medium text-[#17243A]">{receipt.receiptNumber}</p>
+                                <p className="font-medium text-[var(--text)]">{receipt.receiptNumber}</p>
                                 <div className="flex items-center gap-2">
                                     <StatusPill label={receipt.status} tone={receipt.status === 'accepted' ? 'success' : 'warning'} />
                                     <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => setDeleteReceiptId(receipt.id)}>
@@ -1055,10 +1507,10 @@ export function ProjectMaterialReceiptPanel({ projectId }: { projectId: string }
                                     </AppButton>
                                 </div>
                             </div>
-                            <p className="mt-1 text-xs text-[#667085]">{receipt.receiptDate ? formatDate(receipt.receiptDate) : 'No date'} • {receipt.deliveryReferenceNumber || 'No delivery reference'}</p>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">{receipt.receiptDate ? formatDate(receipt.receiptDate) : 'No date'} • {receipt.deliveryReferenceNumber || 'No delivery reference'}</p>
                             <div className="mt-2 space-y-2">
                                 {receipt.lineItems.map((line) => (
-                                    <div key={line.id} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-2.5 py-2 text-xs text-[#344054]">
+                                    <div key={line.id} className="flex items-center justify-between gap-3 rounded-lg bg-[var(--surface-soft)] px-2.5 py-2 text-xs text-[var(--text-secondary)]">
                                         <span>{line.purchaseOrderLineDescription}</span>
                                         <span>Accepted {line.acceptedQuantity} / Rejected {line.rejectedQuantity}</span>
                                     </div>
@@ -1102,8 +1554,8 @@ export function ProjectMaterialReceiptPanel({ projectId }: { projectId: string }
                             </Field>
                         </div>
 
-                        <div className="rounded-xl border border-[#E6E8EC] p-3">
-                            <p className="mb-3 text-sm font-semibold text-[#17243A]">Line item</p>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <p className="mb-3 text-sm font-semibold text-[var(--text)]">Line item</p>
                             <div className="grid gap-3 md:grid-cols-4">
                                 <Field label="Description" required>
                                     <input className={inputClass} value={poForm.lineDescription} onChange={(event) => setPoForm((prev) => ({ ...prev, lineDescription: event.target.value }))} />
@@ -1241,15 +1693,34 @@ export function ProjectStagePanel({ projectId }: { projectId: string }) {
         await loadStages();
     };
 
-    if (loading) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading project stages...</div>;
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading project stages...</div>;
+
+    const stagesColumns: Column<(typeof stages)[number]>[] = [
+        { key: 'stage', header: 'Stage', cell: (stage) => <span className="font-medium text-[var(--text)]">{stage.name}</span> },
+        { key: 'startdate', header: 'Start date', cell: (stage) => <CellText>{stage.plannedStartDate ? formatDate(stage.plannedStartDate) : '-'}</CellText> },
+        { key: 'expectedcompletion', header: 'Expected completion', cell: (stage) => <CellText>{stage.plannedEndDate ? formatDate(stage.plannedEndDate) : '-'}</CellText> },
+        { key: 'status', header: 'Status', cell: (stage) => <StatusPill label={stageStatusLabelMap[stage.status] ?? stage.status} tone={stage.status === 'completed' ? 'success' : stage.status === 'skipped' ? 'warning' : stage.status === 'in_progress' ? 'info' : stage.status === 'on_hold' ? 'warning' : 'neutral'} /> },
+        { key: 'completion', header: 'Completion', cell: (stage) => <CellText>{stage.completionPercentage}%</CellText> },
+        {
+            key: 'actions',
+            header: 'Actions',
+            kind: 'actions',
+            cell: (stage) => (
+                <RowActions>
+                    <RowActionButton label="Edit" icon={<Pencil className="h-4 w-4" />} onClick={() => openEdit(stage)} />
+                    <RowActionButton label="Delete" tone="danger" icon={<Trash2 className="h-4 w-4" />} onClick={() => setDeleteId(stage.id)} />
+                </RowActions>
+            ),
+        },
+    ];
 
     return (
         <>
             <PremiumCard className="p-4">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Project stages</p>
-                        <p className="mt-1 text-sm text-[#667085]">Track the project lifecycle across physical milestones.</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Project stages</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">Track the project lifecycle across physical milestones.</p>
                     </div>
                     <AppButton variant="primary" onClick={openCreate}><Plus className="h-4 w-4" /> Add stage</AppButton>
                 </div>
@@ -1257,37 +1728,7 @@ export function ProjectStagePanel({ projectId }: { projectId: string }) {
                 {stages.length === 0 ? (
                     <div className="mt-4"><EmptyState icon={<FolderKanban className="h-5 w-5" />} title="No stages created yet" description="Add project milestones as the work sequence is defined." /></div>
                 ) : (
-                    <div className="mt-4 overflow-x-auto rounded-xl border border-[#E6E8EC]">
-                        <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
-                            <thead className="bg-[#1D4ED8] text-[11px] uppercase tracking-[0.12em] text-white">
-                                <tr>
-                                    <th className="px-4 py-3">Stage</th>
-                                    <th className="px-4 py-3">Start date</th>
-                                    <th className="px-4 py-3">Expected completion</th>
-                                    <th className="px-4 py-3">Status</th>
-                                    <th className="px-4 py-3">Completion</th>
-                                    <th className="px-4 py-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                                {stages.map((stage) => (
-                                    <tr key={stage.id}>
-                                        <td className="px-4 py-3 font-medium text-[#17243A]">{stage.name}</td>
-                                        <td className="px-4 py-3 text-[#344054]">{stage.plannedStartDate ? formatDate(stage.plannedStartDate) : '-'}</td>
-                                        <td className="px-4 py-3 text-[#344054]">{stage.plannedEndDate ? formatDate(stage.plannedEndDate) : '-'}</td>
-                                        <td className="px-4 py-3"><StatusPill label={stageStatusLabelMap[stage.status] ?? stage.status} tone={stage.status === 'completed' ? 'success' : stage.status === 'in_progress' ? 'info' : stage.status === 'on_hold' ? 'warning' : 'neutral'} /></td>
-                                        <td className="px-4 py-3 text-[#344054]">{stage.completionPercentage}%</td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex justify-end gap-2">
-                                                <AppButton variant="ghost" className={tableEditButtonClass} onClick={() => openEdit(stage)}><Pencil className="h-4 w-4" /></AppButton>
-                                                <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => setDeleteId(stage.id)}><Trash2 className="h-4 w-4" /></AppButton>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable className="mt-4" caption="Stages" columns={stagesColumns} rows={stages} rowKey={(stage) => String(stage.id)} />
                 )}
             </PremiumCard>
 
@@ -1444,15 +1885,15 @@ export function ProjectProgressPanel({ projectId }: { projectId: string }) {
         await loadUpdates();
     };
 
-    if (loading) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading site updates...</div>;
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading site updates...</div>;
 
     return (
         <>
             <PremiumCard className="p-4">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Site updates</p>
-                        <p className="mt-1 text-sm text-[#667085]">Recent progress reports and field observations.</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Site updates</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">Recent progress reports and field observations.</p>
                     </div>
                     <AppButton variant="primary" onClick={openCreate}><Plus className="h-4 w-4" /> Add update</AppButton>
                 </div>
@@ -1462,17 +1903,17 @@ export function ProjectProgressPanel({ projectId }: { projectId: string }) {
                 ) : (
                     <div className="mt-4 space-y-3">
                         {orderedUpdates.map((update) => (
-                            <div key={update.id} className="rounded-xl border border-[#E6E8EC] p-3">
+                            <div key={update.id} className="rounded-xl border border-[var(--border)] p-3">
                                 <div className="flex items-center justify-between gap-3">
-                                    <p className="font-semibold text-[#17243A]">{update.title}</p>
+                                    <p className="font-semibold text-[var(--text)]">{update.title}</p>
                                     <div className="flex items-center gap-2">
                                         <StatusPill label={update.visibilityStatus} tone={update.visibilityStatus === 'published' ? 'success' : 'neutral'} />
                                         <AppButton variant="ghost" className={tableEditButtonClass} onClick={() => openEdit(update)}><Pencil className="h-4 w-4" /></AppButton>
                                         <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => setDeleteId(update.id)}><Trash2 className="h-4 w-4" /></AppButton>
                                     </div>
                                 </div>
-                                <p className="mt-2 text-sm text-[#667085]">{update.description || 'No notes for this update.'}</p>
-                                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-[#667085]">
+                                <p className="mt-2 text-sm text-[var(--text-muted)]">{update.description || 'No notes for this update.'}</p>
+                                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-[var(--text-muted)]">
                                     <span>{update.updateDate ? formatDate(update.updateDate) : 'Date pending'}</span>
                                     <span>{update.progressPercentage !== null && update.progressPercentage !== undefined ? `${update.progressPercentage}% progress` : 'Progress pending'}</span>
                                 </div>
@@ -1617,15 +2058,35 @@ export function ProjectExpensePanel({ projectId, readOnly = false }: { projectId
         await loadExpenses();
     };
 
-    if (loading) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading expenses...</div>;
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading expenses...</div>;
+
+    const expenseActionsColumn: Column<ProjectExpenseRecord> = {
+        key: 'actions',
+        header: 'Actions',
+        kind: 'actions',
+        cell: (expense) => (
+            <RowActions>
+                <RowActionButton label="Edit" icon={<Pencil className="h-4 w-4" />} onClick={() => openEdit(expense)} />
+                <RowActionButton label="Delete" tone="danger" icon={<Trash2 className="h-4 w-4" />} onClick={() => setDeleteId(expense.id)} />
+            </RowActions>
+        ),
+    };
+
+    const expensesColumns: Column<ProjectExpenseRecord>[] = [
+        { key: 'supplier', header: 'Supplier', cell: (expense) => <span className="font-medium text-[var(--text)]">{expense.supplierName || 'Unassigned'}</span> },
+        { key: 'category', header: 'Category', cell: (expense) => <CellText>{expense.category || 'General'}</CellText> },
+        { key: 'amount', header: 'Amount', align: 'right', cell: (expense) => <>{formatINR(Number(expense.billAmount ?? 0))}</> },
+        { key: 'status', header: 'Status', cell: (expense) => <StatusPill label={expense.status} tone={expense.status === 'paid' ? 'success' : expense.status === 'partially_paid' ? 'info' : expense.status === 'void' ? 'warning' : 'neutral'} /> },
+        ...(!readOnly ? [expenseActionsColumn] : []),
+    ];
 
     return (
         <>
             <PremiumCard className="p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Expenses</p>
-                        <p className="mt-1 text-sm text-[#667085]">{readOnly ? 'Read-only view.' : 'Supplier bills and internal costs.'}</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Expenses</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">{readOnly ? 'Read-only view.' : 'Supplier bills and internal costs.'}</p>
                     </div>
                     {!readOnly && <AppButton variant="primary" onClick={openCreate}><Plus className="h-4 w-4" /> Add expense</AppButton>}
                 </div>
@@ -1633,37 +2094,7 @@ export function ProjectExpensePanel({ projectId, readOnly = false }: { projectId
                 {expenses.length === 0 ? (
                     <div className="mt-4"><EmptyState icon={<FileText className="h-5 w-5" />} title="No expenses logged" description="Keep the supplier bills and site expenses tracked against this project." /></div>
                 ) : (
-                    <div className="mt-4 overflow-x-auto rounded-xl border border-[#E6E8EC]">
-                        <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
-                            <thead className="bg-[#1D4ED8] text-[11px] uppercase tracking-[0.12em] text-white">
-                                <tr>
-                                    <th className="px-4 py-3">Supplier</th>
-                                    <th className="px-4 py-3">Category</th>
-                                    <th className="px-4 py-3">Amount</th>
-                                    <th className="px-4 py-3">Status</th>
-                                    {!readOnly && <th className="px-4 py-3 text-right">Actions</th>}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                                {expenses.map((expense) => (
-                                    <tr key={expense.id}>
-                                        <td className="px-4 py-3 font-medium text-[#17243A]">{expense.supplierName || 'Unassigned'}</td>
-                                        <td className="px-4 py-3 text-[#344054]">{expense.category || 'General'}</td>
-                                        <td className="px-4 py-3 text-[#17243A]">{formatINR(Number(expense.billAmount ?? 0))}</td>
-                                        <td className="px-4 py-3"><StatusPill label={expense.status} tone={expense.status === 'paid' ? 'success' : expense.status === 'partially_paid' ? 'info' : expense.status === 'void' ? 'warning' : 'neutral'} /></td>
-                                        {!readOnly && (
-                                            <td className="px-4 py-3">
-                                                <div className="flex justify-end gap-2">
-                                                    <AppButton variant="ghost" className={tableEditButtonClass} onClick={() => openEdit(expense)}><Pencil className="h-4 w-4" /></AppButton>
-                                                    <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => setDeleteId(expense.id)}><Trash2 className="h-4 w-4" /></AppButton>
-                                                </div>
-                                            </td>
-                                        )}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable className="mt-4" caption="Expenses" columns={expensesColumns} rows={expenses} rowKey={(expense) => String(expense.id)} />
                 )}
             </PremiumCard>
 
@@ -1699,7 +2130,7 @@ export function ProjectExpensePanel({ projectId, readOnly = false }: { projectId
             )}
 
             <ConfirmDialog
-                open={!readOnly && !!deleteId}
+                open={!!deleteId}
                 title="Delete expense?"
                 message="This will remove the selected expense record from this project."
                 danger
@@ -1806,20 +2237,40 @@ export function ProjectReceiptPanel({ projectId, customerMobile, projectName, re
         await loadReceipts();
     };
 
-    if (loading) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading payments received...</div>;
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading payments received...</div>;
+
+    const receiptActionsColumn: Column<ProjectReceiptRecord> = {
+        key: 'actions',
+        header: 'Actions',
+        kind: 'actions',
+        cell: (receipt) => (
+            <RowActions>
+                <RowActionButton label="Edit" icon={<Pencil className="h-4 w-4" />} onClick={() => openEdit(receipt)} />
+                <RowActionButton label="Delete" tone="danger" icon={<Trash2 className="h-4 w-4" />} onClick={() => setDeleteId(receipt.id)} />
+            </RowActions>
+        ),
+    };
+
+    const receiptsColumns: Column<ProjectReceiptRecord>[] = [
+        { key: 'receipt', header: 'Receipt', cell: (receipt) => <span className="font-medium text-[var(--text)]">{receipt.receiptNumber}</span> },
+        { key: 'date', header: 'Date', cell: (receipt) => <CellText>{receipt.receivedDate ? formatDate(receipt.receivedDate) : '-'}</CellText> },
+        { key: 'method', header: 'Method', cell: (receipt) => <CellText>{receipt.paymentMethod}</CellText> },
+        { key: 'amount', header: 'Amount', align: 'right', cell: (receipt) => <span className="font-medium text-[var(--text)]">{formatINR(Number(receipt.amount ?? 0))}</span> },
+        ...(!readOnly ? [receiptActionsColumn] : []),
+    ];
 
     return (
         <>
             <PremiumCard className="p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Payments received</p>
-                        <p className="mt-1 text-sm text-[#667085]">{readOnly ? 'Read-only view.' : 'Customer receipts and payment references.'}</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Payments received</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">{readOnly ? 'Read-only view.' : 'Customer receipts and payment references.'}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {!readOnly && <AppButton variant="primary" onClick={openCreate}><Plus className="h-4 w-4" /> Add receipt</AppButton>}
                         {!readOnly && customerMobile ? (
-                            <a href={`https://wa.me/${customerMobile}?text=${encodeURIComponent(`Project: ${projectName || 'Project'}\nPayment received summary\nTotal collected: ${formatINR(receipts.reduce((sum, item) => sum + Number(item.amount ?? 0), 0))}`)}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+                            <a href={`https://wa.me/${customerMobile}?text=${encodeURIComponent(`Project: ${projectName || 'Project'}\nPayment received summary\nTotal collected: ${formatINR(receipts.reduce((sum, item) => sum + Number(item.amount ?? 0), 0))}`)}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-[var(--success-border)] bg-[var(--success-soft)] px-3 py-2 text-sm font-medium text-[var(--success-fg)]">
                                 <MessageCircle className="h-4 w-4" /> Share summary
                             </a>
                         ) : null}
@@ -1829,37 +2280,7 @@ export function ProjectReceiptPanel({ projectId, customerMobile, projectName, re
                 {receipts.length === 0 ? (
                     <div className="mt-4"><EmptyState icon={<CalendarClock className="h-5 w-5" />} title="No payments recorded" description="Add customer receipts for this project." /></div>
                 ) : (
-                    <div className="mt-4 overflow-x-auto rounded-xl border border-[#E6E8EC]">
-                        <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
-                            <thead className="bg-[#1D4ED8] text-[11px] uppercase tracking-[0.12em] text-white">
-                                <tr>
-                                    <th className="px-4 py-3">Receipt</th>
-                                    <th className="px-4 py-3">Date</th>
-                                    <th className="px-4 py-3">Method</th>
-                                    <th className="px-4 py-3">Amount</th>
-                                    {!readOnly && <th className="px-4 py-3 text-right">Actions</th>}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                                {receipts.map((receipt) => (
-                                    <tr key={receipt.id}>
-                                        <td className="px-4 py-3 font-medium text-[#17243A]">{receipt.receiptNumber}</td>
-                                        <td className="px-4 py-3 text-[#344054]">{receipt.receivedDate ? formatDate(receipt.receivedDate) : '-'}</td>
-                                        <td className="px-4 py-3 text-[#344054]">{receipt.paymentMethod}</td>
-                                        <td className="px-4 py-3 font-medium text-[#17243A]">{formatINR(Number(receipt.amount ?? 0))}</td>
-                                        {!readOnly && (
-                                            <td className="px-4 py-3">
-                                                <div className="flex justify-end gap-2">
-                                                    <AppButton variant="ghost" className={tableEditButtonClass} onClick={() => openEdit(receipt)}><Pencil className="h-4 w-4" /></AppButton>
-                                                    <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => setDeleteId(receipt.id)}><Trash2 className="h-4 w-4" /></AppButton>
-                                                </div>
-                                            </td>
-                                        )}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable className="mt-4" caption="Receipts" columns={receiptsColumns} rows={receipts} rowKey={(receipt) => String(receipt.id)} />
                 )}
             </PremiumCard>
 
@@ -1898,7 +2319,7 @@ export function ProjectReceiptPanel({ projectId, customerMobile, projectName, re
             )}
 
             <ConfirmDialog
-                open={!readOnly && !!deleteId}
+                open={!!deleteId}
                 title="Delete receipt?"
                 message="This will remove the selected receipt from project records."
                 danger
@@ -2009,19 +2430,19 @@ export function ProjectAttachmentsPanel({ projectId, canManage, project }: { pro
 
     const renderAttachmentRows = (rows: ProjectAttachmentRecord[], emptyMessage: string) => {
         if (rows.length === 0) {
-            return <div className="mt-3 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-3 text-sm text-[#667085]">{emptyMessage}</div>;
+            return <div className="mt-3 rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-soft)] p-3 text-sm text-[var(--text-muted)]">{emptyMessage}</div>;
         }
 
         return (
             <div className="mt-3 space-y-2">
                 {rows.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between gap-4 rounded-xl border border-[#E6E8EC] p-3">
+                    <div key={item.id} className="flex items-center justify-between gap-4 rounded-xl border border-[var(--border)] p-3">
                         <div>
-                            <p className="font-medium text-[#17243A]">{item.originalFilename || 'Document'}</p>
-                            <p className="mt-1 text-xs text-[#667085]">{item.mimeType || 'file'} - {item.createdAt ? formatDate(item.createdAt) : 'Recent'}</p>
+                            <p className="font-medium text-[var(--text)]">{item.originalFilename || 'Document'}</p>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">{item.mimeType || 'file'} - {item.createdAt ? formatDate(item.createdAt) : 'Recent'}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <a href={item.storagePath} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50">
+                            <a href={item.storagePath} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] p-2 text-[var(--text-secondary)] hover:bg-[var(--surface-soft)]">
                                 <Link2 className="h-4 w-4" /> Open
                             </a>
                             {canManage ? <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => setDeleteId(item.id)}><Trash2 className="h-4 w-4" /></AppButton> : null}
@@ -2032,41 +2453,41 @@ export function ProjectAttachmentsPanel({ projectId, canManage, project }: { pro
         );
     };
 
-    if (loading) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading documents...</div>;
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading documents...</div>;
 
     return (
         <>
             <PremiumCard className="p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Documents</p>
-                        <p className="mt-1 text-sm text-[#667085]">Project-linked files and references.</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Documents</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">Project-linked files and references.</p>
                     </div>
                     {canManage ? <AppButton variant="primary" onClick={() => setModalOpen(true)}><Plus className="h-4 w-4" /> Add document</AppButton> : null}
                 </div>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
-                    <a href="/quotations" className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5 text-sm font-medium text-[#1D4ED8] hover:bg-[#EFF6FF]">
+                    <a href="/quotations" className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary-soft)]">
                         Open quotations
                     </a>
-                    <a href="/client-receipts" className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5 text-sm font-medium text-[#1D4ED8] hover:bg-[#EFF6FF]">
+                    <a href="/client-receipts" className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary-soft)]">
                         Open booking receipts
                     </a>
                 </div>
 
-                <div className="mt-5 rounded-xl border border-[#E6E8EC] p-4">
-                    <p className="text-sm font-semibold text-[#17243A]">Quotations ({quotationCount})</p>
+                <div className="mt-5 rounded-xl border border-[var(--border)] p-4">
+                    <p className="text-sm font-semibold text-[var(--text)]">Quotations ({quotationCount})</p>
                     {linkedQuotations.length === 0 ? (
-                        <div className="mt-3 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-3 text-sm text-[#667085]">No linked quotations yet.</div>
+                        <div className="mt-3 rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-soft)] p-3 text-sm text-[var(--text-muted)]">No linked quotations yet.</div>
                     ) : (
                         <div className="mt-3 space-y-2">
                             {linkedQuotations.slice(0, 5).map((quote) => (
-                                <a key={quote.id} href={`/quotations/${quote.id}/edit`} className="flex items-center justify-between gap-3 rounded-xl border border-[#E6E8EC] p-3 hover:bg-slate-50">
+                                <a key={quote.id} href={`/quotations/${quote.id}/edit`} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-3 hover:bg-[var(--surface-soft)]">
                                     <div>
-                                        <p className="text-sm font-medium text-[#17243A]">{quote.quotationNumber || 'Quotation'}</p>
-                                        <p className="text-xs text-[#667085]">{quote.updatedAt ? formatDate(quote.updatedAt) : 'Recent'}</p>
+                                        <p className="text-sm font-medium text-[var(--text)]">{quote.quotationNumber || 'Quotation'}</p>
+                                        <p className="text-xs text-[var(--text-muted)]">{quote.updatedAt ? formatDate(quote.updatedAt) : 'Recent'}</p>
                                     </div>
-                                    <span className="text-xs font-medium uppercase tracking-[0.08em] text-[#667085]">{quote.status}</span>
+                                    <span className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--text-muted)]">{quote.status}</span>
                                 </a>
                             ))}
                         </div>
@@ -2074,19 +2495,19 @@ export function ProjectAttachmentsPanel({ projectId, canManage, project }: { pro
                     {renderAttachmentRows(quotationAttachments, 'No quotation attachments yet.')}
                 </div>
 
-                <div className="mt-5 rounded-xl border border-[#E6E8EC] p-4">
-                    <p className="text-sm font-semibold text-[#17243A]">Booking receipts ({bookingCount})</p>
+                <div className="mt-5 rounded-xl border border-[var(--border)] p-4">
+                    <p className="text-sm font-semibold text-[var(--text)]">Booking receipts ({bookingCount})</p>
                     {recentBookingReceipts.length === 0 ? (
-                        <div className="mt-3 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-3 text-sm text-[#667085]">No booking receipts yet.</div>
+                        <div className="mt-3 rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-soft)] p-3 text-sm text-[var(--text-muted)]">No booking receipts yet.</div>
                     ) : (
                         <div className="mt-3 space-y-2">
                             {recentBookingReceipts.map((receipt) => (
-                                <a key={receipt.id} href={`/client-receipts/${receipt.id}/edit`} className="flex items-center justify-between gap-3 rounded-xl border border-[#E6E8EC] p-3 hover:bg-slate-50">
+                                <a key={receipt.id} href={`/client-receipts/${receipt.id}/edit`} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-3 hover:bg-[var(--surface-soft)]">
                                     <div>
-                                        <p className="text-sm font-medium text-[#17243A]">{receipt.receiptNumber || 'Receipt'}</p>
-                                        <p className="text-xs text-[#667085]">{receipt.updatedAt ? formatDate(receipt.updatedAt) : 'Recent'}</p>
+                                        <p className="text-sm font-medium text-[var(--text)]">{receipt.receiptNumber || 'Receipt'}</p>
+                                        <p className="text-xs text-[var(--text-muted)]">{receipt.updatedAt ? formatDate(receipt.updatedAt) : 'Recent'}</p>
                                     </div>
-                                    <span className="text-xs text-[#667085]">{receipt.buyerName || 'Buyer pending'}</span>
+                                    <span className="text-xs text-[var(--text-muted)]">{receipt.buyerName || 'Buyer pending'}</span>
                                 </a>
                             ))}
                         </div>
@@ -2094,38 +2515,38 @@ export function ProjectAttachmentsPanel({ projectId, canManage, project }: { pro
                     {renderAttachmentRows(bookingAttachments, 'No booking receipt attachments yet.')}
                 </div>
 
-                <div className="mt-5 rounded-xl border border-[#E6E8EC] p-4">
-                    <p className="text-sm font-semibold text-[#17243A]">Agreements ({agreementCount})</p>
+                <div className="mt-5 rounded-xl border border-[var(--border)] p-4">
+                    <p className="text-sm font-semibold text-[var(--text)]">Agreements ({agreementCount})</p>
                     {project.businessModel === 'property_development' && project.developmentArrangement === 'joint_development' ? (
                         <div className="mt-3 grid gap-3 md:grid-cols-2">
-                            <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#667085]">JDA reference</p>
-                                <p className="mt-1 text-sm text-[#17243A]">{project.jdaAgreementReference || 'N/A'}</p>
+                            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">JDA reference</p>
+                                <p className="mt-1 text-sm text-[var(--text)]">{project.jdaAgreementReference || 'N/A'}</p>
                             </div>
-                            <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#667085]">JDA date</p>
-                                <p className="mt-1 text-sm text-[#17243A]">{project.jdaAgreementDate ? formatDate(project.jdaAgreementDate) : 'N/A'}</p>
+                            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">JDA date</p>
+                                <p className="mt-1 text-sm text-[var(--text)]">{project.jdaAgreementDate ? formatDate(project.jdaAgreementDate) : 'N/A'}</p>
                             </div>
-                            <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2.5 md:col-span-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#667085]">JDA document</p>
+                            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5 md:col-span-2">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">JDA document</p>
                                 {project.jdaAgreementDocumentUrl ? (
-                                    <a href={project.jdaAgreementDocumentUrl} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[#1D4ED8] hover:underline">
+                                    <a href={project.jdaAgreementDocumentUrl} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-[var(--primary)] hover:underline">
                                         Open JDA document
                                         <Link2 className="h-3.5 w-3.5" />
                                     </a>
                                 ) : (
-                                    <p className="mt-1 text-sm text-[#17243A]">N/A</p>
+                                    <p className="mt-1 text-sm text-[var(--text)]">N/A</p>
                                 )}
                             </div>
                         </div>
                     ) : (
-                        <div className="mt-3 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-3 text-sm text-[#667085]">No JDA agreement details for this project type.</div>
+                        <div className="mt-3 rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-soft)] p-3 text-sm text-[var(--text-muted)]">No JDA agreement details for this project type.</div>
                     )}
                     {renderAttachmentRows(agreementAttachments, 'No agreement attachments yet.')}
                 </div>
 
-                <div className="mt-5 rounded-xl border border-[#E6E8EC] p-4">
-                    <p className="text-sm font-semibold text-[#17243A]">Other attachments ({otherCount})</p>
+                <div className="mt-5 rounded-xl border border-[var(--border)] p-4">
+                    <p className="text-sm font-semibold text-[var(--text)]">Other attachments ({otherCount})</p>
                     {renderAttachmentRows(otherAttachments, 'No other attachments yet.')}
                 </div>
 
@@ -2247,27 +2668,27 @@ export function ProjectClientAccessPanel({ projectId }: { projectId: string }) {
         await loadAccess();
     };
 
-    if (loading) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading client access...</div>;
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading client access...</div>;
 
     return (
         <>
             <PremiumCard className="p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Customer access</p>
-                        <p className="mt-1 text-sm text-[#667085]">Who has access to project updates and shared financial visibility.</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Customer access</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">Who has access to project updates and shared financial visibility.</p>
                     </div>
                     <AppButton variant="primary" onClick={() => setModalOpen(true)}><Plus className="h-4 w-4" /> Grant access</AppButton>
                 </div>
                 {accessRows.length === 0 ? (
-                    <div className="mt-4"><EmptyState icon={<Users className="h-5 w-5" />} title="No customer access entries" description="Grant project visibility to relevant customer contacts when needed." /></div>
+                    <div className="mt-4 rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-soft)] p-4 text-sm text-[var(--text-muted)]">No customer access assigned yet.</div>
                 ) : (
                     <div className="mt-4 space-y-2">
                         {accessRows.map((row) => (
-                            <div key={row.id} className="flex items-center justify-between rounded-xl border border-[#E6E8EC] px-3 py-2.5">
+                            <div key={row.id} className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-white px-3 py-2.5">
                                 <div>
-                                    <p className="text-sm font-medium text-[#17243A]">{row.email}</p>
-                                    <p className="text-xs text-[#667085]">Invited {row.invitedAt ? formatDate(row.invitedAt) : 'recently'}</p>
+                                    <p className="text-sm font-medium text-[var(--text)]">{row.email}</p>
+                                    <p className="text-xs text-[var(--text-muted)]">Invited {row.invitedAt ? formatDate(row.invitedAt) : 'recently'}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <StatusPill label={row.invitationStatus} tone={row.invitationStatus === 'accepted' ? 'success' : row.invitationStatus === 'pending' ? 'info' : 'warning'} />
@@ -2300,11 +2721,11 @@ export function ProjectClientAccessPanel({ projectId }: { projectId: string }) {
                             </select>
                         </Field>
 
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--text-secondary)]">
                             <span className="font-medium">Email:</span> {selectedContactEmail || 'No customer selected'}
                         </div>
 
-                        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        <div className="rounded-xl border border-[var(--warning-border)] bg-[var(--warning-soft)] px-3 py-2 text-xs text-[var(--warning-fg)]">
                             The customer must already have an application account. If not, invite or create the user account first.
                         </div>
 
@@ -2326,406 +2747,6 @@ export function ProjectClientAccessPanel({ projectId }: { projectId: string }) {
                 onCancel={() => setDeleteId(null)}
             />
         </>
-    );
-}
-
-export function ProjectInventoryPanel({ project }: { project: ProjectRecord }) {
-    const [units, setUnits] = useState<ProjectUnitRecord[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [filterShare, setFilterShare] = useState<'all' | 'builder' | 'landowner'>('all');
-    const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'allocated' | 'booked'>('all');
-    const [form, setForm] = useState({ flatNo: '', floor: '', blockTower: '', shareType: 'builder' as 'builder' | 'landowner', status: 'available' as 'available' | 'allocated' });
-    const [saving, setSaving] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-
-    const loadUnits = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const { units: nextUnits } = await listProjectUnits(project.id);
-            setUnits(nextUnits);
-        } catch (err) {
-            console.error(err);
-            setError('Could not load project inventory.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        void loadUnits();
-    }, [project.id]);
-
-    const filteredUnits = useMemo(() => units.filter((unit) => {
-        if (filterShare !== 'all' && unit.shareType !== filterShare) return false;
-        if (filterStatus !== 'all' && unit.status !== filterStatus) return false;
-        return true;
-    }), [filterShare, filterStatus, units]);
-
-    const totalProjectFlats = Number(project.totalProjectFlats ?? 0);
-    const builderTarget = Number(project.builderShareUnits ?? 0);
-    const landownerTarget = Number(project.landownerShareUnits ?? 0);
-    const builderCount = units.filter((unit) => unit.shareType === 'builder').length;
-    const landownerCount = units.filter((unit) => unit.shareType === 'landowner').length;
-    const registeredCount = units.length;
-    const availableCount = units.filter((unit) => unit.status === 'available').length;
-    const allocatedCount = units.filter((unit) => unit.status === 'allocated').length;
-    const bookedCount = units.filter((unit) => unit.status === 'booked').length;
-    const completionPercent = totalProjectFlats > 0 ? Math.min(100, Math.round((registeredCount / totalProjectFlats) * 100)) : 0;
-
-    const handleCreate = async (event: React.FormEvent) => {
-        event.preventDefault();
-        if (!form.flatNo.trim()) {
-            setError('Flat number is required.');
-            return;
-        }
-
-        setSaving(true);
-        const created = await createProjectUnit(project.id, {
-            flatNo: form.flatNo.trim(),
-            floor: form.floor.trim() ? Number(form.floor) : null,
-            blockTower: form.blockTower.trim() || null,
-            shareType: form.shareType,
-            status: form.status,
-        });
-        setSaving(false);
-
-        if (!created) {
-            setError('Could not save this flat. Please check the project allocation counts and try again.');
-            return;
-        }
-
-        setForm({ flatNo: '', floor: '', blockTower: '', shareType: 'builder', status: 'available' });
-        await loadUnits();
-    };
-
-    const handleEdit = async (unit: ProjectUnitRecord) => {
-        if (editingId && editingId !== unit.id) return;
-        setError(null);
-        setEditingId(unit.id);
-        try {
-            const updated = await updateProjectUnit(project.id, unit.id, {
-                flatNo: unit.flatNo,
-                floor: unit.floor,
-                blockTower: unit.blockTower,
-                shareType: unit.shareType,
-                status: unit.status,
-            });
-            if (!updated) {
-                setError('This change would create an inconsistent allocation. Please review the counts and try again.');
-                return;
-            }
-            await loadUnits();
-        } finally {
-            setEditingId(null);
-        }
-    };
-
-    const handleDelete = async (unitId: string) => {
-        const removed = await deleteProjectUnit(project.id, unitId);
-        if (!removed) {
-            setError('This unit cannot be removed while it is allocated or booked.');
-            return;
-        }
-        await loadUnits();
-    };
-
-    if (project.businessModel === 'material_supply') {
-        return (
-            <div className="space-y-4">
-                <PremiumCard className="p-4">
-                    <p className="text-base font-semibold text-[#17243A]">Material and delivery inventory</p>
-                    <p className="mt-1 text-sm text-[#667085]">Purchase-order and delivery tracking.</p>
-                </PremiumCard>
-                <ProjectMaterialReceiptPanel projectId={project.id} />
-            </div>
-        );
-    }
-
-    if (project.businessModel !== 'property_development') {
-        return (
-            <PremiumCard className="p-5">
-                <p className="text-base font-semibold text-[#17243A]">Inventory</p>
-                <p className="mt-2 text-sm text-[#667085]">Inventory tracking is available only for property development projects.</p>
-            </PremiumCard>
-        );
-    }
-
-    return (
-        <div className="space-y-4">
-            <PremiumCard className="p-4">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <p className="text-base font-semibold text-[#17243A]">Project flat inventory</p>
-                        <p className="mt-1 text-sm text-[#667085]">Track flat allocation counts.</p>
-                    </div>
-                    <div className="rounded-full border border-[#DBEAFE] bg-[#EFF6FF] px-2.5 py-1 text-xs font-medium text-[#1D4ED8]">
-                        {completionPercent}% complete
-                    </div>
-                </div>
-
-                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-                    {[
-                        { label: 'Total flats', value: totalProjectFlats || 0 },
-                        { label: 'Builder share', value: builderTarget },
-                        ...(project.developmentArrangement === 'joint_development' ? [{ label: 'Landowner share', value: landownerTarget }] : []),
-                        { label: 'Available units', value: availableCount },
-                        { label: 'Allocated units', value: allocatedCount },
-                        { label: 'Booked units', value: bookedCount },
-                    ].map((item) => (
-                        <div key={item.label} className="rounded-xl border border-[#E6E8EC] bg-slate-50 p-3">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#667085]">{item.label}</p>
-                            <p className="mt-2 text-lg font-semibold text-[#17243A]">{item.value}</p>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-200">
-                    <div className="h-full rounded-full bg-[#1D4ED8]" style={{ width: `${completionPercent}%` }} />
-                </div>
-                <p className="mt-2 text-xs text-[#667085]">
-                    Builder share: {builderCount}/{builderTarget}
-                    {project.developmentArrangement === 'joint_development' ? ` • Landowner share: ${landownerCount}/${landownerTarget}` : ''}
-                </p>
-            </PremiumCard>
-
-            <PremiumCard className="p-4">
-                <p className="text-base font-semibold text-[#17243A]">Add flat</p>
-                <form onSubmit={handleCreate} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-                    <label className="block xl:col-span-2">
-                        <span className={labelClass}>Flat number</span>
-                        <input value={form.flatNo} onChange={(event) => setForm((prev) => ({ ...prev, flatNo: event.target.value }))} className={inputClass} placeholder="A-101" />
-                    </label>
-                    <label className="block">
-                        <span className={labelClass}>Floor</span>
-                        <input type="number" value={form.floor} onChange={(event) => setForm((prev) => ({ ...prev, floor: event.target.value }))} className={inputClass} placeholder="10" />
-                    </label>
-                    <label className="block">
-                        <span className={labelClass}>Tower</span>
-                        <input value={form.blockTower} onChange={(event) => setForm((prev) => ({ ...prev, blockTower: event.target.value }))} className={inputClass} placeholder="Tower A" />
-                    </label>
-                    <label className="block">
-                        <span className={labelClass}>Share</span>
-                        <select value={form.shareType} onChange={(event) => setForm((prev) => ({ ...prev, shareType: event.target.value as 'builder' | 'landowner' }))} className={inputClass}>
-                            <option value="builder">Builder</option>
-                            {project.developmentArrangement === 'joint_development' ? <option value="landowner">Landowner</option> : null}
-                        </select>
-                    </label>
-                    <label className="block">
-                        <span className={labelClass}>Status</span>
-                        <select value={form.status} onChange={(event) => setForm((prev) => ({ ...prev, status: event.target.value as 'available' | 'allocated' }))} className={inputClass}>
-                            <option value="available">Available</option>
-                            <option value="allocated">Allocated</option>
-                        </select>
-                    </label>
-                    <div className="flex items-end xl:col-span-1">
-                        <AppButton type="submit" loading={saving} className="w-full">Add flat</AppButton>
-                    </div>
-                </form>
-
-                {error && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
-            </PremiumCard>
-
-            <PremiumCard className="p-4">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <p className="text-base font-semibold text-[#17243A]">Unit list</p>
-                    <div className="flex flex-wrap gap-2">
-                        <select value={filterShare} onChange={(event) => setFilterShare(event.target.value as 'all' | 'builder' | 'landowner')} className={inputClass}>
-                            <option value="all">All allocations</option>
-                            <option value="builder">Builder</option>
-                            <option value="landowner">Landowner</option>
-                        </select>
-                        <select value={filterStatus} onChange={(event) => setFilterStatus(event.target.value as 'all' | 'available' | 'allocated' | 'booked')} className={inputClass}>
-                            <option value="all">All statuses</option>
-                            <option value="available">Available</option>
-                            <option value="allocated">Allocated</option>
-                            <option value="booked">Booked</option>
-                        </select>
-                    </div>
-                </div>
-
-                {loading ? (
-                    <div className="mt-4 space-y-2">
-                        {[0, 1, 2].map((item) => <SkeletonRow key={item} className="h-12 w-full" />)}
-                    </div>
-                ) : filteredUnits.length === 0 ? (
-                    <div className="mt-4 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-4 text-sm text-[#667085]">No units match the current filter.</div>
-                ) : (
-                    <div className="mt-4 space-y-2">
-                        {filteredUnits.map((unit) => (
-                            <div key={unit.id} className="rounded-xl border border-[#E6E8EC] bg-white p-3">
-                                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-                                    <label className="block xl:col-span-2">
-                                        <span className={labelClass}>Flat</span>
-                                        <input value={unit.flatNo} onChange={(event) => setUnits((current) => current.map((row) => row.id === unit.id ? { ...row, flatNo: event.target.value } : row))} className={inputClass} />
-                                    </label>
-                                    <label className="block">
-                                        <span className={labelClass}>Floor</span>
-                                        <input type="number" value={unit.floor ?? ''} onChange={(event) => setUnits((current) => current.map((row) => row.id === unit.id ? { ...row, floor: event.target.value === '' ? null : Number(event.target.value) } : row))} className={inputClass} />
-                                    </label>
-                                    <label className="block">
-                                        <span className={labelClass}>Tower</span>
-                                        <input value={unit.blockTower ?? ''} onChange={(event) => setUnits((current) => current.map((row) => row.id === unit.id ? { ...row, blockTower: event.target.value || null } : row))} className={inputClass} />
-                                    </label>
-                                    <label className="block">
-                                        <span className={labelClass}>Share</span>
-                                        <select value={unit.shareType} onChange={(event) => setUnits((current) => current.map((row) => row.id === unit.id ? { ...row, shareType: event.target.value as 'builder' | 'landowner' } : row))} className={inputClass}>
-                                            <option value="builder">Builder</option>
-                                            {project.developmentArrangement === 'joint_development' ? <option value="landowner">Landowner</option> : null}
-                                        </select>
-                                    </label>
-                                    <label className="block">
-                                        <span className={labelClass}>Status</span>
-                                        <select
-                                            value={unit.status === 'booked' ? 'allocated' : unit.status}
-                                            onChange={(event) => setUnits((current) => current.map((row) => row.id === unit.id ? { ...row, status: event.target.value as 'available' | 'allocated' } : row))}
-                                            className={inputClass}
-                                            disabled={unit.status === 'booked'}
-                                        >
-                                            <option value="available">Available</option>
-                                            <option value="allocated">Allocated</option>
-                                        </select>
-                                    </label>
-                                </div>
-                                {project.developmentArrangement === 'joint_development' && unit.shareType === 'landowner' ? (
-                                    <p className="mt-2 text-xs text-[#667085]">Landowner units are tracked separately from builder booking workflows.</p>
-                                ) : null}
-                                {unit.status === 'booked' ? (
-                                    <p className="mt-2 text-xs text-[#667085]">Booked status is controlled by booking workflows and cannot be changed here.</p>
-                                ) : null}
-                                <div className="mt-3 flex justify-end gap-2">
-                                    <AppButton variant="secondary" onClick={() => void handleEdit(unit)} disabled={!!editingId}>{editingId === unit.id ? 'Saving...' : 'Save'} </AppButton>
-                                    <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => void handleDelete(unit.id)} disabled={!!editingId}><Trash2 className="h-4 w-4" /></AppButton>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </PremiumCard>
-        </div>
-    );
-}
-
-export function ProjectPeoplePanel({ projectId }: { projectId: string }) {
-    const [clientAccessRows, setClientAccessRows] = useState<ProjectClientAccessRecord[]>([]);
-    const [investorRows, setInvestorRows] = useState<ProjectInvestorRecord[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        let active = true;
-
-        const load = async () => {
-            setLoading(true);
-            const [customerAccess, investors] = await Promise.all([
-                listProjectClientAccess(projectId),
-                listProjectInvestors(projectId),
-            ]);
-
-            if (!active) return;
-            setClientAccessRows(customerAccess);
-            setInvestorRows(investors.filter((row) => row.isActive));
-            setLoading(false);
-        };
-
-        void load();
-        return () => {
-            active = false;
-        };
-    }, [projectId]);
-
-    const accessList = [
-        ...clientAccessRows.filter((row) => row.invitationStatus === 'accepted').map((row) => ({
-            key: `client-${row.id}`,
-            label: row.email,
-            subLabel: 'Customer access',
-            tone: 'info' as const,
-        })),
-        ...investorRows.map((row) => ({
-            key: `investor-${row.id}`,
-            label: row.name || row.email || 'Investor',
-            subLabel: row.email || 'No email linked',
-            tone: 'success' as const,
-        })),
-    ];
-
-    if (loading) {
-        return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading project people…</div>;
-    }
-
-    return (
-        <div className="space-y-6">
-            <PremiumCard className="p-5">
-                <p className="text-base font-semibold text-[#17243A]">Project team</p>
-                <p className="mt-1 text-sm text-[#667085]">Internal team members are managed from the Team page.</p>
-                <div className="mt-4 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-4 text-sm text-[#667085]">
-                    Team access is managed separately from project details and is not handled here.
-                </div>
-            </PremiumCard>
-
-            <PremiumCard className="p-5">
-                <p className="text-base font-semibold text-[#17243A]">Customer access</p>
-                <p className="mt-1 text-sm text-[#667085]">People who can view project updates and project visibility for the customer side.</p>
-
-                {clientAccessRows.length === 0 ? (
-                    <div className="mt-4 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-4 text-sm text-[#667085]">No customer access assigned yet.</div>
-                ) : (
-                    <div className="mt-4 space-y-2">
-                        {clientAccessRows.map((row) => (
-                            <div key={row.id} className="flex items-center justify-between rounded-xl border border-[#E6E8EC] bg-white px-3 py-2.5">
-                                <div>
-                                    <p className="text-sm font-medium text-[#17243A]">{row.email}</p>
-                                    <p className="text-xs text-[#667085]">Status: {row.invitationStatus}</p>
-                                </div>
-                                <StatusPill label={row.invitationStatus} tone={row.invitationStatus === 'accepted' ? 'success' : row.invitationStatus === 'pending' ? 'info' : 'warning'} />
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </PremiumCard>
-
-            <PremiumCard className="p-5">
-                <p className="text-base font-semibold text-[#17243A]">Investor access</p>
-                <p className="mt-1 text-sm text-[#667085]">Investors currently linked to this project and with active visibility.</p>
-
-                {investorRows.length === 0 ? (
-                    <div className="mt-4 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-4 text-sm text-[#667085]">No active investor access for this project.</div>
-                ) : (
-                    <div className="mt-4 space-y-2">
-                        {investorRows.map((row) => (
-                            <div key={row.id} className="flex items-center justify-between rounded-xl border border-[#E6E8EC] bg-white px-3 py-2.5">
-                                <div>
-                                    <p className="text-sm font-medium text-[#17243A]">{row.name || row.email || 'Investor'}</p>
-                                    <p className="text-xs text-[#667085]">{row.email || 'No email linked'}</p>
-                                </div>
-                                <StatusPill label="Active" tone="success" />
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </PremiumCard>
-
-            <PremiumCard className="p-5">
-                <p className="text-base font-semibold text-[#17243A]">Access list</p>
-                <p className="mt-1 text-sm text-[#667085]">People currently receiving project visibility.</p>
-
-                {accessList.length === 0 ? (
-                    <div className="mt-4 rounded-xl border border-dashed border-[#D0D5DD] bg-slate-50 p-4 text-sm text-[#667085]">No people currently have project visibility.</div>
-                ) : (
-                    <div className="mt-4 space-y-2">
-                        {accessList.map((person) => (
-                            <div key={person.key} className="flex items-center justify-between rounded-xl border border-[#E6E8EC] bg-white px-3 py-2.5">
-                                <div>
-                                    <p className="text-sm font-medium text-[#17243A]">{person.label}</p>
-                                    <p className="text-xs text-[#667085]">{person.subLabel}</p>
-                                </div>
-                                <StatusPill label={person.tone === 'success' ? 'Investor' : 'Customer'} tone={person.tone} />
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </PremiumCard>
-        </div>
     );
 }
 
@@ -2821,15 +2842,15 @@ export function ProjectInvestorAccessPanel({ projectId }: { projectId: string })
         await loadRows();
     };
 
-    if (loading) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading investor access...</div>;
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading investor access...</div>;
 
     return (
         <>
             <PremiumCard className="p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Investor access</p>
-                        <p className="mt-1 text-sm text-[#667085]">Who can view project progress, milestones, and assigned funding information.</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Investor access</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">Who can view project progress, milestones, and assigned funding information.</p>
                     </div>
                     <AppButton variant="primary" onClick={() => setModalOpen(true)}><Plus className="h-4 w-4" /> Grant access</AppButton>
                 </div>
@@ -2838,13 +2859,13 @@ export function ProjectInvestorAccessPanel({ projectId }: { projectId: string })
                 ) : (
                     <div className="mt-4 space-y-2">
                         {rows.filter((row) => row.isActive).map((row) => (
-                            <div key={row.id} className="flex items-center justify-between rounded-xl border border-[#E6E8EC] px-3 py-2.5">
+                            <div key={row.id} className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-white px-3 py-2.5">
                                 <div>
-                                    <p className="text-sm font-medium text-[#17243A]">{row.name}</p>
-                                    <p className="text-xs text-[#667085]">{row.email || 'No email linked'}</p>
+                                    <p className="text-sm font-medium text-[var(--text)]">{row.name}</p>
+                                    <p className="text-xs text-[var(--text-muted)]">{row.email || 'No email linked'}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <StatusPill label={row.isActive ? 'Active' : 'Revoked'} tone={row.isActive ? 'success' : 'warning'} />
+                                    <StatusPill label="Active" tone="success" />
                                     <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => setDeleteId(row.id)}><Trash2 className="h-4 w-4" /></AppButton>
                                 </div>
                             </div>
@@ -2875,14 +2896,14 @@ export function ProjectInvestorAccessPanel({ projectId }: { projectId: string })
                             </select>
                         </Field>
 
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--text-secondary)]">
                             <span className="font-medium">Name:</span> {selectedContactName || 'No investor selected'}
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--text-secondary)]">
                             <span className="font-medium">Email:</span> {selectedContactEmail || 'No investor selected'}
                         </div>
 
-                        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        <div className="rounded-xl border border-[var(--warning-border)] bg-[var(--warning-soft)] px-3 py-2 text-xs text-[var(--warning-fg)]">
                             The investor must already have an application account. If not, invite or create the user account first.
                         </div>
 
@@ -3230,6 +3251,7 @@ export function ProjectInvestorsPanel({ projectId }: { projectId: string }) {
 
         setSavingContribution(false);
 
+
         if (!result) {
             push('error', editingContribution ? 'Could not update this contribution right now. Please try again.' : 'Could not add this contribution right now. Please try again.');
             return;
@@ -3266,34 +3288,79 @@ export function ProjectInvestorsPanel({ projectId }: { projectId: string }) {
     const projectContributionTotal = Object.values(contributionTotalsByInvestorId).reduce((sum, amount) => sum + Number(amount ?? 0), 0);
     const contributionTotal = contributions.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
 
-    if (loading) return <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading investors...</div>;
+    if (loading) return <div className="rounded-2xl border border-[var(--border)] bg-white p-6 text-sm text-[var(--text-muted)]">Loading investors...</div>;
+
+    const contributionActionsColumn: Column<InvestorContributionRecord> = {
+        key: 'actions',
+        header: 'Actions',
+        kind: 'actions',
+        cell: (row) => (
+            <RowActions>
+                <RowActionButton label="Edit" icon={<Pencil className="h-4 w-4" />} onClick={() => openContributionEdit(row)} />
+                <RowActionButton label="Delete" tone="danger" icon={<Trash2 className="h-4 w-4" />} onClick={() => setDeleteContributionId(row.id)} />
+            </RowActions>
+        ),
+    };
+
+    const investorActionsColumn: Column<ProjectInvestorRecord> = {
+        key: 'actions',
+        header: 'Actions',
+        kind: 'actions',
+        cell: (investor) => (
+            <RowActions>
+                <RowActionButton label="Edit" icon={<Pencil className="h-4 w-4" />} onClick={() => openEditTerms(investor)} />
+                <RowActionButton label="Delete" tone="danger" icon={<Trash2 className="h-4 w-4" />} onClick={() => setDeleteId(investor.id)} />
+            </RowActions>
+        ),
+    };
+
+    const contributionsColumns: Column<InvestorContributionRecord>[] = [
+        { key: 'date', header: 'Date', cell: (row) => <CellText>{row.contributionDate ? formatDate(row.contributionDate) : '-'}</CellText> },
+        { key: 'amount', header: 'Amount', align: 'right', cell: (row) => <span className="font-medium text-[var(--text)]">{formatINR(Number(row.amount ?? 0))}</span> },
+        { key: 'reference', header: 'Reference', cell: (row) => <CellText>{row.referenceNumber || '-'}</CellText> },
+        { key: 'notes', header: 'Notes', cell: (row) => <CellText>{row.notes || '-'}</CellText> },
+        ...(canManageInvestors ? [contributionActionsColumn] : []),
+    ];
+
+    const investorsColumns: Column<ProjectInvestorRecord>[] = [
+        { key: 'investor', header: 'Investor', cell: (investor) => <span className="font-medium text-[var(--text)]">{investor.name}</span> },
+        { key: 'contact', header: 'Contact', cell: (investor) => <CellText>{investor.email || investor.phone || 'No contact'}</CellText> },
+        { key: 'agreedshare', header: 'Agreed share', cell: (investor) => <CellText>{investor.investmentPercentage !== null && investor.investmentPercentage !== undefined ? `${Number(investor.investmentPercentage).toFixed(2)}%` : '-'}</CellText> },
+        {
+            key: 'agreedinvestment', header: 'Agreed investment', align: 'right', cell: (investor) => <CellText>{projectContractValue > 0 && investor.investmentPercentage !== null && investor.investmentPercentage !== undefined
+                ? formatINR((projectContractValue * Number(investor.investmentPercentage)) / 100)
+                : '-'}</CellText>
+        },
+        { key: 'status', header: 'Status', cell: (investor) => <StatusPill label={investor.isActive ? 'Active' : 'Inactive'} tone={investor.isActive ? 'success' : 'neutral'} /> },
+        ...(canManageInvestors ? [investorActionsColumn] : []),
+    ];
 
     return (
         <>
             <div className="grid gap-3 md:grid-cols-3">
-                <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 p-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Linked investors</p>
-                    <p className="mt-2 text-lg font-semibold text-[#17243A]">{activeInvestors.length}</p>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Linked investors</p>
+                    <p className="mt-2 text-lg font-semibold text-[var(--text)]">{activeInvestors.length}</p>
                 </div>
-                <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 p-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Agreed investment</p>
-                    <p className="mt-2 text-lg font-semibold text-[#17243A]">{formatINR(agreedInvestmentAmount)}</p>
-                    <p className="mt-1 text-xs text-[#667085]">Agreed share: {agreedSharePercentage.toFixed(2)}%</p>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Agreed investment</p>
+                    <p className="mt-2 text-lg font-semibold text-[var(--text)]">{formatINR(agreedInvestmentAmount)}</p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">Agreed share: {agreedSharePercentage.toFixed(2)}%</p>
                 </div>
-                <div className="rounded-xl border border-[#E6E8EC] bg-slate-50 p-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Actual contributions</p>
-                    <p className="mt-2 text-lg font-semibold text-[#17243A]">{formatINR(projectContributionTotal)}</p>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Actual contributions</p>
+                    <p className="mt-2 text-lg font-semibold text-[var(--text)]">{formatINR(projectContributionTotal)}</p>
                 </div>
             </div>
 
             <PremiumCard className="p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Investors</p>
-                        <p className="mt-1 text-sm text-[#667085]">Link existing investor contacts to this project and maintain project-specific terms.</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Investors</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">Link existing investor contacts to this project and maintain project-specific terms.</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <a href="/investors" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-[#344054] hover:bg-slate-50">
+                        <a href="/investors" className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-soft)]">
                             <ArrowUpRight className="h-4 w-4" />
                             Open Investors
                         </a>
@@ -3303,51 +3370,15 @@ export function ProjectInvestorsPanel({ projectId }: { projectId: string }) {
                 {investors.length === 0 ? (
                     <div className="mt-4"><EmptyState icon={<Users className="h-5 w-5" />} title="No investors linked" description="Link an existing investor from the Investors page to track project-level share and contributions." /></div>
                 ) : (
-                    <div className="mt-4 overflow-x-auto rounded-xl border border-[#E6E8EC]">
-                        <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
-                            <thead className="bg-[#1D4ED8] text-[11px] uppercase tracking-[0.12em] text-white">
-                                <tr>
-                                    <th className="px-4 py-3">Investor</th>
-                                    <th className="px-4 py-3">Contact</th>
-                                    <th className="px-4 py-3">Agreed share</th>
-                                    <th className="px-4 py-3">Agreed investment</th>
-                                    <th className="px-4 py-3">Status</th>
-                                    {canManageInvestors ? <th className="px-4 py-3 text-right">Actions</th> : null}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                                {investors.map((investor) => (
-                                    <tr key={investor.id}>
-                                        <td className="px-4 py-3 font-medium text-[#17243A]">{investor.name}</td>
-                                        <td className="px-4 py-3 text-[#344054]">{investor.email || investor.phone || 'No contact'}</td>
-                                        <td className="px-4 py-3 text-[#344054]">{investor.investmentPercentage !== null && investor.investmentPercentage !== undefined ? `${Number(investor.investmentPercentage).toFixed(2)}%` : '-'}</td>
-                                        <td className="px-4 py-3 text-[#344054]">
-                                            {projectContractValue > 0 && investor.investmentPercentage !== null && investor.investmentPercentage !== undefined
-                                                ? formatINR((projectContractValue * Number(investor.investmentPercentage)) / 100)
-                                                : '-'}
-                                        </td>
-                                        <td className="px-4 py-3"><StatusPill label={investor.isActive ? 'Active' : 'Inactive'} tone={investor.isActive ? 'success' : 'neutral'} /></td>
-                                        {canManageInvestors ? (
-                                            <td className="px-4 py-3">
-                                                <div className="flex justify-end gap-2">
-                                                    <AppButton variant="ghost" className={tableEditButtonClass} onClick={() => openEditTerms(investor)}><Pencil className="h-4 w-4" /></AppButton>
-                                                    <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => setDeleteId(investor.id)}><Trash2 className="h-4 w-4" /></AppButton>
-                                                </div>
-                                            </td>
-                                        ) : null}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable className="mt-4" caption="Investors" columns={investorsColumns} rows={investors} rowKey={(investor) => String(investor.id)} />
                 )}
             </PremiumCard>
 
             <PremiumCard className="p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-base font-semibold text-[#17243A]">Investor contributions</p>
-                        <p className="mt-1 text-sm text-[#667085]">Track contribution history and capital inflow by investor.</p>
+                        <p className="text-base font-semibold text-[var(--text)]">Investor contributions</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">Track contribution history and capital inflow by investor.</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {canManageInvestors ? <AppButton variant="primary" onClick={openContributionCreate}><Plus className="h-4 w-4" /> Add contribution</AppButton> : null}
@@ -3362,40 +3393,10 @@ export function ProjectInvestorsPanel({ projectId }: { projectId: string }) {
                     </div>
                 ) : (
                     <>
-                        <div className="mt-4 rounded-xl border border-[#E6E8EC] bg-slate-50 px-4 py-3 text-sm text-[#344054]">
-                            <span className="font-medium text-[#17243A]">{selectedInvestor.name}</span> total contribution: <span className="font-semibold text-[#17243A]">{formatINR(contributionTotal)}</span>
+                        <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                            <span className="font-medium text-[var(--text)]">{selectedInvestor.name}</span> total contribution: <span className="font-semibold text-[var(--text)]">{formatINR(contributionTotal)}</span>
                         </div>
-                        <div className="mt-4 overflow-x-auto rounded-xl border border-[#E6E8EC]">
-                            <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
-                                <thead className="bg-[#1D4ED8] text-[11px] uppercase tracking-[0.12em] text-white">
-                                    <tr>
-                                        <th className="px-4 py-3">Date</th>
-                                        <th className="px-4 py-3">Amount</th>
-                                        <th className="px-4 py-3">Reference</th>
-                                        <th className="px-4 py-3">Notes</th>
-                                        {canManageInvestors ? <th className="px-4 py-3 text-right">Actions</th> : null}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                                    {contributions.map((row) => (
-                                        <tr key={row.id}>
-                                            <td className="px-4 py-3 text-[#344054]">{row.contributionDate ? formatDate(row.contributionDate) : '-'}</td>
-                                            <td className="px-4 py-3 font-medium text-[#17243A]">{formatINR(Number(row.amount ?? 0))}</td>
-                                            <td className="px-4 py-3 text-[#344054]">{row.referenceNumber || '-'}</td>
-                                            <td className="px-4 py-3 text-[#344054]">{row.notes || '-'}</td>
-                                            {canManageInvestors ? (
-                                                <td className="px-4 py-3">
-                                                    <div className="flex justify-end gap-2">
-                                                        <AppButton variant="ghost" className={tableEditButtonClass} onClick={() => openContributionEdit(row)}><Pencil className="h-4 w-4" /></AppButton>
-                                                        <AppButton variant="danger" className={tableDeleteButtonClass} onClick={() => setDeleteContributionId(row.id)}><Trash2 className="h-4 w-4" /></AppButton>
-                                                    </div>
-                                                </td>
-                                            ) : null}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <DataTable className="mt-4" caption="Contributions" columns={contributionsColumns} rows={contributions} rowKey={(row) => String(row.id)} />
                     </>
                 )}
             </PremiumCard>
@@ -3403,8 +3404,8 @@ export function ProjectInvestorsPanel({ projectId }: { projectId: string }) {
             {canManageInvestors && linkModalOpen && (
                 <Modal eyebrow="Investor" title="Link existing investor" onClose={() => setLinkModalOpen(false)} size="lg">
                     <form onSubmit={handleLinkInvestor} className="space-y-4">
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                            <span className="text-sm font-medium text-[#17243A]">Select investor from company master</span>
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <span className="text-sm font-medium text-[var(--text)]">Select investor from company master</span>
                             <input
                                 value={contactSearch}
                                 onChange={(event) => setContactSearch(event.target.value)}
@@ -3412,7 +3413,7 @@ export function ProjectInvestorsPanel({ projectId }: { projectId: string }) {
                                 className={`${inputClass} mb-2`}
                             />
                             {linkableInvestorContacts.length === 0 ? (
-                                <div className="rounded-lg border border-dashed border-slate-200 bg-white px-3 py-2 text-sm text-slate-500">
+                                <div className="rounded-lg border border-dashed border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text-muted)]">
                                     No unlinked active investor contacts are available.
                                 </div>
                             ) : (
@@ -3448,14 +3449,14 @@ export function ProjectInvestorsPanel({ projectId }: { projectId: string }) {
             {canManageInvestors && termsModalOpen && editingTermsInvestor && (
                 <Modal eyebrow="Project investor terms" title="Update project-specific terms" onClose={() => setTermsModalOpen(false)} size="lg">
                     <form onSubmit={handleSaveTerms} className="space-y-4">
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--text-secondary)]">
                             <span className="font-medium">Investor:</span> {editingTermsInvestor.name}
                         </div>
                         <div className="grid gap-3 md:grid-cols-2">
                             <Field label="Agreed share %">
                                 <input type="number" min="0" max="100" step="0.01" className={inputClass} value={termsForm.investmentPercentage} onChange={(event) => setTermsForm((prev) => ({ ...prev, investmentPercentage: event.target.value }))} />
                             </Field>
-                            <label className="inline-flex items-center gap-2 text-sm text-[#344054] pt-8">
+                            <label className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] pt-8">
                                 <input type="checkbox" checked={termsForm.isActive} onChange={(event) => setTermsForm((prev) => ({ ...prev, isActive: event.target.checked }))} />
                                 Active for this project
                             </label>

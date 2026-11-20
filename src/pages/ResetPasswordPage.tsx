@@ -46,14 +46,14 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-[#17243A] relative overflow-hidden flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-[var(--navy)] relative overflow-hidden flex-col justify-between p-12">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, rgba(96,132,255,0.9) 0, rgba(96,132,255,0.9) 1px, transparent 1px, transparent 28px)' }} />
         <div className="relative z-10 flex flex-col gap-8">
           <div className="flex flex-col items-start">
             <button onClick={() => navigate('/')} aria-label="Back to home" className="cursor-pointer">
               <BrandLogo size="lg" onDark />
             </button>
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#D9E4FF]">Construction Quotations & Business Documents</p>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--info-border)]">Construction Quotations & Business Documents</p>
           </div>
         </div>
         <div className="relative z-10 flex items-center justify-between text-sm text-slate-400 border-t border-white/10 pt-4 mt-8">
@@ -62,15 +62,15 @@ export default function ResetPasswordPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6 bg-[#F7F9FC]">
+      <div className="flex-1 flex items-center justify-center p-6 bg-[var(--surface-soft)]">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex flex-col items-center mb-8">
             <button onClick={() => navigate('/')} aria-label="Back to home" className="cursor-pointer">
               <BrandLogo size="lg" onDark={false} />
             </button>
           </div>
-          <h2 className="text-2xl font-bold text-[#0B234A] mb-2">Reset Password</h2>
-          <p className="text-sm text-slate-500 mb-7">Choose a new password for your account.</p>
+          <h2 className="text-2xl font-bold text-[var(--text)] mb-2">Reset Password</h2>
+          <p className="text-sm text-[var(--text-muted)] mb-7">Choose a new password for your account.</p>
 
           {done ? (
             <AppButton onClick={() => navigate('/login')} className="w-full justify-center py-3 text-sm">
@@ -79,19 +79,19 @@ export default function ResetPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {!token && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <p className="text-sm text-[var(--danger-fg)] bg-[var(--danger-soft)] border border-[var(--danger-border)] rounded-lg px-3 py-2">
                   This link is missing its reset token. Request a new one from the sign-in page.
                 </p>
               )}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">New Password</label>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">New Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
+                    className="w-full pl-10 pr-10 py-2.5 text-sm border border-[var(--border-strong)] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-[var(--primary)]"
                     placeholder="Enter new password"
                     minLength={8}
                     required
@@ -99,7 +99,7 @@ export default function ResetPasswordPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[var(--text-secondary)]"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -107,14 +107,14 @@ export default function ResetPasswordPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Confirm New Password</label>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Confirm New Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/30 focus:border-[#1D4ED8]"
+                    className="w-full pl-10 pr-3 py-2.5 text-sm border border-[var(--border-strong)] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-[var(--primary)]"
                     placeholder="Re-enter new password"
                     minLength={8}
                     required
@@ -127,8 +127,8 @@ export default function ResetPasswordPage() {
             </form>
           )}
 
-          <div className="mt-4 text-sm text-slate-500 text-center">
-            <button type="button" onClick={() => navigate('/login')} className="text-[#1D4ED8] hover:text-[#1E40AF]">
+          <div className="mt-4 text-sm text-[var(--text-muted)] text-center">
+            <button type="button" onClick={() => navigate('/login')} className="text-[var(--primary)] hover:text-[var(--primary-hover)]">
               Back to sign in
             </button>
           </div>

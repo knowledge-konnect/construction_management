@@ -1,8 +1,9 @@
-﻿import ConfirmDialog from '@/components/ConfirmDialog';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { DocumentGenerationLoader } from '@/components/loading/Loaders';
 import PdfPreviewModal from '@/components/quotation/PdfPreviewModal';
 import StatusBadge from '@/components/StatusBadge';
 import { AppButton } from '@/components/ui/DesignSystem';
+import DataTable, { CellText, RowActionButton, RowActions, type Column } from '@/components/ui/DataTable';
 import { useAuth } from '@/context/AuthContext';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
@@ -12,18 +13,7 @@ import { downloadQuotationPDF } from '@/lib/pdf';
 import { formatDate, formatINR } from '@/lib/utils';
 import { deleteDocument, nextSequence, saveDocument } from '@/services/document.service';
 import { createProjectFromQuotation } from '@/services/project.service';
-import {
-  Copy,
-  Eye,
-  FileDown,
-  FileText,
-  FolderKanban,
-  MessageCircle,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-} from 'lucide-react';
+import { Copy, Eye, FileDown, FileText, FolderKanban, MessageCircle, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
@@ -49,6 +39,7 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
   const [generatingPdfId, setGeneratingPdfId] = useState<string | null>(null);
   const [creatingProjectId, setCreatingProjectId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const nextSearch = searchParams.get('search') ?? '';
@@ -202,51 +193,86 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
     return values.sort((a, b) => a.localeCompare(b));
   }, [quotations]);
 
-  const statusSummaryStyles: Record<string, string> = {
-    DRAFT: 'border-amber-200 bg-amber-50',
-    GENERATED: 'border-emerald-200 bg-emerald-50',
-    SENT: 'border-blue-200 bg-blue-50',
-    ACCEPTED: 'border-[#F4B72B]/30 bg-[#FFF8E6]',
-    REJECTED: 'border-red-200 bg-red-50',
-    EXPIRED: 'border-slate-200 bg-slate-50',
-  };
-
-  const statusDotStyles: Record<string, string> = {
-    DRAFT: 'bg-amber-500',
-    GENERATED: 'bg-emerald-500',
-    SENT: 'bg-blue-500',
-    ACCEPTED: 'bg-[#F4B72B]',
-    REJECTED: 'bg-red-500',
-    EXPIRED: 'bg-slate-400',
-  };
+  // Rows arrive already ordered by the "sort by" dropdown above, so the column headers are not sortable here.
+  const columns: Column<Quotation>[] = [
+    {
+      key: 'number',
+      header: 'Quotation no.',
+      cell: (q) => <span className="font-medium text-[var(--primary)]">{q.quotationNumber}</span>,
+    },
+    { key: 'customer', header: 'Customer', cell: (q) => <CellText>{q.customer.name}</CellText> },
+    { key: 'project', header: 'Project', cell: (q) => <CellText>{q.project.name}</CellText> },
+    { key: 'type', header: 'Type', cell: (q) => <CellText muted>{q.project.projectType}</CellText> },
+    {
+      key: 'amount',
+      header: 'Amount',
+      align: 'right',
+      cell: (q) => <span className="font-semibold text-[var(--text)]">{formatINR(q.grandTotal)}</span>,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (q) => (
+        <div className="relative inline-block">
+          <button type="button" className="focus:outline-none" title="Click to change status" tabIndex={-1}>
+            <StatusBadge status={q.status} />
+          </button>
+          <select
+            value={q.status}
+            onChange={(e) => handleStatusChange(q, e.target.value as QuotationStatus)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            aria-label={`Change status for ${q.quotationNumber}`}
+          >
+            {QUOTATION_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+        </div>
+      ),
+    },
+    { key: 'updated', header: 'Updated', cell: (q) => <CellText>{formatDate(q.updatedAt)}</CellText> },
+    {
+      key: 'actions',
+      header: 'Actions',
+      kind: 'actions',
+      cell: (q) => (
+        <RowActions>
+          <RowActionButton label="Edit quotation" icon={<Pencil className="h-4 w-4" />} onClick={() => navigate(`/quotations/${q.id}/edit`)} />
+          <RowActionButton label="Preview PDF" icon={<Eye className="h-4 w-4" />} onClick={() => setPreviewQuotation(q)} />
+          <RowActionButton label="Download PDF" icon={<FileDown className="h-4 w-4" />} disabled={Boolean(generatingPdfId)} onClick={() => void handleDownload(q)} />
+          <RowActionButton label="Share on WhatsApp" icon={<MessageCircle className="h-4 w-4" />} onClick={() => handleWhatsAppShare(q)} />
+          <RowActionButton label="Duplicate quotation" icon={<Copy className="h-4 w-4" />} onClick={() => handleDuplicate(q)} />
+          {q.status === 'ACCEPTED' && (
+            <RowActionButton label="Create project" icon={<FolderKanban className="h-4 w-4" />} disabled={Boolean(creatingProjectId)} onClick={() => void handleCreateProject(q)} />
+          )}
+          <RowActionButton label="Delete quotation" tone="danger" icon={<Trash2 className="h-4 w-4" />} disabled={deleting} onClick={() => setDeleteId(q.id)} />
+        </RowActions>
+      ),
+    },
+  ];
 
   return (
     <div>
-      <div className="mb-4 grid gap-3 md:grid-cols-4">
-        <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">Total</p>
-          <p className="mt-2 text-2xl font-bold text-[#17243B]">{quotations.length}</p>
-        </div>
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Generated</p>
-          <p className="mt-2 text-2xl font-bold text-emerald-800">{statusCounts.GENERATED ?? 0}</p>
-        </div>
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-700">Sent</p>
-          <p className="mt-2 text-2xl font-bold text-blue-800">{statusCounts.SENT ?? 0}</p>
-        </div>
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Draft</p>
-          <p className="mt-2 text-2xl font-bold text-amber-800">{statusCounts.DRAFT ?? 0}</p>
-        </div>
+      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        {[
+          { label: 'Total', value: quotations.length, dot: '' },
+          { label: 'Generated', value: statusCounts.GENERATED ?? 0, dot: 'bg-[var(--info)]' },
+          { label: 'Sent', value: statusCounts.SENT ?? 0, dot: 'bg-[var(--warning)]' },
+          { label: 'Draft', value: statusCounts.DRAFT ?? 0, dot: 'bg-[var(--text-subtle)]' },
+        ].map((card) => (
+          <div key={card.label} className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]">
+            <p className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
+              {card.dot && <span className={`h-2 w-2 rounded-full ${card.dot}`} aria-hidden="true" />}
+              {card.label}
+            </p>
+            <p className="mt-1.5 text-2xl font-semibold tabular-nums text-[var(--text)]">{card.value}</p>
+          </div>
+        ))}
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
         {QUOTATION_STATUSES.map((status) => (
-          <div key={status.value} className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${statusSummaryStyles[status.value] ?? 'border-slate-200 bg-slate-50'}`}>
-            <span className={`h-2.5 w-2.5 rounded-full ${statusDotStyles[status.value] ?? 'bg-slate-400'}`} />
-            <span className="text-xs font-medium text-slate-700">{status.label}</span>
-            <span className="text-xs text-slate-500">{statusCounts[status.value] ?? 0}</span>
+          <div key={status.value} className="inline-flex items-center gap-2">
+            <StatusBadge status={status.value as QuotationStatus} />
+            <span className="text-xs tabular-nums text-[var(--text-muted)]">{statusCounts[status.value] ?? 0}</span>
           </div>
         ))}
       </div>
@@ -257,28 +283,28 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
         </div>
       )}
 
-      <div className="rounded-[28px] border border-[#E2E8F0] bg-white p-3 shadow-[0_18px_38px_rgba(15,23,42,0.04)]">
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <label className="relative block flex-1 min-w-[220px]">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
             <input
               type="text"
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search quotation, customer, project, or mobile…"
-              className="w-full rounded-xl border border-[#D0D5DD] bg-[#F8FAFC] py-2.5 pl-9 pr-3 text-sm text-[#17243B] placeholder:text-[#94A3B8] focus:border-[#2454D6] focus:outline-none focus:ring-2 focus:ring-[#2454D6]/15"
+              className="w-full rounded-xl border border-[var(--border-strong)] bg-[var(--surface-soft)] py-2.5 pl-9 pr-3 text-sm text-[var(--text)] placeholder:text-[var(--text-subtle)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
             />
           </label>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-xl border border-[#D0D5DD] bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#17243B] focus:border-[#2454D6] focus:outline-none focus:ring-2 focus:ring-[#2454D6]/15">
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-xl border border-[var(--border-strong)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--text)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]">
               <option value="All">All Status</option>
               {QUOTATION_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
-            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="rounded-xl border border-[#D0D5DD] bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#17243B] focus:border-[#2454D6] focus:outline-none focus:ring-2 focus:ring-[#2454D6]/15">
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="rounded-xl border border-[var(--border-strong)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--text)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]">
               <option value="All">All Types</option>
               {projectTypeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="rounded-xl border border-[#D0D5DD] bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#17243B] focus:border-[#2454D6] focus:outline-none focus:ring-2 focus:ring-[#2454D6]/15">
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="rounded-xl border border-[var(--border-strong)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--text)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]">
               <option value="updated">Recently Updated</option>
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
@@ -289,133 +315,30 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
         </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#D8DEE8] bg-slate-50/80 p-10 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
-            <FileText className="h-5 w-5" />
-          </div>
-          {quotations.length === 0 ? (
-            <>
-              <p className="text-slate-600 font-medium">No quotations yet</p>
-              <p className="text-sm text-slate-400 mb-4">Create your first quotation to start tracking customer work and project value.</p>
-              {showCreate && (
+      <div className="mt-4">
+        <DataTable
+          caption="Quotations"
+          columns={columns}
+          rows={filtered}
+          rowKey={(q) => q.id}
+          rowTone={(q) => (q.status === 'ACCEPTED' ? 'success' : undefined)}
+          pagination={{ page, pageSize: 10, onPageChange: setPage }}
+          empty={{
+            icon: <FileText className="h-5 w-5" />,
+            title: quotations.length === 0 ? 'No quotations yet' : 'No quotations match your filters',
+            description:
+              quotations.length === 0
+                ? 'Create your first quotation to start tracking customer work and project value.'
+                : 'Try a broader search or change the status/type view.',
+            action:
+              quotations.length === 0 && showCreate ? (
                 <AppButton onClick={() => navigate('/quotations/new')}>
-                  <Plus className="w-4 h-4" /> Create Quotation
+                  <Plus className="h-4 w-4" /> Create Quotation
                 </AppButton>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-slate-400">No quotations match your filters. Try a broader search or change the status/type view.</p>
-          )}
-        </div>
-      ) : (
-        <>
-          <div className="hidden overflow-x-auto rounded-2xl border border-[#E6E8EC] bg-white shadow-[0_6px_18px_rgba(15,23,42,0.03)] md:block">
-            <table className="min-w-[780px] divide-y divide-[#E6E8EC] text-left text-sm">
-              <thead className="bg-[#1D4ED8] text-[11px] uppercase tracking-[0.12em] text-white">
-                <tr>
-                  <th className="px-4 py-3.5 font-semibold text-left text-white">Quotation No</th>
-                  <th className="px-4 py-3.5 font-semibold text-left text-white">Customer</th>
-                  <th className="px-4 py-3.5 font-semibold text-left text-white">Project</th>
-                  <th className="px-4 py-3.5 font-semibold text-left text-white">Type</th>
-                  <th className="px-4 py-3.5 font-semibold text-right text-white">Amount</th>
-                  <th className="px-4 py-3.5 font-semibold text-left text-white">Status</th>
-                  <th className="px-4 py-3.5 font-semibold text-left text-white">Updated</th>
-                  <th className="px-4 py-3.5 font-semibold text-center text-white">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                {filtered.map((q) => (
-                  <tr key={q.id} className="transition-colors hover:bg-slate-50/80">
-                    <td className="px-4 py-3.5 font-medium text-[#1D4ED8]">{q.quotationNumber}</td>
-                    <td className="px-4 py-3.5 text-[#344054]">{q.customer.name || '-'}</td>
-                    <td className="px-4 py-3.5 text-[#344054]">{q.project.name || '-'}</td>
-                    <td className="px-4 py-3.5 text-[#667085]">{q.project.projectType}</td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-[#17243A]">{formatINR(q.grandTotal)}</td>
-                    <td className="px-4 py-3.5">
-                      <div className="relative inline-block">
-                        <button className="focus:outline-none" title="Click to change status">
-                          <StatusBadge status={q.status} />
-                        </button>
-                        <select
-                          value={q.status}
-                          onChange={(e) => handleStatusChange(q, e.target.value as QuotationStatus)}
-                          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                          aria-label="Change status"
-                        >
-                          {QUOTATION_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                        </select>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5 text-xs text-[#667085]">{formatDate(q.updatedAt)}</td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => navigate(`/quotations/${q.id}/edit`)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8]" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
-                        <button onClick={() => setPreviewQuotation(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8]" aria-label="Preview PDF"><Eye className="h-4 w-4" /></button>
-                        <button disabled={Boolean(generatingPdfId)} onClick={() => void handleDownload(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50" aria-label="Download PDF"><FileDown className="h-4 w-4" /></button>
-                        <button onClick={() => handleWhatsAppShare(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600 transition-colors hover:bg-emerald-100" aria-label="Share on WhatsApp"><MessageCircle className="h-4 w-4" /></button>
-                        <button onClick={() => handleDuplicate(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#1D4ED8]" aria-label="Duplicate"><Copy className="h-4 w-4" /></button>
-                        {q.status === 'ACCEPTED' && (
-                          <button disabled={Boolean(creatingProjectId)} onClick={() => void handleCreateProject(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Create project from quotation"><FolderKanban className="h-4 w-4" /></button>
-                        )}
-                        <button disabled={deleting} onClick={() => setDeleteId(q.id)} className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="md:hidden space-y-3">
-            {filtered.map((q) => (
-              <div key={q.id} className="rounded-2xl border border-[#E6E8EC] bg-white p-4 shadow-[0_6px_18px_rgba(15,23,42,0.03)]">
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[#1D4ED8]">{q.quotationNumber}</p>
-                    <p className="mt-1 truncate text-sm text-[#344054]">{q.customer.name || '-'}</p>
-                  </div>
-                  <div className="relative inline-block shrink-0">
-                    <button className="focus:outline-none" title="Tap to change status">
-                      <StatusBadge status={q.status} />
-                    </button>
-                    <select
-                      value={q.status}
-                      onChange={(e) => handleStatusChange(q, e.target.value as QuotationStatus)}
-                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                      aria-label="Change status"
-                    >
-                      {QUOTATION_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="mb-2 flex items-center justify-between gap-2 text-sm">
-                  <span className="truncate text-[#667085]">{q.project.name || '-'}</span>
-                  <span className="shrink-0 text-[11px] font-medium uppercase tracking-[0.08em] text-[#667085]">{q.project.projectType}</span>
-                </div>
-
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-base font-semibold text-[#17243A]">{formatINR(q.grandTotal)}</span>
-                  <span className="text-[11px] text-[#667085]">Updated {formatDate(q.updatedAt)}</span>
-                </div>
-
-                <div className="flex items-center gap-1 border-t border-[#E6E8EC] pt-3">
-                  <button onClick={() => navigate(`/quotations/${q.id}/edit`)} className="flex-1 rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-medium text-[#1D4ED8]" aria-label="Edit">Edit</button>
-                  <button onClick={() => setPreviewQuotation(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500" aria-label="Preview PDF"><Eye className="h-4 w-4" /></button>
-                  <button disabled={Boolean(generatingPdfId)} onClick={() => void handleDownload(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Download PDF"><FileDown className="h-4 w-4" /></button>
-                  <button onClick={() => handleWhatsAppShare(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600" aria-label="Share on WhatsApp"><MessageCircle className="h-4 w-4" /></button>
-                  <button onClick={() => handleDuplicate(q)} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500" aria-label="Duplicate"><Copy className="h-4 w-4" /></button>
-                  {q.status === 'ACCEPTED' && (
-                    <button disabled={Boolean(creatingProjectId)} onClick={() => void handleCreateProject(q)} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Create project"><FolderKanban className="h-4 w-4" /></button>
-                  )}
-                  <button disabled={deleting} onClick={() => setDeleteId(q.id)} className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 disabled:cursor-not-allowed disabled:opacity-50" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+              ) : undefined,
+          }}
+        />
+      </div>
 
       <ConfirmDialog
         open={!!deleteId}

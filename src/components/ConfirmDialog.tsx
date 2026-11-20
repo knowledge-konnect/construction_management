@@ -43,17 +43,17 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border border-[#E6E8EC] bg-white p-5 shadow-xl sm:p-6"
+        className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-white p-5 shadow-xl sm:p-6"
       >
         <div className="flex items-start gap-4">
           <div
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${danger ? 'bg-red-50 text-red-600 ring-1 ring-red-100' : 'bg-amber-50 text-amber-600 ring-1 ring-amber-100'
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${danger ? 'bg-[var(--danger-soft)] text-[var(--danger-fg)] ring-1 ring-red-100' : 'bg-[var(--warning-soft)] text-[var(--warning-fg)] ring-1 ring-amber-100'
               }`}
           >
             <AlertTriangle className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 id={titleId} className="text-base font-semibold text-[#17243A]">{title}</h3>
+            <h3 id={titleId} className="text-base font-semibold text-[var(--text)]">{title}</h3>
             <div className="mt-1.5 text-sm leading-6 text-[#5B6475]">{message}</div>
           </div>
         </div>
@@ -61,7 +61,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl border border-[#E6E8EC] bg-white px-4 py-2.5 text-sm font-medium text-[#17243A] transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1D4ED8]/40"
+            className="rounded-xl border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
           >
             {cancelLabel}
           </button>
@@ -69,8 +69,8 @@ export default function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             className={`rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 ${danger
-              ? 'bg-red-600 hover:bg-red-700 focus-visible:ring-red-400'
-              : 'bg-[#1D4ED8] hover:bg-[#1E40AF] focus-visible:ring-[#1D4ED8]/40'
+              ? 'bg-[var(--danger)] hover:bg-[var(--danger-fg)] focus-visible:ring-red-400'
+              : 'bg-[var(--primary)] hover:bg-[var(--primary-hover)] focus-visible:ring-[var(--ring)]'
               }`}
           >
             {confirmLabel}

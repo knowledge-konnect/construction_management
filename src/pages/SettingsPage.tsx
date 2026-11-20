@@ -154,13 +154,13 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
 
   return (
     <div>
-      <p className="text-sm font-medium text-slate-700 mb-1.5">{label}</p>
+      <p className="text-sm font-medium text-[var(--text-secondary)] mb-1.5">{label}</p>
 
       {/* Preview thumbnail */}
       {hasImage && (
         <div className="mb-3 relative inline-block">
           {type === 'logo' ? (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border border-slate-200 bg-white p-2 shadow-sm">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[var(--border)] bg-white p-2 shadow-sm">
               <img
                 src={currentUrl}
                 alt={label}
@@ -171,7 +171,7 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
             <img
               src={currentUrl}
               alt={label}
-              className="h-16 max-w-[200px] object-contain rounded border border-slate-200 bg-slate-50 p-1.5"
+              className="h-16 max-w-[200px] object-contain rounded border border-[var(--border)] bg-[var(--surface-soft)] p-1.5"
             />
           )}
           {sizeLabel && (
@@ -182,7 +182,7 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
           <button
             type="button"
             onClick={() => { onRemoved(); if (inputRef.current) inputRef.current.value = ''; }}
-            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow"
+            className="absolute -top-2 -right-2 w-5 h-5 bg-[var(--danger)] hover:bg-[var(--danger)] text-white rounded-full flex items-center justify-center shadow"
             title="Remove image"
           >
             <X className="w-3 h-3" />
@@ -196,7 +196,7 @@ function ImageUploadField({ label, hint, currentUrl, type, onProcessed, onRemove
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={processing}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#1D4ED8] border border-[#1D4ED8]/30 hover:bg-[#1D4ED8]/5 rounded-lg disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[var(--primary)] border border-[#1D4ED8]/30 hover:bg-[#1D4ED8]/5 rounded-lg disabled:opacity-60"
         >
           {processing
             ? <><Loader2 className="w-4 h-4 animate-spin" /> Compressing…</>
@@ -368,7 +368,7 @@ export default function SettingsPage() {
       />
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-1 mb-6 border-b border-slate-200">
+      <div className="flex flex-wrap gap-1 mb-6 border-b border-[var(--border)]">
         {tabs.map((t) => {
           const Icon = t.icon;
           return (
@@ -376,8 +376,8 @@ export default function SettingsPage() {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t.key
-                ? 'border-[#1D4ED8] text-[#1D4ED8]'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-[var(--primary)] text-[var(--primary)]'
+                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
                 }`}
             >
               <Icon className="w-4 h-4" /> {t.label}
@@ -453,18 +453,18 @@ export default function SettingsPage() {
             description="Images are compressed and saved directly in the database. They appear in PDF headers and signature blocks."
           >
             <div className="space-y-4">
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-[var(--text-secondary)]">
                 Logo appears in quotation/invoice headers. Signature (in Authorized Signatory) appears in the PDF sign-off block.
               </p>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
-                  <p className="text-sm font-semibold text-slate-800 mb-1">Company Logo</p>
-                  <p className="text-xs text-slate-600 mb-3">PNG/JPEG recommended. Auto-optimized for PDF header quality.</p>
+                <div className="rounded-xl border border-[var(--border)] bg-slate-50/30 p-4">
+                  <p className="text-sm font-semibold text-[var(--text)] mb-1">Company Logo</p>
+                  <p className="text-xs text-[var(--text-secondary)] mb-3">PNG/JPEG recommended. Auto-optimized for PDF header quality.</p>
 
                   <div className="flex items-start gap-4">
                     <div className="relative">
-                      <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+                      <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-[var(--border)] bg-white p-2 shadow-sm">
                         {settings.logoUrl ? (
                           <img src={settings.logoUrl} alt="Company logo" className="h-full w-full object-contain" />
                         ) : (
@@ -478,7 +478,7 @@ export default function SettingsPage() {
                             update({ logoUrl: undefined });
                             if (logoInputRef.current) logoInputRef.current.value = '';
                           }}
-                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow"
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-[var(--danger)] hover:bg-[var(--danger)] text-white rounded-full flex items-center justify-center shadow"
                           title="Remove logo"
                         >
                           <X className="w-3 h-3" />
@@ -491,14 +491,14 @@ export default function SettingsPage() {
                         type="button"
                         onClick={() => logoInputRef.current?.click()}
                         disabled={logoProcessing}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#1D4ED8] border border-[#1D4ED8]/30 hover:bg-[#1D4ED8]/5 rounded-lg disabled:opacity-60"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[var(--primary)] border border-[#1D4ED8]/30 hover:bg-[#1D4ED8]/5 rounded-lg disabled:opacity-60"
                       >
                         {logoProcessing
                           ? <><Loader2 className="w-4 h-4 animate-spin" /> Compressing…</>
                           : <><Upload className="w-4 h-4" /> {settings.logoUrl ? 'Replace logo' : 'Choose logo'}</>
                         }
                       </button>
-                      <p className="text-xs text-slate-500">Best result: square logo with clear foreground.</p>
+                      <p className="text-xs text-[var(--text-muted)]">Best result: square logo with clear foreground.</p>
                     </div>
                   </div>
 
@@ -516,21 +516,21 @@ export default function SettingsPage() {
                   {logoProcessing && <div className="mt-2"><FileUploadProgress label="Uploading company logo…" /></div>}
                 </div>
 
-                <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
-                  <p className="text-sm font-semibold text-slate-800 mb-1">Theme Colors</p>
-                  <p className="text-xs text-slate-600 mb-3">
+                <div className="rounded-xl border border-[var(--border)] bg-slate-50/30 p-4">
+                  <p className="text-sm font-semibold text-[var(--text)] mb-1">Theme Colors</p>
+                  <p className="text-xs text-[var(--text-secondary)] mb-3">
                     Match your website colors: use swatch picker, paste hex code, or pick directly from screen.
                   </p>
 
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs font-medium text-slate-700 mb-1">Primary</p>
+                      <p className="text-xs font-medium text-[var(--text-secondary)] mb-1">Primary</p>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
                           value={primaryColor}
                           onChange={(e) => update({ primaryColor: e.target.value })}
-                          className="w-10 h-10 p-0.5 border border-slate-200 rounded cursor-pointer shrink-0"
+                          className="w-10 h-10 p-0.5 border border-[var(--border)] rounded cursor-pointer shrink-0"
                         />
                         <div className="flex-1 min-w-0">
                           <TextInput
@@ -544,7 +544,7 @@ export default function SettingsPage() {
                           <button
                             type="button"
                             onClick={() => void pickColorFromScreen('primary')}
-                            className="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                            className="h-10 shrink-0 rounded-lg border border-[var(--border)] bg-white px-3 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-soft)]"
                           >
                             Pick
                           </button>
@@ -553,13 +553,13 @@ export default function SettingsPage() {
                     </div>
 
                     <div>
-                      <p className="text-xs font-medium text-slate-700 mb-1">Accent</p>
+                      <p className="text-xs font-medium text-[var(--text-secondary)] mb-1">Accent</p>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
                           value={accentColor}
                           onChange={(e) => update({ secondaryColor: e.target.value })}
-                          className="w-10 h-10 p-0.5 border border-slate-200 rounded cursor-pointer shrink-0"
+                          className="w-10 h-10 p-0.5 border border-[var(--border)] rounded cursor-pointer shrink-0"
                         />
                         <div className="flex-1 min-w-0">
                           <TextInput
@@ -573,7 +573,7 @@ export default function SettingsPage() {
                           <button
                             type="button"
                             onClick={() => void pickColorFromScreen('accent')}
-                            className="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                            className="h-10 shrink-0 rounded-lg border border-[var(--border)] bg-white px-3 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-soft)]"
                           >
                             Pick
                           </button>
@@ -586,37 +586,37 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => update({ primaryColor: '#1D4ED8', secondaryColor: '#F4B72B' })}
-                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-100"
+                      className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] px-2.5 py-1.5 text-xs text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]"
                     >
                       Reset to Default Colors
                     </button>
                   </div>
 
                   {isLowContrastTheme && (
-                    <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
+                    <p className="mt-2 text-xs text-[var(--warning-fg)] bg-[var(--warning-soft)] border border-[var(--warning-border)] rounded-md px-2 py-1.5">
                       Selected colors are very close. PDF headings may be less readable.
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 overflow-hidden">
+              <div className="rounded-xl border border-[var(--border)] overflow-hidden">
                 <div className="px-4 py-2.5 text-white text-xs font-semibold tracking-wide" style={{ backgroundColor: primaryColor }}>
                   Brand Preview
                 </div>
                 <div className="p-4 bg-white space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white p-1.5">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--border)] bg-white p-1.5">
                         {settings.logoUrl ? (
                           <img src={settings.logoUrl} alt="Preview logo" className="h-full w-full object-contain" />
                         ) : (
-                          <span className="text-[10px] text-slate-400">LOGO</span>
+                          <span className="text-xs text-[var(--text-subtle)]">LOGO</span>
                         )}
                       </div>
                       <div>
-                        <p className="text-base font-semibold text-slate-800 leading-5">{settings.companyName || 'Your Company Name'}</p>
-                        <p className="text-sm text-slate-600">{settings.tagline || 'Your company tagline appears here.'}</p>
+                        <p className="text-base font-semibold text-[var(--text)] leading-5">{settings.companyName || 'Your Company Name'}</p>
+                        <p className="text-sm text-[var(--text-secondary)]">{settings.tagline || 'Your company tagline appears here.'}</p>
                       </div>
                     </div>
                     <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-white" style={{ backgroundColor: accentColor }}>
@@ -625,12 +625,12 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div className="rounded-lg border border-slate-200 p-2.5">
-                      <p className="text-xs text-slate-500 mb-1">Sample heading</p>
+                    <div className="rounded-lg border border-[var(--border)] p-2.5">
+                      <p className="text-xs text-[var(--text-muted)] mb-1">Sample heading</p>
                       <p className="text-sm font-semibold" style={{ color: primaryColor }}>Quotation Summary</p>
                     </div>
-                    <div className="rounded-lg border border-slate-200 p-2.5">
-                      <p className="text-xs text-slate-500 mb-1">Sample highlight</p>
+                    <div className="rounded-lg border border-[var(--border)] p-2.5">
+                      <p className="text-xs text-[var(--text-muted)] mb-1">Sample highlight</p>
                       <div className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-white" style={{ backgroundColor: accentColor }}>
                         Approved
                       </div>
@@ -700,9 +700,9 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={settings.showBankOnPdf}
                 onChange={(e) => update({ showBankOnPdf: e.target.checked })}
-                className="w-4 h-4 rounded border-slate-300 text-[#1D4ED8]"
+                className="w-4 h-4 rounded border-[var(--border-strong)] text-[var(--primary)]"
               />
-              <span className="text-sm text-slate-700">Show bank details on quotation PDFs</span>
+              <span className="text-sm text-[var(--text-secondary)]">Show bank details on quotation PDFs</span>
             </label>
           </SectionCard>
         </div>
@@ -722,7 +722,7 @@ export default function SettingsPage() {
                 return (
                   <label
                     key={option.value}
-                    className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${enabled ? 'border-[#DBEAFE] bg-[#F8FAFC]' : 'border-slate-200 bg-white'} ${isLocked ? 'opacity-90' : ''}`}
+                    className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${enabled ? 'border-[var(--info-border)] bg-[var(--surface-soft)]' : 'border-[var(--border)] bg-white'} ${isLocked ? 'opacity-90' : ''}`}
                   >
                     <input
                       type="checkbox"
@@ -735,18 +735,18 @@ export default function SettingsPage() {
                           : [...current, option.value];
                         update({ enabledBusinessModels: next });
                       }}
-                      className="mt-1 h-4 w-4 rounded border-slate-300 text-[#1D4ED8]"
+                      className="mt-1 h-4 w-4 rounded border-[var(--border-strong)] text-[var(--primary)]"
                     />
                     <div className="flex-1">
                       <div className="flex items-center justify-between gap-3">
-                        <p className="font-semibold text-[#17243A]">{option.label}</p>
+                        <p className="font-semibold text-[var(--text)]">{option.label}</p>
                         {isLocked && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--warning-soft)] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--warning-fg)]">
                             <Check className="h-3 w-3" /> In use
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-sm text-[#667085]">{option.description}</p>
+                      <p className="mt-1 text-sm text-[var(--text-muted)]">{option.description}</p>
                     </div>
                   </label>
                 );
@@ -805,7 +805,7 @@ export default function SettingsPage() {
                     ],
                   })
                 }
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-[#1D4ED8] rounded-lg"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-[var(--primary)] rounded-lg"
               >
                 <Plus className="w-4 h-4" /> Add
               </button>
@@ -813,7 +813,7 @@ export default function SettingsPage() {
           >
             <div className="space-y-2">
               {settings.defaultTerms.map((term, idx) => (
-                <div key={term.id} className="flex items-start gap-2 border border-slate-200 rounded-lg p-2">
+                <div key={term.id} className="flex items-start gap-2 border border-[var(--border)] rounded-lg p-2">
                   <span className="text-sm text-slate-400 mt-1 shrink-0">{idx + 1}.</span>
                   <TextArea
                     rows={1}
@@ -831,7 +831,7 @@ export default function SettingsPage() {
                     onClick={() =>
                       update({ defaultTerms: settings.defaultTerms.filter((t) => t.id !== term.id) })
                     }
-                    className="p-2 text-red-500 hover:bg-red-50 rounded shrink-0"
+                    className="p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)] rounded shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

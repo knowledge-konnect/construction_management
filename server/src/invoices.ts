@@ -469,6 +469,38 @@ export function validateInvoicePayload(payload: any): string | null {
     return null;
 }
 
+async function getInvoicePaymentSummaryByInvoiceIds(invoiceIds: string[]) {
+    if (!invoiceIds.length) {
+        return new Map<string, { paid_amount: number; outstanding_amount: number }>();
+    }
+
+    const { data: allocations, error } = await supabaseAdmin
+        .from('payment_allocations')
+        .select('invoice_id, allocated_amount')
+        .in('invoice_id', invoiceIds);
+
+    if (error) throw error;
+
+    const totalsByInvoice = new Map<string, number>();
+    for (const row of allocations ?? []) {
+        const invoiceId = String(row?.invoice_id ?? '');
+        if (!invoiceId) continue;
+        const existing = totalsByInvoice.get(invoiceId) ?? 0;
+        totalsByInvoice.set(invoiceId, existing + parseNumber(row?.allocated_amount ?? 0, 0));
+    }
+
+    const summaryByInvoice = new Map<string, { paid_amount: number; outstanding_amount: number }>();
+    for (const invoiceId of invoiceIds) {
+        const paidAmount = totalsByInvoice.get(invoiceId) ?? 0;
+        summaryByInvoice.set(invoiceId, {
+            paid_amount: roundCurrency(paidAmount),
+            outstanding_amount: roundCurrency(0),
+        });
+    }
+
+    return summaryByInvoice;
+}
+
 export async function getInvoiceRowById(id: string) {
     const { data: invoice, error: invoiceError } = await supabaseAdmin
         .from('invoices')
@@ -486,7 +518,17 @@ export async function getInvoiceRowById(id: string) {
         .order('display_order', { ascending: true });
 
     if (itemsError) throw itemsError;
-    return { ...invoice, items: items ?? [] };
+
+    const readonlyInvoice = { ...invoice, items: items ?? [] };
+    const paymentSummary = await getInvoicePaymentSummaryByInvoiceIds([String(invoice.id)]);
+    const paidAmount = paymentSummary.get(String(invoice.id))?.paid_amount ?? 0;
+    const grandTotal = parseNumber(invoice.grand_total ?? 0, 0);
+
+    return {
+        ...readonlyInvoice,
+        paid_amount: roundCurrency(paidAmount),
+        outstanding_amount: roundCurrency(Math.max(0, grandTotal - paidAmount)),
+    };
 }
 
 export async function listInvoicesForCompany(companyId: string, projectId?: string | null) {
@@ -522,10 +564,19 @@ export async function listInvoicesForCompany(companyId: string, projectId?: stri
         byInvoice.set(invoiceId, bucket);
     }
 
-    return invoices.map((invoice) => ({
-        ...invoice,
-        items: byInvoice.get(String(invoice.id)) ?? [],
-    }));
+    const paymentSummaryByInvoice = await getInvoicePaymentSummaryByInvoiceIds(invoiceIds);
+
+    return invoices.map((invoice) => {
+        const paidAmount = paymentSummaryByInvoice.get(String(invoice.id))?.paid_amount ?? 0;
+        const grandTotal = parseNumber(invoice.grand_total ?? 0, 0);
+
+        return {
+            ...invoice,
+            items: byInvoice.get(String(invoice.id)) ?? [],
+            paid_amount: roundCurrency(paidAmount),
+            outstanding_amount: roundCurrency(Math.max(0, grandTotal - paidAmount)),
+        };
+    });
 }
 
 export async function assertCustomerExistsForCompany(companyId: string, customerId: string | null) {
@@ -898,6 +949,14 @@ export async function deleteInvoiceRow(id: string, companyId: string) {
 
     if (existing.status !== 'Draft') {
         const err: any = new Error('Only draft invoices can be deleted. Issued and cancelled invoices are retained for history.');
+        err.statusCode = 409;
+        throw err;
+    }
+
+    const allocationSummary = await getInvoicePaymentSummaryByInvoiceIds([String(id)]);
+    const allocatedAmount = allocationSummary.get(String(id))?.paid_amount ?? 0;
+    if (allocatedAmount > 0) {
+        const err: any = new Error('Invoices with payment allocations cannot be deleted because payment history must be preserved.');
         err.statusCode = 409;
         throw err;
     }

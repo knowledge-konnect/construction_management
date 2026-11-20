@@ -58,9 +58,9 @@ export default function CommercialStep() {
   return (
     <div className="space-y-6">
       <SectionCard title="Additional Charges" description="Transportation, site setup, equipment, etc."
-        actions={<button onClick={addCharge} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#1D4ED8] hover:bg-[#1E40AF] rounded-lg"><Plus className="w-4 h-4" /> Add</button>}>
+        actions={<button onClick={addCharge} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-lg"><Plus className="w-4 h-4" /> Add</button>}>
         {q.additionalCharges.length === 0 ? (
-          <p className="text-sm text-slate-500 py-4 text-center">No additional charges.</p>
+          <p className="text-sm text-[var(--text-muted)] py-4 text-center">No additional charges.</p>
         ) : (
           <div className="space-y-2">
             {q.additionalCharges.map((charge) => (
@@ -68,7 +68,7 @@ export default function CommercialStep() {
                 <TextInput value={charge.description} onChange={(e) => updateCharge(charge.id, { description: e.target.value })} placeholder="Description" className="flex-1" />
                 <div className="flex items-center gap-2">
                   <TextInput type="number" value={charge.amount} onChange={(e) => updateCharge(charge.id, { amount: Number(e.target.value) })} className="w-full sm:w-40 text-right" />
-                  <button onClick={() => deleteCharge(charge.id)} className="p-2 text-red-500 hover:bg-red-50 rounded flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => deleteCharge(charge.id)} className="p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)] rounded flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))}
@@ -79,14 +79,14 @@ export default function CommercialStep() {
       <SectionCard title="Discount">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Discount Type</label>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Discount Type</label>
             <Select value={q.discount.type} onChange={(e) => updateDiscount({ type: e.target.value as Discount['type'] })}>
               {DISCOUNT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </Select>
           </div>
           {q.discount.type !== 'None' && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{q.discount.type === 'Percentage' ? 'Percentage (%)' : 'Amount (₹)'}</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">{q.discount.type === 'Percentage' ? 'Percentage (%)' : 'Amount (₹)'}</label>
               <TextInput type="number" value={q.discount.value} onChange={(e) => updateDiscount({ value: Number(e.target.value) })} />
             </div>
           )}
@@ -95,14 +95,14 @@ export default function CommercialStep() {
 
       <SectionCard title="Tax">
         <label className="flex items-center gap-2 mb-4">
-          <input type="checkbox" checked={q.tax.applicable} onChange={(e) => updateTax({ applicable: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-[#1D4ED8] focus:ring-[#1D4ED8]" />
-          <span className="text-sm font-medium text-slate-700">Tax Applicable</span>
+          <input type="checkbox" checked={q.tax.applicable} onChange={(e) => updateTax({ applicable: e.target.checked })} className="w-4 h-4 rounded border-[var(--border-strong)] text-[var(--primary)] focus:ring-[var(--primary)]" />
+          <span className="text-sm font-medium text-[var(--text-secondary)]">Tax Applicable</span>
         </label>
         {q.tax.applicable && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {taxRates.length > 0 && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Tax Rate</label>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Tax Rate</label>
                 <Select value={q.taxRateId ?? ''} onChange={(e) => onTaxRateChange(e.target.value)}>
                   <option value="">Custom tax</option>
                   {taxRates.map((rate) => (
@@ -112,11 +112,11 @@ export default function CommercialStep() {
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tax Name</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Tax Name</label>
               <TextInput value={q.tax.name} onChange={(e) => updateTax({ name: e.target.value })} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tax Rate (%)</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Tax Rate (%)</label>
               <TextInput type="number" value={q.tax.rate} onChange={(e) => updateTax({ rate: Number(e.target.value) })} />
             </div>
           </div>
@@ -130,9 +130,9 @@ export default function CommercialStep() {
           {commercial.discountAmount > 0 && <Row label="Discount" value={`- ${formatINR(commercial.discountAmount)}`} />}
           <Row label="Taxable Amount" value={formatINR(commercial.taxableAmount)} />
           {commercial.taxAmount > 0 && <Row label={q.tax.name || 'Tax'} value={formatINR(commercial.taxAmount)} />}
-          <div className="flex justify-between items-center px-4 py-3 bg-[#1D4ED8] text-white rounded-lg">
+          <div className="flex justify-between items-center px-4 py-3 bg-[var(--primary)] text-white rounded-lg">
             <span className="text-sm font-semibold">Grand Total</span>
-            <span className="text-lg font-bold text-[#F4B72B]">{formatINR(commercial.grandTotal)}</span>
+            <span className="text-lg font-bold text-[var(--primary)]">{formatINR(commercial.grandTotal)}</span>
           </div>
         </div>
       </SectionCard>
@@ -141,5 +141,5 @@ export default function CommercialStep() {
 }
 
 function Row({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between items-center px-4 py-2 border border-slate-100 rounded-lg bg-slate-50"><span className="text-sm text-slate-600">{label}</span><span className="text-sm font-semibold text-[#1D4ED8]">{value}</span></div>;
+  return <div className="flex justify-between items-center px-4 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface-soft)]"><span className="text-sm text-[var(--text-secondary)]">{label}</span><span className="text-sm font-semibold text-[var(--primary)]">{value}</span></div>;
 }

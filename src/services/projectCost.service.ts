@@ -7,7 +7,7 @@ export type ProjectExpenseType = 'direct' | 'supplier_bill';
 export type ProjectExpenseVisibility = 'internal' | 'published';
 export type ProjectReceiptPaymentMethod = 'cash' | 'upi' | 'bank_transfer' | 'cheque' | 'other';
 export type ProjectReceiptVisibility = 'internal' | 'published';
-export type ProjectStageStatus = 'pending' | 'in_progress' | 'completed' | 'on_hold';
+export type ProjectStageStatus = 'pending' | 'in_progress' | 'completed' | 'on_hold' | 'skipped';
 export type ProjectProgressVisibility = 'draft' | 'published';
 
 export interface ProjectExpenseRecord {
@@ -237,7 +237,7 @@ function normalizeReceiptVisibility(value: unknown): ProjectReceiptVisibility {
 }
 
 function normalizeStageStatus(value: unknown): ProjectStageStatus {
-    return value === 'pending' || value === 'in_progress' || value === 'completed' || value === 'on_hold'
+    return value === 'pending' || value === 'in_progress' || value === 'completed' || value === 'on_hold' || value === 'skipped'
         ? (value as ProjectStageStatus)
         : 'pending';
 }

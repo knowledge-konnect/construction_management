@@ -2,15 +2,18 @@ BEGIN;
 
 INSERT INTO public.project_types (company_id, code, name, description, sort_order, is_active)
 VALUES
-  (NULL, 'individual_house', 'Individual House', 'Standalone houses', 1, true),
-  (NULL, 'villa', 'Villa', 'Villa projects', 2, true),
-  (NULL, 'apartment_building', 'Apartment Building', 'Apartment projects', 3, true),
-  (NULL, 'commercial_building', 'Commercial Building', 'Commercial projects', 4, true),
-  (NULL, 'renovation', 'Renovation', 'Renovation projects', 5, true),
-  (NULL, 'extension', 'Extension / Additional Floor', 'Extension projects', 6, true),
-  (NULL, 'interior', 'Interior Works', 'Interior works', 7, true),
-  (NULL, 'civil_only', 'Civil Works Only', 'Civil-only projects', 8, true),
-  (NULL, 'other', 'Other', 'Other type', 9, true)
+  (NULL, 'independent_house', 'Independent House Construction', 'Construction of standalone and independent residential houses.', 1, true),
+  (NULL, 'villa', 'Villa Construction', 'Construction of standalone villas and villa communities.', 2, true),
+  (NULL, 'apartment', 'Apartment Construction', 'Construction or development of apartment buildings and residential towers.', 3, true),
+  (NULL, 'commercial_building', 'Commercial Building Construction', 'Construction of offices, retail buildings and other commercial properties.', 4, true),
+  (NULL, 'industrial_warehouse', 'Industrial & Warehouse Construction', 'Construction of industrial facilities, factories and warehouse buildings.', 5, true),
+  (NULL, 'renovation', 'Renovation & Remodeling', 'Renovation, rehabilitation and remodeling of existing residential or commercial properties.', 6, true),
+  (NULL, 'building_extension', 'Building Extension & Additional Floor', 'Building extensions, alterations and construction of additional floors.', 7, true),
+  (NULL, 'interior_fitout', 'Interior Fit-out & Works', 'Interior fit-out, finishing and interior construction works.', 8, true),
+  (NULL, 'structural_works', 'Structural Construction Works', 'Structural construction works including RCC, steel and structural building elements.', 9, true),
+  (NULL, 'civil_infrastructure', 'Civil Infrastructure Works', 'Civil engineering and infrastructure works for residential, commercial and public facilities.', 10, true),
+  (NULL, 'road_drainage', 'Road & Drainage Works', 'Road construction, drainage systems, culverts and related infrastructure works.', 11, true),
+  (NULL, 'other', 'Other / Custom Project', 'A project that does not fit the predefined project categories and requires custom planning.', 12, true)
 ON CONFLICT ON CONSTRAINT uq_project_types
 DO UPDATE SET
   name = EXCLUDED.name,
@@ -95,15 +98,15 @@ SELECT
 FROM public.project_types pt
 JOIN (
   VALUES
-    ('individual_house', 'site_setup', 'Site Setup', 1, 5.00),
-    ('individual_house', 'foundation', 'Foundation', 2, 20.00),
-    ('individual_house', 'structure', 'RCC / Structure', 3, 45.00),
-    ('individual_house', 'masonry', 'Masonry', 4, 60.00),
-    ('individual_house', 'plastering', 'Plastering', 5, 70.00),
-    ('individual_house', 'flooring', 'Flooring', 6, 80.00),
-    ('individual_house', 'electrical_plumbing', 'Electrical & Plumbing', 7, 90.00),
-    ('individual_house', 'painting', 'Painting', 8, 96.00),
-    ('individual_house', 'handover', 'Handover', 9, 100.00)
+    ('independent_house', 'site_setup', 'Site Setup', 1, 5.00),
+    ('independent_house', 'foundation', 'Foundation', 2, 20.00),
+    ('independent_house', 'structure', 'RCC / Structure', 3, 45.00),
+    ('independent_house', 'masonry', 'Masonry', 4, 60.00),
+    ('independent_house', 'plastering', 'Plastering', 5, 70.00),
+    ('independent_house', 'flooring', 'Flooring', 6, 80.00),
+    ('independent_house', 'electrical_plumbing', 'Electrical & Plumbing', 7, 90.00),
+    ('independent_house', 'painting', 'Painting', 8, 96.00),
+    ('independent_house', 'handover', 'Handover', 9, 100.00)
 ) AS t(project_code, template_code, name, sequence_number, default_completion_percentage)
   ON pt.company_id IS NULL AND pt.code = t.project_code
 ON CONFLICT ON CONSTRAINT uq_project_stage_templates

@@ -84,7 +84,7 @@ export function defaultCustomer(): Customer {
 export function defaultProject(): Project {
   return {
     name: '',
-    projectType: 'Individual House',
+    projectType: 'Independent House Construction',
     builtupArea: '',
     builtupAreaUnit: 'Sq.ft',
     floors: 'G+1',
@@ -227,7 +227,7 @@ export function defaultTemplates(): Template[] {
     mk(
       'Individual House – Standard',
       'Standard BOQ structure for a residential individual house.',
-      'Individual House',
+      'Independent House Construction',
       [
         'Preliminaries & Site Setup',
         'Earthwork & Excavation',
@@ -252,7 +252,7 @@ export function defaultTemplates(): Template[] {
     mk(
       'Villa – Standard',
       'Premium villa construction BOQ with enhanced finishes.',
-      'Villa',
+      'Villa Construction',
       [
         'Preliminaries & Site Setup',
         'Earthwork & Excavation',
@@ -272,9 +272,9 @@ export function defaultTemplates(): Template[] {
       ],
     ),
     mk(
-      'Renovation',
+      'Renovation & Remodeling',
       'Renovation project BOQ focused on finishing and repair works.',
-      'Renovation',
+      'Renovation & Remodeling',
       [
         'Preliminaries & Site Setup',
         'Demolition / Dismantling',

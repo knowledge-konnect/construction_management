@@ -2,10 +2,10 @@ import { useToast } from '@/context/ToastContext';
 import { CheckCircle2, XCircle, Info, AlertTriangle, X } from 'lucide-react';
 
 const kindStyles: Record<string, string> = {
-  success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
-  info: 'bg-blue-50 border-blue-200 text-blue-800',
-  warning: 'bg-amber-50 border-amber-200 text-amber-800',
+  success: 'bg-[var(--success-soft)] border-[var(--success-border)] text-[var(--success-fg)]',
+  error: 'bg-[var(--danger-soft)] border-[var(--danger-border)] text-[var(--danger-fg)]',
+  info: 'bg-[var(--primary-soft)] border-[var(--info-border)] text-[var(--primary)]',
+  warning: 'bg-[var(--warning-soft)] border-[var(--warning-border)] text-[var(--warning-fg)]',
 };
 
 const kindIcons: Record<string, typeof CheckCircle2> = {

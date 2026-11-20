@@ -1,30 +1,82 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   Design tokens. One brand blue, one navy, one set of greys and statuses.
+   Old variable names are kept so existing var(--...) usages keep working.
+   ========================================================================== */
 @layer base {
   :root {
-    --bg: #F5F7FC;
+    /* surfaces */
+    --bg: #F5F7FA;
     --surface: #FFFFFF;
     --surface-soft: #F8FAFC;
     --surface-alt: #EEF4FF;
     --surface-muted: #F1F5F9;
-    --navy: #17243B;
+
+    /* brand */
+    --navy: #17243A;
     --navy-strong: #101C2F;
-    --primary: #2454D6;
-    --primary-hover: #1D3FAD;
+    --primary: #1D4ED8;
+    --primary-hover: #1E40AF;
     --primary-soft: #EAF1FF;
-    --success: #16A34A;
+    --ring: rgba(29, 78, 216, 0.3);
+
+    /* text */
+    --text: #17243A;
+    --text-secondary: #475467;
+    --text-muted: #667085;
+    --text-subtle: #98A2B3;
+    /* icons and placeholders only, never body text */
+
+    /* lines */
+    --border: #E6E8EC;
+    --border-strong: #D0D5DD;
+
+    /* status: fill = icons/bars, soft = tinted background, fg = text on soft */
+    --success: #0F766E;
+    --success-soft: #ECFDF5;
+    --success-fg: #0F766E;
     --warning: #D97706;
+    --warning-soft: #FFFBEB;
+    --warning-fg: #92400E;
     --danger: #DC2626;
-    --info: #2563EB;
-    --text: #17243B;
-    --text-secondary: #64748B;
-    --text-muted: #94A3B8;
-    --border: #E2E8F0;
-    --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.05);
-    --shadow-card: 0 8px 22px rgba(23, 36, 58, 0.06);
+    --danger-soft: #FEF2F2;
+    --danger-fg: #B91C1C;
+    --info: #1D4ED8;
+    --info-soft: #EAF1FF;
+    --info-fg: #1D4ED8;
+    /* thin borders for tinted alerts and banners */
+    --success-border: #A7DCD3;
+    --warning-border: #F5D9A4;
+    --danger-border: #F7C1C1;
+    --info-border: #C7D8FA;
+    --neutral-soft: #F1F5F9;
+    --neutral-fg: #475467;
+
+    /* chart series, in order of use */
+    --chart-1: #1D4ED8;
+    --chart-2: #0F766E;
+    --chart-3: #D97706;
+    --chart-4: #6D28D9;
+    --chart-5: #64748B;
+
+    /* shape */
+    --radius-control: 12px;
+    /* buttons, inputs, selects */
+    --radius-card: 16px;
+    /* cards, panels, modals */
+
+    /* elevation */
+    --shadow-card: 0 1px 2px rgba(23, 36, 58, 0.04);
+    --shadow-soft: 0 6px 18px rgba(23, 36, 58, 0.06);
+    --shadow-pop: 0 18px 38px rgba(15, 23, 42, 0.11);
     --shadow-modal: 0 24px 60px rgba(15, 23, 42, 0.18);
+
+    /* motion */
+    --duration-fast: 150ms;
+    --duration-base: 200ms;
   }
 
   html {
@@ -47,26 +99,259 @@
   }
 
   ::selection {
-    background: rgba(36, 84, 214, 0.18);
+    background: rgba(29, 78, 216, 0.18);
     color: var(--text);
+  }
+
+  /* Visible keyboard focus everywhere. Inputs use their own ring (.input-shell). */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 }
 
+/* ==========================================================================
+   Shared component classes
+   ========================================================================== */
 @layer components {
+
+  /* Cards: flat with a hairline border. Heavy shadows are for menus and modals. */
   .surface-card {
-    @apply rounded-2xl border border-slate-200 bg-white;
-    box-shadow: 0 8px 22px rgba(23, 36, 58, 0.06);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
   }
 
   .surface-panel {
-    @apply rounded-xl border border-slate-200 bg-slate-50;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
   }
 
   .input-shell {
-    @apply w-full min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500;
+    width: 100%;
+    min-height: 40px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-control);
+    transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+  }
+
+  .input-shell::placeholder {
+    color: var(--text-subtle);
+  }
+
+  .input-shell:hover {
+    border-color: #98A2B3;
+  }
+
+  .input-shell:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+
+  .input-shell:disabled {
+    background: var(--surface-soft);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  .input-shell[aria-invalid='true'] {
+    border-color: var(--danger);
+  }
+
+  .input-shell[aria-invalid='true']:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+  }
+
+  /* ----------------------------------------------------------------------
+     Data tables. One look everywhere. Change the three --th-* variables below
+     to recolour every table header at once (presets are in the comments).
+     ---------------------------------------------------------------------- */
+  .data-table {
+    /* default: soft brand tint */
+    --th-bg: linear-gradient(180deg, #EEF4FF 0%, #E6EEFF 100%);
+    --th-fg: #17243A;
+    --th-border: #CFDDFB;
+    /* other presets:
+       navy   --th-bg: #17243A;  --th-fg: #FFFFFF;  --th-border: #17243A;
+       brand  --th-bg: #1D4ED8;  --th-fg: #FFFFFF;  --th-border: #1D4ED8;
+       light  --th-bg: #F8FAFC;  --th-fg: #667085;  --th-border: #E6E8EC;  */
+    width: 100%;
+    font-size: 0.875rem;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .data-table--navy {
+    --th-bg: #17243A;
+    --th-fg: #FFFFFF;
+    --th-border: #17243A;
+  }
+
+  .data-table--brand {
+    --th-bg: #1D4ED8;
+    --th-fg: #FFFFFF;
+    --th-border: #1D4ED8;
+  }
+
+  .data-table--light {
+    --th-bg: #F8FAFC;
+    --th-fg: #667085;
+    --th-border: #E6E8EC;
+  }
+
+  .data-table thead th {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--th-fg);
+    background: var(--th-bg);
+    border-bottom: 1px solid var(--th-border);
+    white-space: nowrap;
+  }
+
+  .data-table tbody td {
+    padding: 0.8rem 1rem;
+    color: var(--text);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    transition: background-color var(--duration-fast);
+  }
+
+  .data-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  /* hover tint, plus a blue edge on rows that are clickable */
+  .data-table tbody tr:not(.skeleton-row):hover td {
+    background: var(--surface-alt);
+  }
+
+  .data-table tbody tr.cursor-pointer:hover td:first-child {
+    box-shadow: inset 3px 0 0 var(--primary);
+  }
+
+  /* optional zebra striping: <DataTable striped /> */
+  .data-table--striped tbody tr:nth-child(even) td {
+    background: var(--surface-soft);
+  }
+
+  .data-table--striped tbody tr:nth-child(even):hover td {
+    background: var(--surface-alt);
+  }
+
+  /* row tones: <DataTable rowTone={(row) => 'danger'} /> */
+  .data-table tbody tr.row-success td {
+    background: var(--success-soft);
+  }
+
+  .data-table tbody tr.row-warning td {
+    background: var(--warning-soft);
+  }
+
+  .data-table tbody tr.row-danger td {
+    background: var(--danger-soft);
+  }
+
+  .data-table tbody tr.row-muted td {
+    background: var(--surface-soft);
+    color: var(--text-muted);
+  }
+
+  .data-table tbody tr.row-success td:first-child {
+    box-shadow: inset 3px 0 0 var(--success);
+  }
+
+  .data-table tbody tr.row-warning td:first-child {
+    box-shadow: inset 3px 0 0 var(--warning);
+  }
+
+  .data-table tbody tr.row-danger td:first-child {
+    box-shadow: inset 3px 0 0 var(--danger);
+  }
+
+  .data-table tbody tr.row-muted td:first-child {
+    box-shadow: inset 3px 0 0 var(--border-strong);
+  }
+
+  .data-table tbody tr[class*='row-']:hover td {
+    filter: brightness(0.98);
+  }
+
+  /* totals row: <tfoot><tr><td>..</td></tr></tfoot> */
+  .data-table tfoot td {
+    padding: 0.8rem 1rem;
+    font-weight: 600;
+    background: var(--surface-soft);
+    border-top: 1px solid var(--border-strong);
+  }
+
+  .data-table .is-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* pagination bar and empty state that go with the table */
+  .data-footer {
+    background: linear-gradient(180deg, #F8FAFC, #F1F5F9);
+    border-top: 1px solid var(--border);
+  }
+
+  .data-empty {
+    background: linear-gradient(180deg, #F8FBFF 0%, #F3F7FF 100%);
+    border: 1px dashed #BFD2F8;
+  }
+
+  /* Badges: soft background with dark text of the same hue */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    white-space: nowrap;
+    border-radius: 9999px;
+  }
+
+  .badge-success {
+    background: var(--success-soft);
+    color: var(--success-fg);
+  }
+
+  .badge-warning {
+    background: var(--warning-soft);
+    color: var(--warning-fg);
+  }
+
+  .badge-danger {
+    background: var(--danger-soft);
+    color: var(--danger-fg);
+  }
+
+  .badge-info {
+    background: var(--info-soft);
+    color: var(--info-fg);
+  }
+
+  .badge-neutral {
+    background: var(--neutral-soft);
+    color: var(--neutral-fg);
   }
 }
 
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
 @layer utilities {
   .animate-in {
     animation-duration: 0.2s;
@@ -104,21 +389,11 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-
-  @media (prefers-reduced-motion: reduce) {
-
-    .animate-pulse,
-    .animate-spin,
-    .animate-ping,
-    .motion-safe\:animate-spin {
-      animation: none !important;
-    }
-  }
 }
 
-/* ------------------------------------------------------------------
-   Landing page additions: hero entrance, blueprint grid, focus ring
-   ------------------------------------------------------------------ */
+/* ==========================================================================
+   Landing page: hero entrance and blueprint grid
+   ========================================================================== */
 @keyframes bd-rise {
   from {
     opacity: 0;
@@ -160,19 +435,94 @@
   mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 40%, transparent 100%);
 }
 
-/* Keyboard focus for links and buttons only (inputs keep the .input-shell ring) */
-a:focus-visible,
-button:focus-visible {
-  outline: 2px solid #1D4ED8;
-  outline-offset: 2px;
+/* ==========================================================================
+   Loading screen: BuilderDocs mark "builds" itself — buildings rise, then the
+   document appears and its lines draw in — then loops. Base/inline styles on
+   each element (see AnimatedBrandMark.tsx) are the fully-built end state, so
+   anything that doesn't run this animation (no animation support, or the
+   reduced-motion override below) just shows the plain, fully-built mark.
+   ========================================================================== */
+@keyframes bd-mark-cycle {
+  0%, 100% { opacity: 0; }
+  6% { opacity: 1; }
+  80% { opacity: 1; }
+  92% { opacity: 0; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .bd-rise {
-    animation: none;
-  }
+@keyframes bd-mark-rise-1 {
+  0%, 6% { transform: scaleY(0); }
+  20% { transform: scaleY(1); }
+}
 
+@keyframes bd-mark-rise-2 {
+  0%, 11% { transform: scaleY(0); }
+  26% { transform: scaleY(1); }
+}
+
+@keyframes bd-mark-rise-3 {
+  0%, 16% { transform: scaleY(0); }
+  32% { transform: scaleY(1); }
+}
+
+@keyframes bd-mark-doc-appear {
+  0%, 34% { opacity: 0; transform: scale(0.85); }
+  48% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bd-mark-draw-1 {
+  0%, 48% { stroke-dashoffset: 94; }
+  58% { stroke-dashoffset: 0; }
+}
+
+@keyframes bd-mark-draw-2 {
+  0%, 54% { stroke-dashoffset: 124; }
+  64% { stroke-dashoffset: 0; }
+}
+
+@keyframes bd-mark-draw-3 {
+  0%, 60% { stroke-dashoffset: 82; }
+  70% { stroke-dashoffset: 0; }
+}
+
+.bd-mark-cycle { animation: bd-mark-cycle 4.8s ease-in-out infinite; }
+.bd-mark-rise-1 { animation: bd-mark-rise-1 4.8s ease-out infinite; }
+.bd-mark-rise-2 { animation: bd-mark-rise-2 4.8s ease-out infinite; }
+.bd-mark-rise-3 { animation: bd-mark-rise-3 4.8s ease-out infinite; }
+.bd-mark-doc { animation: bd-mark-doc-appear 4.8s ease-out infinite; }
+.bd-mark-draw-1 { animation: bd-mark-draw-1 4.8s ease-out infinite; }
+.bd-mark-draw-2 { animation: bd-mark-draw-2 4.8s ease-out infinite; }
+.bd-mark-draw-3 { animation: bd-mark-draw-3 4.8s ease-out infinite; }
+
+/* ==========================================================================
+   Reduced motion: covers the spinners, pings, entrances and smooth scroll
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* The generic rule above freezes any animation at ITS OWN last keyframe — for the
+     mark's build-cycle animation, that would be the faded-out loop-reset instant,
+     leaving the logo invisible. Override explicitly to the fully-built, fully-visible
+     state instead, for every piece of the mark. */
+  .bd-mark-cycle,
+  .bd-mark-building,
+  .bd-mark-doc {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .bd-mark-line {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
   }
 }

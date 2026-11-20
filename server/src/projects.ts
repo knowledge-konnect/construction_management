@@ -13,7 +13,7 @@ export type ProjectExpenseType = 'direct' | 'supplier_bill';
 export type ProjectExpenseVisibility = 'internal' | 'published';
 export type ProjectReceiptPaymentMethod = 'cash' | 'upi' | 'bank_transfer' | 'cheque' | 'other';
 export type ProjectReceiptVisibility = 'internal' | 'published';
-export type ProjectStageStatus = 'pending' | 'in_progress' | 'completed' | 'on_hold';
+export type ProjectStageStatus = 'pending' | 'in_progress' | 'completed' | 'on_hold' | 'skipped';
 export type ProjectProgressVisibility = 'draft' | 'published';
 export type ProjectAttachmentVisibility = 'internal' | 'published';
 export type ProjectClientAccessStatus = 'pending' | 'accepted' | 'revoked' | 'expired';
@@ -24,7 +24,7 @@ export const PROJECT_EXPENSE_TYPE_VALUES: ProjectExpenseType[] = ['direct', 'sup
 export const PROJECT_EXPENSE_VISIBILITY_VALUES: ProjectExpenseVisibility[] = ['internal', 'published'];
 export const PROJECT_RECEIPT_PAYMENT_METHODS: ProjectReceiptPaymentMethod[] = ['cash', 'upi', 'bank_transfer', 'cheque', 'other'];
 export const PROJECT_RECEIPT_VISIBILITY_VALUES: ProjectReceiptVisibility[] = ['internal', 'published'];
-export const PROJECT_STAGE_STATUS_VALUES: ProjectStageStatus[] = ['pending', 'in_progress', 'completed', 'on_hold'];
+export const PROJECT_STAGE_STATUS_VALUES: ProjectStageStatus[] = ['pending', 'in_progress', 'completed', 'on_hold', 'skipped'];
 export const PROJECT_PROGRESS_VISIBILITY_VALUES: ProjectProgressVisibility[] = ['draft', 'published'];
 export const PROJECT_ATTACHMENT_VISIBILITY_VALUES: ProjectAttachmentVisibility[] = ['internal', 'published'];
 export const PROJECT_CLIENT_ACCESS_STATUS_VALUES: ProjectClientAccessStatus[] = ['pending', 'accepted', 'revoked', 'expired'];
@@ -272,11 +272,76 @@ async function validateLandownerPartyForCompany(companyId: string, landownerPart
     return data;
 }
 
+function normalizeProjectTypeCodeCandidate(value: string): string[] {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (!normalized) return [];
+
+    const slug = normalized
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .replace(/_+/g, '_');
+
+    const candidates = new Set<string>([normalized, slug]);
+    if (slug.endsWith('_construction')) {
+        candidates.add(slug.slice(0, -'_construction'.length));
+    }
+    if (slug.endsWith('_development')) {
+        candidates.add(slug.slice(0, -'_development'.length));
+    }
+
+    return Array.from(candidates).filter(Boolean);
+}
+
+async function resolveProjectTypeIdForCreate(companyId: string, payload: any): Promise<string | null> {
+    const existingId = typeof payload?.project_type_id === 'string' ? payload.project_type_id.trim() : '';
+    if (existingId) return existingId;
+
+    const snapshot = typeof payload?.project_type_snapshot === 'string' ? payload.project_type_snapshot.trim() : '';
+    if (!snapshot) return null;
+
+    const { data, error } = await supabaseAdmin
+        .from('project_types')
+        .select('id, company_id, code, name, is_active')
+        .or(`company_id.eq.${companyId},company_id.is.null`)
+        .eq('is_active', true);
+
+    if (error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+    if (rows.length === 0) return null;
+
+    const snapshotLower = snapshot.toLowerCase();
+    const codeCandidates = normalizeProjectTypeCodeCandidate(snapshot);
+
+    const byPriority = rows
+        .map((row) => ({
+            row,
+            sameCompany: row.company_id === companyId,
+            nameExact: String(row.name ?? '').trim().toLowerCase() === snapshotLower,
+            codeExact: codeCandidates.includes(String(row.code ?? '').trim().toLowerCase()),
+        }))
+        .filter((entry) => entry.nameExact || entry.codeExact)
+        .sort((a, b) => {
+            if (a.sameCompany !== b.sameCompany) return a.sameCompany ? -1 : 1;
+            if (a.nameExact !== b.nameExact) return a.nameExact ? -1 : 1;
+            if (a.codeExact !== b.codeExact) return a.codeExact ? -1 : 1;
+            return 0;
+        });
+
+    return byPriority[0]?.row?.id ?? null;
+}
+
 async function createProjectAndSeedStagesTransactional(companyId: string, payload: any, userId: string) {
-    const stageDrafts = normalizeProjectStageDrafts(payload?.stage_drafts ?? payload?.stages);
+    const hasCustomStagePayload = Array.isArray(payload?.stage_drafts) || Array.isArray(payload?.stages);
+    const stageDrafts = normalizeProjectStageDrafts(
+        Array.isArray(payload?.stage_drafts)
+            ? payload.stage_drafts
+            : (Array.isArray(payload?.stages) ? payload.stages : null),
+    );
     const normalizedBusinessModel = payload?.business_model ?? payload?.businessModel ?? null;
     const landownerPartyId = payload?.landowner_party_id ?? payload?.landownerPartyId ?? null;
     const normalizedBusinessModelValue = isSupportedBusinessModel(normalizedBusinessModel) ? normalizedBusinessModel : null;
+    const resolvedProjectTypeId = await resolveProjectTypeIdForCreate(companyId, payload);
 
     if (normalizedBusinessModelValue === 'property_development' && landownerPartyId) {
         await validateLandownerPartyForCompany(companyId, landownerPartyId);
@@ -287,7 +352,7 @@ async function createProjectAndSeedStagesTransactional(companyId: string, payloa
         p_created_by: userId,
         p_customer_id: payload?.customer_id ?? null,
         p_source_document_id: payload?.source_document_id ?? null,
-        p_project_type_id: payload?.project_type_id ?? null,
+        p_project_type_id: resolvedProjectTypeId,
         p_project_type_snapshot: payload?.project_type_snapshot ?? null,
         p_business_model: normalizedBusinessModelValue,
         p_projected_sales_value: payload?.projected_sales_value ?? payload?.projectedSalesValue ?? null,
@@ -310,7 +375,7 @@ async function createProjectAndSeedStagesTransactional(companyId: string, payloa
         p_expected_end_date: payload?.expected_end_date ?? null,
         p_actual_end_date: payload?.actual_end_date ?? null,
         p_status: normalizeProjectStatus(payload?.status ?? 'planned'),
-        p_stage_drafts: stageDrafts.length > 0 ? stageDrafts : null,
+        p_stage_drafts: hasCustomStagePayload ? stageDrafts : null,
     };
 
     const { data: projectId, error: rpcError } = await supabaseAdmin.rpc('create_project_with_stages_with_business_model', rpcPayload);
@@ -1536,6 +1601,27 @@ export async function getProjectUnitRowById(id: string) {
     };
 }
 
+async function assertProjectUnitNotLinkedToActiveBooking(unitId: string) {
+    const { data, error } = await supabaseAdmin
+        .from('booking_receipt_details')
+        .select('document_id, booking_status, documents!document_id(is_deleted)')
+        .eq('project_unit_id', unitId)
+        .in('booking_status', ['Confirmed', 'Completed']);
+
+    if (error) throw error;
+
+    const activeBooking = (data ?? []).some((row: any) => {
+        const document = Array.isArray(row.documents) ? row.documents[0] : row.documents;
+        return document?.is_deleted !== true;
+    });
+
+    if (activeBooking) {
+        const err: any = new Error('This unit is currently linked to an active booking and cannot be modified from the inventory API.');
+        err.statusCode = 409;
+        throw err;
+    }
+}
+
 export async function createProjectUnitForProject(projectId: string, companyId: string, payload: any) {
     const { data: project, error: projectError } = await supabaseAdmin
         .from('projects')
@@ -1639,6 +1725,7 @@ export async function updateProjectUnitRow(id: string, companyId: string, payloa
         error.statusCode = 404;
         throw error;
     }
+    await assertProjectUnitNotLinkedToActiveBooking(id);
     if (existing.project?.company_id !== companyId) {
         const error: any = new Error('This project unit belongs to a different company.');
         error.statusCode = 403;
@@ -1732,6 +1819,7 @@ export async function deleteProjectUnitRow(id: string, companyId: string) {
         error.statusCode = 404;
         throw error;
     }
+    await assertProjectUnitNotLinkedToActiveBooking(id);
     if (existing.project?.company_id !== companyId) {
         const error: any = new Error('This project unit belongs to a different company.');
         error.statusCode = 403;
@@ -1807,19 +1895,45 @@ export async function createProjectStageForProject(projectId: string, companyId:
 
     const { data: existingStages, error: existingStagesError } = await supabaseAdmin
         .from('project_stages')
-        .select('sequence_number')
+        .select('id, sequence_number')
         .eq('project_id', projectId)
-        .order('sequence_number', { ascending: false })
-        .limit(1);
+        .order('sequence_number', { ascending: true });
 
     if (existingStagesError) throw existingStagesError;
 
-    const nextSequence = existingStages && existingStages.length > 0 ? Number(existingStages[0].sequence_number ?? 1) + 1 : 1;
+    const stageRows = existingStages ?? [];
+    const maxSequence = stageRows.length > 0
+        ? stageRows.reduce((maxValue: number, row: any) => Math.max(maxValue, Number(row.sequence_number ?? 0)), 0)
+        : 0;
+    const requestedSequence = Number(payload?.sequenceNumber);
+    const hasRequestedSequence = Number.isFinite(requestedSequence) && requestedSequence > 0;
+    const nextSequence = hasRequestedSequence
+        ? Math.min(Math.floor(requestedSequence), maxSequence + 1)
+        : maxSequence + 1;
+
+    if (stageRows.length > 0 && nextSequence <= maxSequence) {
+        const { data: toShift, error: fetchShiftError } = await supabaseAdmin
+            .from('project_stages')
+            .select('id, sequence_number')
+            .eq('project_id', projectId)
+            .gte('sequence_number', nextSequence)
+            .order('sequence_number', { ascending: false });
+
+        if (fetchShiftError) throw fetchShiftError;
+
+        for (const row of toShift ?? []) {
+            const { error: shiftError } = await supabaseAdmin
+                .from('project_stages')
+                .update({ sequence_number: Number(row.sequence_number ?? 0) + 1 })
+                .eq('id', row.id);
+            if (shiftError) throw shiftError;
+        }
+    }
 
     const stagePayload = {
         project_id: projectId,
         name: String(payload?.name ?? '').trim() || 'New stage',
-        sequence_number: Number(payload?.sequenceNumber ?? nextSequence),
+        sequence_number: nextSequence,
         planned_start_date: payload?.plannedStartDate ?? null,
         planned_end_date: payload?.plannedEndDate ?? null,
         actual_start_date: payload?.actualStartDate ?? null,
@@ -1853,8 +1967,77 @@ export async function updateProjectStageRow(id: string, companyId: string, paylo
     }
 
     const updates: Record<string, unknown> = {};
+
+    if (payload.sequenceNumber !== undefined) {
+        const { data: projectStages, error: projectStagesError } = await supabaseAdmin
+            .from('project_stages')
+            .select('id, sequence_number')
+            .eq('project_id', existing.project_id)
+            .order('sequence_number', { ascending: true });
+
+        if (projectStagesError) throw projectStagesError;
+
+        const orderedStages = projectStages ?? [];
+        const maxSequence = orderedStages.length;
+        const currentSequence = Number(existing.sequence_number ?? 1);
+        const requestedSequence = Number(payload.sequenceNumber ?? currentSequence);
+        if (!Number.isFinite(requestedSequence) || requestedSequence <= 0) {
+            const error: any = new Error('Sequence number must be greater than 0.');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const targetSequence = Math.min(Math.max(1, Math.floor(requestedSequence)), Math.max(maxSequence, 1));
+
+        if (targetSequence !== currentSequence) {
+            const temporarySequence = maxSequence + 1;
+            const { error: tempMoveError } = await supabaseAdmin
+                .from('project_stages')
+                .update({ sequence_number: temporarySequence })
+                .eq('id', id);
+            if (tempMoveError) throw tempMoveError;
+
+            if (targetSequence < currentSequence) {
+                const { data: toShift, error: fetchShiftError } = await supabaseAdmin
+                    .from('project_stages')
+                    .select('id, sequence_number')
+                    .eq('project_id', existing.project_id)
+                    .gte('sequence_number', targetSequence)
+                    .lt('sequence_number', currentSequence)
+                    .order('sequence_number', { ascending: false });
+                if (fetchShiftError) throw fetchShiftError;
+
+                for (const row of toShift ?? []) {
+                    const { error: shiftError } = await supabaseAdmin
+                        .from('project_stages')
+                        .update({ sequence_number: Number(row.sequence_number ?? 0) + 1 })
+                        .eq('id', row.id);
+                    if (shiftError) throw shiftError;
+                }
+            } else {
+                const { data: toShift, error: fetchShiftError } = await supabaseAdmin
+                    .from('project_stages')
+                    .select('id, sequence_number')
+                    .eq('project_id', existing.project_id)
+                    .gt('sequence_number', currentSequence)
+                    .lte('sequence_number', targetSequence)
+                    .order('sequence_number', { ascending: true });
+                if (fetchShiftError) throw fetchShiftError;
+
+                for (const row of toShift ?? []) {
+                    const { error: shiftError } = await supabaseAdmin
+                        .from('project_stages')
+                        .update({ sequence_number: Number(row.sequence_number ?? 0) - 1 })
+                        .eq('id', row.id);
+                    if (shiftError) throw shiftError;
+                }
+            }
+
+            updates.sequence_number = targetSequence;
+        }
+    }
+
     if (payload.name !== undefined) updates.name = String(payload.name ?? '').trim() || 'New stage';
-    if (payload.sequenceNumber !== undefined) updates.sequence_number = Number(payload.sequenceNumber ?? 1);
     if (payload.plannedStartDate !== undefined) updates.planned_start_date = payload.plannedStartDate ?? null;
     if (payload.plannedEndDate !== undefined) updates.planned_end_date = payload.plannedEndDate ?? null;
     if (payload.actualStartDate !== undefined) updates.actual_start_date = payload.actualStartDate ?? null;
@@ -1883,6 +2066,33 @@ export async function deleteProjectStageRow(id: string, companyId: string) {
     if (existing.project?.company_id !== companyId) {
         const error: any = new Error('This stage belongs to a different company.');
         error.statusCode = 403;
+        throw error;
+    }
+
+    const hasProgressHistory = Number(existing.completion_percentage ?? 0) > 0
+        || existing.actual_start_date !== null
+        || existing.actual_end_date !== null
+        || existing.status === 'in_progress'
+        || existing.status === 'completed';
+
+    if (hasProgressHistory) {
+        const error: any = new Error('This stage has progress history or active/completed work and cannot be deleted. Mark it as skipped instead.');
+        error.statusCode = 409;
+        throw error;
+    }
+
+    const { data: stageUpdate, error: stageUpdateError } = await supabaseAdmin
+        .from('project_progress_updates')
+        .select('id')
+        .eq('project_id', existing.project_id)
+        .eq('stage_id', id)
+        .limit(1)
+        .maybeSingle();
+
+    if (stageUpdateError) throw stageUpdateError;
+    if (stageUpdate) {
+        const error: any = new Error('This stage has linked site updates and cannot be deleted. Mark it as skipped instead.');
+        error.statusCode = 409;
         throw error;
     }
 

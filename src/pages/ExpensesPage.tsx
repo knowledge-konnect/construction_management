@@ -1,5 +1,6 @@
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { AppButton, Modal, PageHeader, PremiumCard, StatusPill } from '@/components/ui/DesignSystem';
+import DataTable, { CellStack, CellText, RowActionButton, RowActions, type Column } from '@/components/ui/DataTable';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
 import { listMasterData, type MasterItem } from '@/services/masterData.service';
@@ -18,7 +19,7 @@ import {
     updateProjectExpense,
     updateProjectExpenseResult
 } from '@/services/projectCost.service';
-import { ArrowUpRight, CreditCard, FileText, Loader2, Pencil, Plus, Trash2, TrendingUp, WalletCards } from 'lucide-react';
+import { ArrowUpRight, CreditCard, FileText, Pencil, Plus, Trash2, TrendingUp, WalletCards } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -432,6 +433,101 @@ export default function ExpensesPage() {
     const showExpenseDateColumn = workflow !== 'supplier' && visibleExpenses.some((expense) => Boolean(expense.billDate));
     const modalIsSupplier = form.expenseType === 'supplier_bill';
 
+
+    type ExpenseRow = (typeof visibleExpenses)[number];
+    const statusPill = (expense: ExpenseRow) => (
+        <StatusPill
+            label={expense.status === 'paid' ? 'Paid' : expense.status === 'partially_paid' ? 'Partially paid' : expense.status === 'void' ? 'Void' : 'Unpaid'}
+            tone={expense.status === 'paid' ? 'success' : expense.status === 'partially_paid' ? 'warning' : expense.status === 'void' ? 'neutral' : 'info'}
+        />
+    );
+    const projectCell = (expense: ExpenseRow) => <CellStack title={expense.projectName || expense.projectNumber || 'Project'} />;
+    const amountCell = (value: number) => <span className="font-medium tabular-nums text-[var(--text)]">{formatCurrency(value)}</span>;
+
+    const supplierColumns: Column<ExpenseRow>[] = [
+        { key: 'project', header: 'Project', sortValue: (e) => e.projectName || e.projectNumber || '', cell: projectCell },
+        { key: 'supplier', header: 'Supplier', sortValue: (e) => e.supplierName || null, cell: (e) => <CellText>{e.supplierName}</CellText> },
+        { key: 'billNo', header: 'Bill no.', cell: (e) => <CellText>{e.supplierBillNumber}</CellText> },
+        { key: 'billDate', header: 'Bill date', sortValue: (e) => (e.billDate ? Date.parse(e.billDate) || null : null), cell: (e) => <CellText>{e.billDate}</CellText> },
+        { key: 'dueDate', header: 'Due date', sortValue: (e) => (e.dueDate ? Date.parse(e.dueDate) || null : null), cell: (e) => <CellText>{e.dueDate}</CellText> },
+        { key: 'billAmount', header: 'Bill amount', align: 'right', sortValue: (e) => e.billAmount, cell: (e) => amountCell(e.billAmount) },
+        { key: 'paid', header: 'Paid', align: 'right', sortValue: (e) => getPaidAmount(e), cell: (e) => amountCell(getPaidAmount(e)) },
+        { key: 'balance', header: 'Balance due', align: 'right', sortValue: (e) => getOutstandingAmount(e), cell: (e) => amountCell(getOutstandingAmount(e)) },
+        { key: 'status', header: 'Status', cell: statusPill },
+        {
+            key: 'actions',
+            header: 'Actions',
+            kind: 'actions',
+            cell: (e) => {
+                const canRecordPayment = e.status !== 'void' && getOutstandingAmount(e) > 0;
+                return (
+                    <RowActions>
+                        <AppButton
+                            variant="outline"
+                            className="!min-h-[32px] !px-2.5 !py-1 text-xs"
+                            onClick={(ev) => { ev.stopPropagation(); openRecordPaymentDialog(e); }}
+                            disabled={!canRecordPayment}
+                            aria-label="Record payment"
+                            title={e.status === 'void' ? 'Payments are disabled for void bills' : 'Record payment and view transactions'}
+                        >
+                            <CreditCard className="h-3.5 w-3.5" />
+                            Record payment
+                        </AppButton>
+                        <RowActionButton label="Edit supplier bill" icon={<Pencil className="h-4 w-4" />} onClick={() => openEditModal(e)} />
+                        <RowActionButton
+                            label={e.status === 'void' ? 'This bill is already void' : 'Void supplier bill'}
+                            tone="danger"
+                            icon={<Trash2 className="h-4 w-4" />}
+                            disabled={e.status === 'void'}
+                            onClick={() => setDeleteId(e.id)}
+                        />
+                    </RowActions>
+                );
+            },
+        },
+    ];
+
+    const directColumns: Column<ExpenseRow>[] = [
+        { key: 'project', header: 'Project', sortValue: (e) => e.projectName || e.projectNumber || '', cell: projectCell },
+        ...(workflow === 'all'
+            ? [
+                  {
+                      key: 'type',
+                      header: 'Type',
+                      cell: (e: ExpenseRow) => (
+                          <StatusPill label={e.expenseType === 'supplier_bill' ? 'Supplier bill' : 'Direct'} tone={e.expenseType === 'supplier_bill' ? 'warning' : 'info'} />
+                      ),
+                  },
+                  { key: 'supplier', header: 'Supplier', cell: (e: ExpenseRow) => <CellText>{e.supplierName}</CellText> },
+              ]
+            : []),
+        { key: 'category', header: 'Expense category', sortValue: (e) => e.category, cell: (e) => <CellText>{e.category}</CellText> },
+        { key: 'description', header: 'Description', cell: (e) => <CellText>{e.description}</CellText> },
+        ...(showExpenseDateColumn
+            ? [{ key: 'date', header: 'Expense date', sortValue: (e: ExpenseRow) => (e.billDate ? Date.parse(e.billDate) || null : null), cell: (e: ExpenseRow) => <CellText>{e.billDate}</CellText> }]
+            : []),
+        { key: 'amount', header: 'Amount', align: 'right', sortValue: (e) => e.billAmount, cell: (e) => amountCell(e.billAmount) },
+        { key: 'status', header: 'Payment status', cell: statusPill },
+        {
+            key: 'actions',
+            header: 'Actions',
+            kind: 'actions',
+            cell: (e) => (
+                <RowActions>
+                    <RowActionButton label="Edit expense" icon={<Pencil className="h-4 w-4" />} onClick={() => openEditModal(e)} />
+                    <RowActionButton
+                        label={e.status === 'void' ? 'This expense is already void' : 'Void expense'}
+                        tone="danger"
+                        icon={<Trash2 className="h-4 w-4" />}
+                        disabled={e.status === 'void'}
+                        onClick={() => setDeleteId(e.id)}
+                    />
+                </RowActions>
+            ),
+        },
+    ];
+    const columns = workflow === 'supplier' ? supplierColumns : directColumns;
+
     return (
         <div className="space-y-6">
             <PageHeader
@@ -454,27 +550,27 @@ export default function ExpensesPage() {
                 }
             />
 
-            <p className="text-sm text-[#667085]">{summaryDescription}</p>
+            <p className="text-sm text-[var(--text-muted)]">{summaryDescription}</p>
 
-            <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+            <div className="inline-flex rounded-xl border border-[var(--border)] bg-white p-1 shadow-sm">
                 <button
                     type="button"
                     onClick={() => setWorkflow('all')}
-                    className={`rounded-lg px-3 py-2 text-sm font-medium transition ${workflow === 'all' ? 'bg-[#1D4ED8] text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                    className={`rounded-lg px-3 py-2 text-sm font-medium transition ${workflow === 'all' ? 'bg-[var(--primary)] text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text)]'}`}
                 >
                     All Expenses
                 </button>
                 <button
                     type="button"
                     onClick={() => setWorkflow('direct')}
-                    className={`rounded-lg px-3 py-2 text-sm font-medium transition ${workflow === 'direct' ? 'bg-[#1D4ED8] text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                    className={`rounded-lg px-3 py-2 text-sm font-medium transition ${workflow === 'direct' ? 'bg-[var(--primary)] text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text)]'}`}
                 >
                     Direct Expenses
                 </button>
                 <button
                     type="button"
                     onClick={() => setWorkflow('supplier')}
-                    className={`rounded-lg px-3 py-2 text-sm font-medium transition ${workflow === 'supplier' ? 'bg-[#1D4ED8] text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                    className={`rounded-lg px-3 py-2 text-sm font-medium transition ${workflow === 'supplier' ? 'bg-[var(--primary)] text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text)]'}`}
                 >
                     Supplier Bills
                 </button>
@@ -483,11 +579,11 @@ export default function ExpensesPage() {
             <PremiumCard className="p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <label className="block flex-1">
-                        <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-[#667085]">Project filter</span>
+                        <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Project filter</span>
                         <select
                             value={selectedProjectId}
                             onChange={(event) => setSelectedProjectId(event.target.value)}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]"
+                            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]"
                         >
                             <option value="">All projects</option>
                             {projects.map((project) => (
@@ -500,7 +596,7 @@ export default function ExpensesPage() {
                             <button
                                 type="button"
                                 onClick={() => setSelectedProjectId('')}
-                                className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                                className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-soft)]"
                             >
                                 Clear filter
                             </button>
@@ -511,191 +607,69 @@ export default function ExpensesPage() {
 
             <div className="grid gap-4 md:grid-cols-3">
                 <PremiumCard className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#667085]">{workflow === 'supplier' ? 'Billed' : 'Total Expenses'}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{workflow === 'supplier' ? 'Billed' : 'Total Expenses'}</p>
                     <div className="mt-4 flex items-center justify-between">
-                        <p className="text-3xl font-semibold text-[#17243A]">{formatCurrency(totals.totalBilled)}</p>
-                        <WalletCards className="h-10 w-10 rounded-xl bg-[#EAF1FF] p-2 text-[#1D4ED8]" />
+                        <p className="text-3xl font-semibold text-[var(--text)]">{formatCurrency(totals.totalBilled)}</p>
+                        <WalletCards className="h-10 w-10 rounded-xl bg-[var(--primary-soft)] p-2 text-[var(--primary)]" />
                     </div>
-                    <p className="mt-2 text-sm text-[#667085]">{workflow === 'supplier' ? 'Active supplier bill value across projects.' : workflow === 'direct' ? 'Direct expense value recorded across projects.' : 'Combined expense value across all record types.'}</p>
+                    <p className="mt-2 text-sm text-[var(--text-muted)]">{workflow === 'supplier' ? 'Active supplier bill value across projects.' : workflow === 'direct' ? 'Direct expense value recorded across projects.' : 'Combined expense value across all record types.'}</p>
                 </PremiumCard>
 
                 <PremiumCard className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#667085]">Paid</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Paid</p>
                     <div className="mt-4 flex items-center justify-between">
-                        <p className="text-3xl font-semibold text-[#17243A]">{formatCurrency(totals.totalPaid)}</p>
-                        <TrendingUp className="h-10 w-10 rounded-xl bg-[#ECFDF5] p-2 text-[#0F766E]" />
+                        <p className="text-3xl font-semibold text-[var(--text)]">{formatCurrency(totals.totalPaid)}</p>
+                        <TrendingUp className="h-10 w-10 rounded-xl bg-[var(--success-soft)] p-2 text-[var(--success)]" />
                     </div>
-                    <p className="mt-2 text-sm text-[#667085]">Settled using actual recorded payment transactions.</p>
+                    <p className="mt-2 text-sm text-[var(--text-muted)]">Settled using actual recorded payment transactions.</p>
                 </PremiumCard>
 
                 <PremiumCard className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#667085]">{workflow === 'supplier' ? 'Outstanding' : 'Balance Due'}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{workflow === 'supplier' ? 'Outstanding' : 'Balance Due'}</p>
                     <div className="mt-4 flex items-center justify-between">
-                        <p className="text-3xl font-semibold text-[#17243A]">{formatCurrency(totals.totalOutstanding)}</p>
-                        <CreditCard className="h-10 w-10 rounded-xl bg-[#EEF4FF] p-2 text-[#1D4ED8]" />
+                        <p className="text-3xl font-semibold text-[var(--text)]">{formatCurrency(totals.totalOutstanding)}</p>
+                        <CreditCard className="h-10 w-10 rounded-xl bg-[var(--surface-alt)] p-2 text-[var(--primary)]" />
                     </div>
-                    <p className="mt-2 text-sm text-[#667085]">Pending amount after excluding voided records.</p>
+                    <p className="mt-2 text-sm text-[var(--text-muted)]">Pending amount after excluding voided records.</p>
                 </PremiumCard>
             </div>
 
             <PremiumCard className="overflow-hidden">
-                <div className="border-b border-[#E6E8EC] px-5 py-4">
+                <div className="border-b border-[var(--border)] px-5 py-4">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <p className="text-base font-semibold text-[#17243A]">{workflow === 'supplier' ? 'Supplier Bills' : workflow === 'direct' ? 'Direct Expenses' : 'All Expenses'}</p>
-                            <p className="mt-1 text-sm text-[#667085]">{workflow === 'supplier' ? 'One bill ledger table with payment actions in bill context.' : workflow === 'direct' ? 'One expense ledger table for daily project expenses.' : 'One combined expense ledger table across direct and supplier records.'}</p>
+                            <p className="text-base font-semibold text-[var(--text)]">{workflow === 'supplier' ? 'Supplier Bills' : workflow === 'direct' ? 'Direct Expenses' : 'All Expenses'}</p>
+                            <p className="mt-1 text-sm text-[var(--text-muted)]">{workflow === 'supplier' ? 'One bill ledger table with payment actions in bill context.' : workflow === 'direct' ? 'One expense ledger table for daily project expenses.' : 'One combined expense ledger table across direct and supplier records.'}</p>
                         </div>
-                        <label className="inline-flex items-center gap-2 text-sm text-[#344054]">
+                        <label className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                             <input
                                 type="checkbox"
                                 checked={showVoided}
                                 onChange={(event) => setShowVoided(event.target.checked)}
-                                className="h-4 w-4 rounded border-slate-300 text-[#1D4ED8] focus:ring-[#1D4ED8]"
+                                className="h-4 w-4 rounded border-[var(--border-strong)] text-[var(--primary)] focus:ring-[var(--primary)]"
                             />
                             Show voided records
                         </label>
                     </div>
                 </div>
 
-                {loading ? (
-                    <div className="px-5 py-10 text-center text-sm text-slate-500">
-                        <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-                            <Loader2 className="h-4 w-4 animate-spin text-[#1D4ED8]" />
-                            <span>Loading records…</span>
-                        </div>
-                    </div>
-                ) : visibleExpenses.length === 0 ? (
-                    <div className="px-5 py-10 text-center text-sm text-slate-500">
-                        {workflow === 'supplier' ? 'No supplier bills added yet.' : workflow === 'direct' ? 'No direct expenses added yet.' : 'No expenses added yet.'}
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
-                            <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-[#667085]">
-                                {workflow === 'supplier' ? (
-                                    <tr>
-                                        <th className="px-5 py-3 font-medium">Project</th>
-                                        <th className="px-5 py-3 font-medium">Supplier</th>
-                                        <th className="px-5 py-3 font-medium">Bill No.</th>
-                                        <th className="px-5 py-3 font-medium">Bill Date</th>
-                                        <th className="px-5 py-3 font-medium">Due Date</th>
-                                        <th className="px-5 py-3 font-medium">Bill Amount</th>
-                                        <th className="px-5 py-3 font-medium">Paid</th>
-                                        <th className="px-5 py-3 font-medium">Balance Due</th>
-                                        <th className="px-5 py-3 font-medium">Status</th>
-                                        <th className="px-5 py-3 font-medium text-right">Actions</th>
-                                    </tr>
-                                ) : (
-                                    <tr>
-                                        <th className="px-5 py-3 font-medium">Project</th>
-                                        {workflow === 'all' && <th className="px-5 py-3 font-medium">Type</th>}
-                                        {workflow === 'all' && <th className="px-5 py-3 font-medium">Supplier</th>}
-                                        <th className="px-5 py-3 font-medium">Expense Category</th>
-                                        <th className="px-5 py-3 font-medium">Description</th>
-                                        {showExpenseDateColumn && <th className="px-5 py-3 font-medium">Expense Date</th>}
-                                        <th className="px-5 py-3 font-medium">Amount</th>
-                                        <th className="px-5 py-3 font-medium">Payment Status</th>
-                                        <th className="px-5 py-3 font-medium text-right">Actions</th>
-                                    </tr>
-                                )}
-                            </thead>
-                            <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                                {visibleExpenses.map((expense) => {
-                                    const paidAmount = getPaidAmount(expense);
-                                    const outstanding = getOutstandingAmount(expense);
-                                    const canRecordPayment = workflow === 'supplier' && expense.status !== 'void' && outstanding > 0;
-                                    return (
-                                        <tr key={expense.id}>
-                                            {workflow === 'supplier' ? (
-                                                <>
-                                                    <td className="px-5 py-4 text-[#17243A]">{expense.projectName || expense.projectNumber || 'Project'}</td>
-                                                    <td className="px-5 py-4 text-[#17243A]">{expense.supplierName || '—'}</td>
-                                                    <td className="px-5 py-4 text-[#344054]">{expense.supplierBillNumber || '—'}</td>
-                                                    <td className="px-5 py-4 text-[#344054]">{expense.billDate || '—'}</td>
-                                                    <td className="px-5 py-4 text-[#344054]">{expense.dueDate || '—'}</td>
-                                                    <td className="px-5 py-4 font-medium text-[#17243A]">{formatCurrency(expense.billAmount)}</td>
-                                                    <td className="px-5 py-4 font-medium text-[#17243A]">{formatCurrency(paidAmount)}</td>
-                                                    <td className="px-5 py-4 font-medium text-[#17243A]">{formatCurrency(outstanding)}</td>
-                                                    <td className="px-5 py-4">
-                                                        <StatusPill
-                                                            label={expense.status === 'paid' ? 'Paid' : expense.status === 'partially_paid' ? 'Partially paid' : expense.status === 'void' ? 'Void' : 'Unpaid'}
-                                                            tone={expense.status === 'paid' ? 'success' : expense.status === 'partially_paid' ? 'warning' : expense.status === 'void' ? 'neutral' : 'info'}
-                                                        />
-                                                    </td>
-                                                    <td className="px-5 py-4 text-right">
-                                                        <div className="inline-flex items-center gap-2">
-                                                            <button
-                                                                className="inline-flex items-center gap-1 rounded-lg border border-[#1D4ED8]/20 px-2.5 py-2 text-xs font-medium text-[#1D4ED8] hover:bg-[#EAF1FF] disabled:cursor-not-allowed disabled:opacity-50"
-                                                                onClick={() => openRecordPaymentDialog(expense)}
-                                                                disabled={!canRecordPayment}
-                                                                aria-label="Record payment"
-                                                                title={expense.status === 'void' ? 'Payments are disabled for void bills' : 'Record payment and view transactions'}
-                                                            >
-                                                                <CreditCard className="h-3.5 w-3.5" />
-                                                                Record Payment
-                                                            </button>
-                                                            <button className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50" onClick={() => openEditModal(expense)} aria-label="Edit supplier bill" title="Edit supplier bill">
-                                                                <Pencil className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                                                onClick={() => setDeleteId(expense.id)}
-                                                                aria-label="Void supplier bill"
-                                                                title={expense.status === 'void' ? 'This bill is already void' : 'Void supplier bill'}
-                                                                disabled={expense.status === 'void'}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <td className="px-5 py-4 text-[#17243A]">{expense.projectName || expense.projectNumber || 'Project'}</td>
-                                                    {workflow === 'all' && (
-                                                        <td className="px-5 py-4">
-                                                            <StatusPill
-                                                                label={expense.expenseType === 'supplier_bill' ? 'Supplier bill' : 'Direct'}
-                                                                tone={expense.expenseType === 'supplier_bill' ? 'warning' : 'info'}
-                                                            />
-                                                        </td>
-                                                    )}
-                                                    {workflow === 'all' && <td className="px-5 py-4 text-[#344054]">{expense.supplierName || '—'}</td>}
-                                                    <td className="px-5 py-4 text-[#344054]">{expense.category}</td>
-                                                    <td className="px-5 py-4 text-[#344054]">{expense.description || '—'}</td>
-                                                    {showExpenseDateColumn && <td className="px-5 py-4 text-[#344054]">{expense.billDate || '—'}</td>}
-                                                    <td className="px-5 py-4 font-medium text-[#17243A]">{formatCurrency(expense.billAmount)}</td>
-                                                    <td className="px-5 py-4">
-                                                        <StatusPill
-                                                            label={expense.status === 'paid' ? 'Paid' : expense.status === 'partially_paid' ? 'Partially paid' : expense.status === 'void' ? 'Void' : 'Unpaid'}
-                                                            tone={expense.status === 'paid' ? 'success' : expense.status === 'partially_paid' ? 'warning' : expense.status === 'void' ? 'neutral' : 'info'}
-                                                        />
-                                                    </td>
-                                                    <td className="px-5 py-4 text-right">
-                                                        <div className="inline-flex items-center gap-2">
-                                                            <button className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50" onClick={() => openEditModal(expense)} aria-label="Edit expense" title="Edit expense">
-                                                                <Pencil className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                                                onClick={() => setDeleteId(expense.id)}
-                                                                aria-label="Void expense"
-                                                                title={expense.status === 'void' ? 'This expense is already void' : 'Void expense'}
-                                                                disabled={expense.status === 'void'}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </>
-                                            )}
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                <DataTable
+                    bare
+                    caption={workflow === 'supplier' ? 'Supplier bills' : workflow === 'direct' ? 'Direct expenses' : 'Expenses'}
+                    columns={columns}
+                    rows={visibleExpenses}
+                    rowKey={(expense) => expense.id}
+                    rowTone={(expense) => {
+                        if (expense.status === 'void') return 'muted';
+                        const overdue = workflow === 'supplier' && expense.dueDate && Date.parse(expense.dueDate) < new Date().setHours(0, 0, 0, 0) && getOutstandingAmount(expense) > 0;
+                        return overdue ? 'danger' : undefined;
+                    }}
+                    loading={loading}
+                    empty={{
+                        title: workflow === 'supplier' ? 'No supplier bills added yet' : workflow === 'direct' ? 'No direct expenses added yet' : 'No expenses added yet',
+                        description: 'Records you add will show up here.',
+                    }}
+                />
             </PremiumCard>
 
             {modalOpen && (
@@ -703,8 +677,8 @@ export default function ExpensesPage() {
                     <div className="space-y-4">
                         <div className="grid gap-3 md:grid-cols-2">
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">Project <span className="text-red-600">*</span></span>
-                                <select value={form.projectId} onChange={(event) => setForm((prev) => ({ ...prev, projectId: event.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none ring-0 focus:border-[#1D4ED8]">
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Project <span className="text-[var(--danger-fg)]">*</span></span>
+                                <select value={form.projectId} onChange={(event) => setForm((prev) => ({ ...prev, projectId: event.target.value }))} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none ring-0 focus:border-[var(--primary)]">
                                     <option value="">Select project</option>
                                     {projects.map((project) => (
                                         <option key={project.id} value={project.id}>{project.name}</option>
@@ -713,11 +687,11 @@ export default function ExpensesPage() {
                             </label>
 
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">Expense Type <span className="text-red-600">*</span></span>
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Expense Type <span className="text-[var(--danger-fg)]">*</span></span>
                                 <select
                                     value={form.expenseType}
                                     onChange={(event) => setForm((prev) => ({ ...prev, expenseType: event.target.value as ProjectExpenseType }))}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]"
+                                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
                                 >
                                     <option value="direct">Direct Expense</option>
                                     <option value="supplier_bill">Supplier Bill</option>
@@ -728,8 +702,8 @@ export default function ExpensesPage() {
                         <div className="grid gap-3 md:grid-cols-2">
 
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">{modalIsSupplier ? 'Expense Category' : 'Category'} <span className="text-red-600">*</span></span>
-                                <select value={form.category} onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]">
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">{modalIsSupplier ? 'Expense Category' : 'Category'} <span className="text-[var(--danger-fg)]">*</span></span>
+                                <select value={form.category} onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]">
                                     {expenseCategories.length === 0 ? (
                                         <option value={form.category}>{form.category}</option>
                                     ) : (
@@ -741,40 +715,40 @@ export default function ExpensesPage() {
                             </label>
 
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">{modalIsSupplier ? 'Bill Amount' : 'Amount'} <span className="text-red-600">*</span></span>
-                                <input type="number" min="0" step="0.01" value={form.billAmount} onChange={(event) => setForm((prev) => ({ ...prev, billAmount: event.target.value }))} placeholder="Example: 45000" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]" />
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">{modalIsSupplier ? 'Bill Amount' : 'Amount'} <span className="text-[var(--danger-fg)]">*</span></span>
+                                <input type="number" min="0" step="0.01" value={form.billAmount} onChange={(event) => setForm((prev) => ({ ...prev, billAmount: event.target.value }))} placeholder="Example: 45000" className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]" />
                             </label>
 
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">Payment status</span>
-                                <select value={form.status} onChange={(event) => setForm((prev) => ({ ...prev, status: event.target.value as any }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none ring-0 focus:border-[#1D4ED8]">
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Payment status</span>
+                                <select value={form.status} onChange={(event) => setForm((prev) => ({ ...prev, status: event.target.value as any }))} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none ring-0 focus:border-[var(--primary)]">
                                     <option value="unpaid">Unpaid</option>
                                     <option value="partially_paid">Partially paid</option>
                                     <option value="paid">Paid</option>
                                     <option value="void">Void</option>
                                 </select>
                                 {modalIsSupplier && (
-                                    <p className="mt-1 text-xs text-[#667085]">Use Record Payment in the bills table to capture paid amount and update this status automatically.</p>
+                                    <p className="mt-1 text-xs text-[var(--text-muted)]">Use Record Payment in the bills table to capture paid amount and update this status automatically.</p>
                                 )}
                             </label>
 
                             <label className="block">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">{modalIsSupplier ? 'Bill date' : 'Expense date'}</span>
-                                <input type="date" value={form.billDate} onChange={(event) => setForm((prev) => ({ ...prev, billDate: event.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]" />
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">{modalIsSupplier ? 'Bill date' : 'Expense date'}</span>
+                                <input type="date" value={form.billDate} onChange={(event) => setForm((prev) => ({ ...prev, billDate: event.target.value }))} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]" />
                             </label>
 
                             {form.expenseType === 'direct' && (
                                 <label className="block">
-                                    <span className="mb-1.5 block text-sm font-medium text-[#344054]">Invoice / bill no.</span>
-                                    <input value={form.supplierBillNumber} onChange={(event) => setForm((prev) => ({ ...prev, supplierBillNumber: event.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]" />
-                                    <span className="mt-1 block text-xs text-[#667085]">Optional reference number for this expense.</span>
+                                    <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Invoice / bill no.</span>
+                                    <input value={form.supplierBillNumber} onChange={(event) => setForm((prev) => ({ ...prev, supplierBillNumber: event.target.value }))} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]" />
+                                    <span className="mt-1 block text-xs text-[var(--text-muted)]">Optional reference number for this expense.</span>
                                 </label>
                             )}
 
                             {form.expenseType === 'supplier_bill' && (
                                 <>
                                     <label className="block md:col-span-2">
-                                        <span className="mb-1.5 block text-sm font-medium text-[#344054]">Supplier</span>
+                                        <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Supplier</span>
                                         <select
                                             value={selectedSupplierContactId}
                                             onChange={(event) => {
@@ -787,7 +761,7 @@ export default function ExpensesPage() {
                                                     supplierName: selectedContact?.name ?? prev.supplierName,
                                                 }));
                                             }}
-                                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]"
+                                            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
                                         >
                                             <option value="">Select supplier contact</option>
                                             {availableSupplierContacts.map((party) => (
@@ -796,28 +770,28 @@ export default function ExpensesPage() {
                                         </select>
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1.5 block text-sm font-medium text-[#344054]">Supplier name</span>
-                                        <input value={form.supplierName} onChange={(event) => setForm((prev) => ({ ...prev, supplierName: event.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]" />
+                                        <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Supplier name</span>
+                                        <input value={form.supplierName} onChange={(event) => setForm((prev) => ({ ...prev, supplierName: event.target.value }))} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]" />
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1.5 block text-sm font-medium text-[#344054]">Supplier invoice / bill no.</span>
-                                        <input value={form.supplierBillNumber} onChange={(event) => setForm((prev) => ({ ...prev, supplierBillNumber: event.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]" />
-                                        <span className="mt-1 block text-xs text-[#667085]">Use the supplier’s actual invoice or bill number, not a project internal reference.</span>
+                                        <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Supplier invoice / bill no.</span>
+                                        <input value={form.supplierBillNumber} onChange={(event) => setForm((prev) => ({ ...prev, supplierBillNumber: event.target.value }))} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]" />
+                                        <span className="mt-1 block text-xs text-[var(--text-muted)]">Use the supplier’s actual invoice or bill number, not a project internal reference.</span>
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1.5 block text-sm font-medium text-[#344054]">Due date</span>
-                                        <input type="date" value={form.dueDate} onChange={(event) => setForm((prev) => ({ ...prev, dueDate: event.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]" />
+                                        <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Due date</span>
+                                        <input type="date" value={form.dueDate} onChange={(event) => setForm((prev) => ({ ...prev, dueDate: event.target.value }))} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]" />
                                     </label>
                                 </>
                             )}
 
                             <label className="block md:col-span-2">
-                                <span className="mb-1.5 block text-sm font-medium text-[#344054]">Description <span className="text-red-600">*</span></span>
-                                <textarea value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} rows={2} placeholder="Example: Steel bars for 2nd floor columns" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#17243A] outline-none focus:border-[#1D4ED8]" />
+                                <span className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Description <span className="text-[var(--danger-fg)]">*</span></span>
+                                <textarea value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} rows={2} placeholder="Example: Steel bars for 2nd floor columns" className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]" />
                             </label>
                         </div>
 
-                        <div className="mt-2 flex justify-end gap-2 border-t border-slate-200 pt-4">
+                        <div className="mt-2 flex justify-end gap-2 border-t border-[var(--border)] pt-4">
                             <AppButton variant="secondary" onClick={() => setModalOpen(false)}>
                                 Cancel
                             </AppButton>
@@ -844,43 +818,43 @@ export default function ExpensesPage() {
             {selectedExpense && (
                 <Modal eyebrow="Supplier payment" title="Record Payment" onClose={closeRecordPaymentDialog} size="xl">
                     <div className="space-y-4">
-                        <div className="rounded-xl border border-[#E6E8EC] bg-slate-50/70 p-4">
-                            <p className="text-sm font-semibold text-[#17243A]">Selected bill</p>
-                            <div className="mt-3 grid gap-3 text-sm text-[#344054] md:grid-cols-2">
-                                <p><span className="font-medium text-[#17243A]">Project:</span> {selectedExpense.projectName || selectedExpense.projectNumber || 'Project'}</p>
-                                <p><span className="font-medium text-[#17243A]">Counterparty:</span> {selectedExpense.supplierName || 'Direct expense / no supplier record'}</p>
+                        <div className="rounded-xl border border-[var(--border)] bg-slate-50/70 p-4">
+                            <p className="text-sm font-semibold text-[var(--text)]">Selected bill</p>
+                            <div className="mt-3 grid gap-3 text-sm text-[var(--text-secondary)] md:grid-cols-2">
+                                <p><span className="font-medium text-[var(--text)]">Project:</span> {selectedExpense.projectName || selectedExpense.projectNumber || 'Project'}</p>
+                                <p><span className="font-medium text-[var(--text)]">Counterparty:</span> {selectedExpense.supplierName || 'Direct expense / no supplier record'}</p>
                                 {selectedExpense.supplierBillNumber ? (
-                                    <p><span className="font-medium text-[#17243A]">Supplier invoice / bill no.:</span> {selectedExpense.supplierBillNumber}</p>
+                                    <p><span className="font-medium text-[var(--text)]">Supplier invoice / bill no.:</span> {selectedExpense.supplierBillNumber}</p>
                                 ) : null}
-                                <p><span className="font-medium text-[#17243A]">Bill amount:</span> {formatCurrency(selectedExpense.billAmount)}</p>
-                                <p><span className="font-medium text-[#17243A]">Amount already paid:</span> {formatCurrency(selectedExpensePaidAmount)}</p>
-                                <p><span className="font-medium text-[#17243A]">Balance due:</span> {formatCurrency(selectedExpenseOutstandingAmount)}</p>
+                                <p><span className="font-medium text-[var(--text)]">Bill amount:</span> {formatCurrency(selectedExpense.billAmount)}</p>
+                                <p><span className="font-medium text-[var(--text)]">Amount already paid:</span> {formatCurrency(selectedExpensePaidAmount)}</p>
+                                <p><span className="font-medium text-[var(--text)]">Balance due:</span> {formatCurrency(selectedExpenseOutstandingAmount)}</p>
                             </div>
                         </div>
 
                         <div className="grid gap-3 md:grid-cols-2">
                             <label className="block">
-                                <span className="mb-1 block text-xs text-[#667085]">Amount to Pay</span>
+                                <span className="mb-1 block text-xs text-[var(--text-muted)]">Amount to Pay</span>
                                 <input
                                     type="number"
                                     min="0"
                                     step="0.01"
                                     value={paymentForm.amount}
                                     onChange={(event) => setPaymentForm((prev) => ({ ...prev, amount: event.target.value }))}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]"
+                                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]"
                                 />
                             </label>
                             <label className="block">
-                                <span className="mb-1 block text-xs text-[#667085]">Payment Date</span>
+                                <span className="mb-1 block text-xs text-[var(--text-muted)]">Payment Date</span>
                                 <input
                                     type="date"
                                     value={paymentForm.paymentDate}
                                     onChange={(event) => setPaymentForm((prev) => ({ ...prev, paymentDate: event.target.value }))}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]"
+                                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]"
                                 />
                             </label>
                             <label className="block">
-                                <span className="mb-1 block text-xs text-[#667085]">Payment Mode</span>
+                                <span className="mb-1 block text-xs text-[var(--text-muted)]">Payment Mode</span>
                                 <select
                                     value={paymentForm.paymentMethodId || paymentForm.paymentMethod}
                                     onChange={(event) => {
@@ -893,7 +867,7 @@ export default function ExpensesPage() {
                                                 : prev.paymentMethod,
                                         }));
                                     }}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]"
+                                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]"
                                 >
                                     {paymentMethods.length === 0 ? (
                                         <>
@@ -909,20 +883,20 @@ export default function ExpensesPage() {
                                 </select>
                             </label>
                             <label className="block">
-                                <span className="mb-1 block text-xs text-[#667085]">UPI / Transaction Reference No. (optional)</span>
+                                <span className="mb-1 block text-xs text-[var(--text-muted)]">UPI / Transaction Reference No. (optional)</span>
                                 <input
                                     value={paymentForm.referenceNumber}
                                     onChange={(event) => setPaymentForm((prev) => ({ ...prev, referenceNumber: event.target.value }))}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]"
+                                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]"
                                 />
                             </label>
                             <label className="block md:col-span-2">
-                                <span className="mb-1 block text-xs text-[#667085]">Notes (optional)</span>
+                                <span className="mb-1 block text-xs text-[var(--text-muted)]">Notes (optional)</span>
                                 <textarea
                                     rows={2}
                                     value={paymentForm.notes}
                                     onChange={(event) => setPaymentForm((prev) => ({ ...prev, notes: event.target.value }))}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A]"
+                                    className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)]"
                                 />
                             </label>
                         </div>
@@ -933,7 +907,7 @@ export default function ExpensesPage() {
                                 {paymentSaving ? 'Recording…' : 'Record Payment'}
                             </AppButton>
                         </div>
-                        <p className="text-xs text-[#667085]">Payment transactions can be reviewed from the supplier bills table context.</p>
+                        <p className="text-xs text-[var(--text-muted)]">Payment transactions can be reviewed from the supplier bills table context.</p>
                     </div>
                 </Modal>
             )}

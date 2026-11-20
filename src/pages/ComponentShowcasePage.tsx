@@ -1,6 +1,6 @@
+import DataTable, { CellStack, CellText, type Column } from '@/components/ui/DataTable';
 import {
     AppButton,
-    DataTable,
     EmptyState,
     Modal,
     PageHeader,
@@ -31,26 +31,17 @@ const tabs = [
     { id: 'payments', label: 'Payments' },
 ];
 
-const tableHeaders = ['Project', 'Value', 'Status', 'Owner'];
-const tableRows = [
-    <tr key="1" className="hover:bg-slate-50">
-        <td className="px-4 py-3 font-medium text-[var(--text)]">Green Valley Residency</td>
-        <td className="px-4 py-3 text-[var(--text-secondary)]">₹18.4L</td>
-        <td className="px-4 py-3"><StatusPill label="In progress" tone="info" /></td>
-        <td className="px-4 py-3 text-[var(--text-secondary)]">A. Sharma</td>
-    </tr>,
-    <tr key="2" className="hover:bg-slate-50">
-        <td className="px-4 py-3 font-medium text-[var(--text)]">City Plaza</td>
-        <td className="px-4 py-3 text-[var(--text-secondary)]">₹42.9L</td>
-        <td className="px-4 py-3"><StatusPill label="Pending" tone="warning" /></td>
-        <td className="px-4 py-3 text-[var(--text-secondary)]">N. Patel</td>
-    </tr>,
-    <tr key="3" className="hover:bg-slate-50">
-        <td className="px-4 py-3 font-medium text-[var(--text)]">Lakeview Villas</td>
-        <td className="px-4 py-3 text-[var(--text-secondary)]">₹31.1L</td>
-        <td className="px-4 py-3"><StatusPill label="Completed" tone="success" /></td>
-        <td className="px-4 py-3 text-[var(--text-secondary)]">R. Das</td>
-    </tr>,
+type DemoRow = { id: string; project: string; value: string; status: string; tone: 'info' | 'warning' | 'success'; owner: string };
+const demoRows: DemoRow[] = [
+    { id: '1', project: 'Green Valley Residency', value: '₹1.2Cr', status: 'In progress', tone: 'info', owner: 'A. Sharma' },
+    { id: '2', project: 'City Plaza', value: '₹42.9L', status: 'Pending', tone: 'warning', owner: 'N. Patel' },
+    { id: '3', project: 'Lakeview Villas', value: '₹31.1L', status: 'Completed', tone: 'success', owner: 'R. Das' },
+];
+const demoColumns: Column<DemoRow>[] = [
+    { key: 'project', header: 'Project', sortValue: (r) => r.project, cell: (r) => <CellStack title={r.project} /> },
+    { key: 'value', header: 'Value', align: 'right', cell: (r) => r.value },
+    { key: 'status', header: 'Status', cell: (r) => <StatusPill label={r.status} tone={r.tone} /> },
+    { key: 'owner', header: 'Owner', cell: (r) => <CellText>{r.owner}</CellText> },
 ];
 
 export default function ComponentShowcasePage() {
@@ -80,7 +71,7 @@ export default function ComponentShowcasePage() {
                 <PremiumCard className="p-5">
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Buttons</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Buttons</p>
                             <h2 className="mt-1 text-lg font-semibold text-[var(--text)]">Action styles</h2>
                         </div>
                     </div>
@@ -96,7 +87,7 @@ export default function ComponentShowcasePage() {
                 <PremiumCard className="p-5">
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">States</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">States</p>
                             <h2 className="mt-1 text-lg font-semibold text-[var(--text)]">Status badges</h2>
                         </div>
                     </div>
@@ -159,7 +150,7 @@ export default function ComponentShowcasePage() {
                     <div className="border-b border-[var(--border)] px-5 py-4">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Table</p>
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Table</p>
                                 <h3 className="mt-1 text-lg font-semibold text-[var(--text)]">Project overview</h3>
                             </div>
                             <AppButton variant="outline" className="px-2.5 py-1.5 text-xs">
@@ -168,11 +159,11 @@ export default function ComponentShowcasePage() {
                             </AppButton>
                         </div>
                     </div>
-                    <DataTable headers={tableHeaders} rows={tableRows} className="border-0 shadow-none" />
+                    <DataTable bare caption="Example table" columns={demoColumns} rows={demoRows} rowKey={(r) => r.id} />
                 </PremiumCard>
 
                 <PremiumCard className="p-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Tabs</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Tabs</p>
                     <div className="mt-3">
                         <TabList tabs={tabs} active={activeTab} onChange={setActiveTab} />
                     </div>
@@ -192,7 +183,7 @@ export default function ComponentShowcasePage() {
 
             <div className="grid gap-6 lg:grid-cols-2">
                 <PremiumCard className="p-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Skeletons</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Skeletons</p>
                     <div className="mt-4 space-y-3">
                         <SkeletonRow className="h-4 w-2/3" />
                         <SkeletonRow className="h-4 w-1/2" />

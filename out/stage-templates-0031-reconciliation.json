@@ -1,0 +1,2583 @@
+{
+  "summary": {
+    "generated_at": "2026-11-18T12:02:51.085Z",
+    "existing_global_templates": 108,
+    "active_global_project_types": [
+      {
+        "code": "apartment",
+        "id": "86b88c91-81cb-496d-9615-fda7822f2f5d"
+      },
+      {
+        "code": "building_extension",
+        "id": "6d794dfa-55cb-475f-b45e-6b17d3de7528"
+      },
+      {
+        "code": "civil_infrastructure",
+        "id": "4845497f-3a42-440a-8933-4519a2e423be"
+      },
+      {
+        "code": "commercial_building",
+        "id": "cee3fb67-353c-48e5-863e-c4f7df173e12"
+      },
+      {
+        "code": "independent_house",
+        "id": "8382f3c2-13ad-45b8-ac3d-d6ec6862af7e"
+      },
+      {
+        "code": "industrial_warehouse",
+        "id": "98203dc2-f8e1-49d9-87c3-58311b02f780"
+      },
+      {
+        "code": "interior_fitout",
+        "id": "1a5f6bb7-ecbd-40b6-abab-c8b24ae50ad9"
+      },
+      {
+        "code": "other",
+        "id": "7c43322e-e3c0-485f-a1fe-e336fb438be0"
+      },
+      {
+        "code": "renovation",
+        "id": "bac3d3fe-be8d-4e26-98e6-87a92acbefe7"
+      },
+      {
+        "code": "road_drainage",
+        "id": "cc8bad01-07f5-4929-a500-0fd4fd4b8e0a"
+      },
+      {
+        "code": "structural_works",
+        "id": "e314b971-72a0-486c-a115-cb33902eff3e"
+      },
+      {
+        "code": "villa",
+        "id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a"
+      }
+    ],
+    "reconciliation_counts": {
+      "INSERT": 73
+    },
+    "ambiguous_count": 207
+  },
+  "reconciliation": [
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "client_requirements_and_project_planning",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Client Requirements & Project Planning",
+      "old_sequence_number": null,
+      "new_sequence_number": 1,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "architectural_design_and_3d_elevation",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Architectural Design & 3D Elevation",
+      "old_sequence_number": null,
+      "new_sequence_number": 2,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "structural_and_engineering_design",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Structural & Engineering Design",
+      "old_sequence_number": null,
+      "new_sequence_number": 3,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "estimation_quotation_and_agreement",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Estimation, Quotation & Agreement",
+      "old_sequence_number": null,
+      "new_sequence_number": 4,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "approvals_and_site_mobilization",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Approvals & Site Mobilization",
+      "old_sequence_number": null,
+      "new_sequence_number": 5,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "foundation_and_plinth_construction",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Foundation & Plinth Construction",
+      "old_sequence_number": null,
+      "new_sequence_number": 6,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "structural_construction",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Structural Construction",
+      "old_sequence_number": null,
+      "new_sequence_number": 7,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "masonry_plastering_and_waterproofing",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Masonry, Plastering & Waterproofing",
+      "old_sequence_number": null,
+      "new_sequence_number": 8,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "electrical_plumbing_and_hvac_works",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Electrical, Plumbing & HVAC Works",
+      "old_sequence_number": null,
+      "new_sequence_number": 9,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "flooring_doors_windows_and_joinery",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Flooring, Doors, Windows & Joinery",
+      "old_sequence_number": null,
+      "new_sequence_number": 10,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "interior_exterior_and_landscape_finishing",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Interior, Exterior & Landscape Finishing",
+      "old_sequence_number": null,
+      "new_sequence_number": 11,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "quality_inspection_and_client_handover",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Quality Inspection & Client Handover",
+      "old_sequence_number": null,
+      "new_sequence_number": 12,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "quality_inspection_and_client_handover",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Quality Inspection & Client Handover",
+      "old_sequence_number": null,
+      "new_sequence_number": 12,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "contract_construction",
+      "project_code": "interior_fitout",
+      "project_type_id": "1a5f6bb7-ecbd-40b6-abab-c8b24ae50ad9",
+      "template_code": "client_handover",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Client Handover",
+      "old_sequence_number": null,
+      "new_sequence_number": 12,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "land_due_diligence_and_title_verification",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Land Due Diligence & Title Verification",
+      "old_sequence_number": null,
+      "new_sequence_number": 1,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "land_acquisition_and_development_agreement",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Land Acquisition & Development Agreement",
+      "old_sequence_number": null,
+      "new_sequence_number": 2,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "feasibility_and_project_planning",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Feasibility & Project Planning",
+      "old_sequence_number": null,
+      "new_sequence_number": 3,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "architectural_and_engineering_design",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Architectural & Engineering Design",
+      "old_sequence_number": null,
+      "new_sequence_number": 4,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "building_approvals_and_statutory_clearances",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Building Approvals & Statutory Clearances",
+      "old_sequence_number": null,
+      "new_sequence_number": 5,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "rera_registration_and_project_launch",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "RERA Registration & Project Launch (if applicable)",
+      "old_sequence_number": null,
+      "new_sequence_number": 6,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "site_mobilization_and_preparation",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Site Mobilization & Preparation",
+      "old_sequence_number": null,
+      "new_sequence_number": 7,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "foundation_and_basement_construction",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Foundation & Basement Construction",
+      "old_sequence_number": null,
+      "new_sequence_number": 8,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "structural_construction",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Structural Construction",
+      "old_sequence_number": null,
+      "new_sequence_number": 9,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "mep_and_internal_infrastructure",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "MEP & Internal Infrastructure",
+      "old_sequence_number": null,
+      "new_sequence_number": 10,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "finishing_and_common_area_development",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Finishing & Common Area Development",
+      "old_sequence_number": null,
+      "new_sequence_number": 11,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "quality_inspection_and_occupancy_approval",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Quality Inspection & Occupancy Approval",
+      "old_sequence_number": null,
+      "new_sequence_number": 12,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "apartment",
+      "project_type_id": "86b88c91-81cb-496d-9615-fda7822f2f5d",
+      "template_code": "sales_registration_and_customer_handover",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Sales, Registration & Customer Handover",
+      "old_sequence_number": null,
+      "new_sequence_number": 13,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "land_due_diligence_and_title_verification",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Land Due Diligence & Title Verification",
+      "old_sequence_number": null,
+      "new_sequence_number": 1,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "land_acquisition_and_development_agreement",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Land Acquisition & Development Agreement",
+      "old_sequence_number": null,
+      "new_sequence_number": 2,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "feasibility_and_villa_planning",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Feasibility & Villa Planning",
+      "old_sequence_number": null,
+      "new_sequence_number": 3,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "architectural_and_engineering_design",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Architectural & Engineering Design",
+      "old_sequence_number": null,
+      "new_sequence_number": 4,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "approvals_and_statutory_clearances",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Approvals & Statutory Clearances",
+      "old_sequence_number": null,
+      "new_sequence_number": 5,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "rera_registration_and_project_launch",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "RERA Registration & Project Launch (if applicable)",
+      "old_sequence_number": null,
+      "new_sequence_number": 6,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "site_development_and_infrastructure",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Site Development & Infrastructure",
+      "old_sequence_number": null,
+      "new_sequence_number": 7,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "villa_foundation_and_structural_construction",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Villa Foundation & Structural Construction",
+      "old_sequence_number": null,
+      "new_sequence_number": 8,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "masonry_roofing_and_waterproofing",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Masonry, Roofing & Waterproofing",
+      "old_sequence_number": null,
+      "new_sequence_number": 9,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "mep_and_interior_finishing",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "MEP & Interior Finishing",
+      "old_sequence_number": null,
+      "new_sequence_number": 10,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "landscaping_and_common_amenities",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Landscaping & Common Amenities",
+      "old_sequence_number": null,
+      "new_sequence_number": 11,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "quality_inspection_and_occupancy_approval",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Quality Inspection & Occupancy Approval",
+      "old_sequence_number": null,
+      "new_sequence_number": 12,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "villa",
+      "project_type_id": "54c7be49-ab29-4394-8616-a6d8e1ad6f9a",
+      "template_code": "sales_registration_and_customer_handover",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Sales, Registration & Customer Handover",
+      "old_sequence_number": null,
+      "new_sequence_number": 13,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "land_due_diligence_and_title_verification",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Land Due Diligence & Title Verification",
+      "old_sequence_number": null,
+      "new_sequence_number": 1,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "land_acquisition_and_development_agreement",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Land Acquisition & Development Agreement",
+      "old_sequence_number": null,
+      "new_sequence_number": 2,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "market_feasibility_and_project_planning",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Market Feasibility & Project Planning",
+      "old_sequence_number": null,
+      "new_sequence_number": 3,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "architectural_and_engineering_design",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Architectural & Engineering Design",
+      "old_sequence_number": null,
+      "new_sequence_number": 4,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "building_approvals_and_statutory_clearances",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Building Approvals & Statutory Clearances",
+      "old_sequence_number": null,
+      "new_sequence_number": 5,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "rera_registration_and_project_launch",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "RERA Registration & Project Launch (if applicable)",
+      "old_sequence_number": null,
+      "new_sequence_number": 6,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "site_mobilization_and_preparation",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Site Mobilization & Preparation",
+      "old_sequence_number": null,
+      "new_sequence_number": 7,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "foundation_and_basement_construction",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Foundation & Basement Construction",
+      "old_sequence_number": null,
+      "new_sequence_number": 8,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "structural_construction",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Structural Construction",
+      "old_sequence_number": null,
+      "new_sequence_number": 9,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "mep_fire_systems_and_building_services",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "MEP, Fire Systems & Building Services",
+      "old_sequence_number": null,
+      "new_sequence_number": 10,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "interior_external_and_common_area_finishing",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Interior, External & Common Area Finishing",
+      "old_sequence_number": null,
+      "new_sequence_number": 11,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "testing_occupancy_approval_and_completion",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Testing, Occupancy Approval & Completion",
+      "old_sequence_number": null,
+      "new_sequence_number": 12,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "property_development",
+      "project_code": "commercial_building",
+      "project_type_id": "cee3fb67-353c-48e5-863e-c4f7df173e12",
+      "template_code": "leasing_sales_registration_and_handover",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Leasing / Sales, Registration & Handover",
+      "old_sequence_number": null,
+      "new_sequence_number": 13,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "civil_infrastructure",
+      "project_type_id": "4845497f-3a42-440a-8933-4519a2e423be",
+      "template_code": "quality_testing_and_inspection",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Quality Testing & Inspection",
+      "old_sequence_number": null,
+      "new_sequence_number": 9,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "civil_infrastructure",
+      "project_type_id": "4845497f-3a42-440a-8933-4519a2e423be",
+      "template_code": "measurements_and_ra_billing",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Measurements & RA Billing",
+      "old_sequence_number": null,
+      "new_sequence_number": 10,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "civil_infrastructure",
+      "project_type_id": "4845497f-3a42-440a-8933-4519a2e423be",
+      "template_code": "final_inspection_and_defect_rectification",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Final Inspection & Defect Rectification",
+      "old_sequence_number": null,
+      "new_sequence_number": 11,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "civil_infrastructure",
+      "project_type_id": "4845497f-3a42-440a-8933-4519a2e423be",
+      "template_code": "project_completion_and_handover",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Project Completion & Handover",
+      "old_sequence_number": null,
+      "new_sequence_number": 12,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "road_drainage",
+      "project_type_id": "cc8bad01-07f5-4929-a500-0fd4fd4b8e0a",
+      "template_code": "chambers_kerbs_and_ancillary_works",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Chambers, Kerbs & Ancillary Works",
+      "old_sequence_number": null,
+      "new_sequence_number": 9,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "road_drainage",
+      "project_type_id": "cc8bad01-07f5-4929-a500-0fd4fd4b8e0a",
+      "template_code": "road_surface_and_finishing",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Road Surface & Finishing",
+      "old_sequence_number": null,
+      "new_sequence_number": 10,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "road_drainage",
+      "project_type_id": "cc8bad01-07f5-4929-a500-0fd4fd4b8e0a",
+      "template_code": "quality_testing_and_final_inspection",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Quality Testing & Final Inspection",
+      "old_sequence_number": null,
+      "new_sequence_number": 11,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "road_drainage",
+      "project_type_id": "cc8bad01-07f5-4929-a500-0fd4fd4b8e0a",
+      "template_code": "measurements_and_project_handover",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Measurements & Project Handover",
+      "old_sequence_number": null,
+      "new_sequence_number": 12,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "tender_client_requirements_and_work_order",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Tender / Client Requirements & Work Order",
+      "old_sequence_number": null,
+      "new_sequence_number": 1,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "structural_survey_and_assessment",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Structural Survey & Assessment",
+      "old_sequence_number": null,
+      "new_sequence_number": 2,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "structural_design_and_engineering",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Structural Design & Engineering",
+      "old_sequence_number": null,
+      "new_sequence_number": 3,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "boq_estimation_and_planning",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "BOQ, Estimation & Planning",
+      "old_sequence_number": null,
+      "new_sequence_number": 4,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "approvals_and_site_mobilization",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Approvals & Site Mobilization",
+      "old_sequence_number": null,
+      "new_sequence_number": 5,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "foundation_and_substructure_works",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Foundation & Substructure Works",
+      "old_sequence_number": null,
+      "new_sequence_number": 6,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "rcc_steel_structural_works",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "RCC / Steel Structural Works",
+      "old_sequence_number": null,
+      "new_sequence_number": 7,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "fabrication_and_erection",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Fabrication & Erection (where applicable)",
+      "old_sequence_number": null,
+      "new_sequence_number": 8,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "structural_finishing_and_protection",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Structural Finishing & Protection",
+      "old_sequence_number": null,
+      "new_sequence_number": 9,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "load_testing_quality_testing",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Load Testing / Quality Testing (where applicable)",
+      "old_sequence_number": null,
+      "new_sequence_number": 10,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "structural_inspection_and_rectification",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Structural Inspection & Rectification",
+      "old_sequence_number": null,
+      "new_sequence_number": 11,
+      "action": "INSERT"
+    },
+    {
+      "business_model": "civil_works_contract",
+      "project_code": "structural_works",
+      "project_type_id": "e314b971-72a0-486c-a115-cb33902eff3e",
+      "template_code": "completion_and_handover",
+      "existing_template_code": null,
+      "existing_name": null,
+      "proposed_name": "Completion & Handover",
+      "old_sequence_number": null,
+      "new_sequence_number": 12,
+      "action": "INSERT"
+    }
+  ],
+  "ambiguous": [
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 1,
+      "proposed_name": "Client Requirements & Project Planning",
+      "proposed_template_code": "client_requirements_and_project_planning",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 2,
+      "proposed_name": "Architectural Design & Drawings",
+      "proposed_template_code": "architectural_design_and_drawings",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 3,
+      "proposed_name": "Estimation, Quotation & Agreement",
+      "proposed_template_code": "estimation_quotation_and_agreement",
+      "existing_template_code": "structure",
+      "existing_name": "RCC / Structure",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 4,
+      "proposed_name": "Approvals & Site Mobilization",
+      "proposed_template_code": "approvals_and_site_mobilization",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 5,
+      "proposed_name": "Foundation & Plinth Construction",
+      "proposed_template_code": "foundation_and_plinth_construction",
+      "existing_template_code": "roofing",
+      "existing_name": "Roofing and Slab",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 6,
+      "proposed_name": "Structural Construction",
+      "proposed_template_code": "structural_construction",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 7,
+      "proposed_name": "Brickwork & Masonry",
+      "proposed_template_code": "brickwork_and_masonry",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 8,
+      "proposed_name": "Plastering & Waterproofing",
+      "proposed_template_code": "plastering_and_waterproofing",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 9,
+      "proposed_name": "Electrical & Plumbing Works",
+      "proposed_template_code": "electrical_and_plumbing_works",
+      "existing_template_code": "doors_windows",
+      "existing_name": "Doors and Windows",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 10,
+      "proposed_name": "Flooring, Doors & Windows",
+      "proposed_template_code": "flooring_doors_and_windows",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 11,
+      "proposed_name": "Painting & Final Finishing",
+      "proposed_template_code": "painting_and_final_finishing",
+      "existing_template_code": "finishing",
+      "existing_name": "Final Finishing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "sequence_number": 12,
+      "proposed_name": "Quality Inspection & Client Handover",
+      "proposed_template_code": "quality_inspection_and_client_handover",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "site_setup",
+      "existing_name": "Site Setup",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "structure",
+      "existing_name": "RCC / Structure",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "brickwork",
+      "existing_name": "Brickwork / Masonry",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "roofing",
+      "existing_name": "Roofing and Slab",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring",
+      "sequence_number": 8,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "doors_windows",
+      "existing_name": "Doors and Windows",
+      "sequence_number": 9,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "sequence_number": 10,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "finishing",
+      "existing_name": "Final Finishing",
+      "sequence_number": 11,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "independent_house|contract_construction",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "sequence_number": 12,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 1,
+      "proposed_name": "Client Requirements & Project Planning",
+      "proposed_template_code": "client_requirements_and_project_planning",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 2,
+      "proposed_name": "Architectural Design & Engineering",
+      "proposed_template_code": "architectural_design_and_engineering",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 3,
+      "proposed_name": "Estimation, BOQ & Agreement",
+      "proposed_template_code": "estimation_boq_and_agreement",
+      "existing_template_code": "structure",
+      "existing_name": "Structural Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 4,
+      "proposed_name": "Approvals & Site Mobilization",
+      "proposed_template_code": "approvals_and_site_mobilization",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 5,
+      "proposed_name": "Foundation & Basement Construction",
+      "proposed_template_code": "foundation_and_basement_construction",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 6,
+      "proposed_name": "Structural Construction",
+      "proposed_template_code": "structural_construction",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 7,
+      "proposed_name": "Masonry & Internal Plastering",
+      "proposed_template_code": "masonry_and_internal_plastering",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 8,
+      "proposed_name": "Electrical, Plumbing & Fire Systems",
+      "proposed_template_code": "electrical_plumbing_and_fire_systems",
+      "existing_template_code": "doors_windows",
+      "existing_name": "Doors and Windows",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 9,
+      "proposed_name": "Flooring, Doors & Windows",
+      "proposed_template_code": "flooring_doors_and_windows",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 10,
+      "proposed_name": "Painting & Internal Finishing",
+      "proposed_template_code": "painting_and_internal_finishing",
+      "existing_template_code": "common_areas",
+      "existing_name": "Common Area Works",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "sequence_number": 11,
+      "proposed_name": "Lifts, Common Areas & External Works",
+      "proposed_template_code": "lifts_common_areas_and_external_works",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "structure",
+      "existing_name": "Structural Work",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry Work",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "doors_windows",
+      "existing_name": "Doors and Windows",
+      "sequence_number": 8,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "sequence_number": 9,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "common_areas",
+      "existing_name": "Common Area Works",
+      "sequence_number": 10,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "apartment|contract_construction",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "sequence_number": 11,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 1,
+      "proposed_name": "Client Requirements & Space Planning",
+      "proposed_template_code": "client_requirements_and_space_planning",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 2,
+      "proposed_name": "Architectural & Engineering Design",
+      "proposed_template_code": "architectural_and_engineering_design",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 3,
+      "proposed_name": "Estimation, BOQ & Agreement",
+      "proposed_template_code": "estimation_boq_and_agreement",
+      "existing_template_code": "structure",
+      "existing_name": "RCC / Structure",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 4,
+      "proposed_name": "Approvals & Site Mobilization",
+      "proposed_template_code": "approvals_and_site_mobilization",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 5,
+      "proposed_name": "Foundation & Basement Construction",
+      "proposed_template_code": "foundation_and_basement_construction",
+      "existing_template_code": "roofing",
+      "existing_name": "Roofing and Slab",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 6,
+      "proposed_name": "Structural Construction",
+      "proposed_template_code": "structural_construction",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 7,
+      "proposed_name": "Masonry & Building Envelope",
+      "proposed_template_code": "masonry_and_building_envelope",
+      "existing_template_code": "hvac_fire",
+      "existing_name": "HVAC and Fire Safety",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 8,
+      "proposed_name": "Electrical, Plumbing, HVAC & Fire Systems",
+      "proposed_template_code": "electrical_plumbing_hvac_and_fire_systems",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 9,
+      "proposed_name": "Flooring, Ceilings & Interior Works",
+      "proposed_template_code": "flooring_ceilings_and_interior_works",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 10,
+      "proposed_name": "Elevation & External Finishing",
+      "proposed_template_code": "elevation_and_external_finishing",
+      "existing_template_code": "doors_windows",
+      "existing_name": "Doors and Windows",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 11,
+      "proposed_name": "Testing, Commissioning & Inspection",
+      "proposed_template_code": "testing_commissioning_and_inspection",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "sequence_number": 12,
+      "proposed_name": "Client Handover",
+      "proposed_template_code": "client_handover",
+      "existing_template_code": "common_areas",
+      "existing_name": "Common Area Works",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "structure",
+      "existing_name": "RCC / Structure",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry Work",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "roofing",
+      "existing_name": "Roofing and Slab",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "hvac_fire",
+      "existing_name": "HVAC and Fire Safety",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering",
+      "sequence_number": 8,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring",
+      "sequence_number": 9,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "doors_windows",
+      "existing_name": "Doors and Windows",
+      "sequence_number": 10,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "sequence_number": 11,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "common_areas",
+      "existing_name": "Common Area Works",
+      "sequence_number": 12,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "finishing",
+      "existing_name": "Final Finishing",
+      "sequence_number": 13,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "commercial_building|contract_construction",
+      "existing_template_code": "handover",
+      "existing_name": "Inspection and Handover",
+      "sequence_number": 14,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 1,
+      "proposed_name": "Existing Site Inspection & Assessment",
+      "proposed_template_code": "existing_site_inspection_and_assessment",
+      "existing_template_code": "site_inspection",
+      "existing_name": "Site Inspection",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 2,
+      "proposed_name": "Client Requirements & Scope Finalization",
+      "proposed_template_code": "client_requirements_and_scope_finalization",
+      "existing_template_code": "demolition",
+      "existing_name": "Demolition",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 3,
+      "proposed_name": "Design, Drawings & Estimation",
+      "proposed_template_code": "design_drawings_and_estimation",
+      "existing_template_code": "structural_repairs",
+      "existing_name": "Structural Repairs",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 4,
+      "proposed_name": "Agreement & Site Preparation",
+      "proposed_template_code": "agreement_and_site_preparation",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry and Civil Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 5,
+      "proposed_name": "Demolition & Dismantling",
+      "proposed_template_code": "demolition_and_dismantling",
+      "existing_template_code": "electrical",
+      "existing_name": "Electrical Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 6,
+      "proposed_name": "Structural Repairs & Modifications",
+      "proposed_template_code": "structural_repairs_and_modifications",
+      "existing_template_code": "plumbing",
+      "existing_name": "Plumbing Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 7,
+      "proposed_name": "Masonry & Plastering",
+      "proposed_template_code": "masonry_and_plastering",
+      "existing_template_code": "waterproofing",
+      "existing_name": "Waterproofing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 8,
+      "proposed_name": "Electrical & Plumbing Modifications",
+      "proposed_template_code": "electrical_and_plumbing_modifications",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring and Tiling",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 9,
+      "proposed_name": "Flooring, Doors & Windows",
+      "proposed_template_code": "flooring_doors_and_windows",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 10,
+      "proposed_name": "Painting & Finishing",
+      "proposed_template_code": "painting_and_finishing",
+      "existing_template_code": "fixtures",
+      "existing_name": "Fixtures and Finishing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 11,
+      "proposed_name": "Final Inspection & Snag Rectification",
+      "proposed_template_code": "final_inspection_and_snag_rectification",
+      "existing_template_code": "inspection",
+      "existing_name": "Final Inspection",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "sequence_number": 12,
+      "proposed_name": "Client Handover",
+      "proposed_template_code": "client_handover",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "site_inspection",
+      "existing_name": "Site Inspection",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "demolition",
+      "existing_name": "Demolition",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "structural_repairs",
+      "existing_name": "Structural Repairs",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry and Civil Work",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "electrical",
+      "existing_name": "Electrical Work",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "plumbing",
+      "existing_name": "Plumbing Work",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "waterproofing",
+      "existing_name": "Waterproofing",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring and Tiling",
+      "sequence_number": 8,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "sequence_number": 9,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "fixtures",
+      "existing_name": "Fixtures and Finishing",
+      "sequence_number": 10,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "inspection",
+      "existing_name": "Final Inspection",
+      "sequence_number": 11,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "renovation|contract_construction",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "sequence_number": 12,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 1,
+      "proposed_name": "Existing Building Assessment",
+      "proposed_template_code": "existing_building_assessment",
+      "existing_template_code": "site_inspection",
+      "existing_name": "Existing Structure Inspection",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 2,
+      "proposed_name": "Extension Planning & Design",
+      "proposed_template_code": "extension_planning_and_design",
+      "existing_template_code": "demolition",
+      "existing_name": "Demolition / Preparation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 3,
+      "proposed_name": "Structural Feasibility & Engineering",
+      "proposed_template_code": "structural_feasibility_and_engineering",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation Strengthening",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 4,
+      "proposed_name": "Estimation, Agreement & Approvals",
+      "proposed_template_code": "estimation_agreement_and_approvals",
+      "existing_template_code": "structure",
+      "existing_name": "RCC / Structural Extension",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 5,
+      "proposed_name": "Site Preparation & Protection",
+      "proposed_template_code": "site_preparation_and_protection",
+      "existing_template_code": "masonry",
+      "existing_name": "Brickwork / Masonry",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 6,
+      "proposed_name": "Foundation & Structural Modifications",
+      "proposed_template_code": "foundation_and_structural_modifications",
+      "existing_template_code": "roofing",
+      "existing_name": "Roofing and Slab",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 7,
+      "proposed_name": "New Structural Construction",
+      "proposed_template_code": "new_structural_construction",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 8,
+      "proposed_name": "Masonry & Plastering",
+      "proposed_template_code": "masonry_and_plastering",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 9,
+      "proposed_name": "Electrical & Plumbing Extensions",
+      "proposed_template_code": "electrical_and_plumbing_extensions",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 10,
+      "proposed_name": "Flooring & Finishing",
+      "proposed_template_code": "flooring_and_finishing",
+      "existing_template_code": "doors_windows",
+      "existing_name": "Doors and Windows",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 11,
+      "proposed_name": "Integration & Quality Inspection",
+      "proposed_template_code": "integration_and_quality_inspection",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "sequence_number": 12,
+      "proposed_name": "Client Handover",
+      "proposed_template_code": "client_handover",
+      "existing_template_code": "handover",
+      "existing_name": "Final Inspection and Handover",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "site_inspection",
+      "existing_name": "Existing Structure Inspection",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "demolition",
+      "existing_name": "Demolition / Preparation",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation Strengthening",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "structure",
+      "existing_name": "RCC / Structural Extension",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "masonry",
+      "existing_name": "Brickwork / Masonry",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "roofing",
+      "existing_name": "Roofing and Slab",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering",
+      "sequence_number": 8,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "flooring",
+      "existing_name": "Flooring",
+      "sequence_number": 9,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "doors_windows",
+      "existing_name": "Doors and Windows",
+      "sequence_number": 10,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "painting",
+      "existing_name": "Painting",
+      "sequence_number": 11,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "building_extension|contract_construction",
+      "existing_template_code": "handover",
+      "existing_name": "Final Inspection and Handover",
+      "sequence_number": 12,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 1,
+      "proposed_name": "Client Requirements & Industrial Planning",
+      "proposed_template_code": "client_requirements_and_industrial_planning",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 2,
+      "proposed_name": "Architectural & Structural Design",
+      "proposed_template_code": "architectural_and_structural_design",
+      "existing_template_code": "earthwork",
+      "existing_name": "Earthwork and Leveling",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 3,
+      "proposed_name": "Estimation, BOQ & Agreement",
+      "proposed_template_code": "estimation_boq_and_agreement",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 4,
+      "proposed_name": "Approvals & Site Mobilization",
+      "proposed_template_code": "approvals_and_site_mobilization",
+      "existing_template_code": "structure",
+      "existing_name": "RCC / Structural Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 5,
+      "proposed_name": "Site Development & Earthwork",
+      "proposed_template_code": "site_development_and_earthwork",
+      "existing_template_code": "steel_structure",
+      "existing_name": "Structural Steel Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 6,
+      "proposed_name": "Foundation & Industrial Flooring",
+      "proposed_template_code": "foundation_and_industrial_flooring",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry and Roofing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 7,
+      "proposed_name": "Structural Steel / RCC Construction",
+      "proposed_template_code": "structural_steel_rcc_construction",
+      "existing_template_code": "flooring",
+      "existing_name": "Industrial Flooring",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 8,
+      "proposed_name": "Roofing & Cladding",
+      "proposed_template_code": "roofing_and_cladding",
+      "existing_template_code": "electrical",
+      "existing_name": "Electrical Installation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 9,
+      "proposed_name": "Electrical, Plumbing & Fire Systems",
+      "proposed_template_code": "electrical_plumbing_and_fire_systems",
+      "existing_template_code": "plumbing",
+      "existing_name": "Plumbing and Utilities",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 10,
+      "proposed_name": "Flooring, Drainage & External Development",
+      "proposed_template_code": "flooring_drainage_and_external_development",
+      "existing_template_code": "fire_safety",
+      "existing_name": "Fire Safety Systems",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 11,
+      "proposed_name": "Testing, Inspection & Commissioning",
+      "proposed_template_code": "testing_inspection_and_commissioning",
+      "existing_template_code": "finishing",
+      "existing_name": "Finishing and Testing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "sequence_number": 12,
+      "proposed_name": "Client Handover",
+      "proposed_template_code": "client_handover",
+      "existing_template_code": "handover",
+      "existing_name": "Inspection and Handover",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "earthwork",
+      "existing_name": "Earthwork and Leveling",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation Work",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "structure",
+      "existing_name": "RCC / Structural Work",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "steel_structure",
+      "existing_name": "Structural Steel Work",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry and Roofing",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "flooring",
+      "existing_name": "Industrial Flooring",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "electrical",
+      "existing_name": "Electrical Installation",
+      "sequence_number": 8,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "plumbing",
+      "existing_name": "Plumbing and Utilities",
+      "sequence_number": 9,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "fire_safety",
+      "existing_name": "Fire Safety Systems",
+      "sequence_number": 10,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "finishing",
+      "existing_name": "Finishing and Testing",
+      "sequence_number": 11,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "industrial_warehouse|contract_construction",
+      "existing_template_code": "handover",
+      "existing_name": "Inspection and Handover",
+      "sequence_number": 12,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 1,
+      "proposed_name": "Site Survey & Client Requirements",
+      "proposed_template_code": "site_survey_and_client_requirements",
+      "existing_template_code": "site_measurement",
+      "existing_name": "Site Measurement",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 2,
+      "proposed_name": "Space Planning & Interior Design",
+      "proposed_template_code": "space_planning_and_interior_design",
+      "existing_template_code": "design_approval",
+      "existing_name": "Design Approval",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 3,
+      "proposed_name": "Material Selection & BOQ",
+      "proposed_template_code": "material_selection_and_boq",
+      "existing_template_code": "material_procurement",
+      "existing_name": "Material Procurement",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 4,
+      "proposed_name": "Quotation, Agreement & Mobilization",
+      "proposed_template_code": "quotation_agreement_and_mobilization",
+      "existing_template_code": "civil_modifications",
+      "existing_name": "Civil Modifications",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 5,
+      "proposed_name": "Dismantling & Site Preparation",
+      "proposed_template_code": "dismantling_and_site_preparation",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 6,
+      "proposed_name": "Civil & Partition Works",
+      "proposed_template_code": "civil_and_partition_works",
+      "existing_template_code": "ceiling",
+      "existing_name": "Ceiling Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 7,
+      "proposed_name": "Electrical, Plumbing & HVAC Works",
+      "proposed_template_code": "electrical_plumbing_and_hvac_works",
+      "existing_template_code": "carpentry",
+      "existing_name": "Carpentry and Modular Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 8,
+      "proposed_name": "Ceiling & Flooring Works",
+      "proposed_template_code": "ceiling_and_flooring_works",
+      "existing_template_code": "painting",
+      "existing_name": "Painting and Polishing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 9,
+      "proposed_name": "Carpentry & Custom Furniture",
+      "proposed_template_code": "carpentry_and_custom_furniture",
+      "existing_template_code": "fixtures",
+      "existing_name": "Fixtures and Fittings",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 10,
+      "proposed_name": "Painting, Fixtures & Finishing",
+      "proposed_template_code": "painting_fixtures_and_finishing",
+      "existing_template_code": "inspection",
+      "existing_name": "Final Inspection",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "sequence_number": 11,
+      "proposed_name": "Final Inspection & Snag Rectification",
+      "proposed_template_code": "final_inspection_and_snag_rectification",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "site_measurement",
+      "existing_name": "Site Measurement",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "design_approval",
+      "existing_name": "Design Approval",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "material_procurement",
+      "existing_name": "Material Procurement",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "civil_modifications",
+      "existing_name": "Civil Modifications",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "electrical_plumbing",
+      "existing_name": "Electrical and Plumbing",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "ceiling",
+      "existing_name": "Ceiling Work",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "carpentry",
+      "existing_name": "Carpentry and Modular Work",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "painting",
+      "existing_name": "Painting and Polishing",
+      "sequence_number": 8,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "fixtures",
+      "existing_name": "Fixtures and Fittings",
+      "sequence_number": 9,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "inspection",
+      "existing_name": "Final Inspection",
+      "sequence_number": 10,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "interior_fitout|contract_construction",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "sequence_number": 11,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "sequence_number": 1,
+      "proposed_name": "Tender & Work Order",
+      "proposed_template_code": "tender_and_work_order",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "sequence_number": 2,
+      "proposed_name": "Site Survey & Technical Planning",
+      "proposed_template_code": "site_survey_and_technical_planning",
+      "existing_template_code": "excavation",
+      "existing_name": "Excavation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "sequence_number": 3,
+      "proposed_name": "BOQ, Estimation & Project Scheduling",
+      "proposed_template_code": "boq_estimation_and_project_scheduling",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "sequence_number": 4,
+      "proposed_name": "Approvals & Site Mobilization",
+      "proposed_template_code": "approvals_and_site_mobilization",
+      "existing_template_code": "structural_work",
+      "existing_name": "Structural Civil Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "sequence_number": 5,
+      "proposed_name": "Site Clearing & Earthwork",
+      "proposed_template_code": "site_clearing_and_earthwork",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry Work",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "sequence_number": 6,
+      "proposed_name": "Foundation & Main Civil Works",
+      "proposed_template_code": "foundation_and_main_civil_works",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering and Finishing",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "sequence_number": 7,
+      "proposed_name": "Structural & Infrastructure Construction",
+      "proposed_template_code": "structural_and_infrastructure_construction",
+      "existing_template_code": "quality_check",
+      "existing_name": "Quality Inspection",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "sequence_number": 8,
+      "proposed_name": "Ancillary Works & Finishing",
+      "proposed_template_code": "ancillary_works_and_finishing",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "existing_template_code": "site_preparation",
+      "existing_name": "Site Preparation",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "existing_template_code": "excavation",
+      "existing_name": "Excavation",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "existing_template_code": "foundation",
+      "existing_name": "Foundation Work",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "existing_template_code": "structural_work",
+      "existing_name": "Structural Civil Work",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "existing_template_code": "masonry",
+      "existing_name": "Masonry Work",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "existing_template_code": "plastering",
+      "existing_name": "Plastering and Finishing",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "existing_template_code": "quality_check",
+      "existing_name": "Quality Inspection",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "civil_infrastructure|civil_works_contract",
+      "existing_template_code": "handover",
+      "existing_name": "Handover",
+      "sequence_number": 8,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "sequence_number": 1,
+      "proposed_name": "Tender & Work Order",
+      "proposed_template_code": "tender_and_work_order",
+      "existing_template_code": "survey",
+      "existing_name": "Survey and Marking",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "sequence_number": 2,
+      "proposed_name": "Survey, Alignment & Setting Out",
+      "proposed_template_code": "survey_alignment_and_setting_out",
+      "existing_template_code": "excavation",
+      "existing_name": "Excavation and Earthwork",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "sequence_number": 3,
+      "proposed_name": "BOQ & Project Planning",
+      "proposed_template_code": "boq_and_project_planning",
+      "existing_template_code": "bedding",
+      "existing_name": "Bedding Preparation",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "sequence_number": 4,
+      "proposed_name": "Approvals & Site Mobilization",
+      "proposed_template_code": "approvals_and_site_mobilization",
+      "existing_template_code": "pipe_laying",
+      "existing_name": "Pipe Laying / Drain Construction",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "sequence_number": 5,
+      "proposed_name": "Site Clearing & Earthwork",
+      "proposed_template_code": "site_clearing_and_earthwork",
+      "existing_template_code": "chambers",
+      "existing_name": "Manholes and Chambers",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "sequence_number": 6,
+      "proposed_name": "Subgrade Preparation & Compaction",
+      "proposed_template_code": "subgrade_preparation_and_compaction",
+      "existing_template_code": "backfilling",
+      "existing_name": "Backfilling and Compaction",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "sequence_number": 7,
+      "proposed_name": "Drainage, Culverts & Pipe Laying",
+      "proposed_template_code": "drainage_culverts_and_pipe_laying",
+      "existing_template_code": "finishing",
+      "existing_name": "Finishing Works",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "sequence_number": 8,
+      "proposed_name": "Base Course & Road Construction",
+      "proposed_template_code": "base_course_and_road_construction",
+      "existing_template_code": "handover",
+      "existing_name": "Finishing and Handover",
+      "reason": "missing_exact_template_code_match_but_sequence_candidate_exists"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "survey",
+      "existing_name": "Survey and Marking",
+      "sequence_number": 1,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "excavation",
+      "existing_name": "Excavation and Earthwork",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "earthwork",
+      "existing_name": "Earthwork",
+      "sequence_number": 2,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "bedding",
+      "existing_name": "Bedding Preparation",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "subgrade",
+      "existing_name": "Subgrade Preparation",
+      "sequence_number": 3,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "pipe_laying",
+      "existing_name": "Pipe Laying / Drain Construction",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "base_course",
+      "existing_name": "Base Course",
+      "sequence_number": 4,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "chambers",
+      "existing_name": "Manholes and Chambers",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "surface_work",
+      "existing_name": "Road Surface Work",
+      "sequence_number": 5,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "backfilling",
+      "existing_name": "Backfilling and Compaction",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "drainage",
+      "existing_name": "Drainage and Side Works",
+      "sequence_number": 6,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "finishing",
+      "existing_name": "Finishing Works",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "testing",
+      "existing_name": "Testing and Quality Inspection",
+      "sequence_number": 7,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "road_drainage|civil_works_contract",
+      "existing_template_code": "handover",
+      "existing_name": "Finishing and Handover",
+      "sequence_number": 8,
+      "reason": "existing_template_not_mapped_by_exact_template_code"
+    },
+    {
+      "combo": "material_supply|material_supply",
+      "reason": "project_type_missing_or_inactive",
+      "proposed_count": 6
+    }
+  ]
+}

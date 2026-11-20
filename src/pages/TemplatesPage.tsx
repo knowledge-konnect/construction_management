@@ -53,13 +53,13 @@ export default function TemplatesPage() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {templates.map((t) => (
           <PremiumCard key={t.id} className="flex flex-col p-5">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#EAF1FF] text-[#1D4ED8]">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
               <FileText className="h-5 w-5" />
             </div>
-            <h3 className="text-base font-semibold text-[#17243A]">{t.name}</h3>
-            <p className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-[#667085]">{t.projectType}</p>
-            <p className="mt-2 flex-1 text-sm leading-6 text-[#475467]">{t.description}</p>
-            <div className="mt-4 text-xs text-[#667085]">{t.boqSections.length} sections · {t.boqSections.reduce((s, sec) => s + sec.items.length, 0)} items · {t.specifications.length} specs</div>
+            <h3 className="text-base font-semibold text-[var(--text)]">{t.name}</h3>
+            <p className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-[var(--text-muted)]">{t.projectType}</p>
+            <p className="mt-2 flex-1 text-sm leading-6 text-[var(--text-secondary)]">{t.description}</p>
+            <div className="mt-4 text-xs text-[var(--text-muted)]">{t.boqSections.length} sections · {t.boqSections.reduce((s, sec) => s + sec.items.length, 0)} items · {t.specifications.length} specs</div>
             <AppButton onClick={() => createFromTemplate(t.id)} className="mt-4 w-full justify-center">
               Use Template <ArrowRight className="h-4 w-4" />
             </AppButton>

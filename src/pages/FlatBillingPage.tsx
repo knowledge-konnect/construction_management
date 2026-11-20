@@ -88,13 +88,13 @@ export default function FlatBillingPage() {
         }
       />
 
-      <div className="rounded-[28px] border border-[#E2E8F0] bg-[linear-gradient(135deg,#F8FAFC_0%,#EEF4FF_100%)] p-4 shadow-sm">
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="text-sm text-slate-600">Project filter</div>
+          <div className="text-sm text-[var(--text-secondary)]">Project filter</div>
           <select
             value={selectedProjectId}
             onChange={(event) => setSelectedProjectId(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15 md:max-w-xs"
+            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text)] focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] md:max-w-xs"
           >
             <option value="">All projects</option>
             {projects.map((project) => (
@@ -104,24 +104,24 @@ export default function FlatBillingPage() {
         </div>
         <div className="grid gap-3 md:grid-cols-3">
           <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">Receipts</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Receipts</p>
             <div className="mt-3 flex items-center justify-between gap-2">
-              <p className="text-2xl font-bold tracking-[-0.04em] text-[#17243B]">{visibleRecords.length}</p>
-              <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[10px] font-medium text-[#2454D6]">Live</span>
+              <p className="text-2xl font-bold tracking-[-0.04em] text-[var(--text)]">{visibleRecords.length}</p>
+              <span className="inline-flex items-center rounded-full border border-[var(--info-border)] bg-[var(--primary-soft)] px-2.5 py-1 text-xs font-medium text-[var(--primary)]">Live</span>
             </div>
           </div>
           <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">Planned</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Planned</p>
             <div className="mt-3 flex items-center justify-between gap-2">
-              <p className="text-2xl font-bold tracking-[-0.04em] text-[#17243B]">{formatINR(totalPlanned)}</p>
-              <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-700">Booked</span>
+              <p className="text-2xl font-bold tracking-[-0.04em] text-[var(--text)]">{formatINR(totalPlanned)}</p>
+              <span className="inline-flex items-center rounded-full border border-[var(--success-border)] bg-[var(--success-soft)] px-2.5 py-1 text-xs font-medium text-[var(--success-fg)]">Booked</span>
             </div>
           </div>
           <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">Total value</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Total value</p>
             <div className="mt-3 flex items-center justify-between gap-2">
-              <p className="text-2xl font-bold tracking-[-0.04em] text-[#17243B]">{formatINR(totalBooked)}</p>
-              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[10px] font-medium text-slate-700">Summary</span>
+              <p className="text-2xl font-bold tracking-[-0.04em] text-[var(--text)]">{formatINR(totalBooked)}</p>
+              <span className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">Summary</span>
             </div>
           </div>
         </div>
@@ -130,10 +130,10 @@ export default function FlatBillingPage() {
       {generatingPdfId && <DocumentGenerationLoader label="Generating booking receipt PDF…" />}
 
       {loading ? (
-        <SkeletonLoader variant="table" rows={8} className="rounded-[24px]" />
+        <SkeletonLoader variant="table" rows={8} className="rounded-2xl" />
       ) : visibleRecords.length === 0 ? (
         <EmptyState
-          icon={<Building2 className="h-6 w-6 text-[#2454D6]" />}
+          icon={<Building2 className="h-6 w-6 text-[var(--primary)]" />}
           title={selectedProjectId ? 'No receipts for this project' : 'No booking receipts yet'}
           description={selectedProjectId ? 'This project has no linked booking receipts yet.' : 'Create a booking receipt to generate a professional flat booking PDF for your sale workflow.'}
           action={
@@ -152,14 +152,14 @@ export default function FlatBillingPage() {
             return (
               <PremiumCard key={rec.id} className="flex flex-col p-5">
                 <div className="mb-4 flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EAF1FF] text-[#2454D6] ring-1 ring-inset ring-white">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)] ring-1 ring-inset ring-white">
                     <Building2 className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-base font-semibold text-[#17243A]">
+                    <h3 className="truncate text-base font-semibold text-[var(--text)]">
                       {rec.buyerName || 'Untitled Receipt'}
                     </h3>
-                    <p className="mt-1 truncate text-xs text-[#64748B]">
+                    <p className="mt-1 truncate text-xs text-[var(--text-muted)]">
                       {rec.projectName ? `${rec.projectName} • ` : ''}{rec.receiptNumber}
                       {rec.flatNo ? ` • Flat ${rec.flatNo}` : ''}
                       {rec.blockTower ? ` • ${rec.blockTower}` : ''}
@@ -169,23 +169,23 @@ export default function FlatBillingPage() {
 
                 {total > 0 && (
                   <div className="mb-4 grid grid-cols-3 gap-2">
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-2 text-center">
-                      <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.12em] text-slate-400">Total</p>
-                      <p className="text-[11px] font-semibold text-[#17243A]">{formatINR(total)}</p>
+                    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-2 py-2 text-center">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-[0.12em] text-slate-400">Total</p>
+                      <p className="text-xs font-semibold text-[var(--text)]">{formatINR(total)}</p>
                     </div>
-                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-2 py-2 text-center">
-                      <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.12em] text-emerald-600">Planned</p>
-                      <p className="text-[11px] font-semibold text-emerald-700">{formatINR(scheduledAmount)}</p>
+                    <div className="rounded-xl border border-[var(--success-border)] bg-[var(--success-soft)] px-2 py-2 text-center">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-[0.12em] text-[var(--success-fg)]">Planned</p>
+                      <p className="text-xs font-semibold text-[var(--success-fg)]">{formatINR(scheduledAmount)}</p>
                     </div>
-                    <div className={`rounded-xl border px-2 py-2 text-center ${balance > 0 ? 'border-amber-200 bg-amber-50' : balance < 0 ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50'}`}>
-                      <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.12em] text-slate-400">Balance</p>
-                      <p className={`text-[11px] font-semibold ${balance > 0 ? 'text-amber-700' : balance < 0 ? 'text-red-700' : 'text-emerald-700'}`}>{formatINR(balance)}</p>
+                    <div className={`rounded-xl border px-2 py-2 text-center ${balance > 0 ? 'border-[var(--warning-border)] bg-[var(--warning-soft)]' : balance < 0 ? 'border-[var(--danger-border)] bg-[var(--danger-soft)]' : 'border-[var(--success-border)] bg-[var(--success-soft)]'}`}>
+                      <p className="mb-1 text-xs font-medium uppercase tracking-[0.12em] text-slate-400">Balance</p>
+                      <p className={`text-xs font-semibold ${balance > 0 ? 'text-[var(--warning-fg)]' : balance < 0 ? 'text-[var(--danger-fg)]' : 'text-[var(--success-fg)]'}`}>{formatINR(balance)}</p>
                     </div>
                   </div>
                 )}
 
-                <div className="mb-4 rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2 text-xs text-[#64748B]">
-                  Date: <span className="font-medium text-[#17243A]">{formatDate(rec.date)}</span>
+                <div className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-xs text-[var(--text-muted)]">
+                  Date: <span className="font-medium text-[var(--text)]">{formatDate(rec.date)}</span>
                 </div>
 
                 <div className="mt-auto flex items-center gap-2">
@@ -198,7 +198,7 @@ export default function FlatBillingPage() {
                   <button
                     disabled={deleting}
                     onClick={() => setDeleteId(rec.id)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-500 transition-colors hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)] hover:text-[var(--danger-fg)] disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label="Delete receipt"
                   >
                     <Trash2 className="h-4 w-4" />

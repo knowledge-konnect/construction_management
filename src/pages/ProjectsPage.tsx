@@ -7,7 +7,8 @@ import {
     ProjectInventoryPanel,
     ProjectOverviewPanel,
 } from '@/components/projects/ProjectDetailTabs';
-import { AppButton, EmptyState, PageHeader, PremiumCard, StatusPill, TabList, TablePagination } from '@/components/ui/DesignSystem';
+import DataTable, { CellStack, CellText, RowActionButton, RowActions, type Column } from '@/components/ui/DataTable';
+import { AppButton, PageHeader, PremiumCard, StatusPill, TabList } from '@/components/ui/DesignSystem';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
 import { BUSINESS_MODEL_OPTIONS, calculateProjectedMargin, getBusinessModelFormConfig, type BusinessModel } from '@/lib/businessModels';
@@ -111,6 +112,10 @@ const mapProjectToForm = (project: ProjectRecord): ProjectFormState => ({
 const getProjectFormErrorMessage = (form: ProjectFormState): string | null => {
     if (!form.name.trim()) {
         return 'Project name is required.';
+    }
+
+    if (!form.projectTypeId.trim()) {
+        return 'Project category is required. Select a project type.';
     }
 
     const contractValue = form.contractAmount.trim() ? Number(form.contractAmount) : 0;
@@ -231,7 +236,7 @@ function getProjectFinancialSummary(project: ProjectRecord) {
     };
 }
 
-const formFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] shadow-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/15';
+const formFieldClass = 'w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] shadow-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]';
 
 function LandownerPartySelector({
     parties,
@@ -272,15 +277,15 @@ function LandownerPartySelector({
     return (
         <div className="relative">
             {selectedParty ? (
-                <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-[#17243A]">
+                <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-sm text-[var(--text)]">
                     <div className="min-w-0 flex-1">
                         <div className="truncate font-medium">Selected landowner</div>
-                        <div className="truncate text-[#475569]">{selectedParty.name}</div>
+                        <div className="truncate text-[var(--text-secondary)]">{selectedParty.name}</div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                         <button
                             type="button"
-                            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-[#17243A] transition hover:border-[#1D4ED8] hover:text-[#1D4ED8]"
+                            className="rounded-lg border border-[var(--border)] bg-white px-2 py-1 text-xs font-medium text-[var(--text)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
                             onClick={() => {
                                 setIsOpen(true);
                                 setQuery(selectedParty.name);
@@ -290,7 +295,7 @@ function LandownerPartySelector({
                         </button>
                         <button
                             type="button"
-                            className="rounded-lg border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100"
+                            className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-soft)] px-2 py-1 text-xs font-medium text-[var(--danger-fg)] transition hover:bg-[var(--danger-soft)]"
                             onClick={() => {
                                 onClear();
                                 setIsOpen(true);
@@ -324,14 +329,14 @@ function LandownerPartySelector({
             </div>
 
             {isOpen ? (
-                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-[var(--border)] bg-white shadow-lg">
                     {filteredParties.length > 0 ? (
                         <div className="max-h-64 overflow-y-auto">
                             {filteredParties.map((party) => (
                                 <button
                                     key={party.id}
                                     type="button"
-                                    className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition ${selectedPartyId === party.id ? 'bg-[#EFF6FF] text-[#17243A]' : 'hover:bg-slate-50'}`}
+                                    className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition ${selectedPartyId === party.id ? 'bg-[var(--primary-soft)] text-[var(--text)]' : 'hover:bg-[var(--surface-soft)]'}`}
                                     onClick={() => {
                                         onSelect(party.id);
                                         setQuery(party.name);
@@ -341,19 +346,19 @@ function LandownerPartySelector({
                                     <span className="min-w-0 flex-1">
                                         <span className="block truncate font-medium">{party.name}</span>
                                         {party.email || party.mobile ? (
-                                            <span className="mt-0.5 block truncate text-xs text-slate-500">
+                                            <span className="mt-0.5 block truncate text-xs text-[var(--text-muted)]">
                                                 {party.email || party.mobile}
                                             </span>
                                         ) : null}
                                     </span>
                                     {selectedPartyId === party.id ? (
-                                        <span className="rounded-full bg-[#1D4ED8] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">Selected</span>
+                                        <span className="rounded-full bg-[var(--primary)] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">Selected</span>
                                     ) : null}
                                 </button>
                             ))}
                         </div>
                     ) : (
-                        <div className="px-3 py-3 text-sm text-slate-500">
+                        <div className="px-3 py-3 text-sm text-[var(--text-muted)]">
                             No matching landowners found for this company. Try a different name.
                         </div>
                     )}
@@ -462,7 +467,7 @@ function FieldInfoTooltip({
                 aria-label={`More information about ${label}`}
                 aria-expanded={open}
                 aria-controls={tooltipId}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[#2454D6] transition-colors hover:text-[#1D4ED8] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2454D6]/35"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[var(--primary)] transition-colors hover:text-[var(--primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             >
                 <Info className="h-3.5 w-3.5" />
             </button>
@@ -473,7 +478,7 @@ function FieldInfoTooltip({
                     ref={tooltipRef}
                     role="tooltip"
                     style={{ top: position.top, left: position.left, position: 'fixed' }}
-                    className="z-[70] max-w-[280px] rounded-xl border border-[#2454D6] bg-[#17243B] px-3 py-2 text-xs leading-5 text-[#F8FAFC] shadow-[0_14px_30px_rgba(16,28,47,0.35)]"
+                    className="z-[70] max-w-[280px] rounded-xl border border-[var(--primary)] bg-[var(--navy)] px-3 py-2 text-xs leading-5 text-[var(--surface-soft)] shadow-[0_14px_30px_rgba(16,28,47,0.35)]"
                 >
                     {text}
                 </div>
@@ -495,10 +500,10 @@ function InputField({
 }) {
     return (
         <label className="block space-y-1.5">
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#17243A]">
+            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text)]">
                 <span>
                     {label}
-                    {required ? <span className="text-red-600"> *</span> : null}
+                    {required ? <span className="text-[var(--danger-fg)]"> *</span> : null}
                 </span>
                 {helper ? <FieldInfoTooltip text={helper} label={label} /> : null}
             </span>
@@ -518,8 +523,8 @@ function SectionCard({
 }) {
     return (
         <PremiumCard className="p-5">
-            <p className="text-base font-semibold text-[#17243A]">{title}</p>
-            {description ? <p className="mt-1 text-sm text-[#667085]">{description}</p> : null}
+            <p className="text-base font-semibold text-[var(--text)]">{title}</p>
+            {description ? <p className="mt-1 text-sm text-[var(--text-muted)]">{description}</p> : null}
             <div className="mt-4">{children}</div>
         </PremiumCard>
     );
@@ -614,6 +619,8 @@ function ProjectFormLayout({
     const financialSectionDescription = isPropertyDevelopment && !isJointDevelopment
         ? 'Capture land investment, construction cost and expected property sales.'
         : 'Capture commercial assumptions used in margin and performance reporting.';
+    const showProjectedMarginCard = businessModelConfig.showProjectedMargin;
+    const propertyDevelopmentInventoryNote = 'Flat inventory can be configured after project creation under Project Details → Project Inventory. You can add individual flat numbers, floors, towers and share allocations there.';
 
     const cancelPath = mode === 'create' ? '/projects' : `/projects/${project?.id ?? ''}`;
 
@@ -745,11 +752,11 @@ function ProjectFormLayout({
             />
 
             {validationError ? (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{validationError}</div>
+                <div className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-fg)]">{validationError}</div>
             ) : null}
 
             <form id="project-editor-form" onSubmit={handleSubmit} className="space-y-5">
-                <SectionCard title="Project Information" description="Define the project identity, category and business type.">
+                <SectionCard title="Project Basics" description="Define the project identity, category and business type.">
                     <div className="grid gap-4 md:grid-cols-2">
                         <InputField label="Project name" required>
                             <input
@@ -760,7 +767,10 @@ function ProjectFormLayout({
                             />
                         </InputField>
 
-                        <InputField label="Project category">
+                        <InputField
+                            label="Project category"
+                            helper={selectedProjectType?.description ?? 'Choose the category that best describes the project.'}
+                        >
                             <select
                                 value={form.projectTypeId}
                                 onChange={(event) => {
@@ -842,7 +852,7 @@ function ProjectFormLayout({
                     </div>
                 </SectionCard>
 
-                <SectionCard title="Financial Details" description={financialSectionDescription}>
+                <SectionCard title="Commercial & Financial Details" description={financialSectionDescription}>
                     <div className="grid gap-4 md:grid-cols-2">
                         {showContractAmountField ? (
                             <InputField label={businessModelConfig.contractValueLabel} helper="Agreed amount payable by the customer for construction work.">
@@ -876,32 +886,34 @@ function ProjectFormLayout({
                             </InputField>
                         ) : null}
 
-                        <div className="md:col-span-2">
-                            <div className="rounded-xl border border-[#DBEAFE] bg-[#F8FAFC] px-4 py-3">
-                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                    <span className="text-sm font-medium text-[#17243A]">Expected Project Profit</span>
-                                    <span className="text-lg font-semibold text-[#17243A]" title={isJointDevelopment ? 'Builder share expected sales value minus estimated construction cost.' : 'Automatically calculated based on the selected business type'}>
-                                        {projectedMargin === null ? 'N/A' : formatCurrency(projectedMargin)}
-                                    </span>
+                        {showProjectedMarginCard ? (
+                            <div className="md:col-span-2">
+                                <div className="rounded-xl border border-[var(--info-border)] bg-[var(--surface-soft)] px-4 py-3">
+                                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                        <span className="text-sm font-medium text-[var(--text)]">Expected Project Profit</span>
+                                        <span className="text-lg font-semibold text-[var(--text)]" title={isJointDevelopment ? 'Builder share expected sales value minus estimated construction cost.' : 'Automatically calculated based on the selected business type'}>
+                                            {projectedMargin === null ? 'N/A' : formatCurrency(projectedMargin)}
+                                        </span>
+                                    </div>
+                                    <p className="mt-1 text-xs text-[var(--text-muted)]">
+                                        {isJointDevelopment
+                                            ? 'Read-only estimate: Builder share expected sales value - estimated construction cost. Shows N/A when either value is missing.'
+                                            : 'Read-only estimate based on selected business model, budget and projected revenue inputs.'}
+                                    </p>
                                 </div>
-                                <p className="mt-1 text-xs text-[#64748B]">
-                                    {isJointDevelopment
-                                        ? 'Read-only estimate: Builder share expected sales value - estimated construction cost. Shows N/A when either value is missing.'
-                                        : 'Read-only estimate based on selected business model, budget and projected revenue inputs.'}
-                                </p>
                             </div>
-                        </div>
+                        ) : null}
                     </div>
                 </SectionCard>
 
                 {form.businessModel === 'property_development' && form.developmentArrangement === 'joint_development' ? (
-                    <SectionCard title="Flat Allocation" description="Define builder and landowner unit allocation for JDA projects.">
+                    <SectionCard title="Property Development Allocation" description="These are project-level allocation figures used for JDA planning and reporting. Individual flat inventory records are added later under Project Details → Project Inventory.">
                         <div className="grid gap-4 md:grid-cols-2">
-                            <InputField label="Total flats" required helper="Total units in the project.">
+                            <InputField label="Total project flats" required helper="Project-level allocation total for the development.">
                                 <input type="number" min="1" step="1" className={formFieldClass} placeholder="e.g. 120" value={form.totalProjectFlats} onChange={(event) => setForm((prev) => ({ ...prev, totalProjectFlats: event.target.value }))} />
                             </InputField>
 
-                            <InputField label="Builder's flats" required helper="Units allocated to the builder share.">
+                            <InputField label="Builder share units" required helper="Project-level builder allocation count.">
                                 <input
                                     type="number"
                                     min="0"
@@ -918,9 +930,12 @@ function ProjectFormLayout({
                                 />
                             </InputField>
 
-                            <InputField label="Landowner's flats" required helper="Automatically derived from total flats and builder share.">
-                                <input type="number" min="0" step="1" readOnly className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-[#17243A] shadow-sm outline-none" placeholder="Auto-calculated" value={form.landownerShareUnits} />
+                            <InputField label="Landowner share units" required helper="Project-level landowner allocation count, derived from the total and builder share.">
+                                <input type="number" min="0" step="1" readOnly className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--text)] shadow-sm outline-none" placeholder="Auto-calculated" value={form.landownerShareUnits} />
                             </InputField>
+                        </div>
+                        <div className="mt-4 rounded-xl border border-[var(--info-border)] bg-[var(--primary-soft)] px-3 py-2.5 text-sm text-[var(--text)]">
+                            {propertyDevelopmentInventoryNote}
                         </div>
                     </SectionCard>
                 ) : null}
@@ -964,15 +979,15 @@ function ProjectFormLayout({
 
                         <div className="md:col-span-2">
                             <InputField label="Project notes">
-                                <textarea className="min-h-[96px] w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#17243A] shadow-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/15" placeholder="e.g. Basement raft completion expected before monsoon window" value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} />
+                                <textarea className="min-h-[96px] w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text)] shadow-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]" placeholder="e.g. Basement raft completion expected before monsoon window" value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} />
                             </InputField>
                         </div>
                     </div>
                 </SectionCard>
 
-                <div className="sticky bottom-0 rounded-2xl border border-[#E6E8EC] bg-white/95 p-4 shadow-[0_-4px_14px_rgba(15,23,42,0.08)] backdrop-blur">
+                <div className="sticky bottom-0 rounded-2xl border border-[var(--border)] bg-white/95 p-4 shadow-[0_-4px_14px_rgba(15,23,42,0.08)] backdrop-blur">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <p className="text-xs text-[#64748B]">
+                        <p className="text-xs text-[var(--text-muted)]">
                             {hasUnsavedChanges ? 'You have unsaved changes.' : mode === 'create' ? 'Ready to create project. Fill details and submit when ready.' : 'All changes saved.'}
                         </p>
                         <div className="flex flex-wrap items-center gap-2">
@@ -1086,10 +1101,6 @@ export default function ProjectsPage() {
         if (page > totalPages) setPage(totalPages);
     }, [filteredProjects.length, page]);
 
-    const pagedProjects = useMemo(() => {
-        const start = (page - 1) * pageSize;
-        return filteredProjects.slice(start, start + pageSize);
-    }, [filteredProjects, page]);
 
     const handleDeleteProject = async () => {
         if (!projectToDelete || deletingProject) return;
@@ -1184,6 +1195,61 @@ export default function ProjectsPage() {
 
     const hasFiltersApplied = statusScopeFilter !== 'all' || statusFilter !== 'all' || businessFilter !== 'all' || categoryFilter !== 'all' || deadlineFilter !== 'all' || search.trim().length > 0;
 
+
+    const projectColumns: Column<ProjectRecord>[] = [
+        {
+            key: 'project',
+            header: 'Project',
+            sortValue: (p) => p.name,
+            cell: (p) => <CellStack title={p.name} subtitle={p.projectNumber || 'Project number pending'} />,
+        },
+        {
+            key: 'category',
+            header: 'Category',
+            sortValue: (p) => p.projectTypeSnapshot || null,
+            cell: (p) => <CellText>{p.projectTypeSnapshot || 'Unspecified'}</CellText>,
+        },
+        {
+            key: 'businessType',
+            header: 'Business type',
+            cell: (p) => <CellStack title={getProjectFinancialSummary(p).title} subtitle={getProjectSummary(p).location} />,
+        },
+        {
+            key: 'timeline',
+            header: 'Timeline',
+            sortValue: (p) => (p.startDate ? Date.parse(p.startDate) || null : null),
+            cell: (p) => (
+                <CellStack
+                    title={`Start: ${p.startDate ? formatDate(p.startDate) : 'Pending'}`}
+                    subtitle={`End: ${p.expectedEndDate ? formatDate(p.expectedEndDate) : 'Pending'}`}
+                />
+            ),
+        },
+        {
+            key: 'financial',
+            header: 'Financial summary',
+            cell: (p) => <CellStack title={getProjectFinancialSummary(p).primary} subtitle={getProjectFinancialSummary(p).secondary} />,
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            sortValue: (p) => statusLabelMap[p.status] ?? p.status,
+            cell: (p) => <StatusPill label={statusLabelMap[p.status] ?? p.status} tone={statusToneMap[p.status] ?? 'neutral'} />,
+        },
+        {
+            key: 'actions',
+            header: 'Actions',
+            kind: 'actions',
+            cell: (p) => (
+                <RowActions>
+                    <RowActionButton label={`View ${p.name}`} icon={<Eye className="h-4 w-4" />} onClick={() => navigate(`/projects/${p.id}`)} />
+                    <RowActionButton label={`Edit ${p.name}`} icon={<Pencil className="h-4 w-4" />} onClick={() => navigate(`/projects/${p.id}/edit`)} />
+                    <RowActionButton label={`Delete ${p.name}`} tone="danger" icon={<Trash2 className="h-4 w-4" />} onClick={() => setProjectToDelete(p)} />
+                </RowActions>
+            ),
+        },
+    ];
+
     return (
         <div className="space-y-4">
             <PageHeader
@@ -1196,7 +1262,7 @@ export default function ProjectsPage() {
                 }
             />
 
-            <div className="rounded-[24px] border border-[#E2E8F0] bg-[linear-gradient(135deg,#F8FAFC_0%,#EEF4FF_100%)] p-4 shadow-sm">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     {summaryCards.map((card) => (
                         <button
@@ -1204,19 +1270,19 @@ export default function ProjectsPage() {
                             type="button"
                             disabled={loading || Boolean(loadError)}
                             onClick={() => applyKpiFilter(card.id)}
-                            className={`group w-full rounded-2xl border px-4 py-3.5 text-left shadow-[0_8px_18px_rgba(15,23,42,0.04)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1D4ED8]/30 disabled:cursor-not-allowed disabled:opacity-70 ${card.active
-                                ? 'border-[#F4B72B] bg-[linear-gradient(130deg,#FFF9E8_0%,#FFFFFF_75%)]'
-                                : 'border-white/80 bg-white/90 hover:-translate-y-0.5 hover:border-[#F4B72B]/60 hover:shadow-[0_10px_22px_rgba(23,36,59,0.1)]'}`}
+                            className={`group w-full rounded-2xl border px-4 py-3.5 text-left shadow-[0_8px_18px_rgba(15,23,42,0.04)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 ${card.active
+                                ? 'border-[var(--primary)] bg-[var(--primary-soft)]'
+                                : 'border-white/80 bg-white/90 hover:-translate-y-0.5 hover:border-[var(--primary)] hover:shadow-[0_10px_22px_rgba(23,36,59,0.1)]'}`}
                             aria-pressed={card.active}
                         >
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">{card.label}</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">{card.label}</p>
                             <div className="mt-2.5 flex items-center justify-between gap-2">
-                                <p className="text-2xl font-bold tracking-[-0.04em] text-[#17243B]">
+                                <p className="text-2xl font-bold tracking-[-0.04em] text-[var(--text)]">
                                     {loading ? '...' : loadError ? '--' : String(card.value)}
                                 </p>
-                                <span className={`h-2.5 w-2.5 rounded-full ${card.active ? 'bg-[#F4B72B]' : 'bg-[#D0D5DD] group-hover:bg-[#F4B72B]/70'}`} />
+                                <span className={`h-2.5 w-2.5 rounded-full ${card.active ? 'bg-[var(--primary)]' : 'bg-[var(--border-strong)] group-hover:bg-[var(--primary)]'}`} />
                             </div>
-                            <p className="mt-1.5 text-[11px] leading-4 text-[#667085]">
+                            <p className="mt-1.5 text-xs leading-4 text-[var(--text-muted)]">
                                 {loadError ? 'Unavailable while projects could not be loaded.' : card.note}
                             </p>
                         </button>
@@ -1227,24 +1293,24 @@ export default function ProjectsPage() {
             <PremiumCard className="p-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
                     <label className="relative block lg:flex-1">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
                         <input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             placeholder="Search by project name or address"
-                            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm text-[#17243A] outline-none transition-colors focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/15"
+                            className="w-full rounded-xl border border-[var(--border)] bg-white py-2.5 pl-9 pr-3 text-sm text-[var(--text)] outline-none transition-colors focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]"
                         />
                     </label>
 
                     <label className="block lg:w-52">
-                        <span className="mb-1 block text-xs font-medium uppercase tracking-[0.14em] text-[#667085]">Status</span>
+                        <span className="mb-1 block text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">Status</span>
                         <select
                             value={statusFilter}
                             onChange={(event) => {
                                 setStatusScopeFilter('all');
                                 setStatusFilter(event.target.value as 'all' | ProjectRecord['status']);
                             }}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none transition-colors focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/15"
+                            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none transition-colors focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]"
                         >
                             <option value="all">All statuses</option>
                             {Object.keys(statusLabelMap).map((status) => (
@@ -1254,8 +1320,8 @@ export default function ProjectsPage() {
                     </label>
 
                     <label className="block lg:w-52">
-                        <span className="mb-1 block text-xs font-medium uppercase tracking-[0.14em] text-[#667085]">Business type</span>
-                        <select value={businessFilter} onChange={(event) => setBusinessFilter(event.target.value as 'all' | BusinessModel)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none transition-colors focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/15">
+                        <span className="mb-1 block text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">Business type</span>
+                        <select value={businessFilter} onChange={(event) => setBusinessFilter(event.target.value as 'all' | BusinessModel)} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none transition-colors focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]">
                             <option value="all">All business types</option>
                             {BUSINESS_MODEL_OPTIONS.map((option) => (
                                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -1264,8 +1330,8 @@ export default function ProjectsPage() {
                     </label>
 
                     <label className="block lg:w-52">
-                        <span className="mb-1 block text-xs font-medium uppercase tracking-[0.14em] text-[#667085]">Project category</span>
-                        <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#17243A] outline-none transition-colors focus:border-[#1D4ED8] focus:ring-2 focus:ring-[#1D4ED8]/15">
+                        <span className="mb-1 block text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">Project category</span>
+                        <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--text)] outline-none transition-colors focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--ring)]">
                             <option value="all">All categories</option>
                             {categoryOptions.map((category) => (
                                 <option key={category} value={category}>{category}</option>
@@ -1274,9 +1340,9 @@ export default function ProjectsPage() {
                     </label>
                 </div>
                 {hasFiltersApplied ? (
-                    <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-[#E6E8EC] bg-slate-50 px-3 py-2 text-xs text-[#667085]">
+                    <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-xs text-[var(--text-muted)]">
                         <span className="inline-flex items-center gap-1"><SlidersHorizontal className="h-3.5 w-3.5" /> Showing {filteredProjects.length} matching projects</span>
-                        <button type="button" onClick={clearFilters} className="font-medium text-[#1D4ED8] hover:underline">
+                        <button type="button" onClick={clearFilters} className="font-medium text-[var(--primary)] hover:underline">
                             Clear filters
                         </button>
                     </div>
@@ -1284,157 +1350,34 @@ export default function ProjectsPage() {
             </PremiumCard>
 
             {loadError ? (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-fg)]">
                     {loadError}
                 </div>
             ) : null}
 
-            {loading ? (
-                <SkeletonLoader variant="table" rows={6} className="rounded-[24px]" />
-            ) : nonDeletedProjects.length === 0 ? (
-                <EmptyState
-                    icon={<FolderKanban className="h-5 w-5" />}
-                    title="No projects yet"
-                    description="Create your first project to start tracking scope, budget and delivery milestones."
-                    action={<AppButton onClick={() => navigate('/projects/new')}>Create your first project</AppButton>}
-                />
-            ) : filteredProjects.length === 0 ? (
-                <EmptyState
-                    icon={<FolderKanban className="h-5 w-5" />}
-                    title="No matching projects"
-                    description="No projects match your current search and filter combination."
-                    action={<AppButton variant="secondary" onClick={clearFilters}>Clear Filters</AppButton>}
-                />
-            ) : (
-                <>
-                    <div className="space-y-3 md:hidden">
-                        {pagedProjects.map((project) => {
-                            const summary = getProjectSummary(project);
-                            const financialSummary = getProjectFinancialSummary(project);
-                            return (
-                                <PremiumCard key={project.id} className="p-4">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p className="text-base font-semibold text-[#17243A]">{project.name}</p>
-                                            <p className="mt-1 text-xs text-[#667085]">{project.projectNumber || 'Project number pending'}</p>
-                                        </div>
-                                        <StatusPill label={statusLabelMap[project.status] ?? project.status} tone={statusToneMap[project.status] ?? 'neutral'} />
-                                    </div>
-                                    <div className="mt-3 space-y-1.5 text-sm text-[#475467]">
-                                        <p><span className="font-medium text-[#344054]">Category:</span> {project.projectTypeSnapshot || 'Unspecified'}</p>
-                                        <p><span className="font-medium text-[#344054]">Business type:</span> {financialSummary.title}</p>
-                                        <p><span className="font-medium text-[#344054]">Location:</span> {summary.location}</p>
-                                        <p><span className="font-medium text-[#344054]">Start:</span> {project.startDate ? formatDate(project.startDate) : 'Pending'} • <span className="font-medium text-[#344054]">End:</span> {project.expectedEndDate ? formatDate(project.expectedEndDate) : 'Pending'}</p>
-                                        <p><span className="font-medium text-[#344054]">{financialSummary.primary}</span></p>
-                                        <p className="text-xs text-[#667085]">{financialSummary.secondary}</p>
-                                    </div>
-                                    <div className="mt-4 flex items-center justify-end gap-2">
-                                        <AppButton variant="secondary" onClick={() => navigate(`/projects/${project.id}`)}>
-                                            <Eye className="h-4 w-4" /> View
-                                        </AppButton>
-                                        <AppButton variant="secondary" onClick={() => navigate(`/projects/${project.id}/edit`)}>
-                                            <Pencil className="h-4 w-4" /> Edit
-                                        </AppButton>
-                                        <AppButton variant="danger" onClick={() => setProjectToDelete(project)}>
-                                            <Trash2 className="h-4 w-4" /> Delete
-                                        </AppButton>
-                                    </div>
-                                </PremiumCard>
-                            );
-                        })}
-                    </div>
-
-                    <div className="hidden md:block">
-                        <div className="overflow-hidden rounded-[24px] border border-[#E6E8EC] bg-white shadow-[0_8px_22px_rgba(15,23,42,0.04)]">
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-[#E6E8EC] text-left text-sm">
-                                    <thead className="bg-[#17243B] text-[11px] uppercase tracking-[0.12em] text-white">
-                                        <tr>
-                                            <th className="px-4 py-3.5 text-left font-semibold text-white">Project</th>
-                                            <th className="px-4 py-3.5 text-left font-semibold text-white">Category</th>
-                                            <th className="px-4 py-3.5 text-left font-semibold text-white">Business type</th>
-                                            <th className="px-4 py-3.5 text-left font-semibold text-white">Timeline</th>
-                                            <th className="px-4 py-3.5 text-left font-semibold text-white">Financial summary</th>
-                                            <th className="px-4 py-3.5 text-left font-semibold text-white">Status</th>
-                                            <th className="px-4 py-3.5 text-center font-semibold text-white">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-[#E6E8EC] bg-white">
-                                        {pagedProjects.map((project) => {
-                                            const summary = getProjectSummary(project);
-                                            const financialSummary = getProjectFinancialSummary(project);
-                                            return (
-                                                <tr key={project.id} className="transition-colors hover:bg-slate-50/80">
-                                                    <td className="px-4 py-3.5">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF1FF] text-sm font-semibold text-[#2454D6]">
-                                                                {project.name.slice(0, 1).toUpperCase()}
-                                                            </div>
-                                                            <div>
-                                                                <p className="font-semibold text-[#17243A]">{project.name}</p>
-                                                                <p className="text-xs text-[#667085]">{project.projectNumber || 'Project number pending'}</p>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3.5 text-[#344054]">{project.projectTypeSnapshot || 'Unspecified'}</td>
-                                                    <td className="px-4 py-3.5 text-[#344054]">
-                                                        <p className="font-medium text-[#17243A]">{financialSummary.title}</p>
-                                                        <p className="text-xs text-[#667085]">{summary.location}</p>
-                                                    </td>
-                                                    <td className="px-4 py-3.5 text-[#344054]">
-                                                        <p>Start: {project.startDate ? formatDate(project.startDate) : 'Pending'}</p>
-                                                        <p>End: {project.expectedEndDate ? formatDate(project.expectedEndDate) : 'Pending'}</p>
-                                                    </td>
-                                                    <td className="px-4 py-3.5">
-                                                        <p className="font-semibold text-[#17243A]">{financialSummary.primary}</p>
-                                                        <p className="text-xs text-[#667085]">{financialSummary.secondary}</p>
-                                                    </td>
-                                                    <td className="px-4 py-3.5"><StatusPill label={statusLabelMap[project.status] ?? project.status} tone={statusToneMap[project.status] ?? 'neutral'} /></td>
-                                                    <td className="px-4 py-3.5 text-center">
-                                                        <div className="flex items-center justify-center gap-1.5">
-                                                            <AppButton
-                                                                variant="secondary"
-                                                                className="!px-2.5 !py-1.5"
-                                                                onClick={() => navigate(`/projects/${project.id}`)}
-                                                                aria-label={`View ${project.name}`}
-                                                                title="View project"
-                                                            >
-                                                                <Eye className="h-4 w-4" />
-                                                            </AppButton>
-                                                            <AppButton
-                                                                variant="secondary"
-                                                                className="!px-2.5 !py-1.5"
-                                                                onClick={() => navigate(`/projects/${project.id}/edit`)}
-                                                                aria-label={`Edit ${project.name}`}
-                                                                title="Edit project"
-                                                            >
-                                                                <Pencil className="h-4 w-4" />
-                                                            </AppButton>
-                                                            <AppButton
-                                                                variant="danger"
-                                                                className="!px-2.5 !py-1.5"
-                                                                onClick={() => setProjectToDelete(project)}
-                                                                aria-label={`Delete ${project.name}`}
-                                                                title="Delete project"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </AppButton>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-[20px] border border-[#E6E8EC] bg-white px-3 py-2 shadow-sm">
-                        <TablePagination page={page} pageSize={pageSize} total={filteredProjects.length} onPageChange={setPage} />
-                    </div>
-                </>
-            )}
+            <DataTable
+                caption="Projects"
+                columns={projectColumns}
+                rows={filteredProjects}
+                rowKey={(project) => project.id}
+                loading={loading}
+                pagination={{ page, pageSize, onPageChange: setPage }}
+                empty={
+                    nonDeletedProjects.length === 0
+                        ? {
+                            icon: <FolderKanban className="h-5 w-5" />,
+                            title: 'No projects yet',
+                            description: 'Create your first project to start tracking scope, budget and delivery milestones.',
+                            action: <AppButton onClick={() => navigate('/projects/new')}>Create your first project</AppButton>,
+                        }
+                        : {
+                            icon: <FolderKanban className="h-5 w-5" />,
+                            title: 'No matching projects',
+                            description: 'No projects match your current search and filter combination.',
+                            action: <AppButton variant="secondary" onClick={clearFilters}>Clear Filters</AppButton>,
+                        }
+                }
+            />
 
             {projectToDelete ? (
                 <ConfirmDialog
@@ -1502,10 +1445,10 @@ export function ProjectEditPage() {
     if (loadError || !project) {
         return (
             <PremiumCard className="p-6">
-                <p className="text-base font-semibold text-[#17243A]">Unable to open project editor</p>
-                <p className="mt-2 text-sm text-[#667085]">{loadError || 'Project not found.'}</p>
+                <p className="text-base font-semibold text-[var(--text)]">Unable to open project editor</p>
+                <p className="mt-2 text-sm text-[var(--text-muted)]">{loadError || 'Project not found.'}</p>
                 <div className="mt-4">
-                    <Link to="/projects" className="text-sm font-medium text-[#1D4ED8] hover:underline">Back to projects</Link>
+                    <Link to="/projects" className="text-sm font-medium text-[var(--primary)] hover:underline">Back to projects</Link>
                 </div>
             </PremiumCard>
         );
@@ -1570,8 +1513,8 @@ export function ProjectDetailPage() {
     if (loadError || !project) {
         return (
             <PremiumCard className="p-6">
-                <p className="text-base font-semibold text-[#17243A]">Unable to load project</p>
-                <p className="mt-2 text-sm text-[#667085]">{loadError || 'Project not found.'}</p>
+                <p className="text-base font-semibold text-[var(--text)]">Unable to load project</p>
+                <p className="mt-2 text-sm text-[var(--text-muted)]">{loadError || 'Project not found.'}</p>
                 <div className="mt-4 flex items-center gap-2">
                     <AppButton variant="secondary" onClick={() => navigate('/projects')}>Back to projects</AppButton>
                     {id ? <AppButton onClick={() => navigate(`/projects/${id}`)}>Retry</AppButton> : null}
@@ -1626,46 +1569,46 @@ export function ProjectDetailPage() {
 
     return (
         <div className="space-y-6">
-            <div className="rounded-[28px] border border-[#E2E8F0] bg-[linear-gradient(135deg,#F8FAFC_0%,#EEF4FF_100%)] p-5 shadow-sm sm:p-6">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm sm:p-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#667085]">Project Details</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Project Details</p>
                         <div className="mt-2 flex flex-wrap items-center gap-3">
-                            <h1 className="text-[28px] font-bold tracking-[-0.04em] text-[#17243A] sm:text-[2rem]">{project.name}</h1>
+                            <h1 className="text-[28px] font-bold tracking-[-0.04em] text-[var(--text)] sm:text-[2rem]">{project.name}</h1>
                             <StatusPill label={statusLabelMap[project.status] ?? project.status} tone={statusToneMap[project.status] ?? 'neutral'} />
                         </div>
                         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                            <div className="rounded-2xl border border-[#E2E8F0] bg-white/75 px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Project Number</p>
-                                <p className="mt-1.5 text-sm font-semibold text-[#17243A]">{project.projectNumber || 'Project number pending'}</p>
+                            <div className="rounded-2xl border border-[var(--border)] bg-white/75 px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Project Number</p>
+                                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">{project.projectNumber || 'Project number pending'}</p>
                             </div>
-                            <div className="rounded-2xl border border-[#E2E8F0] bg-white/75 px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Project Category</p>
-                                <p className="mt-1.5 text-sm font-semibold text-[#17243A]">{project.projectTypeSnapshot || 'Project category pending'}</p>
+                            <div className="rounded-2xl border border-[var(--border)] bg-white/75 px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Project Category</p>
+                                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">{project.projectTypeSnapshot || 'Project category pending'}</p>
                             </div>
-                            <div className="rounded-2xl border border-[#E2E8F0] bg-white/75 px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Business Type</p>
-                                <p className="mt-1.5 text-sm font-semibold text-[#17243A]">{businessTypeLabel}</p>
+                            <div className="rounded-2xl border border-[var(--border)] bg-white/75 px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Business Type</p>
+                                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">{businessTypeLabel}</p>
                             </div>
                             {project.businessModel === 'property_development' ? (
-                                <div className="rounded-2xl border border-[#E2E8F0] bg-white/75 px-3 py-2.5">
-                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Development Arrangement</p>
-                                    <p className="mt-1.5 text-sm font-semibold text-[#17243A]">
+                                <div className="rounded-2xl border border-[var(--border)] bg-white/75 px-3 py-2.5">
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Development Arrangement</p>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text)]">
                                         {project.developmentArrangement === 'joint_development' ? 'Joint Development' : 'Self'}
                                     </p>
                                 </div>
                             ) : null}
-                            <div className="rounded-2xl border border-[#E2E8F0] bg-white/75 px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Location</p>
-                                <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#17243A]"><MapPin className="h-3.5 w-3.5 text-[#64748B]" /> {summary.location}</p>
+                            <div className="rounded-2xl border border-[var(--border)] bg-white/75 px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Location</p>
+                                <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text)]"><MapPin className="h-3.5 w-3.5 text-[var(--text-muted)]" /> {summary.location}</p>
                             </div>
-                            <div className="rounded-2xl border border-[#E2E8F0] bg-white/75 px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Start Date</p>
-                                <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#17243A]"><CalendarClock className="h-3.5 w-3.5 text-[#64748B]" /> {summary.startDate}</p>
+                            <div className="rounded-2xl border border-[var(--border)] bg-white/75 px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Start Date</p>
+                                <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text)]"><CalendarClock className="h-3.5 w-3.5 text-[var(--text-muted)]" /> {summary.startDate}</p>
                             </div>
-                            <div className="rounded-2xl border border-[#E2E8F0] bg-white/75 px-3 py-2.5 lg:col-span-1 xl:col-span-1">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#667085]">Expected Completion</p>
-                                <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#17243A]"><CalendarClock className="h-3.5 w-3.5 text-[#64748B]" /> {summary.expectedCompletionDate}</p>
+                            <div className="rounded-2xl border border-[var(--border)] bg-white/75 px-3 py-2.5 lg:col-span-1 xl:col-span-1">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Expected Completion</p>
+                                <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text)]"><CalendarClock className="h-3.5 w-3.5 text-[var(--text-muted)]" /> {summary.expectedCompletionDate}</p>
                             </div>
                         </div>
                     </div>

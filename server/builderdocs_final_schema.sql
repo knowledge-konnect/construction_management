@@ -12854,3 +12854,5982 @@ ALTER EVENT TRIGGER pgrst_drop_watch OWNER TO supabase_admin;
 -- PostgreSQL database dump complete
 --
 
+
+-- ===== BEGIN APP MIGRATIONS SNAPSHOT =====
+-- Auto-generated from server/migrations (forward migrations only).
+-- Generated on 2026-11-18.
+
+-- >>> 0001_schema.sql
+BEGIN;
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.current_app_user_id()
+RETURNS uuid
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT NULLIF(current_setting('request.jwt.claims', true)::jsonb ->> 'sub', '')::uuid;
+$$;
+
+CREATE TABLE public.users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL UNIQUE,
+  password_hash text NOT NULL,
+  role text NOT NULL DEFAULT 'user' CHECK (role IN ('user','owner','admin','staff','client','investor')),
+  is_active boolean NOT NULL DEFAULT true,
+  email_verified boolean NOT NULL DEFAULT false,
+  must_change_password boolean NOT NULL DEFAULT false,
+  last_login_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE public.user_profiles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE REFERENCES public.users(id) ON DELETE CASCADE,
+  full_name text,
+  phone text,
+  company_name text,
+  avatar_url text,
+  metadata jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE public.refresh_tokens (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  token_hash text NOT NULL UNIQUE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  revoked_at timestamptz,
+  user_agent text,
+  ip_address text
+);
+
+CREATE TABLE public.password_resets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  token_hash text NOT NULL UNIQUE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  used_at timestamptz
+);
+
+CREATE TABLE public.companies (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id uuid NOT NULL REFERENCES public.users(id),
+  name text NOT NULL,
+  logo_url text,
+  address text,
+  phone text,
+  email text,
+  website text,
+  gst_number text,
+  pan_number text,
+  primary_color text DEFAULT '#0B2857',
+  secondary_color text DEFAULT '#F4B72B',
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (id, owner_id)
+);
+
+CREATE TABLE public.company_settings (
+  company_id uuid PRIMARY KEY REFERENCES public.companies(id) ON DELETE CASCADE,
+  quotation_prefix text NOT NULL DEFAULT 'QTN',
+  booking_prefix text NOT NULL DEFAULT 'BR',
+  default_validity_days integer NOT NULL DEFAULT 30 CHECK (default_validity_days > 0),
+  authorized_person text,
+  designation text,
+  signature_url text,
+  bank_name text,
+  account_name text,
+  account_number text,
+  ifsc text,
+  branch text,
+  upi_id text,
+  default_terms text,
+  default_tax_name text,
+  default_tax_rate numeric(5,2) DEFAULT 0 CHECK (default_tax_rate >= 0 AND default_tax_rate <= 100),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE public.company_users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  role text NOT NULL DEFAULT 'staff' CHECK (role IN ('owner','admin','staff')),
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (company_id, user_id)
+);
+
+CREATE TABLE public.customers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  mobile text,
+  email text,
+  address text,
+  city text,
+  state text,
+  pincode text,
+  is_deleted boolean NOT NULL DEFAULT false,
+  deleted_at timestamptz,
+  deleted_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (id, company_id)
+);
+
+CREATE TABLE public.project_types (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
+  code text NOT NULL,
+  name text NOT NULL,
+  description text,
+  sort_order integer NOT NULL DEFAULT 0,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_project_types UNIQUE NULLS NOT DISTINCT (company_id, code)
+);
+
+CREATE TABLE public.expense_categories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
+  code text NOT NULL,
+  name text NOT NULL,
+  description text,
+  sort_order integer NOT NULL DEFAULT 0,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_expense_categories UNIQUE NULLS NOT DISTINCT (company_id, code)
+);
+
+CREATE TABLE public.units_of_measure (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
+  code text NOT NULL,
+  name text NOT NULL,
+  symbol text,
+  sort_order integer NOT NULL DEFAULT 0,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_units_of_measure UNIQUE NULLS NOT DISTINCT (company_id, code)
+);
+
+CREATE TABLE public.payment_methods (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
+  code text NOT NULL,
+  name text NOT NULL,
+  sort_order integer NOT NULL DEFAULT 0,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_payment_methods UNIQUE NULLS NOT DISTINCT (company_id, code)
+);
+
+CREATE TABLE public.tax_rates (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
+  code text NOT NULL,
+  name text NOT NULL,
+  rate_percentage numeric(5,2) NOT NULL CHECK (rate_percentage >= 0 AND rate_percentage <= 100),
+  effective_from date NOT NULL,
+  effective_to date,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CHECK (effective_to IS NULL OR effective_to >= effective_from),
+  CONSTRAINT uq_tax_rates UNIQUE NULLS NOT DISTINCT (company_id, code, effective_from)
+);
+
+CREATE TABLE public.project_stage_templates (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
+  project_type_id uuid REFERENCES public.project_types(id) ON DELETE CASCADE,
+  template_code text NOT NULL,
+  name text NOT NULL,
+  sequence_number integer NOT NULL CHECK (sequence_number > 0),
+  default_completion_percentage numeric(5,2) NOT NULL DEFAULT 0 CHECK (default_completion_percentage >= 0 AND default_completion_percentage <= 100),
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_project_stage_templates UNIQUE NULLS NOT DISTINCT (company_id, project_type_id, template_code)
+);
+
+CREATE TABLE public.document_sequences (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  document_type text NOT NULL CHECK (document_type IN ('Quotation','BookingReceipt')),
+  financial_year integer NOT NULL,
+  prefix text NOT NULL,
+  next_number integer NOT NULL DEFAULT 1 CHECK (next_number > 0),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (company_id, document_type, financial_year)
+);
+
+CREATE TABLE public.documents (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
+  customer_id uuid,
+  project_id uuid REFERENCES public.projects(id) ON DELETE SET NULL,
+  document_type text NOT NULL CHECK (document_type IN ('Quotation','BookingReceipt')),
+  document_number text NOT NULL,
+  status text NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft','Generated','Sent','Accepted','Rejected','Expired','Completed','Cancelled')),
+  quotation_date date,
+  valid_until date,
+  project_name text,
+  project_location text,
+  floors text,
+  project_type_id uuid REFERENCES public.project_types(id) ON DELETE SET NULL,
+  project_type text,
+  builtup_area numeric(18,2),
+  area_unit_id uuid REFERENCES public.units_of_measure(id) ON DELETE SET NULL,
+  area_unit text,
+  subtotal numeric(18,2) NOT NULL DEFAULT 0 CHECK (subtotal >= 0),
+  additional_charges numeric(18,2) NOT NULL DEFAULT 0 CHECK (additional_charges >= 0),
+  discount numeric(18,2) NOT NULL DEFAULT 0 CHECK (discount >= 0),
+  tax_rate_id uuid REFERENCES public.tax_rates(id) ON DELETE SET NULL,
+  tax_name text,
+  tax_percentage numeric(5,2) NOT NULL DEFAULT 0 CHECK (tax_percentage >= 0 AND tax_percentage <= 100),
+  tax_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
+  cgst_percentage numeric(5,2) DEFAULT 0 CHECK (cgst_percentage >= 0 AND cgst_percentage <= 100),
+  sgst_percentage numeric(5,2) DEFAULT 0 CHECK (sgst_percentage >= 0 AND sgst_percentage <= 100),
+  igst_percentage numeric(5,2) DEFAULT 0 CHECK (igst_percentage >= 0 AND igst_percentage <= 100),
+  cgst_amount numeric(18,2) DEFAULT 0 CHECK (cgst_amount >= 0),
+  sgst_amount numeric(18,2) DEFAULT 0 CHECK (sgst_amount >= 0),
+  igst_amount numeric(18,2) DEFAULT 0 CHECK (igst_amount >= 0),
+  tax_breakup jsonb,
+  grand_total numeric(18,2) NOT NULL DEFAULT 0 CHECK (grand_total >= 0),
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  is_deleted boolean NOT NULL DEFAULT false,
+  deleted_at timestamptz,
+  deleted_by uuid REFERENCES public.users(id),
+  UNIQUE (company_id, document_number),
+  UNIQUE (id, company_id),
+  CONSTRAINT fk_documents_customer
+    FOREIGN KEY (customer_id)
+    REFERENCES public.customers(id)
+    ON DELETE SET NULL,
+  CONSTRAINT fk_documents_project_company
+    FOREIGN KEY (project_id, company_id)
+    REFERENCES public.projects(id, company_id)
+    ON DELETE SET NULL
+);
+
+CREATE TABLE public.document_sections (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
+  section_name text NOT NULL,
+  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0)
+);
+
+CREATE TABLE public.document_items (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  section_id uuid NOT NULL REFERENCES public.document_sections(id) ON DELETE CASCADE,
+  description text NOT NULL,
+  quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (quantity >= 0),
+  unit_id uuid REFERENCES public.units_of_measure(id) ON DELETE SET NULL,
+  unit text,
+  rate numeric(18,2) NOT NULL DEFAULT 0 CHECK (rate >= 0),
+  amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (amount >= 0),
+  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0)
+);
+
+CREATE TABLE public.document_specifications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
+  specification_type text,
+  description text,
+  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0)
+);
+
+CREATE TABLE public.document_inclusions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
+  description text NOT NULL
+);
+
+CREATE TABLE public.document_exclusions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
+  description text NOT NULL
+);
+
+CREATE TABLE public.payment_schedules (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
+  stage_name text NOT NULL,
+  percentage numeric(5,2),
+  amount numeric(18,2),
+  due_date date,
+  status text,
+  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0),
+  CHECK (percentage IS NULL OR (percentage >= 0 AND percentage <= 100)),
+  CHECK (amount IS NULL OR amount >= 0)
+);
+
+CREATE TABLE public.document_terms (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
+  description text NOT NULL,
+  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0)
+);
+
+CREATE TABLE public.booking_receipt_details (
+  document_id uuid PRIMARY KEY REFERENCES public.documents(id) ON DELETE CASCADE,
+  booking_id text,
+  flat_no text,
+  floor text,
+  block_tower text,
+  rate_per_sqft numeric(18,2),
+  buyer_pan_aadhar text
+);
+
+CREATE TABLE public.company_subscriptions (
+  company_id uuid PRIMARY KEY REFERENCES public.companies(id) ON DELETE CASCADE,
+  plan text NOT NULL DEFAULT 'free' CHECK (plan IN ('free','paid')),
+  billing_cycle text CHECK (billing_cycle IN ('monthly','yearly')),
+  status text NOT NULL DEFAULT 'active' CHECK (status IN ('active','cancelled','expired')),
+  current_period_end timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE public.company_quotation_usage (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  usage_year integer NOT NULL CHECK (usage_year >= 2000),
+  usage_month integer NOT NULL CHECK (usage_month BETWEEN 1 AND 12),
+  quotation_count integer NOT NULL DEFAULT 0 CHECK (quotation_count >= 0),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (company_id, usage_year, usage_month)
+);
+
+CREATE TABLE public.subscription_payments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
+  billing_cycle text NOT NULL CHECK (billing_cycle IN ('monthly','yearly')),
+  amount_paise integer NOT NULL CHECK (amount_paise >= 0),
+  razorpay_order_id text NOT NULL UNIQUE,
+  razorpay_payment_id text,
+  status text NOT NULL DEFAULT 'created' CHECK (status IN ('created','paid','failed')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE public.projects (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
+  customer_id uuid,
+  source_document_id uuid,
+  project_type_id uuid REFERENCES public.project_types(id) ON DELETE SET NULL,
+  project_type_snapshot text,
+  project_number text NOT NULL,
+  name text NOT NULL,
+  description text,
+  site_address text,
+  contract_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (contract_amount >= 0),
+  start_date date,
+  expected_end_date date,
+  actual_end_date date,
+  status text NOT NULL DEFAULT 'planned' CHECK (status IN ('planned','in_progress','on_hold','completed','cancelled')),
+  created_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz,
+  UNIQUE (company_id, project_number),
+  UNIQUE (id, company_id),
+  CONSTRAINT fk_projects_customer
+    FOREIGN KEY (customer_id)
+    REFERENCES public.customers(id)
+    ON DELETE SET NULL,
+  CONSTRAINT fk_projects_source_document_company
+    FOREIGN KEY (source_document_id, company_id)
+    REFERENCES public.documents(id, company_id)
+    ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX ux_projects_company_source_document
+  ON public.projects(company_id, source_document_id)
+  WHERE source_document_id IS NOT NULL;
+
+CREATE TABLE public.project_stages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  sequence_number integer NOT NULL DEFAULT 1 CHECK (sequence_number > 0),
+  planned_start_date date,
+  planned_end_date date,
+  actual_start_date date,
+  actual_end_date date,
+  completion_percentage numeric(5,2) NOT NULL DEFAULT 0 CHECK (completion_percentage >= 0 AND completion_percentage <= 100),
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','in_progress','completed','on_hold')),
+  created_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (project_id, sequence_number)
+);
+
+CREATE TABLE public.project_progress_updates (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  stage_id uuid REFERENCES public.project_stages(id) ON DELETE SET NULL,
+  title text NOT NULL,
+  description text,
+  progress_percentage numeric(5,2),
+  update_date date NOT NULL DEFAULT CURRENT_DATE,
+  visibility_status text NOT NULL DEFAULT 'draft' CHECK (visibility_status IN ('draft','published')),
+  created_by uuid REFERENCES public.users(id),
+  published_by uuid REFERENCES public.users(id),
+  published_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CHECK (progress_percentage IS NULL OR (progress_percentage >= 0 AND progress_percentage <= 100))
+);
+
+CREATE TABLE public.project_expenses (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  category_id uuid REFERENCES public.expense_categories(id) ON DELETE SET NULL,
+  category text NOT NULL,
+  description text NOT NULL,
+  supplier_name text,
+  supplier_bill_number text,
+  bill_date date,
+  due_date date,
+  bill_amount numeric(18,2) NOT NULL CHECK (bill_amount >= 0),
+  status text NOT NULL DEFAULT 'unpaid' CHECK (status IN ('unpaid','partially_paid','paid','void')),
+  visibility_status text NOT NULL DEFAULT 'internal' CHECK (visibility_status IN ('internal','published')),
+  created_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  voided_at timestamptz
+);
+
+CREATE TABLE public.project_expense_payments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_expense_id uuid NOT NULL REFERENCES public.project_expenses(id) ON DELETE CASCADE,
+  amount numeric(18,2) NOT NULL CHECK (amount > 0),
+  payment_date date NOT NULL DEFAULT CURRENT_DATE,
+  payment_method_id uuid REFERENCES public.payment_methods(id) ON DELETE SET NULL,
+  payment_method text NOT NULL CHECK (payment_method IN ('cash','upi','bank_transfer','cheque','other')),
+  reference_number text,
+  notes text,
+  created_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  voided_at timestamptz
+);
+
+CREATE TABLE public.project_receipts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  receipt_number text NOT NULL,
+  amount numeric(18,2) NOT NULL CHECK (amount > 0),
+  received_date date NOT NULL DEFAULT CURRENT_DATE,
+  payment_method_id uuid REFERENCES public.payment_methods(id) ON DELETE SET NULL,
+  payment_method text NOT NULL CHECK (payment_method IN ('cash','upi','bank_transfer','cheque','other')),
+  reference_number text,
+  notes text,
+  visibility_status text NOT NULL DEFAULT 'internal' CHECK (visibility_status IN ('internal','published')),
+  created_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  voided_at timestamptz,
+  UNIQUE (project_id, receipt_number)
+);
+
+CREATE TABLE public.project_client_access (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  email text NOT NULL,
+  user_id uuid REFERENCES public.users(id) ON DELETE SET NULL,
+  invitation_token_hash text,
+  invitation_expires_at timestamptz,
+  invitation_status text NOT NULL DEFAULT 'pending' CHECK (invitation_status IN ('pending','accepted','revoked','expired')),
+  invited_by uuid REFERENCES public.users(id),
+  invited_at timestamptz NOT NULL DEFAULT now(),
+  accepted_at timestamptz,
+  revoked_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (project_id, email)
+);
+
+CREATE TABLE public.project_attachments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  progress_update_id uuid REFERENCES public.project_progress_updates(id) ON DELETE SET NULL,
+  expense_id uuid REFERENCES public.project_expenses(id) ON DELETE SET NULL,
+  storage_path text NOT NULL,
+  original_filename text NOT NULL,
+  mime_type text,
+  file_size_bytes bigint,
+  visibility_status text NOT NULL DEFAULT 'internal' CHECK (visibility_status IN ('internal','published')),
+  uploaded_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz,
+  CHECK (file_size_bytes IS NULL OR file_size_bytes >= 0)
+);
+
+CREATE TABLE public.project_investors (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL,
+  company_id uuid NOT NULL,
+  user_id uuid REFERENCES public.users(id) ON DELETE SET NULL,
+  name text NOT NULL,
+  email text,
+  phone text,
+  investment_percentage numeric(5,2) CHECK (investment_percentage >= 0 AND investment_percentage <= 100),
+  can_view_financials boolean NOT NULL DEFAULT false,
+  can_approve_payments boolean NOT NULL DEFAULT false,
+  can_view_client_receipts boolean NOT NULL DEFAULT false,
+  is_active boolean NOT NULL DEFAULT true,
+  created_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (project_id, user_id),
+  UNIQUE (project_id, email),
+  UNIQUE (id, project_id, company_id),
+  CONSTRAINT fk_project_investors_project_company
+    FOREIGN KEY (project_id, company_id)
+    REFERENCES public.projects(id, company_id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE public.project_investor_contributions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_investor_id uuid NOT NULL,
+  project_id uuid NOT NULL,
+  company_id uuid NOT NULL,
+  amount numeric(18,2) NOT NULL CHECK (amount > 0),
+  contribution_date date NOT NULL DEFAULT CURRENT_DATE,
+  reference_number text,
+  notes text,
+  created_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT fk_investor_contribution_owner
+    FOREIGN KEY (project_investor_id, project_id, company_id)
+    REFERENCES public.project_investors(id, project_id, company_id)
+    ON DELETE CASCADE
+);
+
+CREATE OR REPLACE FUNCTION public.validate_project_source_quotation()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  src public.documents%ROWTYPE;
+BEGIN
+  IF NEW.source_document_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT *
+  INTO src
+  FROM public.documents
+  WHERE id = NEW.source_document_id
+    AND company_id = NEW.company_id
+    AND is_deleted = false;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'source_document_id not found in same company';
+  END IF;
+
+  IF src.document_type <> 'Quotation' THEN
+    RAISE EXCEPTION 'source_document_id must reference document_type Quotation';
+  END IF;
+
+  IF src.status <> 'Accepted' THEN
+    RAISE EXCEPTION 'Only Accepted quotation can be used for conversion';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_progress_stage_link()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  st_project uuid;
+BEGIN
+  IF NEW.stage_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT project_id INTO st_project
+  FROM public.project_stages
+  WHERE id = NEW.stage_id;
+
+  IF st_project IS NULL OR st_project <> NEW.project_id THEN
+    RAISE EXCEPTION 'stage_id must belong to same project_id';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_attachment_links()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  upd_project uuid;
+  exp_project uuid;
+BEGIN
+  IF NEW.progress_update_id IS NOT NULL THEN
+    SELECT project_id INTO upd_project
+    FROM public.project_progress_updates
+    WHERE id = NEW.progress_update_id;
+
+    IF upd_project IS NULL OR upd_project <> NEW.project_id THEN
+      RAISE EXCEPTION 'progress_update_id must belong to same project_id';
+    END IF;
+  END IF;
+
+  IF NEW.expense_id IS NOT NULL THEN
+    SELECT project_id INTO exp_project
+    FROM public.project_expenses
+    WHERE id = NEW.expense_id;
+
+    IF exp_project IS NULL OR exp_project <> NEW.project_id THEN
+      RAISE EXCEPTION 'expense_id must belong to same project_id';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_document_master_scope()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  ok_count integer;
+BEGIN
+  IF NEW.project_type_id IS NOT NULL THEN
+    SELECT count(*) INTO ok_count
+    FROM public.project_types
+    WHERE id = NEW.project_type_id
+      AND is_active = true
+      AND (company_id = NEW.company_id OR company_id IS NULL);
+    IF ok_count = 0 THEN
+      RAISE EXCEPTION 'project_type_id is not allowed for this company';
+    END IF;
+  END IF;
+
+  IF NEW.area_unit_id IS NOT NULL THEN
+    SELECT count(*) INTO ok_count
+    FROM public.units_of_measure
+    WHERE id = NEW.area_unit_id
+      AND is_active = true
+      AND (company_id = NEW.company_id OR company_id IS NULL);
+    IF ok_count = 0 THEN
+      RAISE EXCEPTION 'area_unit_id is not allowed for this company';
+    END IF;
+  END IF;
+
+  IF NEW.tax_rate_id IS NOT NULL THEN
+    SELECT count(*) INTO ok_count
+    FROM public.tax_rates
+    WHERE id = NEW.tax_rate_id
+      AND is_active = true
+      AND (company_id = NEW.company_id OR company_id IS NULL);
+    IF ok_count = 0 THEN
+      RAISE EXCEPTION 'tax_rate_id is not allowed for this company';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_document_customer_scope()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  c_company uuid;
+BEGIN
+  IF NEW.customer_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT company_id INTO c_company
+  FROM public.customers
+  WHERE id = NEW.customer_id;
+
+  IF c_company IS NULL OR c_company <> NEW.company_id THEN
+    RAISE EXCEPTION 'documents.customer_id must belong to same company_id';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_project_master_scope()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  ok_count integer;
+BEGIN
+  IF NEW.project_type_id IS NOT NULL THEN
+    SELECT count(*) INTO ok_count
+    FROM public.project_types
+    WHERE id = NEW.project_type_id
+      AND is_active = true
+      AND (company_id = NEW.company_id OR company_id IS NULL);
+    IF ok_count = 0 THEN
+      RAISE EXCEPTION 'project_type_id is not allowed for this company';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_project_customer_scope()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  c_company uuid;
+BEGIN
+  IF NEW.customer_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT company_id INTO c_company
+  FROM public.customers
+  WHERE id = NEW.customer_id;
+
+  IF c_company IS NULL OR c_company <> NEW.company_id THEN
+    RAISE EXCEPTION 'projects.customer_id must belong to same company_id';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_stage_template_scope()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  pt_company uuid;
+BEGIN
+  IF NEW.project_type_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT company_id INTO pt_company
+  FROM public.project_types
+  WHERE id = NEW.project_type_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'project_stage_templates.project_type_id not found';
+  END IF;
+
+  -- Global template must reference a global project type.
+  IF NEW.company_id IS NULL AND pt_company IS NOT NULL THEN
+    RAISE EXCEPTION 'global stage template cannot reference a company project type';
+  END IF;
+
+  -- Company template may reference its own type or a global type.
+  IF NEW.company_id IS NOT NULL AND pt_company IS NOT NULL AND pt_company <> NEW.company_id THEN
+    RAISE EXCEPTION 'company stage template cannot reference another company project type';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_expense_master_scope()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  p_company uuid;
+  ok_count integer;
+BEGIN
+  IF NEW.category_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT company_id INTO p_company
+  FROM public.projects
+  WHERE id = NEW.project_id;
+
+  SELECT count(*) INTO ok_count
+  FROM public.expense_categories
+  WHERE id = NEW.category_id
+    AND is_active = true
+    AND (company_id = p_company OR company_id IS NULL);
+
+  IF ok_count = 0 THEN
+    RAISE EXCEPTION 'category_id is not allowed for this company';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_payment_method_scope()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  p_company uuid;
+  ok_count integer;
+BEGIN
+  IF TG_TABLE_NAME = 'project_receipts' THEN
+    IF NEW.payment_method_id IS NULL THEN
+      RETURN NEW;
+    END IF;
+
+    SELECT company_id INTO p_company
+    FROM public.projects
+    WHERE id = NEW.project_id;
+  ELSE
+    IF NEW.payment_method_id IS NULL THEN
+      RETURN NEW;
+    END IF;
+
+    SELECT p.company_id INTO p_company
+    FROM public.project_expenses e
+    JOIN public.projects p ON p.id = e.project_id
+    WHERE e.id = NEW.project_expense_id;
+  END IF;
+
+  SELECT count(*) INTO ok_count
+  FROM public.payment_methods
+  WHERE id = NEW.payment_method_id
+    AND is_active = true
+    AND (company_id = p_company OR company_id IS NULL);
+
+  IF ok_count = 0 THEN
+    RAISE EXCEPTION 'payment_method_id is not allowed for this company';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.validate_document_item_unit_scope()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  d_company uuid;
+  ok_count integer;
+BEGIN
+  IF NEW.unit_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT d.company_id
+  INTO d_company
+  FROM public.document_sections s
+  JOIN public.documents d ON d.id = s.document_id
+  WHERE s.id = NEW.section_id;
+
+  SELECT count(*) INTO ok_count
+  FROM public.units_of_measure
+  WHERE id = NEW.unit_id
+    AND is_active = true
+    AND (company_id = d_company OR company_id IS NULL);
+
+  IF ok_count = 0 THEN
+    RAISE EXCEPTION 'unit_id is not allowed for this document company';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_projects_source_validation
+  BEFORE INSERT OR UPDATE OF source_document_id, company_id
+  ON public.projects
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_project_source_quotation();
+
+CREATE TRIGGER trg_progress_stage_validation
+  BEFORE INSERT OR UPDATE OF stage_id, project_id
+  ON public.project_progress_updates
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_progress_stage_link();
+
+CREATE TRIGGER trg_attachment_link_validation
+  BEFORE INSERT OR UPDATE OF progress_update_id, expense_id, project_id
+  ON public.project_attachments
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_attachment_links();
+
+CREATE TRIGGER trg_documents_master_scope
+  BEFORE INSERT OR UPDATE OF project_type_id, area_unit_id, tax_rate_id, company_id
+  ON public.documents
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_document_master_scope();
+
+CREATE TRIGGER trg_documents_customer_scope
+  BEFORE INSERT OR UPDATE OF customer_id, company_id
+  ON public.documents
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_document_customer_scope();
+
+CREATE TRIGGER trg_projects_master_scope
+  BEFORE INSERT OR UPDATE OF project_type_id, company_id
+  ON public.projects
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_project_master_scope();
+
+CREATE TRIGGER trg_projects_customer_scope
+  BEFORE INSERT OR UPDATE OF customer_id, company_id
+  ON public.projects
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_project_customer_scope();
+
+CREATE TRIGGER trg_stage_templates_scope
+  BEFORE INSERT OR UPDATE OF company_id, project_type_id
+  ON public.project_stage_templates
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_stage_template_scope();
+
+CREATE TRIGGER trg_expenses_master_scope
+  BEFORE INSERT OR UPDATE OF category_id, project_id
+  ON public.project_expenses
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_expense_master_scope();
+
+CREATE TRIGGER trg_receipts_method_scope
+  BEFORE INSERT OR UPDATE OF payment_method_id, project_id
+  ON public.project_receipts
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_payment_method_scope();
+
+CREATE TRIGGER trg_expense_payments_method_scope
+  BEFORE INSERT OR UPDATE OF payment_method_id, project_expense_id
+  ON public.project_expense_payments
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_payment_method_scope();
+
+CREATE TRIGGER trg_document_items_unit_scope
+  BEFORE INSERT OR UPDATE OF unit_id, section_id
+  ON public.document_items
+  FOR EACH ROW
+  EXECUTE FUNCTION public.validate_document_item_unit_scope();
+
+CREATE INDEX idx_documents_company_updated ON public.documents(company_id, updated_at DESC);
+CREATE INDEX idx_documents_company_type_status ON public.documents(company_id, document_type, status);
+CREATE INDEX idx_projects_company_updated ON public.projects(company_id, updated_at DESC);
+CREATE INDEX idx_projects_company_status ON public.projects(company_id, status);
+CREATE INDEX idx_project_expenses_project_bill_date ON public.project_expenses(project_id, bill_date DESC);
+CREATE INDEX idx_project_receipts_project_received_date ON public.project_receipts(project_id, received_date DESC);
+CREATE INDEX idx_project_stages_project_sequence ON public.project_stages(project_id, sequence_number);
+CREATE INDEX idx_progress_updates_project_date ON public.project_progress_updates(project_id, update_date DESC);
+CREATE INDEX idx_investor_contrib_investor_date ON public.project_investor_contributions(project_investor_id, contribution_date DESC);
+
+CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_user_profiles_updated_at BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_companies_updated_at BEFORE UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_company_settings_updated_at BEFORE UPDATE ON public.company_settings FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_company_users_updated_at BEFORE UPDATE ON public.company_users FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_customers_updated_at BEFORE UPDATE ON public.customers FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_project_types_updated_at BEFORE UPDATE ON public.project_types FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_expense_categories_updated_at BEFORE UPDATE ON public.expense_categories FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_units_updated_at BEFORE UPDATE ON public.units_of_measure FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_payment_methods_updated_at BEFORE UPDATE ON public.payment_methods FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_tax_rates_updated_at BEFORE UPDATE ON public.tax_rates FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_stage_templates_updated_at BEFORE UPDATE ON public.project_stage_templates FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_document_sequences_updated_at BEFORE UPDATE ON public.document_sequences FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_documents_updated_at BEFORE UPDATE ON public.documents FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_projects_updated_at BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_stages_updated_at BEFORE UPDATE ON public.project_stages FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_progress_updated_at BEFORE UPDATE ON public.project_progress_updates FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_expenses_updated_at BEFORE UPDATE ON public.project_expenses FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_receipts_updated_at BEFORE UPDATE ON public.project_receipts FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_client_access_updated_at BEFORE UPDATE ON public.project_client_access FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_investors_updated_at BEFORE UPDATE ON public.project_investors FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_company_subscriptions_updated_at BEFORE UPDATE ON public.company_subscriptions FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_company_usage_updated_at BEFORE UPDATE ON public.company_quotation_usage FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_subscription_payments_updated_at BEFORE UPDATE ON public.subscription_payments FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon;
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM authenticated;
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+
+COMMIT;
+-- <<< 0001_schema.sql
+
+-- >>> 0002_seed.sql
+BEGIN;
+
+INSERT INTO public.project_types (company_id, code, name, description, sort_order, is_active)
+VALUES
+  (NULL, 'independent_house', 'Independent House Construction', 'Construction of standalone and independent residential houses.', 1, true),
+  (NULL, 'villa', 'Villa Construction', 'Construction of standalone villas and villa communities.', 2, true),
+  (NULL, 'apartment', 'Apartment Construction', 'Construction or development of apartment buildings and residential towers.', 3, true),
+  (NULL, 'commercial_building', 'Commercial Building Construction', 'Construction of offices, retail buildings and other commercial properties.', 4, true),
+  (NULL, 'industrial_warehouse', 'Industrial & Warehouse Construction', 'Construction of industrial facilities, factories and warehouse buildings.', 5, true),
+  (NULL, 'renovation', 'Renovation & Remodeling', 'Renovation, rehabilitation and remodeling of existing residential or commercial properties.', 6, true),
+  (NULL, 'building_extension', 'Building Extension & Additional Floor', 'Building extensions, alterations and construction of additional floors.', 7, true),
+  (NULL, 'interior_fitout', 'Interior Fit-out & Works', 'Interior fit-out, finishing and interior construction works.', 8, true),
+  (NULL, 'structural_works', 'Structural Construction Works', 'Structural construction works including RCC, steel and structural building elements.', 9, true),
+  (NULL, 'civil_infrastructure', 'Civil Infrastructure Works', 'Civil engineering and infrastructure works for residential, commercial and public facilities.', 10, true),
+  (NULL, 'road_drainage', 'Road & Drainage Works', 'Road construction, drainage systems, culverts and related infrastructure works.', 11, true),
+  (NULL, 'other', 'Other / Custom Project', 'A project that does not fit the predefined project categories and requires custom planning.', 12, true)
+ON CONFLICT ON CONSTRAINT uq_project_types
+DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  sort_order = EXCLUDED.sort_order,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+INSERT INTO public.expense_categories (company_id, code, name, description, sort_order, is_active)
+VALUES
+  (NULL, 'materials', 'Materials', 'Construction materials', 1, true),
+  (NULL, 'labour', 'Labour', 'Labour charges', 2, true),
+  (NULL, 'equipment', 'Equipment', 'Equipment and machinery', 3, true),
+  (NULL, 'transport', 'Transport', 'Transport and logistics', 4, true),
+  (NULL, 'misc', 'Miscellaneous', 'Other expenses', 5, true)
+ON CONFLICT ON CONSTRAINT uq_expense_categories
+DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  sort_order = EXCLUDED.sort_order,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+INSERT INTO public.units_of_measure (company_id, code, name, symbol, sort_order, is_active)
+VALUES
+  (NULL, 'sqft', 'Sq.ft', 'Sq.ft', 1, true),
+  (NULL, 'sqm', 'Sq.m', 'Sq.m', 2, true),
+  (NULL, 'nos', 'Nos', 'Nos', 3, true),
+  (NULL, 'kg', 'Kg', 'Kg', 4, true),
+  (NULL, 'cft', 'Cft', 'Cft', 5, true),
+  (NULL, 'rft', 'Rft', 'Rft', 6, true),
+  (NULL, 'bag', 'Bag', 'Bag', 7, true),
+  (NULL, 'litre', 'Litre', 'Litre', 8, true),
+  (NULL, 'lumpsum', 'LS / Lump Sum', 'LS', 9, true),
+  (NULL, 'job', 'Job', 'Job', 10, true)
+ON CONFLICT ON CONSTRAINT uq_units_of_measure
+DO UPDATE SET
+  name = EXCLUDED.name,
+  symbol = EXCLUDED.symbol,
+  sort_order = EXCLUDED.sort_order,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+INSERT INTO public.payment_methods (company_id, code, name, sort_order, is_active)
+VALUES
+  (NULL, 'cash', 'Cash', 1, true),
+  (NULL, 'upi', 'UPI', 2, true),
+  (NULL, 'bank_transfer', 'Bank Transfer', 3, true),
+  (NULL, 'cheque', 'Cheque', 4, true),
+  (NULL, 'other', 'Other', 5, true)
+ON CONFLICT ON CONSTRAINT uq_payment_methods
+DO UPDATE SET
+  name = EXCLUDED.name,
+  sort_order = EXCLUDED.sort_order,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+INSERT INTO public.tax_rates (company_id, code, name, rate_percentage, effective_from, effective_to, is_active)
+VALUES
+  (NULL, 'gst_0', 'GST 0%', 0.00, DATE '2024-01-01', NULL, true),
+  (NULL, 'gst_5', 'GST 5%', 5.00, DATE '2024-01-01', NULL, true),
+  (NULL, 'gst_12', 'GST 12%', 12.00, DATE '2024-01-01', NULL, true),
+  (NULL, 'gst_18', 'GST 18%', 18.00, DATE '2024-01-01', NULL, true),
+  (NULL, 'gst_28', 'GST 28%', 28.00, DATE '2024-01-01', NULL, true)
+ON CONFLICT ON CONSTRAINT uq_tax_rates
+DO UPDATE SET
+  name = EXCLUDED.name,
+  rate_percentage = EXCLUDED.rate_percentage,
+  effective_to = EXCLUDED.effective_to,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+INSERT INTO public.project_stage_templates (company_id, project_type_id, template_code, name, sequence_number, default_completion_percentage, is_active)
+SELECT
+  NULL,
+  pt.id,
+  t.template_code,
+  t.name,
+  t.sequence_number,
+  t.default_completion_percentage,
+  true
+FROM public.project_types pt
+JOIN (
+  VALUES
+    ('independent_house', 'site_setup', 'Site Setup', 1, 5.00),
+    ('independent_house', 'foundation', 'Foundation', 2, 20.00),
+    ('independent_house', 'structure', 'RCC / Structure', 3, 45.00),
+    ('independent_house', 'masonry', 'Masonry', 4, 60.00),
+    ('independent_house', 'plastering', 'Plastering', 5, 70.00),
+    ('independent_house', 'flooring', 'Flooring', 6, 80.00),
+    ('independent_house', 'electrical_plumbing', 'Electrical & Plumbing', 7, 90.00),
+    ('independent_house', 'painting', 'Painting', 8, 96.00),
+    ('independent_house', 'handover', 'Handover', 9, 100.00)
+) AS t(project_code, template_code, name, sequence_number, default_completion_percentage)
+  ON pt.company_id IS NULL AND pt.code = t.project_code
+ON CONFLICT ON CONSTRAINT uq_project_stage_templates
+DO UPDATE SET
+  name = EXCLUDED.name,
+  sequence_number = EXCLUDED.sequence_number,
+  default_completion_percentage = EXCLUDED.default_completion_percentage,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+COMMIT;
+-- <<< 0002_seed.sql
+
+-- >>> 0005_membership_precheck.sql
+BEGIN;
+SET TRANSACTION READ ONLY;
+
+-- 1) Companies with missing or invalid owner_id
+SELECT
+    c.id AS company_id,
+    c.owner_id,
+    CASE
+        WHEN c.owner_id IS NULL THEN 'owner_id_is_null'
+        WHEN u.id IS NULL THEN 'owner_id_not_found_in_users'
+        ELSE 'ok'
+    END AS owner_integrity_status
+FROM public.companies c
+LEFT JOIN public.users u
+    ON u.id = c.owner_id
+WHERE c.owner_id IS NULL
+   OR u.id IS NULL
+ORDER BY c.id;
+
+-- 2) Owners linked to another company
+SELECT
+    c.id AS owned_company_id,
+    c.owner_id AS owner_user_id,
+    cu.company_id AS linked_company_id,
+    cu.role AS linked_role,
+    cu.is_active AS linked_is_active
+FROM public.companies c
+JOIN public.company_users cu
+    ON cu.user_id = c.owner_id
+   AND cu.company_id <> c.id
+ORDER BY c.id, cu.company_id;
+
+-- 3) Owner membership exists but role is not owner
+SELECT
+    c.id AS company_id,
+    c.owner_id AS owner_user_id,
+    cu.role AS existing_role,
+    cu.is_active AS existing_is_active
+FROM public.companies c
+JOIN public.company_users cu
+    ON cu.company_id = c.id
+   AND cu.user_id = c.owner_id
+WHERE cu.role <> 'owner'
+ORDER BY c.id;
+
+-- 4) Owner membership exists but inactive
+SELECT
+    c.id AS company_id,
+    c.owner_id AS owner_user_id,
+    cu.role AS existing_role,
+    cu.is_active AS existing_is_active
+FROM public.companies c
+JOIN public.company_users cu
+    ON cu.company_id = c.id
+   AND cu.user_id = c.owner_id
+WHERE cu.is_active = false
+ORDER BY c.id;
+
+-- 5) Users linked to multiple companies
+SELECT
+    cu.user_id,
+    COUNT(DISTINCT cu.company_id) AS company_count,
+    ARRAY_AGG(DISTINCT cu.company_id ORDER BY cu.company_id) AS company_ids
+FROM public.company_users cu
+GROUP BY cu.user_id
+HAVING COUNT(DISTINCT cu.company_id) > 1
+ORDER BY company_count DESC, cu.user_id;
+
+-- 6) Duplicate rows per (company_id, user_id)
+SELECT
+    cu.company_id,
+    cu.user_id,
+    COUNT(*) AS row_count
+FROM public.company_users cu
+GROUP BY cu.company_id, cu.user_id
+HAVING COUNT(*) > 1
+ORDER BY cu.company_id, cu.user_id;
+
+-- 7) Duplicate rows per user_id (would block unique user_id index)
+SELECT
+    cu.user_id,
+    COUNT(*) AS membership_rows,
+    ARRAY_AGG(cu.company_id ORDER BY cu.company_id) AS company_ids
+FROM public.company_users cu
+GROUP BY cu.user_id
+HAVING COUNT(*) > 1
+ORDER BY membership_rows DESC, cu.user_id;
+
+-- 8) Additional verification: every company has exactly one active owner membership
+SELECT
+    c.id AS company_id,
+    COUNT(*) FILTER (WHERE cu.role = 'owner' AND cu.is_active = true) AS active_owner_count
+FROM public.companies c
+LEFT JOIN public.company_users cu
+    ON cu.company_id = c.id
+GROUP BY c.id
+HAVING COUNT(*) FILTER (WHERE cu.role = 'owner' AND cu.is_active = true) <> 1
+ORDER BY c.id;
+
+-- 9) Additional verification: companies.owner_id must match the owner membership user_id
+SELECT
+    c.id AS company_id,
+    c.owner_id AS companies_owner_id,
+    cu.user_id AS owner_membership_user_id,
+    cu.role,
+    cu.is_active
+FROM public.companies c
+LEFT JOIN public.company_users cu
+    ON cu.company_id = c.id
+   AND cu.role = 'owner'
+   AND cu.is_active = true
+WHERE cu.user_id IS DISTINCT FROM c.owner_id
+ORDER BY c.id;
+
+-- 10) Additional verification: no company has multiple owner memberships
+SELECT
+    cu.company_id,
+    COUNT(*) AS owner_membership_count,
+    ARRAY_AGG(cu.user_id ORDER BY cu.user_id) AS owner_user_ids
+FROM public.company_users cu
+WHERE cu.role = 'owner'
+GROUP BY cu.company_id
+HAVING COUNT(*) > 1
+ORDER BY cu.company_id;
+
+-- 11) Additional verification: no inactive owner memberships remain unresolved
+SELECT
+    cu.company_id,
+    cu.user_id,
+    cu.role,
+    cu.is_active
+FROM public.company_users cu
+WHERE cu.role = 'owner'
+  AND cu.is_active = false
+ORDER BY cu.company_id, cu.user_id;
+
+-- 12) Index inspection including validity and readiness
+SELECT
+    ns.nspname AS schema_name,
+    tbl.relname AS table_name,
+    idx.relname AS index_name,
+    ind.indisunique AS is_unique,
+    ind.indisvalid AS is_valid,
+    ind.indisready AS is_ready,
+    ind.indislive AS is_live,
+    pg_get_expr(ind.indpred, ind.indrelid) AS predicate,
+    pg_get_indexdef(idx.oid) AS index_def
+FROM pg_index ind
+JOIN pg_class idx
+    ON idx.oid = ind.indexrelid
+JOIN pg_class tbl
+    ON tbl.oid = ind.indrelid
+JOIN pg_namespace ns
+    ON ns.oid = tbl.relnamespace
+WHERE ns.nspname = 'public'
+  AND tbl.relname = 'company_users'
+ORDER BY idx.relname;
+
+COMMIT;
+-- <<< 0005_membership_precheck.sql
+
+-- >>> 0006_owner_membership_backfill.sql
+BEGIN;
+
+-- Concurrency protection approach:
+-- Lock company_users and companies for write stability inside this transaction,
+-- so conflict detection and insert set remain stable until commit.
+-- This blocks concurrent membership writes during the backfill window.
+LOCK TABLE public.company_users IN SHARE ROW EXCLUSIVE MODE;
+LOCK TABLE public.companies IN SHARE ROW EXCLUSIVE MODE;
+
+CREATE TEMP TABLE membership_backfill_conflicts (
+    conflict_type text NOT NULL,
+    company_id uuid,
+    owner_user_id uuid,
+    details text
+) ON COMMIT DROP;
+
+-- A) Missing or invalid owner_id
+INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
+SELECT
+    'missing_or_invalid_owner_id',
+    c.id,
+    c.owner_id,
+    CASE
+        WHEN c.owner_id IS NULL THEN 'owner_id is NULL'
+        ELSE 'owner_id does not exist in users'
+    END
+FROM public.companies c
+LEFT JOIN public.users u
+    ON u.id = c.owner_id
+WHERE c.owner_id IS NULL
+   OR u.id IS NULL;
+
+-- B) Owner linked to another company
+INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
+SELECT DISTINCT
+    'owner_linked_to_other_company',
+    c.id,
+    c.owner_id,
+    'owner has membership in company ' || cu.company_id::text || ' with role ' || COALESCE(cu.role, 'null')
+FROM public.companies c
+JOIN public.company_users cu
+    ON cu.user_id = c.owner_id
+   AND cu.company_id <> c.id;
+
+-- C) Owner has own-company membership but non-owner role (report only)
+INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
+SELECT
+    'owner_membership_role_conflict',
+    c.id,
+    c.owner_id,
+    'existing role is ' || COALESCE(cu.role, 'null')
+FROM public.companies c
+JOIN public.company_users cu
+    ON cu.company_id = c.id
+   AND cu.user_id = c.owner_id
+WHERE cu.role <> 'owner';
+
+-- D) Owner has own-company membership but inactive status (report only)
+INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
+SELECT
+    'owner_membership_inactive_conflict',
+    c.id,
+    c.owner_id,
+    'existing owner membership is inactive'
+FROM public.companies c
+JOIN public.company_users cu
+    ON cu.company_id = c.id
+   AND cu.user_id = c.owner_id
+WHERE cu.role = 'owner'
+  AND cu.is_active = false;
+
+-- E) Users linked to multiple companies
+INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
+SELECT
+    'user_linked_to_multiple_companies',
+    NULL,
+    multi.user_id,
+    'user is linked to ' || multi.company_count::text || ' companies'
+FROM (
+    SELECT
+        cu.user_id,
+        COUNT(DISTINCT cu.company_id) AS company_count
+    FROM public.company_users cu
+    GROUP BY cu.user_id
+    HAVING COUNT(DISTINCT cu.company_id) > 1
+) multi;
+
+-- Report all conflicts for manual resolution
+SELECT
+    conflict_type,
+    company_id,
+    owner_user_id,
+    details
+FROM membership_backfill_conflicts
+ORDER BY conflict_type, company_id, owner_user_id, details;
+
+-- Stop on any conflict.
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM membership_backfill_conflicts) THEN
+        RAISE EXCEPTION
+            'Owner-membership backfill halted: conflicts detected. Resolve manually, then rerun.';
+    END IF;
+END
+$$;
+
+-- Safe idempotent insert: only missing owner memberships.
+INSERT INTO public.company_users (company_id, user_id, role, is_active)
+SELECT
+    c.id AS company_id,
+    c.owner_id AS user_id,
+    'owner' AS role,
+    true AS is_active
+FROM public.companies c
+JOIN public.users u
+    ON u.id = c.owner_id
+LEFT JOIN public.company_users cu
+    ON cu.company_id = c.id
+   AND cu.user_id = c.owner_id
+WHERE cu.id IS NULL
+ON CONFLICT (company_id, user_id) DO NOTHING;
+
+-- Post-backfill verification snapshot
+SELECT
+    c.id AS company_id,
+    c.owner_id,
+    COUNT(*) FILTER (WHERE cu.role = 'owner' AND cu.is_active = true) AS active_owner_count
+FROM public.companies c
+LEFT JOIN public.company_users cu
+    ON cu.company_id = c.id
+GROUP BY c.id, c.owner_id
+ORDER BY c.id;
+
+COMMIT;
+-- <<< 0006_owner_membership_backfill.sql
+
+-- >>> 0007_company_users_unique_index.sql
+BEGIN;
+
+-- Concurrency protection for duplicate check and index creation in one transaction.
+LOCK TABLE public.company_users IN SHARE ROW EXCLUSIVE MODE;
+
+-- 1) Block if duplicates remain.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM public.company_users cu
+        GROUP BY cu.user_id
+        HAVING COUNT(*) > 1
+    ) THEN
+        RAISE EXCEPTION
+            'Cannot enforce unique company_users(user_id): duplicate memberships remain.';
+    END IF;
+END
+$$;
+
+-- 2) Validate existing index state/definition before deciding action.
+DO $$
+DECLARE
+    v_named_exists boolean;
+    v_named_exact boolean;
+    v_named_valid_ready boolean;
+    v_equivalent_exists boolean;
+    v_equivalent_valid_ready boolean;
+BEGIN
+    SELECT EXISTS (
+        SELECT 1
+        FROM pg_class idx
+        JOIN pg_namespace ns ON ns.oid = idx.relnamespace
+        WHERE ns.nspname = 'public'
+          AND idx.relname = 'uq_company_users_user_id'
+    ) INTO v_named_exists;
+
+    SELECT EXISTS (
+        SELECT 1
+        FROM pg_index ind
+        JOIN pg_class idx ON idx.oid = ind.indexrelid
+        JOIN pg_class tbl ON tbl.oid = ind.indrelid
+        JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
+        WHERE ns.nspname = 'public'
+          AND tbl.relname = 'company_users'
+          AND idx.relname = 'uq_company_users_user_id'
+          AND ind.indisunique = true
+          AND ind.indpred IS NULL
+          AND ind.indnkeyatts = 1
+          AND EXISTS (
+              SELECT 1
+              FROM unnest(ind.indkey::int2[]) WITH ORDINALITY k(attnum, ord)
+              JOIN pg_attribute a
+                ON a.attrelid = ind.indrelid
+               AND a.attnum = k.attnum
+              WHERE ord = 1
+                AND a.attname = 'user_id'
+          )
+    ) INTO v_named_exact;
+
+    SELECT EXISTS (
+        SELECT 1
+        FROM pg_index ind
+        JOIN pg_class idx ON idx.oid = ind.indexrelid
+        JOIN pg_class tbl ON tbl.oid = ind.indrelid
+        JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
+        WHERE ns.nspname = 'public'
+          AND tbl.relname = 'company_users'
+          AND idx.relname = 'uq_company_users_user_id'
+          AND ind.indisvalid = true
+          AND ind.indisready = true
+    ) INTO v_named_valid_ready;
+
+    SELECT EXISTS (
+        SELECT 1
+        FROM pg_index ind
+        JOIN pg_class idx ON idx.oid = ind.indexrelid
+        JOIN pg_class tbl ON tbl.oid = ind.indrelid
+        JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
+        WHERE ns.nspname = 'public'
+          AND tbl.relname = 'company_users'
+          AND ind.indisunique = true
+          AND ind.indpred IS NULL
+          AND ind.indnkeyatts = 1
+          AND ind.indisvalid = true
+          AND ind.indisready = true
+          AND EXISTS (
+              SELECT 1
+              FROM unnest(ind.indkey::int2[]) WITH ORDINALITY k(attnum, ord)
+              JOIN pg_attribute a
+                ON a.attrelid = ind.indrelid
+               AND a.attnum = k.attnum
+              WHERE ord = 1
+                AND a.attname = 'user_id'
+          )
+    ) INTO v_equivalent_valid_ready;
+
+    SELECT EXISTS (
+        SELECT 1
+        FROM pg_index ind
+        JOIN pg_class idx ON idx.oid = ind.indexrelid
+        JOIN pg_class tbl ON tbl.oid = ind.indrelid
+        JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
+        WHERE ns.nspname = 'public'
+          AND tbl.relname = 'company_users'
+          AND ind.indisunique = true
+          AND ind.indpred IS NULL
+          AND ind.indnkeyatts = 1
+          AND EXISTS (
+              SELECT 1
+              FROM unnest(ind.indkey::int2[]) WITH ORDINALITY k(attnum, ord)
+              JOIN pg_attribute a
+                ON a.attrelid = ind.indrelid
+               AND a.attnum = k.attnum
+              WHERE ord = 1
+                AND a.attname = 'user_id'
+          )
+    ) INTO v_equivalent_exists;
+
+    IF v_named_exists THEN
+        IF NOT v_named_exact THEN
+            RAISE EXCEPTION
+                'Index uq_company_users_user_id exists but definition differs. Manual review required.';
+        ELSIF NOT v_named_valid_ready THEN
+            RAISE EXCEPTION
+                'Index uq_company_users_user_id exists but is not valid/ready. Manual remediation required.';
+        END IF;
+    ELSE
+        IF v_equivalent_exists AND NOT v_equivalent_valid_ready THEN
+            RAISE EXCEPTION
+                'Equivalent unique index on user_id exists but is not valid/ready. Manual remediation required.';
+        ELSIF v_equivalent_valid_ready THEN
+            RAISE NOTICE
+                'Equivalent valid/ready unique index on company_users(user_id) already exists. No new index created.';
+        ELSE
+            CREATE UNIQUE INDEX uq_company_users_user_id
+                ON public.company_users (user_id);
+        END IF;
+    END IF;
+END
+$$;
+
+-- 3) Final verification output
+SELECT
+    idx.relname AS index_name,
+    ind.indisunique AS is_unique,
+    ind.indisvalid AS is_valid,
+    ind.indisready AS is_ready,
+    pg_get_expr(ind.indpred, ind.indrelid) AS predicate,
+    pg_get_indexdef(idx.oid) AS index_def
+FROM pg_index ind
+JOIN pg_class idx
+    ON idx.oid = ind.indexrelid
+JOIN pg_class tbl
+    ON tbl.oid = ind.indrelid
+JOIN pg_namespace ns
+    ON ns.oid = tbl.relnamespace
+WHERE ns.nspname = 'public'
+  AND tbl.relname = 'company_users'
+ORDER BY idx.relname;
+
+COMMIT;
+-- <<< 0007_company_users_unique_index.sql
+
+-- >>> 0008_shared_parties.sql
+BEGIN;
+
+CREATE TABLE public.parties (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  entity_type text NOT NULL DEFAULT 'person' CHECK (entity_type IN ('person', 'business')),
+  contact_person_name text,
+  is_customer boolean NOT NULL DEFAULT false,
+  is_supplier boolean NOT NULL DEFAULT false,
+  is_investor boolean NOT NULL DEFAULT false,
+  email text,
+  mobile text,
+  address text,
+  city text,
+  state text,
+  pincode text,
+  gstin text,
+  gst_registration_type text,
+  gst_state_code text,
+  notes text,
+  is_active boolean NOT NULL DEFAULT true,
+  is_deleted boolean NOT NULL DEFAULT false,
+  deleted_at timestamptz,
+  deleted_by uuid REFERENCES public.users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT parties_has_role CHECK (
+    is_customer OR is_supplier OR is_investor
+  )
+);
+
+CREATE INDEX idx_parties_company_active_updated
+  ON public.parties (company_id, is_active, updated_at DESC);
+
+CREATE INDEX idx_parties_company_role_lookup
+  ON public.parties (company_id, is_customer, is_supplier, is_investor);
+
+CREATE INDEX idx_parties_company_search
+  ON public.parties (company_id, name, email, mobile, gstin);
+
+INSERT INTO public.parties (
+  id, company_id, name, entity_type, contact_person_name,
+  is_customer, is_supplier, is_investor,
+  email, mobile, address, city, state, pincode,
+  gstin, gst_registration_type, gst_state_code, notes,
+  is_active, is_deleted, deleted_at, deleted_by,
+  created_at, updated_at
+)
+SELECT
+  c.id, c.company_id, c.name, 'person', NULL,
+  true, false, false,
+  c.email, c.mobile, c.address, c.city, c.state, c.pincode,
+  c.gstin, c.gst_registration_type, c.gst_state_code, NULL,
+  true, c.is_deleted, c.deleted_at, c.deleted_by,
+  c.created_at, c.updated_at
+FROM public.customers c
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.parties (
+  id, company_id, name, entity_type, contact_person_name,
+  is_customer, is_supplier, is_investor,
+  email, mobile, address, city, state, pincode,
+  gstin, gst_registration_type, gst_state_code, notes,
+  is_active, is_deleted, deleted_at, deleted_by,
+  created_at, updated_at
+)
+SELECT
+  i.id, i.company_id, i.name, 'person', NULL,
+  false, false, true,
+  i.email, i.phone, NULL, NULL, NULL, NULL,
+  NULL, NULL, NULL, NULL,
+  true, false, NULL, NULL,
+  now(), now()
+FROM public.investors i
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.parties p WHERE p.id = i.id
+)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE TRIGGER set_parties_updated_at
+BEFORE UPDATE ON public.parties
+FOR EACH ROW
+EXECUTE FUNCTION public.set_updated_at();
+
+COMMIT;
+-- <<< 0008_shared_parties.sql
+
+-- >>> 0009_project_investor_party_id.sql
+BEGIN;
+
+ALTER TABLE public.project_investors
+  ADD COLUMN IF NOT EXISTS party_id uuid
+  REFERENCES public.parties(id) ON DELETE SET NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_project_investors_project_party_unique
+  ON public.project_investors (project_id, party_id)
+  WHERE party_id IS NOT NULL;
+
+COMMIT;
+-- <<< 0009_project_investor_party_id.sql
+
+-- >>> 0010_customer_document_party_id.sql
+BEGIN;
+
+ALTER TABLE public.customers
+  ADD COLUMN IF NOT EXISTS party_id uuid
+  REFERENCES public.parties(id) ON DELETE SET NULL;
+
+ALTER TABLE public.documents
+  ADD COLUMN IF NOT EXISTS party_id uuid
+  REFERENCES public.parties(id) ON DELETE SET NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_company_party_unique
+  ON public.customers (company_id, party_id)
+  WHERE party_id IS NOT NULL;
+
+COMMIT;
+-- <<< 0010_customer_document_party_id.sql
+
+-- >>> 0011_project_budget_amount.sql
+ALTER TABLE public.projects
+ADD COLUMN IF NOT EXISTS budget_amount numeric(18,2) CHECK (budget_amount IS NULL OR budget_amount >= 0);
+-- <<< 0011_project_budget_amount.sql
+
+-- >>> 0012_purchase_orders.sql
+BEGIN;
+
+CREATE TABLE public.purchase_orders (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  supplier_party_id uuid NOT NULL REFERENCES public.parties(id) ON DELETE RESTRICT,
+  po_number text NOT NULL,
+  order_date date NOT NULL DEFAULT CURRENT_DATE,
+  expected_delivery_date date,
+  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'approved', 'cancelled', 'closed')),
+  subtotal numeric(18,2) NOT NULL DEFAULT 0 CHECK (subtotal >= 0),
+  tax_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
+  total_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (total_amount >= 0),
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (company_id, po_number)
+);
+
+CREATE TABLE public.purchase_order_lines (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  purchase_order_id uuid NOT NULL REFERENCES public.purchase_orders(id) ON DELETE CASCADE,
+  description text NOT NULL,
+  quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (quantity >= 0),
+  unit text,
+  rate numeric(18,2) NOT NULL DEFAULT 0 CHECK (rate >= 0),
+  line_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (line_amount >= 0),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_purchase_orders_company_project
+  ON public.purchase_orders (company_id, project_id, created_at DESC);
+
+CREATE INDEX idx_purchase_orders_supplier
+  ON public.purchase_orders (supplier_party_id, status);
+
+CREATE INDEX idx_purchase_order_lines_order
+  ON public.purchase_order_lines (purchase_order_id, created_at);
+
+CREATE TRIGGER set_purchase_orders_updated_at
+BEFORE UPDATE ON public.purchase_orders
+FOR EACH ROW
+EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TRIGGER set_purchase_order_lines_updated_at
+BEFORE UPDATE ON public.purchase_order_lines
+FOR EACH ROW
+EXECUTE FUNCTION public.set_updated_at();
+
+COMMIT;
+-- <<< 0012_purchase_orders.sql
+
+-- >>> 0013_material_receipts.sql
+BEGIN;
+
+CREATE TABLE public.material_receipts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  purchase_order_id uuid NOT NULL REFERENCES public.purchase_orders(id) ON DELETE RESTRICT,
+  supplier_party_id uuid NOT NULL REFERENCES public.parties(id) ON DELETE RESTRICT,
+  receipt_number text NOT NULL,
+  receipt_date date NOT NULL DEFAULT CURRENT_DATE,
+  delivery_reference_number text,
+  notes text,
+  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'accepted', 'rejected')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (company_id, receipt_number)
+);
+
+CREATE TABLE public.material_receipt_lines (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  material_receipt_id uuid NOT NULL REFERENCES public.material_receipts(id) ON DELETE CASCADE,
+  purchase_order_line_id uuid NOT NULL REFERENCES public.purchase_order_lines(id) ON DELETE RESTRICT,
+  ordered_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (ordered_quantity >= 0),
+  previously_received_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (previously_received_quantity >= 0),
+  quantity_received numeric(18,4) NOT NULL DEFAULT 0 CHECK (quantity_received >= 0),
+  accepted_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (accepted_quantity >= 0),
+  rejected_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (rejected_quantity >= 0),
+  remaining_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (remaining_quantity >= 0),
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_material_receipts_project_po
+  ON public.material_receipts (company_id, project_id, purchase_order_id, receipt_date DESC);
+
+CREATE INDEX idx_material_receipts_supplier
+  ON public.material_receipts (supplier_party_id, status);
+
+CREATE INDEX idx_material_receipt_lines_receipt
+  ON public.material_receipt_lines (material_receipt_id, purchase_order_line_id);
+
+CREATE INDEX idx_material_receipt_lines_po_line
+  ON public.material_receipt_lines (purchase_order_line_id, created_at DESC);
+
+CREATE TRIGGER set_material_receipts_updated_at
+BEFORE UPDATE ON public.material_receipts
+FOR EACH ROW
+EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TRIGGER set_material_receipt_lines_updated_at
+BEFORE UPDATE ON public.material_receipt_lines
+FOR EACH ROW
+EXECUTE FUNCTION public.set_updated_at();
+
+COMMIT;
+-- <<< 0013_material_receipts.sql
+
+-- >>> 0014_company_scope_financial_columns.sql
+BEGIN;
+
+ALTER TABLE public.project_expenses
+  ADD COLUMN IF NOT EXISTS company_id uuid,
+  ADD COLUMN IF NOT EXISTS supplier_id uuid,
+  ADD COLUMN IF NOT EXISTS party_id uuid;
+
+UPDATE public.project_expenses pe
+SET company_id = p.company_id
+FROM public.projects p
+WHERE pe.project_id = p.id
+  AND pe.company_id IS NULL;
+
+ALTER TABLE public.project_expenses
+  ALTER COLUMN company_id SET NOT NULL;
+
+ALTER TABLE public.project_expense_payments
+  ADD COLUMN IF NOT EXISTS company_id uuid;
+
+UPDATE public.project_expense_payments pep
+SET company_id = pe.company_id
+FROM public.project_expenses pe
+WHERE pep.project_expense_id = pe.id
+  AND pep.company_id IS NULL;
+
+ALTER TABLE public.project_expense_payments
+  ALTER COLUMN company_id SET NOT NULL;
+
+ALTER TABLE public.project_receipts
+  ADD COLUMN IF NOT EXISTS company_id uuid,
+  ADD COLUMN IF NOT EXISTS customer_id uuid;
+
+UPDATE public.project_receipts pr
+SET company_id = p.company_id
+FROM public.projects p
+WHERE pr.project_id = p.id
+  AND pr.company_id IS NULL;
+
+ALTER TABLE public.project_receipts
+  ALTER COLUMN company_id SET NOT NULL;
+
+COMMIT;
+-- <<< 0014_company_scope_financial_columns.sql
+
+-- >>> 0015_create_project_with_stages_rpc.sql
+BEGIN;
+
+CREATE OR REPLACE FUNCTION public.create_project_with_stages(
+  p_company_id uuid,
+  p_created_by uuid,
+  p_customer_id uuid,
+  p_source_document_id uuid,
+  p_project_type_id uuid,
+  p_project_type_snapshot text,
+  p_project_number text,
+  p_name text,
+  p_description text,
+  p_site_address text,
+  p_contract_amount numeric,
+  p_budget_amount numeric,
+  p_start_date date,
+  p_expected_end_date date,
+  p_actual_end_date date,
+  p_status text,
+  p_stage_drafts jsonb DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_project_id uuid;
+  v_has_stage_drafts boolean := false;
+  v_project_type_code text := NULL;
+BEGIN
+  INSERT INTO public.projects (
+    company_id,
+    customer_id,
+    source_document_id,
+    project_type_id,
+    project_type_snapshot,
+    project_number,
+    name,
+    description,
+    site_address,
+    contract_amount,
+    budget_amount,
+    start_date,
+    expected_end_date,
+    actual_end_date,
+    status,
+    created_by
+  ) VALUES (
+    p_company_id,
+    p_customer_id,
+    p_source_document_id,
+    p_project_type_id,
+    p_project_type_snapshot,
+    p_project_number,
+    p_name,
+    p_description,
+    p_site_address,
+    COALESCE(p_contract_amount, 0),
+    p_budget_amount,
+    p_start_date,
+    p_expected_end_date,
+    p_actual_end_date,
+    COALESCE(p_status, 'planned'),
+    p_created_by
+  )
+  RETURNING id INTO v_project_id;
+
+  v_has_stage_drafts := p_stage_drafts IS NOT NULL
+    AND jsonb_typeof(p_stage_drafts) = 'array'
+    AND jsonb_array_length(p_stage_drafts) > 0;
+
+  IF p_project_type_id IS NOT NULL THEN
+    SELECT code INTO v_project_type_code
+    FROM public.project_types
+    WHERE id = p_project_type_id;
+  END IF;
+
+  IF v_has_stage_drafts THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      planned_start_date,
+      planned_end_date,
+      completion_percentage,
+      status,
+      created_by
+    )
+    SELECT
+      v_project_id,
+      COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), 'New stage') AS name,
+      row_number() OVER (
+        ORDER BY
+          COALESCE(
+            CASE
+              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
+                THEN (draft.stage_row ->> 'sequenceNumber')::integer
+              ELSE NULL
+            END,
+            draft.stage_ord
+          ),
+          draft.stage_ord
+      ) AS sequence_number,
+      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
+      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
+      0,
+      'pending',
+      p_created_by
+    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
+    WHERE COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), '') <> ''
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  ELSIF p_project_type_id IS NOT NULL AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      completion_percentage,
+      status,
+      created_by
+    )
+    WITH resolved_templates AS (
+      SELECT DISTINCT ON (lower(coalesce(template_code, '')))
+        template_code,
+        name,
+        sequence_number,
+        company_id,
+        updated_at,
+        id
+      FROM public.project_stage_templates
+      WHERE project_type_id = p_project_type_id
+        AND is_active = true
+        AND (company_id = p_company_id OR company_id IS NULL)
+      ORDER BY
+        lower(coalesce(template_code, '')),
+        (company_id = p_company_id) DESC,
+        updated_at DESC,
+        id DESC
+    ),
+    ordered_templates AS (
+      SELECT
+        name,
+        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
+      FROM resolved_templates
+    )
+    SELECT
+      v_project_id,
+      ordered_templates.name,
+      ordered_templates.sequence_number,
+      0,
+      'pending',
+      p_created_by
+    FROM ordered_templates
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  END IF;
+
+  RETURN v_project_id;
+END;
+$$;
+
+COMMIT;
+-- <<< 0015_create_project_with_stages_rpc.sql
+
+-- >>> 0016_business_model_foundation.sql
+BEGIN;
+
+ALTER TABLE public.projects
+  ADD COLUMN IF NOT EXISTS business_model text CHECK (business_model IS NULL OR business_model IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply')),
+  ADD COLUMN IF NOT EXISTS projected_sales_value numeric(18,2) CHECK (projected_sales_value IS NULL OR projected_sales_value >= 0),
+  ADD COLUMN IF NOT EXISTS land_cost numeric(18,2) CHECK (land_cost IS NULL OR land_cost >= 0);
+
+ALTER TABLE public.company_settings
+  ADD COLUMN IF NOT EXISTS enabled_business_models text[] NOT NULL DEFAULT ARRAY['contract_construction', 'property_development', 'civil_works_contract', 'material_supply'];
+
+UPDATE public.company_settings
+SET enabled_business_models = ARRAY['contract_construction', 'property_development', 'civil_works_contract', 'material_supply']
+WHERE enabled_business_models IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_projects_business_model
+  ON public.projects(company_id, business_model)
+  WHERE business_model IS NOT NULL;
+
+CREATE OR REPLACE FUNCTION public.create_project_with_stages(
+  p_company_id uuid,
+  p_created_by uuid,
+  p_customer_id uuid,
+  p_source_document_id uuid,
+  p_project_type_id uuid,
+  p_project_type_snapshot text,
+  p_project_number text,
+  p_name text,
+  p_description text,
+  p_site_address text,
+  p_contract_amount numeric,
+  p_budget_amount numeric,
+  p_start_date date,
+  p_expected_end_date date,
+  p_actual_end_date date,
+  p_status text,
+  p_stage_drafts jsonb DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_project_id uuid;
+  v_has_stage_drafts boolean := false;
+  v_project_type_code text := NULL;
+BEGIN
+  INSERT INTO public.projects (
+    company_id,
+    customer_id,
+    source_document_id,
+    project_type_id,
+    project_type_snapshot,
+    project_number,
+    name,
+    description,
+    site_address,
+    contract_amount,
+    budget_amount,
+    start_date,
+    expected_end_date,
+    actual_end_date,
+    status,
+    created_by
+  ) VALUES (
+    p_company_id,
+    p_customer_id,
+    p_source_document_id,
+    p_project_type_id,
+    p_project_type_snapshot,
+    p_project_number,
+    p_name,
+    p_description,
+    p_site_address,
+    COALESCE(p_contract_amount, 0),
+    p_budget_amount,
+    p_start_date,
+    p_expected_end_date,
+    p_actual_end_date,
+    COALESCE(p_status, 'planned'),
+    p_created_by
+  )
+  RETURNING id INTO v_project_id;
+
+  v_has_stage_drafts := p_stage_drafts IS NOT NULL
+    AND jsonb_typeof(p_stage_drafts) = 'array'
+    AND jsonb_array_length(p_stage_drafts) > 0;
+
+  IF p_project_type_id IS NOT NULL THEN
+    SELECT code INTO v_project_type_code
+    FROM public.project_types
+    WHERE id = p_project_type_id;
+  END IF;
+
+  IF v_has_stage_drafts THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      planned_start_date,
+      planned_end_date,
+      completion_percentage,
+      status,
+      created_by
+    )
+    SELECT
+      v_project_id,
+      COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), 'New stage') AS name,
+      row_number() OVER (
+        ORDER BY
+          COALESCE(
+            CASE
+              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
+                THEN (draft.stage_row ->> 'sequenceNumber')::integer
+              ELSE NULL
+            END,
+            draft.stage_ord
+          ),
+          draft.stage_ord
+      ) AS sequence_number,
+      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
+      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
+      0,
+      'pending',
+      p_created_by
+    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
+    WHERE COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), '') <> ''
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  ELSIF p_project_type_id IS NOT NULL AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      completion_percentage,
+      status,
+      created_by
+    )
+    WITH resolved_templates AS (
+      SELECT DISTINCT ON (lower(coalesce(template_code, '')))
+        template_code,
+        name,
+        sequence_number,
+        company_id,
+        updated_at,
+        id
+      FROM public.project_stage_templates
+      WHERE project_type_id = p_project_type_id
+        AND is_active = true
+        AND (company_id = p_company_id OR company_id IS NULL)
+      ORDER BY
+        lower(coalesce(template_code, '')),
+        (company_id = p_company_id) DESC,
+        updated_at DESC,
+        id DESC
+    ),
+    ordered_templates AS (
+      SELECT
+        name,
+        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
+      FROM resolved_templates
+    )
+    SELECT
+      v_project_id,
+      ordered_templates.name,
+      ordered_templates.sequence_number,
+      0,
+      'pending',
+      p_created_by
+    FROM ordered_templates
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  END IF;
+
+  RETURN v_project_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.create_project_with_stages_with_business_model(
+  p_company_id uuid,
+  p_created_by uuid,
+  p_customer_id uuid,
+  p_source_document_id uuid,
+  p_project_type_id uuid,
+  p_project_type_snapshot text,
+  p_project_number text,
+  p_name text,
+  p_description text,
+  p_site_address text,
+  p_contract_amount numeric,
+  p_budget_amount numeric,
+  p_start_date date,
+  p_expected_end_date date,
+  p_actual_end_date date,
+  p_status text,
+  p_stage_drafts jsonb DEFAULT NULL,
+  p_business_model text DEFAULT NULL,
+  p_projected_sales_value numeric DEFAULT NULL,
+  p_land_cost numeric DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_project_id uuid;
+  v_has_stage_drafts boolean := false;
+  v_project_type_code text := NULL;
+  v_enabled_models text[];
+  v_model_text text;
+BEGIN
+  IF p_business_model IS NULL OR NULLIF(trim(p_business_model), '') IS NULL THEN
+    RAISE EXCEPTION 'business_model is required for project creation and must be one of: contract_construction, property_development, civil_works_contract, material_supply.'
+    USING HINT = 'Provide a non-blank business_model value for this project.';
+  END IF;
+
+  v_model_text := lower(trim(p_business_model));
+  IF v_model_text NOT IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply') THEN
+    RAISE EXCEPTION 'Invalid business_model value: %. Allowed values are contract_construction, property_development, civil_works_contract, material_supply.', p_business_model
+    USING HINT = 'Provide a supported business_model value for this project.';
+  END IF;
+
+  SELECT enabled_business_models INTO v_enabled_models
+  FROM public.company_settings
+  WHERE company_id = p_company_id;
+
+  IF v_enabled_models IS NULL OR NOT (v_model_text = ANY (v_enabled_models)) THEN
+    RAISE EXCEPTION 'Business model % is not enabled for company %.', v_model_text, p_company_id
+    USING HINT = 'Update company_settings.enabled_business_models to include this business model before creating the project.';
+  END IF;
+
+  INSERT INTO public.projects (
+    company_id,
+    customer_id,
+    source_document_id,
+    project_type_id,
+    project_type_snapshot,
+    business_model,
+    projected_sales_value,
+    land_cost,
+    project_number,
+    name,
+    description,
+    site_address,
+    contract_amount,
+    budget_amount,
+    start_date,
+    expected_end_date,
+    actual_end_date,
+    status,
+    created_by
+  ) VALUES (
+    p_company_id,
+    p_customer_id,
+    p_source_document_id,
+    p_project_type_id,
+    p_project_type_snapshot,
+    CASE
+      WHEN v_model_text IS NOT NULL THEN v_model_text
+      ELSE NULL
+    END,
+    p_projected_sales_value,
+    p_land_cost,
+    p_project_number,
+    p_name,
+    p_description,
+    p_site_address,
+    COALESCE(p_contract_amount, 0),
+    p_budget_amount,
+    p_start_date,
+    p_expected_end_date,
+    p_actual_end_date,
+    COALESCE(p_status, 'planned'),
+    p_created_by
+  )
+  RETURNING id INTO v_project_id;
+
+  v_has_stage_drafts := p_stage_drafts IS NOT NULL
+    AND jsonb_typeof(p_stage_drafts) = 'array'
+    AND jsonb_array_length(p_stage_drafts) > 0;
+
+  IF p_project_type_id IS NOT NULL THEN
+    SELECT code INTO v_project_type_code
+    FROM public.project_types
+    WHERE id = p_project_type_id;
+  END IF;
+
+  IF v_has_stage_drafts THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      planned_start_date,
+      planned_end_date,
+      completion_percentage,
+      status,
+      created_by
+    )
+    SELECT
+      v_project_id,
+      COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), 'New stage') AS name,
+      row_number() OVER (
+        ORDER BY
+          COALESCE(
+            CASE
+              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
+                THEN (draft.stage_row ->> 'sequenceNumber')::integer
+              ELSE NULL
+            END,
+            draft.stage_ord
+          ),
+          draft.stage_ord
+      ) AS sequence_number,
+      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
+      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
+      0,
+      'pending',
+      p_created_by
+    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
+    WHERE COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), '') <> ''
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  ELSIF p_project_type_id IS NOT NULL AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      completion_percentage,
+      status,
+      created_by
+    )
+    WITH resolved_templates AS (
+      SELECT DISTINCT ON (lower(coalesce(template_code, '')))
+        template_code,
+        name,
+        sequence_number,
+        company_id,
+        updated_at,
+        id
+      FROM public.project_stage_templates
+      WHERE project_type_id = p_project_type_id
+        AND is_active = true
+        AND (company_id = p_company_id OR company_id IS NULL)
+      ORDER BY
+        lower(coalesce(template_code, '')),
+        (company_id = p_company_id) DESC,
+        updated_at DESC,
+        id DESC
+    ),
+    ordered_templates AS (
+      SELECT
+        name,
+        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
+      FROM resolved_templates
+    )
+    SELECT
+      v_project_id,
+      ordered_templates.name,
+      ordered_templates.sequence_number,
+      0,
+      'pending',
+      p_created_by
+    FROM ordered_templates
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  END IF;
+
+  RETURN v_project_id;
+END;
+$$;
+
+COMMIT;
+-- <<< 0016_business_model_foundation.sql
+
+-- >>> 0017_joint_development_support.sql
+BEGIN;
+
+ALTER TABLE public.projects
+  ADD COLUMN IF NOT EXISTS development_arrangement text,
+  ADD COLUMN IF NOT EXISTS total_project_flats integer,
+  ADD COLUMN IF NOT EXISTS landowner_party_id uuid,
+  ADD COLUMN IF NOT EXISTS jda_agreement_reference text,
+  ADD COLUMN IF NOT EXISTS jda_agreement_document_url text,
+  ADD COLUMN IF NOT EXISTS jda_agreement_date date,
+  ADD COLUMN IF NOT EXISTS builder_share_units integer,
+  ADD COLUMN IF NOT EXISTS landowner_share_units integer;
+
+ALTER TABLE public.projects
+  DROP CONSTRAINT IF EXISTS projects_development_arrangement_chk;
+
+ALTER TABLE public.projects
+  ADD CONSTRAINT projects_development_arrangement_chk
+  CHECK (
+    development_arrangement IS NULL
+    OR development_arrangement IN ('self', 'joint_development')
+  ) NOT VALID;
+
+ALTER TABLE public.projects
+  ADD CONSTRAINT projects_total_project_flats_positive_chk
+    CHECK (total_project_flats IS NULL OR total_project_flats > 0) NOT VALID;
+
+ALTER TABLE public.projects
+  ADD CONSTRAINT projects_builder_share_units_non_negative_chk
+    CHECK (builder_share_units IS NULL OR builder_share_units >= 0) NOT VALID;
+
+ALTER TABLE public.projects
+  ADD CONSTRAINT projects_landowner_share_units_non_negative_chk
+    CHECK (landowner_share_units IS NULL OR landowner_share_units >= 0) NOT VALID;
+
+CREATE OR REPLACE FUNCTION public.create_project_with_stages_with_business_model(
+  p_company_id uuid,
+  p_created_by uuid,
+  p_customer_id uuid,
+  p_source_document_id uuid,
+  p_project_type_id uuid,
+  p_project_type_snapshot text,
+  p_project_number text,
+  p_name text,
+  p_description text,
+  p_site_address text,
+  p_contract_amount numeric,
+  p_budget_amount numeric,
+  p_start_date date,
+  p_expected_end_date date,
+  p_actual_end_date date,
+  p_status text,
+  p_stage_drafts jsonb DEFAULT NULL,
+  p_business_model text DEFAULT NULL,
+  p_projected_sales_value numeric DEFAULT NULL,
+  p_land_cost numeric DEFAULT NULL,
+  p_development_arrangement text DEFAULT NULL,
+  p_total_project_flats integer DEFAULT NULL,
+  p_landowner_party_id uuid DEFAULT NULL,
+  p_jda_agreement_reference text DEFAULT NULL,
+  p_jda_agreement_document_url text DEFAULT NULL,
+  p_jda_agreement_date date DEFAULT NULL,
+  p_builder_share_units integer DEFAULT NULL,
+  p_landowner_share_units integer DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_project_id uuid;
+  v_has_stage_drafts boolean := false;
+  v_project_type_code text := NULL;
+  v_enabled_models text[];
+  v_model_text text;
+  v_arrangement_text text;
+BEGIN
+  IF p_business_model IS NULL OR NULLIF(trim(p_business_model), '') IS NULL THEN
+    RAISE EXCEPTION 'business_model is required for project creation and must be one of: contract_construction, property_development, civil_works_contract, material_supply.'
+    USING HINT = 'Provide a non-blank business_model value for this project.';
+  END IF;
+
+  v_model_text := lower(trim(p_business_model));
+  IF v_model_text NOT IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply') THEN
+    RAISE EXCEPTION 'Invalid business_model value: %. Allowed values are contract_construction, property_development, civil_works_contract, material_supply.', p_business_model
+    USING HINT = 'Provide a supported business_model value for this project.';
+  END IF;
+
+  IF p_development_arrangement IS NOT NULL AND NULLIF(trim(p_development_arrangement), '') IS NOT NULL THEN
+    v_arrangement_text := lower(trim(p_development_arrangement));
+    IF v_arrangement_text NOT IN ('self', 'joint_development') THEN
+      RAISE EXCEPTION 'Invalid development_arrangement value: %. Allowed values are self or joint_development.', p_development_arrangement
+      USING HINT = 'Provide a supported development arrangement for property development projects.';
+    END IF;
+  END IF;
+
+  IF v_model_text <> 'property_development' AND (
+    p_development_arrangement IS NOT NULL
+    OR p_landowner_party_id IS NOT NULL
+    OR p_jda_agreement_reference IS NOT NULL
+    OR p_jda_agreement_document_url IS NOT NULL
+    OR p_jda_agreement_date IS NOT NULL
+    OR p_total_project_flats IS NOT NULL
+    OR p_builder_share_units IS NOT NULL
+    OR p_landowner_share_units IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'Development arrangement and JDA fields are permitted only when business_model = property_development.';
+  END IF;
+
+  IF v_model_text = 'property_development' AND v_arrangement_text IS NULL THEN
+    RAISE EXCEPTION 'Property development projects require an explicit development arrangement: self or joint_development.'
+    USING HINT = 'Set development_arrangement when creating a property development project.';
+  END IF;
+
+  IF v_arrangement_text = 'self' THEN
+    IF p_landowner_party_id IS NOT NULL
+       OR p_jda_agreement_reference IS NOT NULL
+       OR p_jda_agreement_document_url IS NOT NULL
+       OR p_jda_agreement_date IS NOT NULL
+       OR p_total_project_flats IS NOT NULL
+       OR p_builder_share_units IS NOT NULL
+       OR p_landowner_share_units IS NOT NULL THEN
+      RAISE EXCEPTION 'Self development must not contain landowner, JDA or flat-sharing fields.'
+      USING HINT = 'Leave landowner and JDA fields empty for self development.';
+    END IF;
+  END IF;
+
+  IF v_arrangement_text = 'joint_development' THEN
+    IF p_landowner_party_id IS NULL THEN
+      RAISE EXCEPTION 'Joint development requires landowner_party_id.'
+      USING HINT = 'Provide a landowner party for joint development projects.';
+    END IF;
+
+    IF p_total_project_flats IS NULL OR p_total_project_flats <= 0 OR p_total_project_flats <> floor(p_total_project_flats::numeric) THEN
+      RAISE EXCEPTION 'Joint development requires total_project_flats as a positive whole number.'
+      USING HINT = 'Set total_project_flats to a whole number greater than zero.';
+    END IF;
+
+    IF p_builder_share_units IS NULL OR p_landowner_share_units IS NULL THEN
+      RAISE EXCEPTION 'Joint development requires builder_share_units and landowner_share_units.'
+      USING HINT = 'Provide both share counts.';
+    END IF;
+
+    IF p_builder_share_units < 0 OR p_landowner_share_units < 0 THEN
+      RAISE EXCEPTION 'Builder and landowner share flats must be non-negative.'
+      USING HINT = 'All share counts must be zero or greater.';
+    END IF;
+
+    IF p_builder_share_units + p_landowner_share_units <> p_total_project_flats THEN
+      RAISE EXCEPTION 'Builder and landowner share flats must add up to the total project flats.'
+      USING HINT = 'Use builder_share_units + landowner_share_units = total_project_flats.';
+    END IF;
+  END IF;
+
+  SELECT enabled_business_models INTO v_enabled_models
+  FROM public.company_settings
+  WHERE company_id = p_company_id;
+
+  IF v_enabled_models IS NULL OR NOT (v_model_text = ANY (v_enabled_models)) THEN
+    RAISE EXCEPTION 'Business model % is not enabled for company %.', v_model_text, p_company_id
+    USING HINT = 'Update company_settings.enabled_business_models to include this business model before creating the project.';
+  END IF;
+
+  INSERT INTO public.projects (
+    company_id,
+    customer_id,
+    source_document_id,
+    project_type_id,
+    project_type_snapshot,
+    business_model,
+    projected_sales_value,
+    land_cost,
+    development_arrangement,
+    total_project_flats,
+    landowner_party_id,
+    jda_agreement_reference,
+    jda_agreement_document_url,
+    jda_agreement_date,
+    builder_share_units,
+    landowner_share_units,
+    project_number,
+    name,
+    description,
+    site_address,
+    contract_amount,
+    budget_amount,
+    start_date,
+    expected_end_date,
+    actual_end_date,
+    status,
+    created_by
+  ) VALUES (
+    p_company_id,
+    p_customer_id,
+    p_source_document_id,
+    p_project_type_id,
+    p_project_type_snapshot,
+    v_model_text,
+    p_projected_sales_value,
+    p_land_cost,
+    CASE WHEN v_model_text = 'property_development' THEN v_arrangement_text ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' THEN p_total_project_flats ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_party_id ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_reference ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_document_url ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_date ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_builder_share_units ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_share_units ELSE NULL END,
+    p_project_number,
+    p_name,
+    p_description,
+    p_site_address,
+    COALESCE(p_contract_amount, 0),
+    p_budget_amount,
+    p_start_date,
+    p_expected_end_date,
+    p_actual_end_date,
+    COALESCE(p_status, 'planned'),
+    p_created_by
+  )
+  RETURNING id INTO v_project_id;
+
+  v_has_stage_drafts := p_stage_drafts IS NOT NULL
+    AND jsonb_typeof(p_stage_drafts) = 'array'
+    AND jsonb_array_length(p_stage_drafts) > 0;
+
+  IF p_project_type_id IS NOT NULL THEN
+    SELECT code INTO v_project_type_code
+    FROM public.project_types
+    WHERE id = p_project_type_id;
+  END IF;
+
+  IF v_has_stage_drafts THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      planned_start_date,
+      planned_end_date,
+      completion_percentage,
+      status,
+      created_by
+    )
+    SELECT
+      v_project_id,
+      COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), 'New stage') AS name,
+      row_number() OVER (
+        ORDER BY
+          COALESCE(
+            CASE
+              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
+                THEN (draft.stage_row ->> 'sequenceNumber')::integer
+              ELSE NULL
+            END,
+            draft.stage_ord
+          ),
+          draft.stage_ord
+      ) AS sequence_number,
+      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
+      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
+      0,
+      'pending',
+      p_created_by
+    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
+    WHERE COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), '') <> ''
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  ELSIF p_project_type_id IS NOT NULL AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      completion_percentage,
+      status,
+      created_by
+    )
+    WITH resolved_templates AS (
+      SELECT DISTINCT ON (lower(coalesce(template_code, '')))
+        template_code,
+        name,
+        sequence_number,
+        company_id,
+        updated_at,
+        id
+      FROM public.project_stage_templates
+      WHERE project_type_id = p_project_type_id
+        AND is_active = true
+        AND (company_id = p_company_id OR company_id IS NULL)
+      ORDER BY
+        lower(coalesce(template_code, '')),
+        (company_id = p_company_id) DESC,
+        updated_at DESC,
+        id DESC
+    ),
+    ordered_templates AS (
+      SELECT
+        name,
+        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
+      FROM resolved_templates
+    )
+    SELECT
+      v_project_id,
+      ordered_templates.name,
+      ordered_templates.sequence_number,
+      0,
+      'pending',
+      p_created_by
+    FROM ordered_templates
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  END IF;
+
+  RETURN v_project_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
+  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
+  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
+  text, integer, uuid, text, text, date, integer, integer
+) TO authenticated;
+
+GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
+  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
+  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
+  text, integer, uuid, text, text, date, integer, integer
+) TO service_role;
+
+COMMIT;
+-- <<< 0017_joint_development_support.sql
+
+-- >>> 0018_project_units.sql
+BEGIN;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_company_id_id
+  ON public.projects (company_id, id);
+
+CREATE TABLE IF NOT EXISTS public.project_units (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL,
+  project_id uuid NOT NULL,
+  flat_no text NOT NULL,
+  floor integer,
+  block_tower text,
+  share_type text NOT NULL CHECK (share_type IN ('builder', 'landowner')),
+  status text NOT NULL DEFAULT 'available' CHECK (
+    status IN ('available', 'allocated', 'booked')
+    AND (
+      (share_type = 'builder' AND status IN ('available', 'allocated', 'booked'))
+      OR (share_type = 'landowner' AND status IN ('allocated', 'booked'))
+    )
+  ),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT project_units_company_project_fk
+    FOREIGN KEY (company_id, project_id)
+    REFERENCES public.projects(company_id, id)
+    ON DELETE RESTRICT
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_project_units_project_flat_no_case_insensitive
+  ON public.project_units (project_id, lower(trim(flat_no)));
+
+CREATE INDEX IF NOT EXISTS idx_project_units_company_project
+  ON public.project_units (company_id, project_id, flat_no);
+
+CREATE INDEX IF NOT EXISTS idx_project_units_project_share
+  ON public.project_units (project_id, share_type, status);
+
+CREATE TRIGGER set_project_units_updated_at
+BEFORE UPDATE ON public.project_units
+FOR EACH ROW
+EXECUTE FUNCTION public.set_updated_at();
+
+COMMIT;
+-- <<< 0018_project_units.sql
+
+-- >>> 0019_generic_party_contact_support.sql
+BEGIN;
+
+-- Allow neutral general-contact records while keeping the existing role flags
+-- and company-scoped party model intact for customer/supplier/investor flows.
+ALTER TABLE public.parties
+  DROP CONSTRAINT IF EXISTS parties_has_role;
+
+ALTER TABLE public.parties
+  ADD CONSTRAINT parties_has_role CHECK (true);
+
+COMMIT;
+-- <<< 0019_generic_party_contact_support.sql
+
+-- >>> 0020_project_expense_type.sql
+BEGIN;
+
+ALTER TABLE public.project_expenses
+  ADD COLUMN IF NOT EXISTS expense_type text;
+
+DO $$
+DECLARE
+  has_supplier_id boolean;
+  has_party_id boolean;
+  supplier_condition text;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'project_expenses'
+      AND column_name = 'supplier_id'
+  ) INTO has_supplier_id;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'project_expenses'
+      AND column_name = 'party_id'
+  ) INTO has_party_id;
+
+  supplier_condition :=
+    '(supplier_name IS NOT NULL AND btrim(supplier_name) <> '''')'
+    || ' OR (supplier_bill_number IS NOT NULL AND btrim(supplier_bill_number) <> '''')'
+    || ' OR due_date IS NOT NULL';
+
+  IF has_supplier_id THEN
+    supplier_condition := supplier_condition || ' OR supplier_id IS NOT NULL';
+  END IF;
+
+  IF has_party_id THEN
+    supplier_condition := supplier_condition || ' OR party_id IS NOT NULL';
+  END IF;
+
+  EXECUTE format(
+    'UPDATE public.project_expenses
+     SET expense_type = CASE
+       WHEN %s THEN ''supplier_bill''
+       ELSE ''direct''
+     END
+     WHERE expense_type IS NULL',
+    supplier_condition
+  );
+END $$;
+
+ALTER TABLE public.project_expenses
+  ALTER COLUMN expense_type SET DEFAULT 'direct';
+
+UPDATE public.project_expenses
+SET expense_type = 'direct'
+WHERE expense_type IS NULL;
+
+ALTER TABLE public.project_expenses
+  ALTER COLUMN expense_type SET NOT NULL;
+
+ALTER TABLE public.project_expenses
+  DROP CONSTRAINT IF EXISTS project_expenses_expense_type_check;
+
+ALTER TABLE public.project_expenses
+  ADD CONSTRAINT project_expenses_expense_type_check
+  CHECK (expense_type IN ('direct', 'supplier_bill'));
+
+CREATE INDEX IF NOT EXISTS idx_project_expenses_company_expense_type
+  ON public.project_expenses (company_id, expense_type);
+
+CREATE INDEX IF NOT EXISTS idx_project_expenses_project_expense_type
+  ON public.project_expenses (project_id, expense_type);
+
+COMMIT;
+-- <<< 0020_project_expense_type.sql
+
+-- >>> 0021_booking_receipts_project_link.sql
+ALTER TABLE public.documents
+  ADD COLUMN IF NOT EXISTS project_id uuid;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_documents_project_company'
+      AND conrelid = 'public.documents'::regclass
+  ) THEN
+    ALTER TABLE public.documents
+      ADD CONSTRAINT fk_documents_project_company
+      FOREIGN KEY (project_id, company_id)
+      REFERENCES public.projects(id, company_id)
+      ON DELETE SET NULL;
+  END IF;
+END $$;
+-- <<< 0021_booking_receipts_project_link.sql
+
+-- >>> 0022_quotation_save_and_pdf_support.sql
+-- 0022_quotation_save_and_pdf_support.sql
+--
+-- What this migration does
+--   1. Persists data the quotation PDF needs but the database was silently dropping:
+--        discount type (a 10% discount used to reload as Rs.10), the questionnaire,
+--        payment-stage notes, individual additional-charge lines, internal notes,
+--        validity text, and the order of inclusions/exclusions.
+--   2. Adds documents.row_type-style support for text-only BOQ rows
+--        (document_items.row_type = 'item' | 'note') so engineer's notes are no longer
+--        stored as "Qty 0 / Rs.0" line items.
+--   3. Adds documents.brand_snapshot: the company's logo/colors/address/bank details frozen
+--        when a quotation leaves Draft, so a later rebrand never changes a quotation
+--        that was already issued.
+--   4. Adds documents.version for optimistic concurrency (two autosaves can no longer
+--        silently overwrite each other).
+--   5. Adds allocate_document_number() and save_quotation(): the whole save — number
+--        allocation, totals, document row and every child table — runs in ONE
+--        transaction. A failure rolls everything back (no half-saved BOQ, no burned
+--        document number). Totals are recomputed here; client-sent totals are ignored.
+--
+-- Safe to re-run (IF NOT EXISTS / CREATE OR REPLACE throughout). Rollback: 0022_rollback.sql.
+
+BEGIN;
+
+-- ─── 1. documents ────────────────────────────────────────────────────────────────
+
+ALTER TABLE public.documents
+  ADD COLUMN IF NOT EXISTS version                 integer      NOT NULL DEFAULT 1,
+  ADD COLUMN IF NOT EXISTS discount_type           text         NOT NULL DEFAULT 'None',
+  ADD COLUMN IF NOT EXISTS discount_amount         numeric(18,2) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS additional_charge_items jsonb        NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS questionnaire           jsonb,
+  ADD COLUMN IF NOT EXISTS internal_notes          text,
+  ADD COLUMN IF NOT EXISTS validity                text,
+  ADD COLUMN IF NOT EXISTS brand_snapshot          jsonb;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_discount_type_check') THEN
+    ALTER TABLE public.documents
+      ADD CONSTRAINT documents_discount_type_check
+      CHECK (discount_type IN ('None', 'Percentage', 'Fixed Amount'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_discount_amount_check') THEN
+    ALTER TABLE public.documents
+      ADD CONSTRAINT documents_discount_amount_check CHECK (discount_amount >= 0);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_version_check') THEN
+    ALTER TABLE public.documents ADD CONSTRAINT documents_version_check CHECK (version >= 1);
+  END IF;
+END $$;
+
+-- Backfill the discount type for existing quotations. Until now only the raw value was
+-- stored, so "10" could mean 10% or Rs.10. grand_total was computed from the true
+-- interpretation, so pick whichever one reproduces it; fall back to Fixed Amount (which
+-- is what the app assumed on reload).
+WITH calc AS (
+  SELECT d.id,
+         d.discount,
+         (d.subtotal + d.additional_charges)                                         AS base,
+         (1 + d.tax_percentage / 100)                                                AS tax_mult,
+         d.grand_total
+  FROM public.documents d
+  WHERE d.document_type = 'Quotation' AND d.discount > 0 AND d.discount_type = 'None'
+), decided AS (
+  SELECT id, discount, base,
+         CASE
+           WHEN abs(grand_total - round((base - base * discount / 100) * tax_mult, 2)) < 0.02
+            AND abs(grand_total - round((base - discount) * tax_mult, 2)) >= 0.02
+           THEN 'Percentage'
+           ELSE 'Fixed Amount'
+         END AS dtype
+  FROM calc
+)
+UPDATE public.documents d
+SET discount_type   = x.dtype,
+    discount_amount = CASE x.dtype
+                        WHEN 'Percentage' THEN round(x.base * x.discount / 100, 2)
+                        ELSE x.discount
+                      END
+FROM decided x
+WHERE d.id = x.id;
+
+-- Non-quotation documents (booking receipts): a stored discount is a plain amount.
+UPDATE public.documents
+SET discount_type = 'Fixed Amount', discount_amount = discount
+WHERE document_type <> 'Quotation' AND discount > 0 AND discount_type = 'None';
+
+-- Existing quotations: keep what the app showed before (additional charges as one line).
+UPDATE public.documents
+SET additional_charge_items = jsonb_build_array(
+      jsonb_build_object('id', 'additional-1', 'description', 'Additional charges', 'amount', additional_charges))
+WHERE additional_charges > 0 AND additional_charge_items = '[]'::jsonb;
+
+-- ─── 2. child tables ─────────────────────────────────────────────────────────────
+
+ALTER TABLE public.document_items
+  ADD COLUMN IF NOT EXISTS row_type text NOT NULL DEFAULT 'item';
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_items_row_type_check') THEN
+    ALTER TABLE public.document_items
+      ADD CONSTRAINT document_items_row_type_check CHECK (row_type IN ('item', 'note'));
+  END IF;
+END $$;
+
+-- A row with no quantity and no rate adds nothing to any total: it is a text note.
+UPDATE public.document_items
+SET row_type = 'note'
+WHERE row_type = 'item' AND quantity = 0 AND rate = 0;
+
+ALTER TABLE public.payment_schedules ADD COLUMN IF NOT EXISTS notes text;
+
+ALTER TABLE public.document_inclusions ADD COLUMN IF NOT EXISTS display_order integer NOT NULL DEFAULT 0;
+ALTER TABLE public.document_exclusions ADD COLUMN IF NOT EXISTS display_order integer NOT NULL DEFAULT 0;
+
+-- Best-effort order for existing rows: physical (insertion) order within each document.
+WITH ranked AS (
+  SELECT id, row_number() OVER (PARTITION BY document_id ORDER BY ctid) - 1 AS rn
+  FROM public.document_inclusions
+)
+UPDATE public.document_inclusions t SET display_order = r.rn FROM ranked r WHERE t.id = r.id AND t.display_order = 0;
+
+WITH ranked AS (
+  SELECT id, row_number() OVER (PARTITION BY document_id ORDER BY ctid) - 1 AS rn
+  FROM public.document_exclusions
+)
+UPDATE public.document_exclusions t SET display_order = r.rn FROM ranked r WHERE t.id = r.id AND t.display_order = 0;
+
+-- ─── 3. document numbering (atomic, inside the caller's transaction) ─────────────
+
+CREATE OR REPLACE FUNCTION public.allocate_document_number(p_company_id uuid, p_document_type text)
+RETURNS text
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+DECLARE
+  v_local  timestamp := (now() AT TIME ZONE 'Asia/Kolkata');
+  v_fy     integer;
+  v_prefix text;
+  v_used   text;
+  v_next   integer;
+BEGIN
+  IF p_document_type NOT IN ('Quotation', 'BookingReceipt') THEN
+    RAISE EXCEPTION 'Unsupported document type %', p_document_type USING ERRCODE = '22023';
+  END IF;
+
+  -- Indian financial year (Apr-Mar), stored as its starting calendar year.
+  v_fy := CASE WHEN extract(month FROM v_local) >= 4
+               THEN extract(year FROM v_local)::integer
+               ELSE extract(year FROM v_local)::integer - 1 END;
+
+  SELECT CASE WHEN p_document_type = 'BookingReceipt'
+              THEN COALESCE(NULLIF(s.booking_prefix, ''), 'BR')
+              ELSE COALESCE(NULLIF(s.quotation_prefix, ''), 'QTN') END
+    INTO v_prefix
+  FROM public.company_settings s WHERE s.company_id = p_company_id;
+
+  v_prefix := COALESCE(v_prefix, CASE WHEN p_document_type = 'BookingReceipt' THEN 'BR' ELSE 'QTN' END);
+
+  -- First use of a (company, type, year) takes number 1 and leaves next_number = 2;
+  -- afterwards every call atomically bumps it. A rolled-back caller gives the number back.
+  INSERT INTO public.document_sequences AS ds (company_id, document_type, financial_year, prefix, next_number)
+  VALUES (p_company_id, p_document_type, v_fy, v_prefix, 2)
+  ON CONFLICT (company_id, document_type, financial_year)
+  DO UPDATE SET next_number = ds.next_number + 1, updated_at = now()
+  RETURNING ds.prefix, ds.next_number - 1 INTO v_used, v_next;
+
+  RETURN v_used || '/' || v_fy::text || '/' || lpad(v_next::text, 3, '0');
+END;
+$$;
+
+-- ─── 4. save_quotation: one transaction for the whole save ───────────────────────
+--
+-- p_payload (snake_case, built by server/src/quotationPayload.ts):
+--   id, customer_id, party_id, status, quotation_date, valid_until,
+--   project_type_id, project_name, project_type, project_location, area_unit_id,
+--   builtup_area, area_unit, floors, tax_rate_id, tax_name, tax_applicable, tax_percentage,
+--   discount_type, discount_value, additional_charge_items[{id,description,amount}],
+--   notes, internal_notes, validity, questionnaire{},
+--   sections[{id,section_name,display_order,items[{id,description,quantity,unit_id,unit,
+--             rate,display_order,row_type}]}],
+--   specifications[{id,specification_type,description,display_order}],
+--   inclusions[text], exclusions[text],
+--   payment_schedule[{id,stage_name,percentage,amount,due_date,status,notes,display_order}],
+--   terms[{id,description,display_order}]
+--
+-- Errors (SQLSTATE): 42501 other company's document · 40001 version conflict ·
+--   P0409 deleted document · 22023 invalid input (bad discount, >100% payments, ...)
+
+CREATE OR REPLACE FUNCTION public.save_quotation(
+  p_company_id       uuid,
+  p_payload          jsonb,
+  p_expected_version integer DEFAULT NULL
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+DECLARE
+  v_id        uuid := NULLIF(p_payload->>'id', '')::uuid;
+  v_existing  public.documents%ROWTYPE;
+  v_is_new    boolean;
+  v_number    text;
+  v_status    text := COALESCE(NULLIF(p_payload->>'status', ''), 'Draft');
+
+  v_sub       numeric(18,2);
+  v_add       numeric(18,2);
+  v_base      numeric(18,2);
+  v_dtype     text := COALESCE(NULLIF(p_payload->>'discount_type', ''), 'None');
+  v_dval      numeric(18,2) := COALESCE(NULLIF(p_payload->>'discount_value', '')::numeric, 0);
+  v_damt      numeric(18,2);
+  v_tax_on    boolean := COALESCE((p_payload->>'tax_applicable')::boolean, false);
+  v_tax_rate  numeric(5,2) := COALESCE(NULLIF(p_payload->>'tax_percentage', '')::numeric, 0);
+  v_taxable   numeric(18,2);
+  v_tax       numeric(18,2);
+  v_grand     numeric(18,2);
+  v_pay_pct   numeric;
+
+  v_brand     jsonb;
+  v_version   integer;
+  v_section   jsonb;
+  v_sec_id    uuid;
+  v_sec_ord   integer;
+  v_new_id    uuid;
+BEGIN
+  IF v_id IS NULL THEN
+    RAISE EXCEPTION 'Quotation id is required.' USING ERRCODE = '22023';
+  END IF;
+
+  -- Serialise concurrent saves of the same quotation.
+  SELECT * INTO v_existing FROM public.documents WHERE id = v_id FOR UPDATE;
+  v_is_new := NOT FOUND;
+
+  IF NOT v_is_new THEN
+    IF v_existing.company_id <> p_company_id THEN
+      RAISE EXCEPTION 'This document belongs to a different company.' USING ERRCODE = '42501';
+    END IF;
+    IF v_existing.document_type <> 'Quotation' THEN
+      RAISE EXCEPTION 'This document is not a quotation.' USING ERRCODE = '22023';
+    END IF;
+    IF v_existing.is_deleted THEN
+      RAISE EXCEPTION 'This quotation has been deleted and can no longer be modified.' USING ERRCODE = 'P0409';
+    END IF;
+    IF p_expected_version IS NOT NULL AND v_existing.version <> p_expected_version THEN
+      RAISE EXCEPTION 'This quotation was changed elsewhere. Reload it before saving.'
+        USING ERRCODE = '40001', DETAIL = format('current_version=%s', v_existing.version);
+    END IF;
+    v_number := v_existing.document_number;
+  ELSE
+    v_number := public.allocate_document_number(p_company_id, 'Quotation');
+  END IF;
+
+  -- ── Totals: always recomputed here; whatever the client sent is ignored ──────────
+  SELECT COALESCE(SUM(round(COALESCE(NULLIF(i->>'quantity', '')::numeric, 0)
+                          * COALESCE(NULLIF(i->>'rate', '')::numeric, 0), 2)), 0)
+    INTO v_sub
+  FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) s,
+       jsonb_array_elements(COALESCE(s->'items', '[]'::jsonb)) i
+  WHERE COALESCE(i->>'row_type', 'item') = 'item';
+
+  SELECT COALESCE(SUM(round(COALESCE(NULLIF(c->>'amount', '')::numeric, 0), 2)), 0)
+    INTO v_add
+  FROM jsonb_array_elements(COALESCE(p_payload->'additional_charge_items', '[]'::jsonb)) c;
+
+  IF v_dtype NOT IN ('None', 'Percentage', 'Fixed Amount') THEN
+    RAISE EXCEPTION 'Invalid discount type: %', v_dtype USING ERRCODE = '22023';
+  END IF;
+  IF v_dval < 0 OR (v_dtype = 'Percentage' AND v_dval > 100) THEN
+    RAISE EXCEPTION 'Invalid discount value.' USING ERRCODE = '22023';
+  END IF;
+
+  v_base := v_sub + v_add;
+  v_damt := CASE v_dtype
+              WHEN 'Percentage'   THEN round(v_base * v_dval / 100, 2)
+              WHEN 'Fixed Amount' THEN round(v_dval, 2)
+              ELSE 0 END;
+  IF v_dtype = 'None' THEN v_dval := 0; END IF;
+  IF v_damt > v_base THEN
+    RAISE EXCEPTION 'Discount amount cannot exceed subtotal.' USING ERRCODE = '22023';
+  END IF;
+
+  v_taxable := v_base - v_damt;
+  IF NOT v_tax_on THEN v_tax_rate := 0; END IF;
+  v_tax   := CASE WHEN v_tax_rate > 0 THEN round(v_taxable * v_tax_rate / 100, 2) ELSE 0 END;
+  v_grand := v_taxable + v_tax;
+
+  SELECT COALESCE(SUM(NULLIF(p->>'percentage', '')::numeric), 0)
+    INTO v_pay_pct
+  FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) p;
+  IF v_pay_pct > 100.0001 THEN
+    RAISE EXCEPTION 'Payment schedule adds up to more than 100%%.' USING ERRCODE = '22023';
+  END IF;
+
+  -- ── Brand snapshot: frozen when the quotation leaves Draft ───────────────────────
+  IF v_status = 'Draft' THEN
+    v_brand := NULL;                                   -- editing again: re-snapshot on next issue
+  ELSIF NOT v_is_new AND v_existing.brand_snapshot IS NOT NULL THEN
+    v_brand := v_existing.brand_snapshot;              -- already issued: never changes
+  ELSE
+    SELECT jsonb_strip_nulls(jsonb_build_object(
+             'companyName', c.name,         'logoUrl', c.logo_url,
+             'primaryColor', c.primary_color, 'secondaryColor', c.secondary_color,
+             'address', c.address,          'mobile', c.phone,
+             'email', c.email,              'website', c.website,
+             'gstin', c.gst_number,         'pan', c.pan_number,
+             'bankName', s.bank_name,       'accountName', s.account_name,
+             'accountNumber', s.account_number, 'ifsc', s.ifsc,
+             'branch', s.branch,            'upiId', s.upi_id,
+             'authorizedPersonName', s.authorized_person, 'designation', s.designation,
+             'signatureImage', s.signature_url,
+             'snapshotAt', to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')))
+      INTO v_brand
+    FROM public.companies c
+    LEFT JOIN public.company_settings s ON s.company_id = c.id
+    WHERE c.id = p_company_id;
+  END IF;
+
+  -- ── Document row ─────────────────────────────────────────────────────────────────
+  INSERT INTO public.documents AS d (
+    id, company_id, customer_id, party_id, document_type, document_number, status,
+    quotation_date, valid_until, project_type_id, project_name, project_type, project_location,
+    area_unit_id, builtup_area, area_unit, floors,
+    subtotal, additional_charges, discount, discount_type, discount_amount,
+    tax_rate_id, tax_name, tax_percentage, tax_amount, grand_total,
+    notes, internal_notes, validity, questionnaire, additional_charge_items, brand_snapshot,
+    version, created_at, updated_at
+  ) VALUES (
+    v_id, p_company_id, NULLIF(p_payload->>'customer_id', '')::uuid, NULLIF(p_payload->>'party_id', '')::uuid,
+    'Quotation', v_number, v_status,
+    NULLIF(p_payload->>'quotation_date', '')::date, NULLIF(p_payload->>'valid_until', '')::date,
+    NULLIF(p_payload->>'project_type_id', '')::uuid,
+    COALESCE(p_payload->>'project_name', ''), COALESCE(p_payload->>'project_type', ''),
+    COALESCE(p_payload->>'project_location', ''),
+    NULLIF(p_payload->>'area_unit_id', '')::uuid, NULLIF(p_payload->>'builtup_area', '')::numeric,
+    COALESCE(p_payload->>'area_unit', ''), COALESCE(p_payload->>'floors', ''),
+    v_sub, v_add, v_dval, v_dtype, v_damt,
+    NULLIF(p_payload->>'tax_rate_id', '')::uuid, NULLIF(p_payload->>'tax_name', ''), v_tax_rate, v_tax, v_grand,
+    COALESCE(p_payload->>'notes', ''), COALESCE(p_payload->>'internal_notes', ''),
+    NULLIF(p_payload->>'validity', ''),
+    CASE WHEN jsonb_typeof(p_payload->'questionnaire') = 'object' THEN p_payload->'questionnaire' END,
+    COALESCE(p_payload->'additional_charge_items', '[]'::jsonb), v_brand,
+    1, now(), now()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    customer_id = EXCLUDED.customer_id, party_id = EXCLUDED.party_id, status = EXCLUDED.status,
+    quotation_date = EXCLUDED.quotation_date, valid_until = EXCLUDED.valid_until,
+    project_type_id = EXCLUDED.project_type_id, project_name = EXCLUDED.project_name,
+    project_type = EXCLUDED.project_type, project_location = EXCLUDED.project_location,
+    area_unit_id = EXCLUDED.area_unit_id, builtup_area = EXCLUDED.builtup_area,
+    area_unit = EXCLUDED.area_unit, floors = EXCLUDED.floors,
+    subtotal = EXCLUDED.subtotal, additional_charges = EXCLUDED.additional_charges,
+    discount = EXCLUDED.discount, discount_type = EXCLUDED.discount_type,
+    discount_amount = EXCLUDED.discount_amount,
+    tax_rate_id = EXCLUDED.tax_rate_id, tax_name = EXCLUDED.tax_name,
+    tax_percentage = EXCLUDED.tax_percentage, tax_amount = EXCLUDED.tax_amount,
+    grand_total = EXCLUDED.grand_total, notes = EXCLUDED.notes,
+    internal_notes = EXCLUDED.internal_notes, validity = EXCLUDED.validity,
+    questionnaire = EXCLUDED.questionnaire, additional_charge_items = EXCLUDED.additional_charge_items,
+    brand_snapshot = EXCLUDED.brand_snapshot,
+    version = d.version + 1, updated_at = now()
+  RETURNING d.version INTO v_version;
+
+  -- ── Children: replace the full set ───────────────────────────────────────────────
+  DELETE FROM public.document_sections       WHERE document_id = v_id;   -- cascades to document_items
+  DELETE FROM public.document_terms          WHERE document_id = v_id;
+  DELETE FROM public.document_specifications WHERE document_id = v_id;
+  DELETE FROM public.document_inclusions     WHERE document_id = v_id;
+  DELETE FROM public.document_exclusions     WHERE document_id = v_id;
+  DELETE FROM public.payment_schedules       WHERE document_id = v_id;
+
+  v_sec_ord := 0;
+  FOR v_section IN SELECT value FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) LOOP
+    -- A client-supplied id that already exists (a cloned quotation reusing ids) gets a fresh one.
+    v_new_id := NULLIF(v_section->>'id', '')::uuid;
+    IF v_new_id IS NULL OR EXISTS (SELECT 1 FROM public.document_sections WHERE id = v_new_id) THEN
+      v_new_id := gen_random_uuid();
+    END IF;
+
+    INSERT INTO public.document_sections (id, document_id, section_name, display_order)
+    VALUES (
+      v_new_id,
+      v_id,
+      v_section->>'section_name',
+      COALESCE(NULLIF(v_section->>'display_order', '')::integer, v_sec_ord)
+    )
+    RETURNING id INTO v_sec_id;
+
+    INSERT INTO public.document_items (id, section_id, description, quantity, unit_id, unit, rate, amount, display_order, row_type)
+    SELECT CASE WHEN NULLIF(t.i->>'id', '') IS NOT NULL
+                 AND NOT EXISTS (SELECT 1 FROM public.document_items x WHERE x.id = (t.i->>'id')::uuid)
+                THEN (t.i->>'id')::uuid ELSE gen_random_uuid() END,
+           v_sec_id,
+           t.i->>'description',
+           t.qty,
+           NULLIF(t.i->>'unit_id', '')::uuid,
+           NULLIF(t.i->>'unit', ''),
+           t.rate,
+           CASE WHEN t.rtype = 'item' THEN round(t.qty * t.rate, 2) ELSE 0 END,
+           COALESCE(NULLIF(t.i->>'display_order', '')::integer, (t.ord - 1)::integer),
+           t.rtype
+    FROM (
+      SELECT i, ord,
+             COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) AS qty,
+             COALESCE(NULLIF(i->>'rate', '')::numeric, 0)     AS rate,
+             CASE
+               WHEN i->>'row_type' IN ('item', 'note') THEN i->>'row_type'
+               WHEN COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) = 0
+                AND COALESCE(NULLIF(i->>'rate', '')::numeric, 0) = 0 THEN 'note'
+               ELSE 'item'
+             END AS rtype
+      FROM jsonb_array_elements(COALESCE(v_section->'items', '[]'::jsonb)) WITH ORDINALITY AS e(i, ord)
+    ) t;
+
+    v_sec_ord := v_sec_ord + 1;
+  END LOOP;
+
+  INSERT INTO public.document_specifications (id, document_id, specification_type, description, display_order)
+  SELECT CASE WHEN NULLIF(e.s->>'id', '') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM public.document_specifications x WHERE x.id = (e.s->>'id')::uuid)
+             THEN (e.s->>'id')::uuid ELSE gen_random_uuid() END, v_id,
+         e.s->>'specification_type', e.s->>'description',
+         COALESCE(NULLIF(e.s->>'display_order', '')::integer, (e.ord - 1)::integer)
+  FROM jsonb_array_elements(COALESCE(p_payload->'specifications', '[]'::jsonb)) WITH ORDINALITY AS e(s, ord);
+
+  INSERT INTO public.document_inclusions (document_id, description, display_order)
+  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
+  FROM jsonb_array_elements_text(COALESCE(p_payload->'inclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
+  WHERE btrim(e.txt) <> '';
+
+  INSERT INTO public.document_exclusions (document_id, description, display_order)
+  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
+  FROM jsonb_array_elements_text(COALESCE(p_payload->'exclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
+  WHERE btrim(e.txt) <> '';
+
+  INSERT INTO public.payment_schedules (id, document_id, stage_name, percentage, amount, due_date, status, notes, display_order)
+  SELECT CASE WHEN NULLIF(e.p->>'id', '') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM public.payment_schedules x WHERE x.id = (e.p->>'id')::uuid)
+             THEN (e.p->>'id')::uuid ELSE gen_random_uuid() END, v_id,
+         e.p->>'stage_name',
+         NULLIF(e.p->>'percentage', '')::numeric,
+         CASE WHEN NULLIF(e.p->>'percentage', '') IS NOT NULL
+              THEN round(v_grand * (e.p->>'percentage')::numeric / 100, 2)
+              ELSE NULLIF(e.p->>'amount', '')::numeric END,
+         NULLIF(e.p->>'due_date', '')::date,
+         NULLIF(e.p->>'status', ''),
+         NULLIF(e.p->>'notes', ''),
+         COALESCE(NULLIF(e.p->>'display_order', '')::integer, (e.ord - 1)::integer)
+  FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) WITH ORDINALITY AS e(p, ord);
+
+  INSERT INTO public.document_terms (id, document_id, description, display_order)
+  SELECT CASE WHEN NULLIF(e.t->>'id', '') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM public.document_terms x WHERE x.id = (e.t->>'id')::uuid)
+             THEN (e.t->>'id')::uuid ELSE gen_random_uuid() END, v_id,
+         e.t->>'description',
+         COALESCE(NULLIF(e.t->>'display_order', '')::integer, (e.ord - 1)::integer)
+  FROM jsonb_array_elements(COALESCE(p_payload->'terms', '[]'::jsonb)) WITH ORDINALITY AS e(t, ord);
+
+  RETURN jsonb_build_object(
+    'id', v_id,
+    'document_number', v_number,
+    'version', v_version,
+    'is_new', v_is_new,
+    'subtotal', v_sub,
+    'additional_charges', v_add,
+    'discount_amount', v_damt,
+    'taxable_amount', v_taxable,
+    'tax_amount', v_tax,
+    'grand_total', v_grand
+  );
+END;
+$$;
+
+-- Only the backend (service role) may call these. Supabase grants EXECUTE on new functions
+-- to anon/authenticated by default, so revoke explicitly.
+REVOKE ALL ON FUNCTION public.allocate_document_number(uuid, text)         FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.save_quotation(uuid, jsonb, integer)         FROM PUBLIC, anon, authenticated;
+GRANT  EXECUTE ON FUNCTION public.allocate_document_number(uuid, text)     TO service_role;
+GRANT  EXECUTE ON FUNCTION public.save_quotation(uuid, jsonb, integer)     TO service_role;
+
+COMMIT;
+-- <<< 0022_quotation_save_and_pdf_support.sql
+
+-- >>> 0023_payment_schedule_rounding.sql
+-- 0023_payment_schedule_rounding.sql
+--
+-- Fixes a rounding edge case in save_quotation (0022): each percentage-based payment
+-- stage's amount was computed independently as round(grand_total * pct / 100, 2). For a
+-- grand total of Rs.2,27,508.75 split 50/50, that gives Rs.1,13,754.38 + Rs.1,13,754.38
+-- = Rs.2,27,508.76 — one paisa more than the actual total, because each half rounds up
+-- independently. The fix: round every percentage-based stage normally EXCEPT the last
+-- one (by display order), which gets "whatever's left" — total_pct% of grand_total minus
+-- the sum of the other stages' rounded amounts — so percentage-based stages always sum
+-- to exactly round(total_pct * grand_total / 100, 2), never off by a paisa. A stage
+-- given an explicit amount (not a percentage) is untouched either way.
+--
+-- This REPLACES save_quotation's payment_schedules insert only; every other part of the
+-- function (totals, sections, brand snapshot, version check, ...) is identical to 0022.
+-- Safe to re-run. Rollback: 0023_rollback.sql (restores the exact 0022 behavior).
+
+BEGIN;
+
+CREATE OR REPLACE FUNCTION public.save_quotation(
+  p_company_id       uuid,
+  p_payload          jsonb,
+  p_expected_version integer DEFAULT NULL
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+DECLARE
+  v_id        uuid := NULLIF(p_payload->>'id', '')::uuid;
+  v_existing  public.documents%ROWTYPE;
+  v_is_new    boolean;
+  v_number    text;
+  v_status    text := COALESCE(NULLIF(p_payload->>'status', ''), 'Draft');
+
+  v_sub       numeric(18,2);
+  v_add       numeric(18,2);
+  v_base      numeric(18,2);
+  v_dtype     text := COALESCE(NULLIF(p_payload->>'discount_type', ''), 'None');
+  v_dval      numeric(18,2) := COALESCE(NULLIF(p_payload->>'discount_value', '')::numeric, 0);
+  v_damt      numeric(18,2);
+  v_tax_on    boolean := COALESCE((p_payload->>'tax_applicable')::boolean, false);
+  v_tax_rate  numeric(5,2) := COALESCE(NULLIF(p_payload->>'tax_percentage', '')::numeric, 0);
+  v_taxable   numeric(18,2);
+  v_tax       numeric(18,2);
+  v_grand     numeric(18,2);
+  v_pay_pct   numeric;
+
+  v_brand     jsonb;
+  v_version   integer;
+  v_section   jsonb;
+  v_sec_id    uuid;
+  v_sec_ord   integer;
+  v_new_id    uuid;
+BEGIN
+  IF v_id IS NULL THEN
+    RAISE EXCEPTION 'Quotation id is required.' USING ERRCODE = '22023';
+  END IF;
+
+  SELECT * INTO v_existing FROM public.documents WHERE id = v_id FOR UPDATE;
+  v_is_new := NOT FOUND;
+
+  IF NOT v_is_new THEN
+    IF v_existing.company_id <> p_company_id THEN
+      RAISE EXCEPTION 'This document belongs to a different company.' USING ERRCODE = '42501';
+    END IF;
+    IF v_existing.document_type <> 'Quotation' THEN
+      RAISE EXCEPTION 'This document is not a quotation.' USING ERRCODE = '22023';
+    END IF;
+    IF v_existing.is_deleted THEN
+      RAISE EXCEPTION 'This quotation has been deleted and can no longer be modified.' USING ERRCODE = 'P0409';
+    END IF;
+    IF p_expected_version IS NOT NULL AND v_existing.version <> p_expected_version THEN
+      RAISE EXCEPTION 'This quotation was changed elsewhere. Reload it before saving.'
+        USING ERRCODE = '40001', DETAIL = format('current_version=%s', v_existing.version);
+    END IF;
+    v_number := v_existing.document_number;
+  ELSE
+    v_number := public.allocate_document_number(p_company_id, 'Quotation');
+  END IF;
+
+  SELECT COALESCE(SUM(round(COALESCE(NULLIF(i->>'quantity', '')::numeric, 0)
+                          * COALESCE(NULLIF(i->>'rate', '')::numeric, 0), 2)), 0)
+    INTO v_sub
+  FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) s,
+       jsonb_array_elements(COALESCE(s->'items', '[]'::jsonb)) i
+  WHERE COALESCE(i->>'row_type', 'item') = 'item';
+
+  SELECT COALESCE(SUM(round(COALESCE(NULLIF(c->>'amount', '')::numeric, 0), 2)), 0)
+    INTO v_add
+  FROM jsonb_array_elements(COALESCE(p_payload->'additional_charge_items', '[]'::jsonb)) c;
+
+  IF v_dtype NOT IN ('None', 'Percentage', 'Fixed Amount') THEN
+    RAISE EXCEPTION 'Invalid discount type: %', v_dtype USING ERRCODE = '22023';
+  END IF;
+  IF v_dval < 0 OR (v_dtype = 'Percentage' AND v_dval > 100) THEN
+    RAISE EXCEPTION 'Invalid discount value.' USING ERRCODE = '22023';
+  END IF;
+
+  v_base := v_sub + v_add;
+  v_damt := CASE v_dtype
+              WHEN 'Percentage'   THEN round(v_base * v_dval / 100, 2)
+              WHEN 'Fixed Amount' THEN round(v_dval, 2)
+              ELSE 0 END;
+  IF v_dtype = 'None' THEN v_dval := 0; END IF;
+  IF v_damt > v_base THEN
+    RAISE EXCEPTION 'Discount amount cannot exceed subtotal.' USING ERRCODE = '22023';
+  END IF;
+
+  v_taxable := v_base - v_damt;
+  IF NOT v_tax_on THEN v_tax_rate := 0; END IF;
+  v_tax   := CASE WHEN v_tax_rate > 0 THEN round(v_taxable * v_tax_rate / 100, 2) ELSE 0 END;
+  v_grand := v_taxable + v_tax;
+
+  SELECT COALESCE(SUM(NULLIF(p->>'percentage', '')::numeric), 0)
+    INTO v_pay_pct
+  FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) p;
+  IF v_pay_pct > 100.0001 THEN
+    RAISE EXCEPTION 'Payment schedule adds up to more than 100%%.' USING ERRCODE = '22023';
+  END IF;
+
+  IF v_status = 'Draft' THEN
+    v_brand := NULL;
+  ELSIF NOT v_is_new AND v_existing.brand_snapshot IS NOT NULL THEN
+    v_brand := v_existing.brand_snapshot;
+  ELSE
+    SELECT jsonb_strip_nulls(jsonb_build_object(
+             'companyName', c.name,         'logoUrl', c.logo_url,
+             'primaryColor', c.primary_color, 'secondaryColor', c.secondary_color,
+             'address', c.address,          'mobile', c.phone,
+             'email', c.email,              'website', c.website,
+             'gstin', c.gst_number,         'pan', c.pan_number,
+             'bankName', s.bank_name,       'accountName', s.account_name,
+             'accountNumber', s.account_number, 'ifsc', s.ifsc,
+             'branch', s.branch,            'upiId', s.upi_id,
+             'authorizedPersonName', s.authorized_person, 'designation', s.designation,
+             'signatureImage', s.signature_url,
+             'snapshotAt', to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')))
+      INTO v_brand
+    FROM public.companies c
+    LEFT JOIN public.company_settings s ON s.company_id = c.id
+    WHERE c.id = p_company_id;
+  END IF;
+
+  INSERT INTO public.documents AS d (
+    id, company_id, customer_id, party_id, document_type, document_number, status,
+    quotation_date, valid_until, project_type_id, project_name, project_type, project_location,
+    area_unit_id, builtup_area, area_unit, floors,
+    subtotal, additional_charges, discount, discount_type, discount_amount,
+    tax_rate_id, tax_name, tax_percentage, tax_amount, grand_total,
+    notes, internal_notes, validity, questionnaire, additional_charge_items, brand_snapshot,
+    version, created_at, updated_at
+  ) VALUES (
+    v_id, p_company_id, NULLIF(p_payload->>'customer_id', '')::uuid, NULLIF(p_payload->>'party_id', '')::uuid,
+    'Quotation', v_number, v_status,
+    NULLIF(p_payload->>'quotation_date', '')::date, NULLIF(p_payload->>'valid_until', '')::date,
+    NULLIF(p_payload->>'project_type_id', '')::uuid,
+    COALESCE(p_payload->>'project_name', ''), COALESCE(p_payload->>'project_type', ''),
+    COALESCE(p_payload->>'project_location', ''),
+    NULLIF(p_payload->>'area_unit_id', '')::uuid, NULLIF(p_payload->>'builtup_area', '')::numeric,
+    COALESCE(p_payload->>'area_unit', ''), COALESCE(p_payload->>'floors', ''),
+    v_sub, v_add, v_dval, v_dtype, v_damt,
+    NULLIF(p_payload->>'tax_rate_id', '')::uuid, NULLIF(p_payload->>'tax_name', ''), v_tax_rate, v_tax, v_grand,
+    COALESCE(p_payload->>'notes', ''), COALESCE(p_payload->>'internal_notes', ''),
+    NULLIF(p_payload->>'validity', ''),
+    CASE WHEN jsonb_typeof(p_payload->'questionnaire') = 'object' THEN p_payload->'questionnaire' END,
+    COALESCE(p_payload->'additional_charge_items', '[]'::jsonb), v_brand,
+    1, now(), now()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    customer_id = EXCLUDED.customer_id, party_id = EXCLUDED.party_id, status = EXCLUDED.status,
+    quotation_date = EXCLUDED.quotation_date, valid_until = EXCLUDED.valid_until,
+    project_type_id = EXCLUDED.project_type_id, project_name = EXCLUDED.project_name,
+    project_type = EXCLUDED.project_type, project_location = EXCLUDED.project_location,
+    area_unit_id = EXCLUDED.area_unit_id, builtup_area = EXCLUDED.builtup_area,
+    area_unit = EXCLUDED.area_unit, floors = EXCLUDED.floors,
+    subtotal = EXCLUDED.subtotal, additional_charges = EXCLUDED.additional_charges,
+    discount = EXCLUDED.discount, discount_type = EXCLUDED.discount_type,
+    discount_amount = EXCLUDED.discount_amount,
+    tax_rate_id = EXCLUDED.tax_rate_id, tax_name = EXCLUDED.tax_name,
+    tax_percentage = EXCLUDED.tax_percentage, tax_amount = EXCLUDED.tax_amount,
+    grand_total = EXCLUDED.grand_total, notes = EXCLUDED.notes,
+    internal_notes = EXCLUDED.internal_notes, validity = EXCLUDED.validity,
+    questionnaire = EXCLUDED.questionnaire, additional_charge_items = EXCLUDED.additional_charge_items,
+    brand_snapshot = EXCLUDED.brand_snapshot,
+    version = d.version + 1, updated_at = now()
+  RETURNING d.version INTO v_version;
+
+  DELETE FROM public.document_sections       WHERE document_id = v_id;
+  DELETE FROM public.document_terms          WHERE document_id = v_id;
+  DELETE FROM public.document_specifications WHERE document_id = v_id;
+  DELETE FROM public.document_inclusions     WHERE document_id = v_id;
+  DELETE FROM public.document_exclusions     WHERE document_id = v_id;
+  DELETE FROM public.payment_schedules       WHERE document_id = v_id;
+
+  v_sec_ord := 0;
+  FOR v_section IN SELECT value FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) LOOP
+    v_new_id := NULLIF(v_section->>'id', '')::uuid;
+    IF v_new_id IS NULL OR EXISTS (SELECT 1 FROM public.document_sections WHERE id = v_new_id) THEN
+      v_new_id := gen_random_uuid();
+    END IF;
+
+    INSERT INTO public.document_sections (id, document_id, section_name, display_order)
+    VALUES (
+      v_new_id,
+      v_id,
+      v_section->>'section_name',
+      COALESCE(NULLIF(v_section->>'display_order', '')::integer, v_sec_ord)
+    )
+    RETURNING id INTO v_sec_id;
+
+    INSERT INTO public.document_items (id, section_id, description, quantity, unit_id, unit, rate, amount, display_order, row_type)
+    SELECT CASE WHEN NULLIF(t.i->>'id', '') IS NOT NULL
+                 AND NOT EXISTS (SELECT 1 FROM public.document_items x WHERE x.id = (t.i->>'id')::uuid)
+                THEN (t.i->>'id')::uuid ELSE gen_random_uuid() END,
+           v_sec_id,
+           t.i->>'description',
+           t.qty,
+           NULLIF(t.i->>'unit_id', '')::uuid,
+           NULLIF(t.i->>'unit', ''),
+           t.rate,
+           CASE WHEN t.rtype = 'item' THEN round(t.qty * t.rate, 2) ELSE 0 END,
+           COALESCE(NULLIF(t.i->>'display_order', '')::integer, (t.ord - 1)::integer),
+           t.rtype
+    FROM (
+      SELECT i, ord,
+             COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) AS qty,
+             COALESCE(NULLIF(i->>'rate', '')::numeric, 0)     AS rate,
+             CASE
+               WHEN i->>'row_type' IN ('item', 'note') THEN i->>'row_type'
+               WHEN COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) = 0
+                AND COALESCE(NULLIF(i->>'rate', '')::numeric, 0) = 0 THEN 'note'
+               ELSE 'item'
+             END AS rtype
+      FROM jsonb_array_elements(COALESCE(v_section->'items', '[]'::jsonb)) WITH ORDINALITY AS e(i, ord)
+    ) t;
+
+    v_sec_ord := v_sec_ord + 1;
+  END LOOP;
+
+  INSERT INTO public.document_specifications (id, document_id, specification_type, description, display_order)
+  SELECT CASE WHEN NULLIF(e.s->>'id', '') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM public.document_specifications x WHERE x.id = (e.s->>'id')::uuid)
+             THEN (e.s->>'id')::uuid ELSE gen_random_uuid() END, v_id,
+         e.s->>'specification_type', e.s->>'description',
+         COALESCE(NULLIF(e.s->>'display_order', '')::integer, (e.ord - 1)::integer)
+  FROM jsonb_array_elements(COALESCE(p_payload->'specifications', '[]'::jsonb)) WITH ORDINALITY AS e(s, ord);
+
+  INSERT INTO public.document_inclusions (document_id, description, display_order)
+  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
+  FROM jsonb_array_elements_text(COALESCE(p_payload->'inclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
+  WHERE btrim(e.txt) <> '';
+
+  INSERT INTO public.document_exclusions (document_id, description, display_order)
+  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
+  FROM jsonb_array_elements_text(COALESCE(p_payload->'exclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
+  WHERE btrim(e.txt) <> '';
+
+  -- Payment schedule: every percentage-based stage is rounded normally EXCEPT the last
+  -- one (by display order among percentage-based stages), which absorbs whatever
+  -- rounding residue is left so the set always sums to exactly
+  -- round(total_pct * grand_total / 100, 2) — never off by a paisa from independent
+  -- per-row rounding. A stage given an explicit amount (no percentage) passes through
+  -- untouched; it isn't part of this reconciliation.
+  WITH schedule AS (
+    SELECT e.p, e.ord, NULLIF(e.p->>'percentage', '')::numeric AS pct
+    FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) WITH ORDINALITY AS e(p, ord)
+  ), pct_rows AS (
+    SELECT ord, pct, round(v_grand * pct / 100, 2) AS naive_amount,
+           row_number() OVER (ORDER BY ord DESC) AS rn_from_end
+    FROM schedule WHERE pct IS NOT NULL
+  ), pct_totals AS (
+    SELECT COALESCE(SUM(pct), 0) AS total_pct,
+           COALESCE(SUM(naive_amount) FILTER (WHERE rn_from_end <> 1), 0) AS sum_of_others
+    FROM pct_rows
+  )
+  INSERT INTO public.payment_schedules (id, document_id, stage_name, percentage, amount, due_date, status, notes, display_order)
+  SELECT CASE WHEN NULLIF(s.p->>'id', '') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM public.payment_schedules x WHERE x.id = (s.p->>'id')::uuid)
+             THEN (s.p->>'id')::uuid ELSE gen_random_uuid() END,
+         v_id,
+         s.p->>'stage_name',
+         s.pct,
+         CASE
+           WHEN s.pct IS NULL THEN NULLIF(s.p->>'amount', '')::numeric
+           WHEN pr.rn_from_end = 1 THEN round(v_grand * t.total_pct / 100, 2) - t.sum_of_others
+           ELSE pr.naive_amount
+         END,
+         NULLIF(s.p->>'due_date', '')::date,
+         NULLIF(s.p->>'status', ''),
+         NULLIF(s.p->>'notes', ''),
+         COALESCE(NULLIF(s.p->>'display_order', '')::integer, (s.ord - 1)::integer)
+  FROM schedule s
+  LEFT JOIN pct_rows pr ON pr.ord = s.ord
+  CROSS JOIN pct_totals t
+  ORDER BY s.ord;
+
+  INSERT INTO public.document_terms (id, document_id, description, display_order)
+  SELECT CASE WHEN NULLIF(e.t->>'id', '') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM public.document_terms x WHERE x.id = (e.t->>'id')::uuid)
+             THEN (e.t->>'id')::uuid ELSE gen_random_uuid() END, v_id,
+         e.t->>'description',
+         COALESCE(NULLIF(e.t->>'display_order', '')::integer, (e.ord - 1)::integer)
+  FROM jsonb_array_elements(COALESCE(p_payload->'terms', '[]'::jsonb)) WITH ORDINALITY AS e(t, ord);
+
+  RETURN jsonb_build_object(
+    'id', v_id,
+    'document_number', v_number,
+    'version', v_version,
+    'is_new', v_is_new,
+    'subtotal', v_sub,
+    'additional_charges', v_add,
+    'discount_amount', v_damt,
+    'taxable_amount', v_taxable,
+    'tax_amount', v_tax,
+    'grand_total', v_grand
+  );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.save_quotation(uuid, jsonb, integer)         FROM PUBLIC, anon, authenticated;
+GRANT  EXECUTE ON FUNCTION public.save_quotation(uuid, jsonb, integer)     TO service_role;
+
+COMMIT;
+-- <<< 0023_payment_schedule_rounding.sql
+
+-- >>> 0024_normalize_existing_emails.sql
+-- 0024_normalize_existing_emails.sql
+--
+-- Companion to the application-layer fix in server/src/auth.ts (findUserByEmail /
+-- createUser now normalize to lower(trim(email)) before every lookup and insert).
+-- This migration lowercases EXISTING rows to match, so a user who signed up as
+-- "Jane@X.com" before this fix can still log in with "jane@x.com" afterwards.
+--
+-- Safe to re-run (WHERE clause only touches rows that still need it). If two existing
+-- accounts already differ only by case (e.g. "a@x.com" and "A@x.com" both exist as
+-- separate rows — only possible from before this fix), lowercasing either would collide
+-- with the other, so those rows are deliberately left untouched and reported via a
+-- NOTICE for manual review instead of failing the whole migration.
+BEGIN;
+
+DO $$
+DECLARE
+  v_collisions integer;
+BEGIN
+  SELECT count(*) INTO v_collisions
+  FROM public.users u
+  WHERE u.email <> lower(trim(u.email))
+    AND EXISTS (
+      SELECT 1 FROM public.users u2
+      WHERE u2.id <> u.id AND lower(trim(u2.email)) = lower(trim(u.email))
+    );
+  IF v_collisions > 0 THEN
+    RAISE NOTICE 'Skipped % row(s) whose lowercased email collides with another existing account — review these manually (e.g. merge or rename one).', v_collisions;
+  END IF;
+END $$;
+
+UPDATE public.users u
+SET email = lower(trim(u.email))
+WHERE u.email <> lower(trim(u.email))
+  AND NOT EXISTS (
+    SELECT 1 FROM public.users u2
+    WHERE u2.id <> u.id AND lower(trim(u2.email)) = lower(trim(u.email))
+  );
+
+COMMIT;
+-- <<< 0024_normalize_existing_emails.sql
+
+-- >>> 0025_booking_receipt_unit_locking.sql
+BEGIN;
+
+ALTER TABLE public.booking_receipt_details
+  ADD COLUMN IF NOT EXISTS project_unit_id uuid,
+  ADD COLUMN IF NOT EXISTS booking_status text,
+  ADD COLUMN IF NOT EXISTS prior_unit_status text;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_booking_receipt_details_project_unit'
+      AND conrelid = 'public.booking_receipt_details'::regclass
+  ) THEN
+    ALTER TABLE public.booking_receipt_details
+      ADD CONSTRAINT fk_booking_receipt_details_project_unit
+      FOREIGN KEY (project_unit_id)
+      REFERENCES public.project_units(id)
+      ON DELETE RESTRICT;
+  END IF;
+END $$;
+
+ALTER TABLE public.booking_receipt_details
+  ADD CONSTRAINT chk_booking_receipt_details_booking_status
+  CHECK (
+    booking_status IS NULL OR booking_status IN ('Draft', 'Confirmed', 'Cancelled', 'Completed')
+  );
+
+ALTER TABLE public.booking_receipt_details
+  ADD CONSTRAINT chk_booking_receipt_details_prior_unit_status
+  CHECK (
+    prior_unit_status IS NULL OR prior_unit_status IN ('available', 'allocated', 'booked')
+  );
+
+-- Backfill only where the historical state is explicit and safe to infer.
+-- We intentionally do not reference documents.is_deleted in the unique index below,
+-- because soft delete lives on the parent document row and the correct enforcement is
+-- transactional app-side validation plus the active-booking partial unique index.
+UPDATE public.booking_receipt_details brd
+SET booking_status = CASE
+  WHEN d.status = 'Cancelled' THEN 'Cancelled'
+  WHEN d.status = 'Completed' THEN 'Completed'
+  WHEN d.status IN ('Accepted', 'Generated', 'Sent') THEN 'Confirmed'
+  WHEN d.is_deleted = true THEN 'Cancelled'
+  ELSE 'Draft'
+END
+FROM public.documents d
+WHERE brd.document_id = d.id
+  AND brd.booking_status IS NULL
+  AND d.status IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_active_booking_per_unit
+  ON public.booking_receipt_details (project_unit_id)
+  WHERE project_unit_id IS NOT NULL
+    AND booking_status IN ('Confirmed', 'Completed');
+
+CREATE OR REPLACE FUNCTION public.confirm_booking_receipt_unit(
+  p_document_id uuid,
+  p_project_unit_id uuid
+)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_document record;
+  v_unit record;
+  v_active_booking_count integer;
+BEGIN
+  SELECT d.id, d.company_id, d.project_id, d.is_deleted, d.status
+    INTO v_document
+  FROM public.documents d
+  WHERE d.id = p_document_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Booking document not found.';
+  END IF;
+
+  IF v_document.is_deleted THEN
+    RAISE EXCEPTION 'This receipt has been deleted and can no longer be modified.';
+  END IF;
+
+  SELECT pu.id, pu.company_id, pu.project_id, pu.status
+    INTO v_unit
+  FROM public.project_units pu
+  WHERE pu.id = p_project_unit_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Selected project unit was not found.';
+  END IF;
+
+  IF v_unit.company_id <> v_document.company_id THEN
+    RAISE EXCEPTION 'Selected unit does not belong to this company.';
+  END IF;
+
+  IF v_unit.project_id <> v_document.project_id THEN
+    RAISE EXCEPTION 'Selected unit does not belong to this project.';
+  END IF;
+
+  IF v_unit.status NOT IN ('available', 'allocated') THEN
+    RAISE EXCEPTION 'This unit is not available for booking.';
+  END IF;
+
+  SELECT count(*)
+    INTO v_active_booking_count
+  FROM public.booking_receipt_details brd
+  JOIN public.documents d ON d.id = brd.document_id
+  WHERE brd.project_unit_id = p_project_unit_id
+    AND brd.booking_status IN ('Confirmed', 'Completed')
+    AND brd.document_id <> p_document_id
+    AND d.is_deleted = false;
+
+  IF v_active_booking_count > 0 THEN
+    RAISE EXCEPTION 'This unit already has an active booking.';
+  END IF;
+
+  UPDATE public.booking_receipt_details
+  SET project_unit_id = p_project_unit_id,
+      booking_status = 'Confirmed',
+      prior_unit_status = v_unit.status
+  WHERE document_id = p_document_id;
+
+  UPDATE public.project_units
+  SET status = 'booked',
+      updated_at = now()
+  WHERE id = p_project_unit_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.cancel_booking_receipt_unit(
+  p_document_id uuid
+)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_booking record;
+  v_unit record;
+BEGIN
+  SELECT brd.document_id, brd.project_unit_id, brd.booking_status, brd.prior_unit_status, d.company_id, d.project_id, d.is_deleted
+    INTO v_booking
+  FROM public.booking_receipt_details brd
+  JOIN public.documents d ON d.id = brd.document_id
+  WHERE brd.document_id = p_document_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Booking document not found.';
+  END IF;
+
+  IF v_booking.is_deleted THEN
+    RAISE EXCEPTION 'This receipt has been deleted and can no longer be modified.';
+  END IF;
+
+  IF v_booking.project_unit_id IS NULL THEN
+    UPDATE public.booking_receipt_details
+    SET booking_status = 'Cancelled'
+    WHERE document_id = p_document_id;
+    RETURN;
+  END IF;
+
+  SELECT pu.status, pu.company_id, pu.project_id
+    INTO v_unit
+  FROM public.project_units pu
+  WHERE pu.id = v_booking.project_unit_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Unit linked to this booking no longer exists.';
+  END IF;
+
+  UPDATE public.booking_receipt_details
+  SET booking_status = 'Cancelled'
+  WHERE document_id = p_document_id;
+
+  IF v_unit.status = 'booked' THEN
+    UPDATE public.project_units
+    SET status = COALESCE(v_booking.prior_unit_status, 'available'),
+        updated_at = now()
+    WHERE id = v_booking.project_unit_id;
+  END IF;
+END;
+$$;
+
+COMMIT;
+-- <<< 0025_booking_receipt_unit_locking.sql
+
+-- >>> 0026_atomic_receipt_allocation.sql
+CREATE OR REPLACE FUNCTION public.apply_receipt_allocation(
+  p_company_id uuid,
+  p_receipt_id uuid,
+  p_invoice_id uuid,
+  p_requested_amount numeric
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_receipt record;
+  v_invoice record;
+  v_receipt_total_allocated numeric;
+  v_invoice_total_allocated numeric;
+  v_receipt_remaining numeric;
+  v_invoice_outstanding numeric;
+  v_allocated_amount numeric;
+  v_allocation record;
+BEGIN
+  SELECT *
+  INTO v_receipt
+  FROM public.project_receipts
+  WHERE id = p_receipt_id AND company_id = p_company_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Receipt not found.';
+  END IF;
+
+  SELECT *
+  INTO v_invoice
+  FROM public.invoices
+  WHERE id = p_invoice_id AND company_id = p_company_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Invoice not found.';
+  END IF;
+
+  IF v_invoice.status = 'Cancelled' THEN
+    RAISE EXCEPTION 'Cancelled invoices cannot receive payment allocations.';
+  END IF;
+
+  IF v_invoice.status <> 'Issued' THEN
+    RAISE EXCEPTION 'Only issued invoices can receive payment allocations.';
+  END IF;
+
+  SELECT COALESCE(SUM(allocated_amount), 0)
+  INTO v_receipt_total_allocated
+  FROM public.payment_allocations
+  WHERE receipt_id = p_receipt_id;
+
+  SELECT COALESCE(SUM(allocated_amount), 0)
+  INTO v_invoice_total_allocated
+  FROM public.payment_allocations
+  WHERE invoice_id = p_invoice_id;
+
+  v_receipt_remaining := GREATEST(v_receipt.amount - v_receipt_total_allocated, 0::numeric);
+  v_invoice_outstanding := GREATEST(v_invoice.grand_total - v_invoice_total_allocated, 0::numeric);
+
+  IF p_requested_amount IS NULL OR p_requested_amount <= 0 THEN
+    RAISE EXCEPTION 'Allocation amount must be greater than zero.';
+  END IF;
+
+  IF v_receipt_remaining <= 0 THEN
+    RAISE EXCEPTION 'This receipt has no remaining balance to allocate.';
+  END IF;
+
+  IF v_invoice_outstanding <= 0 THEN
+    RAISE EXCEPTION 'This invoice is already fully paid.';
+  END IF;
+
+  v_allocated_amount := LEAST(p_requested_amount, v_receipt_remaining, v_invoice_outstanding);
+
+  IF v_allocated_amount <= 0 THEN
+    RAISE EXCEPTION 'Requested amount exceeds the remaining receipt balance or invoice outstanding amount.';
+  END IF;
+
+  INSERT INTO public.payment_allocations (company_id, invoice_id, receipt_id, allocated_amount)
+  VALUES (p_company_id, p_invoice_id, p_receipt_id, v_allocated_amount)
+  RETURNING * INTO v_allocation;
+
+  RETURN jsonb_build_object(
+    'allocation', jsonb_build_object(
+      'id', v_allocation.id,
+      'companyId', v_allocation.company_id,
+      'invoiceId', v_allocation.invoice_id,
+      'receiptId', v_allocation.receipt_id,
+      'allocatedAmount', v_allocation.allocated_amount,
+      'createdAt', v_allocation.created_at
+    ),
+    'receiptRemaining', v_receipt_remaining,
+    'invoiceOutstanding', v_invoice_outstanding,
+    'allocatedAmount', v_allocated_amount
+  );
+END;
+$$;
+-- <<< 0026_atomic_receipt_allocation.sql
+
+-- >>> 0026_update_project_and_business_type_definitions.sql
+BEGIN;
+
+-- Preserve existing project-type IDs and foreign-key references.
+-- Existing codes are renamed in place so historical projects keep their project_type_id.
+UPDATE public.project_types
+SET code = 'independent_house',
+    name = 'Independent House Construction',
+    description = 'Construction of standalone and independent residential houses.',
+    sort_order = 1,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'individual_house';
+
+UPDATE public.project_types
+SET name = 'Villa Construction',
+    description = 'Construction of standalone villas and villa communities.',
+    sort_order = 2,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'villa';
+
+UPDATE public.project_types
+SET code = 'apartment',
+    name = 'Apartment Construction',
+    description = 'Construction or development of apartment buildings and residential towers.',
+    sort_order = 3,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'apartment_building';
+
+UPDATE public.project_types
+SET name = 'Commercial Building Construction',
+    description = 'Construction of offices, retail buildings and other commercial properties.',
+    sort_order = 4,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'commercial_building';
+
+UPDATE public.project_types
+SET name = 'Industrial & Warehouse Construction',
+    description = 'Construction of industrial facilities, factories and warehouse buildings.',
+    sort_order = 5,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'industrial_warehouse';
+
+INSERT INTO public.project_types (company_id, code, name, description, sort_order, is_active)
+VALUES (NULL, 'industrial_warehouse', 'Industrial & Warehouse Construction', 'Construction of industrial facilities, factories and warehouse buildings.', 5, true)
+ON CONFLICT ON CONSTRAINT uq_project_types
+DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  sort_order = EXCLUDED.sort_order,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+UPDATE public.project_types
+SET name = 'Renovation & Remodeling',
+    description = 'Renovation, rehabilitation and remodeling of existing residential or commercial properties.',
+    sort_order = 6,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'renovation';
+
+UPDATE public.project_types
+SET code = 'building_extension',
+    name = 'Building Extension & Additional Floor',
+    description = 'Building extensions, alterations and construction of additional floors.',
+    sort_order = 7,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'extension';
+
+UPDATE public.project_types
+SET code = 'interior_fitout',
+    name = 'Interior Fit-out & Works',
+    description = 'Interior fit-out, finishing and interior construction works.',
+    sort_order = 8,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'interior';
+
+UPDATE public.project_types
+SET name = 'Structural Construction Works',
+    description = 'Structural construction works including RCC, steel and structural building elements.',
+    sort_order = 9,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'structural_works';
+
+INSERT INTO public.project_types (company_id, code, name, description, sort_order, is_active)
+VALUES (NULL, 'structural_works', 'Structural Construction Works', 'Structural construction works including RCC, steel and structural building elements.', 9, true)
+ON CONFLICT ON CONSTRAINT uq_project_types
+DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  sort_order = EXCLUDED.sort_order,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+UPDATE public.project_types
+SET code = 'civil_infrastructure',
+    name = 'Civil Infrastructure Works',
+    description = 'Civil engineering and infrastructure works for residential, commercial and public facilities.',
+    sort_order = 10,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'civil_only';
+
+UPDATE public.project_types
+SET name = 'Civil Infrastructure Works',
+    description = 'Civil engineering and infrastructure works for residential, commercial and public facilities.',
+    sort_order = 10,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'civil_infrastructure';
+
+INSERT INTO public.project_types (company_id, code, name, description, sort_order, is_active)
+VALUES (NULL, 'road_drainage', 'Road & Drainage Works', 'Road construction, drainage systems, culverts and related infrastructure works.', 11, true)
+ON CONFLICT ON CONSTRAINT uq_project_types
+DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  sort_order = EXCLUDED.sort_order,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+UPDATE public.project_types
+SET name = 'Other / Custom Project',
+    description = 'A project that does not fit the predefined project categories and requires custom planning.',
+    sort_order = 12,
+    is_active = true,
+    updated_at = now()
+WHERE company_id IS NULL AND code = 'other';
+
+COMMIT;
+-- <<< 0026_update_project_and_business_type_definitions.sql
+
+-- >>> 0027_invoice_discount_columns.sql
+BEGIN;
+
+ALTER TABLE public.invoices
+  ADD COLUMN IF NOT EXISTS discount_amount numeric(18,2) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS discount_percentage numeric(5,2) NOT NULL DEFAULT 0;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'invoices_discount_amount_check'
+  ) THEN
+    ALTER TABLE public.invoices
+      ADD CONSTRAINT invoices_discount_amount_check CHECK (discount_amount >= 0);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'invoices_discount_percentage_check'
+  ) THEN
+    ALTER TABLE public.invoices
+      ADD CONSTRAINT invoices_discount_percentage_check CHECK (discount_percentage >= 0 AND discount_percentage <= 100);
+  END IF;
+END $$;
+
+COMMIT;
+-- <<< 0027_invoice_discount_columns.sql
+
+-- >>> 0028_project_types_canonical_cleanup.sql
+BEGIN;
+
+-- Canonicalize legacy/duplicate global project type codes without deleting history.
+-- This migration preserves existing IDs for canonical rows, remaps FK references,
+-- migrates stage templates, and deactivates deprecated duplicate rows.
+
+WITH canonical AS (
+  SELECT code, id
+  FROM public.project_types
+  WHERE company_id IS NULL
+    AND code IN (
+      'independent_house',
+      'apartment',
+      'building_extension',
+      'interior_fitout',
+      'civil_infrastructure',
+      'road_drainage',
+      'industrial_warehouse'
+    )
+), legacy_map AS (
+  SELECT legacy.id AS legacy_id, legacy.code AS legacy_code, canonical.id AS canonical_id, canonical.code AS canonical_code
+  FROM public.project_types legacy
+  JOIN canonical
+    ON canonical.code = CASE lower(legacy.code)
+      WHEN 'individual_house' THEN 'independent_house'
+      WHEN 'apartment_building' THEN 'apartment'
+      WHEN 'extension' THEN 'building_extension'
+      WHEN 'interior' THEN 'interior_fitout'
+      WHEN 'civil_only' THEN 'civil_infrastructure'
+      WHEN 'road' THEN 'road_drainage'
+      WHEN 'drainage' THEN 'road_drainage'
+      WHEN 'industrial' THEN 'industrial_warehouse'
+      ELSE NULL
+    END
+  WHERE legacy.company_id IS NULL
+)
+UPDATE public.projects p
+SET project_type_id = m.canonical_id,
+    project_type_snapshot = COALESCE(pt.name, p.project_type_snapshot),
+    updated_at = now()
+FROM legacy_map m
+LEFT JOIN public.project_types pt ON pt.id = m.canonical_id
+WHERE p.project_type_id = m.legacy_id;
+
+WITH canonical AS (
+  SELECT code, id
+  FROM public.project_types
+  WHERE company_id IS NULL
+    AND code IN (
+      'independent_house',
+      'apartment',
+      'building_extension',
+      'interior_fitout',
+      'civil_infrastructure',
+      'road_drainage',
+      'industrial_warehouse'
+    )
+), legacy_map AS (
+  SELECT legacy.id AS legacy_id, canonical.id AS canonical_id
+  FROM public.project_types legacy
+  JOIN canonical
+    ON canonical.code = CASE lower(legacy.code)
+      WHEN 'individual_house' THEN 'independent_house'
+      WHEN 'apartment_building' THEN 'apartment'
+      WHEN 'extension' THEN 'building_extension'
+      WHEN 'interior' THEN 'interior_fitout'
+      WHEN 'civil_only' THEN 'civil_infrastructure'
+      WHEN 'road' THEN 'road_drainage'
+      WHEN 'drainage' THEN 'road_drainage'
+      WHEN 'industrial' THEN 'industrial_warehouse'
+      ELSE NULL
+    END
+  WHERE legacy.company_id IS NULL
+)
+UPDATE public.documents d
+SET project_type_id = m.canonical_id,
+    project_type = COALESCE(pt.name, d.project_type),
+    updated_at = now()
+FROM legacy_map m
+LEFT JOIN public.project_types pt ON pt.id = m.canonical_id
+WHERE d.project_type_id = m.legacy_id;
+
+WITH canonical AS (
+  SELECT code, id
+  FROM public.project_types
+  WHERE company_id IS NULL
+    AND code IN (
+      'independent_house',
+      'apartment',
+      'building_extension',
+      'interior_fitout',
+      'civil_infrastructure',
+      'road_drainage',
+      'industrial_warehouse'
+    )
+), legacy_map AS (
+  SELECT legacy.id AS legacy_id, canonical.id AS canonical_id
+  FROM public.project_types legacy
+  JOIN canonical
+    ON canonical.code = CASE lower(legacy.code)
+      WHEN 'individual_house' THEN 'independent_house'
+      WHEN 'apartment_building' THEN 'apartment'
+      WHEN 'extension' THEN 'building_extension'
+      WHEN 'interior' THEN 'interior_fitout'
+      WHEN 'civil_only' THEN 'civil_infrastructure'
+      WHEN 'road' THEN 'road_drainage'
+      WHEN 'drainage' THEN 'road_drainage'
+      WHEN 'industrial' THEN 'industrial_warehouse'
+      ELSE NULL
+    END
+  WHERE legacy.company_id IS NULL
+) , staged_templates AS (
+  SELECT
+    pst.company_id,
+    m.canonical_id AS project_type_id,
+    pst.template_code,
+    pst.name,
+    pst.sequence_number,
+    pst.default_completion_percentage,
+    pst.is_active,
+    pst.created_at,
+    pst.updated_at,
+    pst.id
+  FROM public.project_stage_templates pst
+  JOIN legacy_map m ON m.legacy_id = pst.project_type_id
+), deduped_templates AS (
+  SELECT DISTINCT ON (
+    company_id,
+    project_type_id,
+    lower(coalesce(template_code, ''))
+  )
+    company_id,
+    project_type_id,
+    template_code,
+    name,
+    sequence_number,
+    default_completion_percentage,
+    is_active,
+    created_at
+  FROM staged_templates
+  ORDER BY
+    company_id,
+    project_type_id,
+    lower(coalesce(template_code, '')),
+    updated_at DESC,
+    id DESC
+)
+INSERT INTO public.project_stage_templates (
+  company_id,
+  project_type_id,
+  template_code,
+  name,
+  sequence_number,
+  default_completion_percentage,
+  is_active,
+  created_at,
+  updated_at
+)
+SELECT
+  d.company_id,
+  d.project_type_id,
+  d.template_code,
+  d.name,
+  d.sequence_number,
+  d.default_completion_percentage,
+  d.is_active,
+  d.created_at,
+  now()
+FROM deduped_templates d
+ON CONFLICT ON CONSTRAINT uq_project_stage_templates
+DO UPDATE SET
+  name = EXCLUDED.name,
+  sequence_number = EXCLUDED.sequence_number,
+  default_completion_percentage = EXCLUDED.default_completion_percentage,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+WITH canonical AS (
+  SELECT code, id
+  FROM public.project_types
+  WHERE company_id IS NULL
+    AND code IN (
+      'independent_house',
+      'apartment',
+      'building_extension',
+      'interior_fitout',
+      'civil_infrastructure',
+      'road_drainage',
+      'industrial_warehouse'
+    )
+), legacy_map AS (
+  SELECT legacy.id AS legacy_id
+  FROM public.project_types legacy
+  JOIN canonical
+    ON canonical.code = CASE lower(legacy.code)
+      WHEN 'individual_house' THEN 'independent_house'
+      WHEN 'apartment_building' THEN 'apartment'
+      WHEN 'extension' THEN 'building_extension'
+      WHEN 'interior' THEN 'interior_fitout'
+      WHEN 'civil_only' THEN 'civil_infrastructure'
+      WHEN 'road' THEN 'road_drainage'
+      WHEN 'drainage' THEN 'road_drainage'
+      WHEN 'industrial' THEN 'industrial_warehouse'
+      ELSE NULL
+    END
+  WHERE legacy.company_id IS NULL
+)
+DELETE FROM public.project_stage_templates pst
+USING legacy_map m
+WHERE pst.project_type_id = m.legacy_id;
+
+UPDATE public.project_types
+SET is_active = false,
+    updated_at = now()
+WHERE company_id IS NULL
+  AND lower(code) IN (
+    'individual_house',
+    'apartment_building',
+    'extension',
+    'interior',
+    'civil_only',
+    'road',
+    'drainage',
+    'industrial'
+  );
+
+COMMIT;
+-- <<< 0028_project_types_canonical_cleanup.sql
+
+-- >>> 0029_project_execution_stage_management.sql
+BEGIN;
+
+ALTER TABLE public.project_stages
+  DROP CONSTRAINT IF EXISTS project_stages_status_check;
+
+ALTER TABLE public.project_stages
+  ADD CONSTRAINT project_stages_status_check
+  CHECK (status IN ('pending', 'in_progress', 'completed', 'on_hold', 'skipped'));
+
+CREATE OR REPLACE FUNCTION public.create_project_with_stages_with_business_model(
+  p_company_id uuid,
+  p_created_by uuid,
+  p_customer_id uuid,
+  p_source_document_id uuid,
+  p_project_type_id uuid,
+  p_project_type_snapshot text,
+  p_project_number text,
+  p_name text,
+  p_description text,
+  p_site_address text,
+  p_contract_amount numeric,
+  p_budget_amount numeric,
+  p_start_date date,
+  p_expected_end_date date,
+  p_actual_end_date date,
+  p_status text,
+  p_stage_drafts jsonb DEFAULT NULL,
+  p_business_model text DEFAULT NULL,
+  p_projected_sales_value numeric DEFAULT NULL,
+  p_land_cost numeric DEFAULT NULL,
+  p_development_arrangement text DEFAULT NULL,
+  p_total_project_flats integer DEFAULT NULL,
+  p_landowner_party_id uuid DEFAULT NULL,
+  p_jda_agreement_reference text DEFAULT NULL,
+  p_jda_agreement_document_url text DEFAULT NULL,
+  p_jda_agreement_date date DEFAULT NULL,
+  p_builder_share_units integer DEFAULT NULL,
+  p_landowner_share_units integer DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_project_id uuid;
+  v_stage_drafts_supplied boolean := false;
+  v_has_stage_drafts boolean := false;
+  v_project_type_code text := NULL;
+  v_enabled_models text[];
+  v_model_text text;
+  v_arrangement_text text;
+BEGIN
+  IF p_business_model IS NULL OR NULLIF(trim(p_business_model), '') IS NULL THEN
+    RAISE EXCEPTION 'business_model is required for project creation and must be one of: contract_construction, property_development, civil_works_contract, material_supply.'
+    USING HINT = 'Provide a non-blank business_model value for this project.';
+  END IF;
+
+  v_model_text := lower(trim(p_business_model));
+  IF v_model_text NOT IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply') THEN
+    RAISE EXCEPTION 'Invalid business_model value: %. Allowed values are contract_construction, property_development, civil_works_contract, material_supply.', p_business_model
+    USING HINT = 'Provide a supported business_model value for this project.';
+  END IF;
+
+  IF p_development_arrangement IS NOT NULL AND NULLIF(trim(p_development_arrangement), '') IS NOT NULL THEN
+    v_arrangement_text := lower(trim(p_development_arrangement));
+    IF v_arrangement_text NOT IN ('self', 'joint_development') THEN
+      RAISE EXCEPTION 'Invalid development_arrangement value: %. Allowed values are self or joint_development.', p_development_arrangement
+      USING HINT = 'Provide a supported development arrangement for property development projects.';
+    END IF;
+  END IF;
+
+  IF v_model_text <> 'property_development' AND (
+    p_development_arrangement IS NOT NULL
+    OR p_landowner_party_id IS NOT NULL
+    OR p_jda_agreement_reference IS NOT NULL
+    OR p_jda_agreement_document_url IS NOT NULL
+    OR p_jda_agreement_date IS NOT NULL
+    OR p_total_project_flats IS NOT NULL
+    OR p_builder_share_units IS NOT NULL
+    OR p_landowner_share_units IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'Development arrangement and JDA fields are permitted only when business_model = property_development.';
+  END IF;
+
+  IF v_model_text = 'property_development' AND v_arrangement_text IS NULL THEN
+    RAISE EXCEPTION 'Property development projects require an explicit development arrangement: self or joint_development.'
+    USING HINT = 'Set development_arrangement when creating a property development project.';
+  END IF;
+
+  IF v_arrangement_text = 'self' THEN
+    IF p_landowner_party_id IS NOT NULL
+       OR p_jda_agreement_reference IS NOT NULL
+       OR p_jda_agreement_document_url IS NOT NULL
+       OR p_jda_agreement_date IS NOT NULL
+       OR p_total_project_flats IS NOT NULL
+       OR p_builder_share_units IS NOT NULL
+       OR p_landowner_share_units IS NOT NULL THEN
+      RAISE EXCEPTION 'Self development must not contain landowner, JDA or flat-sharing fields.'
+      USING HINT = 'Leave landowner and JDA fields empty for self development.';
+    END IF;
+  END IF;
+
+  IF v_arrangement_text = 'joint_development' THEN
+    IF p_landowner_party_id IS NULL THEN
+      RAISE EXCEPTION 'Joint development requires landowner_party_id.'
+      USING HINT = 'Provide a landowner party for joint development projects.';
+    END IF;
+
+    IF p_total_project_flats IS NULL OR p_total_project_flats <= 0 OR p_total_project_flats <> floor(p_total_project_flats::numeric) THEN
+      RAISE EXCEPTION 'Joint development requires total_project_flats as a positive whole number.'
+      USING HINT = 'Set total_project_flats to a whole number greater than zero.';
+    END IF;
+
+    IF p_builder_share_units IS NULL OR p_landowner_share_units IS NULL THEN
+      RAISE EXCEPTION 'Joint development requires builder_share_units and landowner_share_units.'
+      USING HINT = 'Provide both share counts.';
+    END IF;
+
+    IF p_builder_share_units < 0 OR p_landowner_share_units < 0 THEN
+      RAISE EXCEPTION 'Builder and landowner share flats must be non-negative.'
+      USING HINT = 'All share counts must be zero or greater.';
+    END IF;
+
+    IF p_builder_share_units + p_landowner_share_units <> p_total_project_flats THEN
+      RAISE EXCEPTION 'Builder and landowner share flats must add up to the total project flats.'
+      USING HINT = 'Use builder_share_units + landowner_share_units = total_project_flats.';
+    END IF;
+  END IF;
+
+  IF p_stage_drafts IS NOT NULL AND jsonb_typeof(p_stage_drafts) <> 'array' THEN
+    RAISE EXCEPTION 'stage_drafts must be a JSON array when provided.'
+    USING HINT = 'Provide stage_drafts as an array of stage objects.';
+  END IF;
+
+  SELECT enabled_business_models INTO v_enabled_models
+  FROM public.company_settings
+  WHERE company_id = p_company_id;
+
+  IF v_enabled_models IS NULL OR NOT (v_model_text = ANY (v_enabled_models)) THEN
+    RAISE EXCEPTION 'Business model % is not enabled for company %.', v_model_text, p_company_id
+    USING HINT = 'Update company_settings.enabled_business_models to include this business model before creating the project.';
+  END IF;
+
+  INSERT INTO public.projects (
+    company_id,
+    customer_id,
+    source_document_id,
+    project_type_id,
+    project_type_snapshot,
+    business_model,
+    projected_sales_value,
+    land_cost,
+    development_arrangement,
+    total_project_flats,
+    landowner_party_id,
+    jda_agreement_reference,
+    jda_agreement_document_url,
+    jda_agreement_date,
+    builder_share_units,
+    landowner_share_units,
+    project_number,
+    name,
+    description,
+    site_address,
+    contract_amount,
+    budget_amount,
+    start_date,
+    expected_end_date,
+    actual_end_date,
+    status,
+    created_by
+  ) VALUES (
+    p_company_id,
+    p_customer_id,
+    p_source_document_id,
+    p_project_type_id,
+    p_project_type_snapshot,
+    v_model_text,
+    p_projected_sales_value,
+    p_land_cost,
+    CASE WHEN v_model_text = 'property_development' THEN v_arrangement_text ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' THEN p_total_project_flats ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_party_id ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_reference ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_document_url ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_date ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_builder_share_units ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_share_units ELSE NULL END,
+    p_project_number,
+    p_name,
+    p_description,
+    p_site_address,
+    COALESCE(p_contract_amount, 0),
+    p_budget_amount,
+    p_start_date,
+    p_expected_end_date,
+    p_actual_end_date,
+    COALESCE(p_status, 'planned'),
+    p_created_by
+  )
+  RETURNING id INTO v_project_id;
+
+  v_stage_drafts_supplied := p_stage_drafts IS NOT NULL
+    AND jsonb_typeof(p_stage_drafts) = 'array';
+
+  v_has_stage_drafts := v_stage_drafts_supplied
+    AND jsonb_array_length(p_stage_drafts) > 0;
+
+  IF v_has_stage_drafts THEN
+    IF EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements(p_stage_drafts) AS draft(stage_row)
+      WHERE jsonb_typeof(draft.stage_row) <> 'object'
+         OR NULLIF(trim(draft.stage_row ->> 'name'), '') IS NULL
+    ) THEN
+      RAISE EXCEPTION 'Each custom stage must be an object with a non-blank name.'
+      USING HINT = 'Provide stage entries like {"name":"Foundation", "sequenceNumber":1}.';
+    END IF;
+  END IF;
+
+  IF p_project_type_id IS NOT NULL THEN
+    SELECT code INTO v_project_type_code
+    FROM public.project_types
+    WHERE id = p_project_type_id;
+  END IF;
+
+  IF v_has_stage_drafts THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      planned_start_date,
+      planned_end_date,
+      completion_percentage,
+      status,
+      created_by
+    )
+    SELECT
+      v_project_id,
+      NULLIF(trim(draft.stage_row ->> 'name'), '') AS name,
+      row_number() OVER (
+        ORDER BY
+          COALESCE(
+            CASE
+              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
+                THEN (draft.stage_row ->> 'sequenceNumber')::integer
+              ELSE NULL
+            END,
+            draft.stage_ord
+          ),
+          draft.stage_ord
+      ) AS sequence_number,
+      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
+      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
+      0,
+      'pending',
+      p_created_by
+    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
+    ;
+  ELSIF NOT v_stage_drafts_supplied
+    AND v_model_text <> 'material_supply'
+    AND p_project_type_id IS NOT NULL
+    AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      completion_percentage,
+      status,
+      created_by
+    )
+    WITH resolved_templates AS (
+      SELECT DISTINCT ON (
+        COALESCE(
+          NULLIF(lower(trim(template_code)), ''),
+          '__null__' || id::text
+        )
+      )
+        template_code,
+        name,
+        sequence_number,
+        company_id,
+        updated_at,
+        id
+      FROM public.project_stage_templates
+      WHERE project_type_id = p_project_type_id
+        AND is_active = true
+        AND (company_id = p_company_id OR company_id IS NULL)
+      ORDER BY
+        COALESCE(
+          NULLIF(lower(trim(template_code)), ''),
+          '__null__' || id::text
+        ),
+        (company_id = p_company_id) DESC,
+        updated_at DESC,
+        id DESC
+    ),
+    ordered_templates AS (
+      SELECT
+        name,
+        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
+      FROM resolved_templates
+    )
+    SELECT
+      v_project_id,
+      ordered_templates.name,
+      ordered_templates.sequence_number,
+      0,
+      'pending',
+      p_created_by
+    FROM ordered_templates
+    ;
+  END IF;
+
+  RETURN v_project_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
+  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
+  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
+  text, integer, uuid, text, text, date, integer, integer
+) TO authenticated;
+
+GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
+  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
+  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
+  text, integer, uuid, text, text, date, integer, integer
+) TO service_role;
+
+COMMIT;
+-- <<< 0029_project_execution_stage_management.sql
+
+-- >>> 0030_project_stage_templates_business_model.sql
+BEGIN;
+
+-- 1) Add business_model column and constraint
+ALTER TABLE public.project_stage_templates
+  ADD COLUMN IF NOT EXISTS business_model text;
+
+ALTER TABLE public.project_stage_templates
+  DROP CONSTRAINT IF EXISTS project_stage_templates_business_model_chk;
+
+ALTER TABLE public.project_stage_templates
+  ADD CONSTRAINT project_stage_templates_business_model_chk
+  CHECK (
+    business_model IN (
+      'contract_construction',
+      'property_development',
+      'civil_works_contract',
+      'material_supply'
+    )
+  );
+
+-- 2) Map existing templates using explicit policy (agreed)
+WITH explicit_policy(project_type_code, business_model) AS (
+  VALUES
+    ('independent_house', 'contract_construction'),
+    ('apartment', 'contract_construction'),
+    ('building_extension', 'contract_construction'),
+    ('commercial_building', 'contract_construction'),
+    ('industrial_warehouse', 'contract_construction'),
+    ('interior_fitout', 'contract_construction'),
+    ('renovation', 'contract_construction'),
+    ('civil_infrastructure', 'civil_works_contract'),
+    ('road_drainage', 'civil_works_contract')
+)
+UPDATE public.project_stage_templates pst
+SET
+  business_model = pol.business_model,
+  updated_at = now()
+FROM public.project_types pt
+JOIN explicit_policy pol
+  ON pol.project_type_code = lower(pt.code)
+WHERE pst.project_type_id = pt.id
+  AND pst.business_model IS DISTINCT FROM pol.business_model;
+
+-- 3) Validation: fail if any template is unmapped or has unknown project type code
+DO $$
+DECLARE
+  v_unmapped bigint;
+BEGIN
+  SELECT count(*)
+  INTO v_unmapped
+  FROM public.project_stage_templates pst
+  JOIN public.project_types pt ON pt.id = pst.project_type_id
+  LEFT JOIN (
+    VALUES
+      ('independent_house'),
+      ('apartment'),
+      ('building_extension'),
+      ('commercial_building'),
+      ('industrial_warehouse'),
+      ('interior_fitout'),
+      ('renovation'),
+      ('civil_infrastructure'),
+      ('road_drainage')
+  ) AS pol(project_type_code)
+    ON pol.project_type_code = lower(pt.code)
+  WHERE pol.project_type_code IS NULL
+     OR pst.business_model IS NULL;
+
+  IF v_unmapped > 0 THEN
+    RAISE EXCEPTION
+      'Unmapped or unknown template rows detected: % row(s).',
+      v_unmapped
+      USING HINT = 'Review project_type codes and policy mapping before running 0030.';
+  END IF;
+END $$;
+
+-- 4) Enforce NOT NULL
+ALTER TABLE public.project_stage_templates
+  ALTER COLUMN business_model SET NOT NULL;
+
+-- 5) New uniqueness by business_model dimension
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM public.project_stage_templates
+    GROUP BY company_id, project_type_id, business_model, template_code
+    HAVING count(*) > 1
+  ) THEN
+    RAISE EXCEPTION
+      'Duplicate rows violate new unique key (company_id, project_type_id, business_model, template_code).';
+  END IF;
+END $$;
+
+ALTER TABLE public.project_stage_templates
+  DROP CONSTRAINT IF EXISTS uq_project_stage_templates;
+
+ALTER TABLE public.project_stage_templates
+  ADD CONSTRAINT uq_project_stage_templates
+  UNIQUE NULLS NOT DISTINCT (company_id, project_type_id, business_model, template_code);
+
+-- 6) RPC update: preserve full 28-parameter body and validations,
+--    change only template-resolution logic to include business_model match.
+CREATE OR REPLACE FUNCTION public.create_project_with_stages_with_business_model(
+  p_company_id uuid,
+  p_created_by uuid,
+  p_customer_id uuid,
+  p_source_document_id uuid,
+  p_project_type_id uuid,
+  p_project_type_snapshot text,
+  p_project_number text,
+  p_name text,
+  p_description text,
+  p_site_address text,
+  p_contract_amount numeric,
+  p_budget_amount numeric,
+  p_start_date date,
+  p_expected_end_date date,
+  p_actual_end_date date,
+  p_status text,
+  p_stage_drafts jsonb DEFAULT NULL,
+  p_business_model text DEFAULT NULL,
+  p_projected_sales_value numeric DEFAULT NULL,
+  p_land_cost numeric DEFAULT NULL,
+  p_development_arrangement text DEFAULT NULL,
+  p_total_project_flats integer DEFAULT NULL,
+  p_landowner_party_id uuid DEFAULT NULL,
+  p_jda_agreement_reference text DEFAULT NULL,
+  p_jda_agreement_document_url text DEFAULT NULL,
+  p_jda_agreement_date date DEFAULT NULL,
+  p_builder_share_units integer DEFAULT NULL,
+  p_landowner_share_units integer DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_project_id uuid;
+  v_stage_drafts_supplied boolean := false;
+  v_has_stage_drafts boolean := false;
+  v_project_type_code text := NULL;
+  v_enabled_models text[];
+  v_model_text text;
+  v_arrangement_text text;
+BEGIN
+  IF p_business_model IS NULL OR NULLIF(trim(p_business_model), '') IS NULL THEN
+    RAISE EXCEPTION 'business_model is required for project creation and must be one of: contract_construction, property_development, civil_works_contract, material_supply.'
+    USING HINT = 'Provide a non-blank business_model value for this project.';
+  END IF;
+
+  v_model_text := lower(trim(p_business_model));
+  IF v_model_text NOT IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply') THEN
+    RAISE EXCEPTION 'Invalid business_model value: %. Allowed values are contract_construction, property_development, civil_works_contract, material_supply.', p_business_model
+    USING HINT = 'Provide a supported business_model value for this project.';
+  END IF;
+
+  IF p_development_arrangement IS NOT NULL AND NULLIF(trim(p_development_arrangement), '') IS NOT NULL THEN
+    v_arrangement_text := lower(trim(p_development_arrangement));
+    IF v_arrangement_text NOT IN ('self', 'joint_development') THEN
+      RAISE EXCEPTION 'Invalid development_arrangement value: %. Allowed values are self or joint_development.', p_development_arrangement
+      USING HINT = 'Provide a supported development arrangement for property development projects.';
+    END IF;
+  END IF;
+
+  IF v_model_text <> 'property_development' AND (
+    p_development_arrangement IS NOT NULL
+    OR p_landowner_party_id IS NOT NULL
+    OR p_jda_agreement_reference IS NOT NULL
+    OR p_jda_agreement_document_url IS NOT NULL
+    OR p_jda_agreement_date IS NOT NULL
+    OR p_total_project_flats IS NOT NULL
+    OR p_builder_share_units IS NOT NULL
+    OR p_landowner_share_units IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'Development arrangement and JDA fields are permitted only when business_model = property_development.';
+  END IF;
+
+  IF v_model_text = 'property_development' AND v_arrangement_text IS NULL THEN
+    RAISE EXCEPTION 'Property development projects require an explicit development arrangement: self or joint_development.'
+    USING HINT = 'Set development_arrangement when creating a property development project.';
+  END IF;
+
+  IF v_arrangement_text = 'self' THEN
+    IF p_landowner_party_id IS NOT NULL
+       OR p_jda_agreement_reference IS NOT NULL
+       OR p_jda_agreement_document_url IS NOT NULL
+       OR p_jda_agreement_date IS NOT NULL
+       OR p_total_project_flats IS NOT NULL
+       OR p_builder_share_units IS NOT NULL
+       OR p_landowner_share_units IS NOT NULL THEN
+      RAISE EXCEPTION 'Self development must not contain landowner, JDA or flat-sharing fields.'
+      USING HINT = 'Leave landowner and JDA fields empty for self development.';
+    END IF;
+  END IF;
+
+  IF v_arrangement_text = 'joint_development' THEN
+    IF p_landowner_party_id IS NULL THEN
+      RAISE EXCEPTION 'Joint development requires landowner_party_id.'
+      USING HINT = 'Provide a landowner party for joint development projects.';
+    END IF;
+
+    IF p_total_project_flats IS NULL OR p_total_project_flats <= 0 OR p_total_project_flats <> floor(p_total_project_flats::numeric) THEN
+      RAISE EXCEPTION 'Joint development requires total_project_flats as a positive whole number.'
+      USING HINT = 'Set total_project_flats to a whole number greater than zero.';
+    END IF;
+
+    IF p_builder_share_units IS NULL OR p_landowner_share_units IS NULL THEN
+      RAISE EXCEPTION 'Joint development requires builder_share_units and landowner_share_units.'
+      USING HINT = 'Provide both share counts.';
+    END IF;
+
+    IF p_builder_share_units < 0 OR p_landowner_share_units < 0 THEN
+      RAISE EXCEPTION 'Builder and landowner share flats must be non-negative.'
+      USING HINT = 'All share counts must be zero or greater.';
+    END IF;
+
+    IF p_builder_share_units + p_landowner_share_units <> p_total_project_flats THEN
+      RAISE EXCEPTION 'Builder and landowner share flats must add up to the total project flats.'
+      USING HINT = 'Use builder_share_units + landowner_share_units = total_project_flats.';
+    END IF;
+  END IF;
+
+  IF p_stage_drafts IS NOT NULL AND jsonb_typeof(p_stage_drafts) <> 'array' THEN
+    RAISE EXCEPTION 'stage_drafts must be a JSON array when provided.'
+    USING HINT = 'Provide stage_drafts as an array of stage objects.';
+  END IF;
+
+  SELECT enabled_business_models INTO v_enabled_models
+  FROM public.company_settings
+  WHERE company_id = p_company_id;
+
+  IF v_enabled_models IS NULL OR NOT (v_model_text = ANY (v_enabled_models)) THEN
+    RAISE EXCEPTION 'Business model % is not enabled for company %.', v_model_text, p_company_id
+    USING HINT = 'Update company_settings.enabled_business_models to include this business model before creating the project.';
+  END IF;
+
+  INSERT INTO public.projects (
+    company_id,
+    customer_id,
+    source_document_id,
+    project_type_id,
+    project_type_snapshot,
+    business_model,
+    projected_sales_value,
+    land_cost,
+    development_arrangement,
+    total_project_flats,
+    landowner_party_id,
+    jda_agreement_reference,
+    jda_agreement_document_url,
+    jda_agreement_date,
+    builder_share_units,
+    landowner_share_units,
+    project_number,
+    name,
+    description,
+    site_address,
+    contract_amount,
+    budget_amount,
+    start_date,
+    expected_end_date,
+    actual_end_date,
+    status,
+    created_by
+  ) VALUES (
+    p_company_id,
+    p_customer_id,
+    p_source_document_id,
+    p_project_type_id,
+    p_project_type_snapshot,
+    v_model_text,
+    p_projected_sales_value,
+    p_land_cost,
+    CASE WHEN v_model_text = 'property_development' THEN v_arrangement_text ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' THEN p_total_project_flats ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_party_id ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_reference ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_document_url ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_date ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_builder_share_units ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_share_units ELSE NULL END,
+    p_project_number,
+    p_name,
+    p_description,
+    p_site_address,
+    COALESCE(p_contract_amount, 0),
+    p_budget_amount,
+    p_start_date,
+    p_expected_end_date,
+    p_actual_end_date,
+    COALESCE(p_status, 'planned'),
+    p_created_by
+  )
+  RETURNING id INTO v_project_id;
+
+  v_stage_drafts_supplied := p_stage_drafts IS NOT NULL
+    AND jsonb_typeof(p_stage_drafts) = 'array';
+
+  v_has_stage_drafts := v_stage_drafts_supplied
+    AND jsonb_array_length(p_stage_drafts) > 0;
+
+  IF v_has_stage_drafts THEN
+    IF EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements(p_stage_drafts) AS draft(stage_row)
+      WHERE jsonb_typeof(draft.stage_row) <> 'object'
+         OR NULLIF(trim(draft.stage_row ->> 'name'), '') IS NULL
+    ) THEN
+      RAISE EXCEPTION 'Each custom stage must be an object with a non-blank name.'
+      USING HINT = 'Provide stage entries like {"name":"Foundation", "sequenceNumber":1}.';
+    END IF;
+  END IF;
+
+  IF p_project_type_id IS NOT NULL THEN
+    SELECT code INTO v_project_type_code
+    FROM public.project_types
+    WHERE id = p_project_type_id;
+  END IF;
+
+  IF v_has_stage_drafts THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      planned_start_date,
+      planned_end_date,
+      completion_percentage,
+      status,
+      created_by
+    )
+    SELECT
+      v_project_id,
+      NULLIF(trim(draft.stage_row ->> 'name'), '') AS name,
+      row_number() OVER (
+        ORDER BY
+          COALESCE(
+            CASE
+              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
+                THEN (draft.stage_row ->> 'sequenceNumber')::integer
+              ELSE NULL
+            END,
+            draft.stage_ord
+          ),
+          draft.stage_ord
+      ) AS sequence_number,
+      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
+      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
+      0,
+      'pending',
+      p_created_by
+    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
+    ;
+  ELSIF NOT v_stage_drafts_supplied
+    AND p_project_type_id IS NOT NULL
+    AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      completion_percentage,
+      status,
+      created_by
+    )
+    WITH resolved_templates AS (
+      SELECT DISTINCT ON (
+        COALESCE(
+          NULLIF(lower(trim(template_code)), ''),
+          '__null__' || id::text
+        )
+      )
+        template_code,
+        name,
+        sequence_number,
+        company_id,
+        updated_at,
+        id
+      FROM public.project_stage_templates
+      WHERE project_type_id = p_project_type_id
+        AND business_model = v_model_text
+        AND is_active = true
+        AND (company_id = p_company_id OR company_id IS NULL)
+      ORDER BY
+        COALESCE(
+          NULLIF(lower(trim(template_code)), ''),
+          '__null__' || id::text
+        ),
+        (company_id = p_company_id) DESC,
+        updated_at DESC,
+        id DESC
+    ),
+    ordered_templates AS (
+      SELECT
+        name,
+        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
+      FROM resolved_templates
+    )
+    SELECT
+      v_project_id,
+      ordered_templates.name,
+      ordered_templates.sequence_number,
+      0,
+      'pending',
+      p_created_by
+    FROM ordered_templates
+    ;
+  END IF;
+
+  RETURN v_project_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
+  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
+  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
+  text, integer, uuid, text, text, date, integer, integer
+) TO authenticated;
+
+GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
+  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
+  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
+  text, integer, uuid, text, text, date, integer, integer
+) TO service_role;
+
+COMMIT;
+-- <<< 0030_project_stage_templates_business_model.sql
+
+-- >>> 0031_stage_template_master_data_sync.sql
+BEGIN;
+
+-- Authoritative stage definitions for migration 0031.
+-- Rules:
+-- 1) Match by (project_type_id, business_model, template_code).
+-- 2) Update exact code matches where name/sequence/defaults differ.
+-- 3) Insert missing stages.
+-- 4) Keep company-specific templates untouched (company_id IS NOT NULL).
+-- 5) Do not deactivate anything unless explicitly listed in explicit_deactivate.
+-- 6) Abort if ambiguous template-code mapping is detected.
+
+DO $$
+DECLARE
+  v_missing_non_optional text[];
+  v_missing_material_supply boolean;
+  v_ambiguous_count bigint;
+BEGIN
+  WITH authoritative_raw(project_code, business_model, sequence_number, stage_name) AS (
+VALUES
+    ('independent_house', 'contract_construction', 1, 'Client Requirements & Project Planning'),
+    ('independent_house', 'contract_construction', 2, 'Architectural Design & Drawings'),
+    ('independent_house', 'contract_construction', 3, 'Estimation, Quotation & Agreement'),
+    ('independent_house', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('independent_house', 'contract_construction', 5, 'Foundation & Plinth Construction'),
+    ('independent_house', 'contract_construction', 6, 'Structural Construction'),
+    ('independent_house', 'contract_construction', 7, 'Brickwork & Masonry'),
+    ('independent_house', 'contract_construction', 8, 'Plastering & Waterproofing'),
+    ('independent_house', 'contract_construction', 9, 'Electrical & Plumbing Works'),
+    ('independent_house', 'contract_construction', 10, 'Flooring, Doors & Windows'),
+    ('independent_house', 'contract_construction', 11, 'Painting & Final Finishing'),
+    ('independent_house', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
+    ('villa', 'contract_construction', 1, 'Client Requirements & Project Planning'),
+    ('villa', 'contract_construction', 2, 'Architectural Design & 3D Elevation'),
+    ('villa', 'contract_construction', 3, 'Structural & Engineering Design'),
+    ('villa', 'contract_construction', 4, 'Estimation, Quotation & Agreement'),
+    ('villa', 'contract_construction', 5, 'Approvals & Site Mobilization'),
+    ('villa', 'contract_construction', 6, 'Foundation & Plinth Construction'),
+    ('villa', 'contract_construction', 7, 'Structural Construction'),
+    ('villa', 'contract_construction', 8, 'Masonry, Plastering & Waterproofing'),
+    ('villa', 'contract_construction', 9, 'Electrical, Plumbing & HVAC Works'),
+    ('villa', 'contract_construction', 10, 'Flooring, Doors, Windows & Joinery'),
+    ('villa', 'contract_construction', 11, 'Interior, Exterior & Landscape Finishing'),
+    ('villa', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
+    ('apartment', 'contract_construction', 1, 'Client Requirements & Project Planning'),
+    ('apartment', 'contract_construction', 2, 'Architectural Design & Engineering'),
+    ('apartment', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
+    ('apartment', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('apartment', 'contract_construction', 5, 'Foundation & Basement Construction'),
+    ('apartment', 'contract_construction', 6, 'Structural Construction'),
+    ('apartment', 'contract_construction', 7, 'Masonry & Internal Plastering'),
+    ('apartment', 'contract_construction', 8, 'Electrical, Plumbing & Fire Systems'),
+    ('apartment', 'contract_construction', 9, 'Flooring, Doors & Windows'),
+    ('apartment', 'contract_construction', 10, 'Painting & Internal Finishing'),
+    ('apartment', 'contract_construction', 11, 'Lifts, Common Areas & External Works'),
+    ('apartment', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
+    ('commercial_building', 'contract_construction', 1, 'Client Requirements & Space Planning'),
+    ('commercial_building', 'contract_construction', 2, 'Architectural & Engineering Design'),
+    ('commercial_building', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
+    ('commercial_building', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('commercial_building', 'contract_construction', 5, 'Foundation & Basement Construction'),
+    ('commercial_building', 'contract_construction', 6, 'Structural Construction'),
+    ('commercial_building', 'contract_construction', 7, 'Masonry & Building Envelope'),
+    ('commercial_building', 'contract_construction', 8, 'Electrical, Plumbing, HVAC & Fire Systems'),
+    ('commercial_building', 'contract_construction', 9, 'Flooring, Ceilings & Interior Works'),
+    ('commercial_building', 'contract_construction', 10, 'Elevation & External Finishing'),
+    ('commercial_building', 'contract_construction', 11, 'Testing, Commissioning & Inspection'),
+    ('commercial_building', 'contract_construction', 12, 'Client Handover'),
+    ('renovation', 'contract_construction', 1, 'Existing Site Inspection & Assessment'),
+    ('renovation', 'contract_construction', 2, 'Client Requirements & Scope Finalization'),
+    ('renovation', 'contract_construction', 3, 'Design, Drawings & Estimation'),
+    ('renovation', 'contract_construction', 4, 'Agreement & Site Preparation'),
+    ('renovation', 'contract_construction', 5, 'Demolition & Dismantling'),
+    ('renovation', 'contract_construction', 6, 'Structural Repairs & Modifications'),
+    ('renovation', 'contract_construction', 7, 'Masonry & Plastering'),
+    ('renovation', 'contract_construction', 8, 'Electrical & Plumbing Modifications'),
+    ('renovation', 'contract_construction', 9, 'Flooring, Doors & Windows'),
+    ('renovation', 'contract_construction', 10, 'Painting & Finishing'),
+    ('renovation', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
+    ('renovation', 'contract_construction', 12, 'Client Handover'),
+    ('building_extension', 'contract_construction', 1, 'Existing Building Assessment'),
+    ('building_extension', 'contract_construction', 2, 'Extension Planning & Design'),
+    ('building_extension', 'contract_construction', 3, 'Structural Feasibility & Engineering'),
+    ('building_extension', 'contract_construction', 4, 'Estimation, Agreement & Approvals'),
+    ('building_extension', 'contract_construction', 5, 'Site Preparation & Protection'),
+    ('building_extension', 'contract_construction', 6, 'Foundation & Structural Modifications'),
+    ('building_extension', 'contract_construction', 7, 'New Structural Construction'),
+    ('building_extension', 'contract_construction', 8, 'Masonry & Plastering'),
+    ('building_extension', 'contract_construction', 9, 'Electrical & Plumbing Extensions'),
+    ('building_extension', 'contract_construction', 10, 'Flooring & Finishing'),
+    ('building_extension', 'contract_construction', 11, 'Integration & Quality Inspection'),
+    ('building_extension', 'contract_construction', 12, 'Client Handover'),
+    ('industrial_warehouse', 'contract_construction', 1, 'Client Requirements & Industrial Planning'),
+    ('industrial_warehouse', 'contract_construction', 2, 'Architectural & Structural Design'),
+    ('industrial_warehouse', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
+    ('industrial_warehouse', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('industrial_warehouse', 'contract_construction', 5, 'Site Development & Earthwork'),
+    ('industrial_warehouse', 'contract_construction', 6, 'Foundation & Industrial Flooring'),
+    ('industrial_warehouse', 'contract_construction', 7, 'Structural Steel / RCC Construction'),
+    ('industrial_warehouse', 'contract_construction', 8, 'Roofing & Cladding'),
+    ('industrial_warehouse', 'contract_construction', 9, 'Electrical, Plumbing & Fire Systems'),
+    ('industrial_warehouse', 'contract_construction', 10, 'Flooring, Drainage & External Development'),
+    ('industrial_warehouse', 'contract_construction', 11, 'Testing, Inspection & Commissioning'),
+    ('industrial_warehouse', 'contract_construction', 12, 'Client Handover'),
+    ('interior_fitout', 'contract_construction', 1, 'Site Survey & Client Requirements'),
+    ('interior_fitout', 'contract_construction', 2, 'Space Planning & Interior Design'),
+    ('interior_fitout', 'contract_construction', 3, 'Material Selection & BOQ'),
+    ('interior_fitout', 'contract_construction', 4, 'Quotation, Agreement & Mobilization'),
+    ('interior_fitout', 'contract_construction', 5, 'Dismantling & Site Preparation'),
+    ('interior_fitout', 'contract_construction', 6, 'Civil & Partition Works'),
+    ('interior_fitout', 'contract_construction', 7, 'Electrical, Plumbing & HVAC Works'),
+    ('interior_fitout', 'contract_construction', 8, 'Ceiling & Flooring Works'),
+    ('interior_fitout', 'contract_construction', 9, 'Carpentry & Custom Furniture'),
+    ('interior_fitout', 'contract_construction', 10, 'Painting, Fixtures & Finishing'),
+    ('interior_fitout', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
+    ('interior_fitout', 'contract_construction', 12, 'Client Handover'),
+    ('apartment', 'property_development', 1, 'Land Due Diligence & Title Verification'),
+    ('apartment', 'property_development', 2, 'Land Acquisition & Development Agreement'),
+    ('apartment', 'property_development', 3, 'Feasibility & Project Planning'),
+    ('apartment', 'property_development', 4, 'Architectural & Engineering Design'),
+    ('apartment', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
+    ('apartment', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
+    ('apartment', 'property_development', 7, 'Site Mobilization & Preparation'),
+    ('apartment', 'property_development', 8, 'Foundation & Basement Construction'),
+    ('apartment', 'property_development', 9, 'Structural Construction'),
+    ('apartment', 'property_development', 10, 'MEP & Internal Infrastructure'),
+    ('apartment', 'property_development', 11, 'Finishing & Common Area Development'),
+    ('apartment', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
+    ('apartment', 'property_development', 13, 'Sales, Registration & Customer Handover'),
+    ('villa', 'property_development', 1, 'Land Due Diligence & Title Verification'),
+    ('villa', 'property_development', 2, 'Land Acquisition & Development Agreement'),
+    ('villa', 'property_development', 3, 'Feasibility & Villa Planning'),
+    ('villa', 'property_development', 4, 'Architectural & Engineering Design'),
+    ('villa', 'property_development', 5, 'Approvals & Statutory Clearances'),
+    ('villa', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
+    ('villa', 'property_development', 7, 'Site Development & Infrastructure'),
+    ('villa', 'property_development', 8, 'Villa Foundation & Structural Construction'),
+    ('villa', 'property_development', 9, 'Masonry, Roofing & Waterproofing'),
+    ('villa', 'property_development', 10, 'MEP & Interior Finishing'),
+    ('villa', 'property_development', 11, 'Landscaping & Common Amenities'),
+    ('villa', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
+    ('villa', 'property_development', 13, 'Sales, Registration & Customer Handover'),
+    ('commercial_building', 'property_development', 1, 'Land Due Diligence & Title Verification'),
+    ('commercial_building', 'property_development', 2, 'Land Acquisition & Development Agreement'),
+    ('commercial_building', 'property_development', 3, 'Market Feasibility & Project Planning'),
+    ('commercial_building', 'property_development', 4, 'Architectural & Engineering Design'),
+    ('commercial_building', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
+    ('commercial_building', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
+    ('commercial_building', 'property_development', 7, 'Site Mobilization & Preparation'),
+    ('commercial_building', 'property_development', 8, 'Foundation & Basement Construction'),
+    ('commercial_building', 'property_development', 9, 'Structural Construction'),
+    ('commercial_building', 'property_development', 10, 'MEP, Fire Systems & Building Services'),
+    ('commercial_building', 'property_development', 11, 'Interior, External & Common Area Finishing'),
+    ('commercial_building', 'property_development', 12, 'Testing, Occupancy Approval & Completion'),
+    ('commercial_building', 'property_development', 13, 'Leasing / Sales, Registration & Handover'),
+    ('civil_infrastructure', 'civil_works_contract', 1, 'Tender & Work Order'),
+    ('civil_infrastructure', 'civil_works_contract', 2, 'Site Survey & Technical Planning'),
+    ('civil_infrastructure', 'civil_works_contract', 3, 'BOQ, Estimation & Project Scheduling'),
+    ('civil_infrastructure', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
+    ('civil_infrastructure', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
+    ('civil_infrastructure', 'civil_works_contract', 6, 'Foundation & Main Civil Works'),
+    ('civil_infrastructure', 'civil_works_contract', 7, 'Structural & Infrastructure Construction'),
+    ('civil_infrastructure', 'civil_works_contract', 8, 'Ancillary Works & Finishing'),
+    ('civil_infrastructure', 'civil_works_contract', 9, 'Quality Testing & Inspection'),
+    ('civil_infrastructure', 'civil_works_contract', 10, 'Measurements & RA Billing'),
+    ('civil_infrastructure', 'civil_works_contract', 11, 'Final Inspection & Defect Rectification'),
+    ('civil_infrastructure', 'civil_works_contract', 12, 'Project Completion & Handover'),
+    ('road_drainage', 'civil_works_contract', 1, 'Tender & Work Order'),
+    ('road_drainage', 'civil_works_contract', 2, 'Survey, Alignment & Setting Out'),
+    ('road_drainage', 'civil_works_contract', 3, 'BOQ & Project Planning'),
+    ('road_drainage', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
+    ('road_drainage', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
+    ('road_drainage', 'civil_works_contract', 6, 'Subgrade Preparation & Compaction'),
+    ('road_drainage', 'civil_works_contract', 7, 'Drainage, Culverts & Pipe Laying'),
+    ('road_drainage', 'civil_works_contract', 8, 'Base Course & Road Construction'),
+    ('road_drainage', 'civil_works_contract', 9, 'Chambers, Kerbs & Ancillary Works'),
+    ('road_drainage', 'civil_works_contract', 10, 'Road Surface & Finishing'),
+    ('road_drainage', 'civil_works_contract', 11, 'Quality Testing & Final Inspection'),
+    ('road_drainage', 'civil_works_contract', 12, 'Measurements & Project Handover'),
+    ('structural_works', 'civil_works_contract', 1, 'Tender / Client Requirements & Work Order'),
+    ('structural_works', 'civil_works_contract', 2, 'Structural Survey & Assessment'),
+    ('structural_works', 'civil_works_contract', 3, 'Structural Design & Engineering'),
+    ('structural_works', 'civil_works_contract', 4, 'BOQ, Estimation & Planning'),
+    ('structural_works', 'civil_works_contract', 5, 'Approvals & Site Mobilization'),
+    ('structural_works', 'civil_works_contract', 6, 'Foundation & Substructure Works'),
+    ('structural_works', 'civil_works_contract', 7, 'RCC / Steel Structural Works'),
+    ('structural_works', 'civil_works_contract', 8, 'Fabrication & Erection (where applicable)'),
+    ('structural_works', 'civil_works_contract', 9, 'Structural Finishing & Protection'),
+    ('structural_works', 'civil_works_contract', 10, 'Load Testing / Quality Testing (where applicable)'),
+    ('structural_works', 'civil_works_contract', 11, 'Structural Inspection & Rectification'),
+    ('structural_works', 'civil_works_contract', 12, 'Completion & Handover'),
+    ('material_supply', 'material_supply', 1, 'Customer Enquiry & Requirement'),
+    ('material_supply', 'material_supply', 2, 'Quotation & Order Confirmation'),
+    ('material_supply', 'material_supply', 3, 'Material Procurement / Stock Allocation'),
+    ('material_supply', 'material_supply', 4, 'Quality & Quantity Verification'),
+    ('material_supply', 'material_supply', 5, 'Dispatch & Transportation'),
+    ('material_supply', 'material_supply', 6, 'Site Delivery & Acknowledgement')
+  ), required_types AS (
+    SELECT DISTINCT lower(project_code) AS project_code
+    FROM authoritative_raw
+  ), active_global_types AS (
+    SELECT lower(code) AS code
+    FROM public.project_types
+    WHERE company_id IS NULL
+      AND is_active = true
+  ), missing_types AS (
+    SELECT rt.project_code
+    FROM required_types rt
+    LEFT JOIN active_global_types agt
+      ON agt.code = rt.project_code
+    WHERE agt.code IS NULL
+  )
+  SELECT array_agg(project_code ORDER BY project_code)
+  INTO v_missing_non_optional
+  FROM missing_types
+  WHERE project_code <> 'material_supply';
+
+  IF coalesce(array_length(v_missing_non_optional, 1), 0) > 0 THEN
+    RAISE EXCEPTION
+      '0031 aborted: missing active global project_type code(s): %',
+      array_to_string(v_missing_non_optional, ', ')
+      USING HINT = 'Create/activate these project_types before running 0031.';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.project_types
+    WHERE company_id IS NULL
+      AND is_active = true
+      AND lower(code) = 'material_supply'
+  ) INTO v_missing_material_supply;
+
+  IF NOT v_missing_material_supply THEN
+    RAISE NOTICE 'material_supply project_type is not active/present; optional workflow stages will be skipped.';
+  END IF;
+
+  WITH authoritative_raw(project_code, business_model, sequence_number, stage_name) AS (
+VALUES
+    ('independent_house', 'contract_construction', 1, 'Client Requirements & Project Planning'),
+    ('independent_house', 'contract_construction', 2, 'Architectural Design & Drawings'),
+    ('independent_house', 'contract_construction', 3, 'Estimation, Quotation & Agreement'),
+    ('independent_house', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('independent_house', 'contract_construction', 5, 'Foundation & Plinth Construction'),
+    ('independent_house', 'contract_construction', 6, 'Structural Construction'),
+    ('independent_house', 'contract_construction', 7, 'Brickwork & Masonry'),
+    ('independent_house', 'contract_construction', 8, 'Plastering & Waterproofing'),
+    ('independent_house', 'contract_construction', 9, 'Electrical & Plumbing Works'),
+    ('independent_house', 'contract_construction', 10, 'Flooring, Doors & Windows'),
+    ('independent_house', 'contract_construction', 11, 'Painting & Final Finishing'),
+    ('independent_house', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
+    ('villa', 'contract_construction', 1, 'Client Requirements & Project Planning'),
+    ('villa', 'contract_construction', 2, 'Architectural Design & 3D Elevation'),
+    ('villa', 'contract_construction', 3, 'Structural & Engineering Design'),
+    ('villa', 'contract_construction', 4, 'Estimation, Quotation & Agreement'),
+    ('villa', 'contract_construction', 5, 'Approvals & Site Mobilization'),
+    ('villa', 'contract_construction', 6, 'Foundation & Plinth Construction'),
+    ('villa', 'contract_construction', 7, 'Structural Construction'),
+    ('villa', 'contract_construction', 8, 'Masonry, Plastering & Waterproofing'),
+    ('villa', 'contract_construction', 9, 'Electrical, Plumbing & HVAC Works'),
+    ('villa', 'contract_construction', 10, 'Flooring, Doors, Windows & Joinery'),
+    ('villa', 'contract_construction', 11, 'Interior, Exterior & Landscape Finishing'),
+    ('villa', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
+    ('apartment', 'contract_construction', 1, 'Client Requirements & Project Planning'),
+    ('apartment', 'contract_construction', 2, 'Architectural Design & Engineering'),
+    ('apartment', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
+    ('apartment', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('apartment', 'contract_construction', 5, 'Foundation & Basement Construction'),
+    ('apartment', 'contract_construction', 6, 'Structural Construction'),
+    ('apartment', 'contract_construction', 7, 'Masonry & Internal Plastering'),
+    ('apartment', 'contract_construction', 8, 'Electrical, Plumbing & Fire Systems'),
+    ('apartment', 'contract_construction', 9, 'Flooring, Doors & Windows'),
+    ('apartment', 'contract_construction', 10, 'Painting & Internal Finishing'),
+    ('apartment', 'contract_construction', 11, 'Lifts, Common Areas & External Works'),
+    ('apartment', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
+    ('commercial_building', 'contract_construction', 1, 'Client Requirements & Space Planning'),
+    ('commercial_building', 'contract_construction', 2, 'Architectural & Engineering Design'),
+    ('commercial_building', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
+    ('commercial_building', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('commercial_building', 'contract_construction', 5, 'Foundation & Basement Construction'),
+    ('commercial_building', 'contract_construction', 6, 'Structural Construction'),
+    ('commercial_building', 'contract_construction', 7, 'Masonry & Building Envelope'),
+    ('commercial_building', 'contract_construction', 8, 'Electrical, Plumbing, HVAC & Fire Systems'),
+    ('commercial_building', 'contract_construction', 9, 'Flooring, Ceilings & Interior Works'),
+    ('commercial_building', 'contract_construction', 10, 'Elevation & External Finishing'),
+    ('commercial_building', 'contract_construction', 11, 'Testing, Commissioning & Inspection'),
+    ('commercial_building', 'contract_construction', 12, 'Client Handover'),
+    ('renovation', 'contract_construction', 1, 'Existing Site Inspection & Assessment'),
+    ('renovation', 'contract_construction', 2, 'Client Requirements & Scope Finalization'),
+    ('renovation', 'contract_construction', 3, 'Design, Drawings & Estimation'),
+    ('renovation', 'contract_construction', 4, 'Agreement & Site Preparation'),
+    ('renovation', 'contract_construction', 5, 'Demolition & Dismantling'),
+    ('renovation', 'contract_construction', 6, 'Structural Repairs & Modifications'),
+    ('renovation', 'contract_construction', 7, 'Masonry & Plastering'),
+    ('renovation', 'contract_construction', 8, 'Electrical & Plumbing Modifications'),
+    ('renovation', 'contract_construction', 9, 'Flooring, Doors & Windows'),
+    ('renovation', 'contract_construction', 10, 'Painting & Finishing'),
+    ('renovation', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
+    ('renovation', 'contract_construction', 12, 'Client Handover'),
+    ('building_extension', 'contract_construction', 1, 'Existing Building Assessment'),
+    ('building_extension', 'contract_construction', 2, 'Extension Planning & Design'),
+    ('building_extension', 'contract_construction', 3, 'Structural Feasibility & Engineering'),
+    ('building_extension', 'contract_construction', 4, 'Estimation, Agreement & Approvals'),
+    ('building_extension', 'contract_construction', 5, 'Site Preparation & Protection'),
+    ('building_extension', 'contract_construction', 6, 'Foundation & Structural Modifications'),
+    ('building_extension', 'contract_construction', 7, 'New Structural Construction'),
+    ('building_extension', 'contract_construction', 8, 'Masonry & Plastering'),
+    ('building_extension', 'contract_construction', 9, 'Electrical & Plumbing Extensions'),
+    ('building_extension', 'contract_construction', 10, 'Flooring & Finishing'),
+    ('building_extension', 'contract_construction', 11, 'Integration & Quality Inspection'),
+    ('building_extension', 'contract_construction', 12, 'Client Handover'),
+    ('industrial_warehouse', 'contract_construction', 1, 'Client Requirements & Industrial Planning'),
+    ('industrial_warehouse', 'contract_construction', 2, 'Architectural & Structural Design'),
+    ('industrial_warehouse', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
+    ('industrial_warehouse', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('industrial_warehouse', 'contract_construction', 5, 'Site Development & Earthwork'),
+    ('industrial_warehouse', 'contract_construction', 6, 'Foundation & Industrial Flooring'),
+    ('industrial_warehouse', 'contract_construction', 7, 'Structural Steel / RCC Construction'),
+    ('industrial_warehouse', 'contract_construction', 8, 'Roofing & Cladding'),
+    ('industrial_warehouse', 'contract_construction', 9, 'Electrical, Plumbing & Fire Systems'),
+    ('industrial_warehouse', 'contract_construction', 10, 'Flooring, Drainage & External Development'),
+    ('industrial_warehouse', 'contract_construction', 11, 'Testing, Inspection & Commissioning'),
+    ('industrial_warehouse', 'contract_construction', 12, 'Client Handover'),
+    ('interior_fitout', 'contract_construction', 1, 'Site Survey & Client Requirements'),
+    ('interior_fitout', 'contract_construction', 2, 'Space Planning & Interior Design'),
+    ('interior_fitout', 'contract_construction', 3, 'Material Selection & BOQ'),
+    ('interior_fitout', 'contract_construction', 4, 'Quotation, Agreement & Mobilization'),
+    ('interior_fitout', 'contract_construction', 5, 'Dismantling & Site Preparation'),
+    ('interior_fitout', 'contract_construction', 6, 'Civil & Partition Works'),
+    ('interior_fitout', 'contract_construction', 7, 'Electrical, Plumbing & HVAC Works'),
+    ('interior_fitout', 'contract_construction', 8, 'Ceiling & Flooring Works'),
+    ('interior_fitout', 'contract_construction', 9, 'Carpentry & Custom Furniture'),
+    ('interior_fitout', 'contract_construction', 10, 'Painting, Fixtures & Finishing'),
+    ('interior_fitout', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
+    ('interior_fitout', 'contract_construction', 12, 'Client Handover'),
+    ('apartment', 'property_development', 1, 'Land Due Diligence & Title Verification'),
+    ('apartment', 'property_development', 2, 'Land Acquisition & Development Agreement'),
+    ('apartment', 'property_development', 3, 'Feasibility & Project Planning'),
+    ('apartment', 'property_development', 4, 'Architectural & Engineering Design'),
+    ('apartment', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
+    ('apartment', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
+    ('apartment', 'property_development', 7, 'Site Mobilization & Preparation'),
+    ('apartment', 'property_development', 8, 'Foundation & Basement Construction'),
+    ('apartment', 'property_development', 9, 'Structural Construction'),
+    ('apartment', 'property_development', 10, 'MEP & Internal Infrastructure'),
+    ('apartment', 'property_development', 11, 'Finishing & Common Area Development'),
+    ('apartment', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
+    ('apartment', 'property_development', 13, 'Sales, Registration & Customer Handover'),
+    ('villa', 'property_development', 1, 'Land Due Diligence & Title Verification'),
+    ('villa', 'property_development', 2, 'Land Acquisition & Development Agreement'),
+    ('villa', 'property_development', 3, 'Feasibility & Villa Planning'),
+    ('villa', 'property_development', 4, 'Architectural & Engineering Design'),
+    ('villa', 'property_development', 5, 'Approvals & Statutory Clearances'),
+    ('villa', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
+    ('villa', 'property_development', 7, 'Site Development & Infrastructure'),
+    ('villa', 'property_development', 8, 'Villa Foundation & Structural Construction'),
+    ('villa', 'property_development', 9, 'Masonry, Roofing & Waterproofing'),
+    ('villa', 'property_development', 10, 'MEP & Interior Finishing'),
+    ('villa', 'property_development', 11, 'Landscaping & Common Amenities'),
+    ('villa', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
+    ('villa', 'property_development', 13, 'Sales, Registration & Customer Handover'),
+    ('commercial_building', 'property_development', 1, 'Land Due Diligence & Title Verification'),
+    ('commercial_building', 'property_development', 2, 'Land Acquisition & Development Agreement'),
+    ('commercial_building', 'property_development', 3, 'Market Feasibility & Project Planning'),
+    ('commercial_building', 'property_development', 4, 'Architectural & Engineering Design'),
+    ('commercial_building', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
+    ('commercial_building', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
+    ('commercial_building', 'property_development', 7, 'Site Mobilization & Preparation'),
+    ('commercial_building', 'property_development', 8, 'Foundation & Basement Construction'),
+    ('commercial_building', 'property_development', 9, 'Structural Construction'),
+    ('commercial_building', 'property_development', 10, 'MEP, Fire Systems & Building Services'),
+    ('commercial_building', 'property_development', 11, 'Interior, External & Common Area Finishing'),
+    ('commercial_building', 'property_development', 12, 'Testing, Occupancy Approval & Completion'),
+    ('commercial_building', 'property_development', 13, 'Leasing / Sales, Registration & Handover'),
+    ('civil_infrastructure', 'civil_works_contract', 1, 'Tender & Work Order'),
+    ('civil_infrastructure', 'civil_works_contract', 2, 'Site Survey & Technical Planning'),
+    ('civil_infrastructure', 'civil_works_contract', 3, 'BOQ, Estimation & Project Scheduling'),
+    ('civil_infrastructure', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
+    ('civil_infrastructure', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
+    ('civil_infrastructure', 'civil_works_contract', 6, 'Foundation & Main Civil Works'),
+    ('civil_infrastructure', 'civil_works_contract', 7, 'Structural & Infrastructure Construction'),
+    ('civil_infrastructure', 'civil_works_contract', 8, 'Ancillary Works & Finishing'),
+    ('civil_infrastructure', 'civil_works_contract', 9, 'Quality Testing & Inspection'),
+    ('civil_infrastructure', 'civil_works_contract', 10, 'Measurements & RA Billing'),
+    ('civil_infrastructure', 'civil_works_contract', 11, 'Final Inspection & Defect Rectification'),
+    ('civil_infrastructure', 'civil_works_contract', 12, 'Project Completion & Handover'),
+    ('road_drainage', 'civil_works_contract', 1, 'Tender & Work Order'),
+    ('road_drainage', 'civil_works_contract', 2, 'Survey, Alignment & Setting Out'),
+    ('road_drainage', 'civil_works_contract', 3, 'BOQ & Project Planning'),
+    ('road_drainage', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
+    ('road_drainage', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
+    ('road_drainage', 'civil_works_contract', 6, 'Subgrade Preparation & Compaction'),
+    ('road_drainage', 'civil_works_contract', 7, 'Drainage, Culverts & Pipe Laying'),
+    ('road_drainage', 'civil_works_contract', 8, 'Base Course & Road Construction'),
+    ('road_drainage', 'civil_works_contract', 9, 'Chambers, Kerbs & Ancillary Works'),
+    ('road_drainage', 'civil_works_contract', 10, 'Road Surface & Finishing'),
+    ('road_drainage', 'civil_works_contract', 11, 'Quality Testing & Final Inspection'),
+    ('road_drainage', 'civil_works_contract', 12, 'Measurements & Project Handover'),
+    ('structural_works', 'civil_works_contract', 1, 'Tender / Client Requirements & Work Order'),
+    ('structural_works', 'civil_works_contract', 2, 'Structural Survey & Assessment'),
+    ('structural_works', 'civil_works_contract', 3, 'Structural Design & Engineering'),
+    ('structural_works', 'civil_works_contract', 4, 'BOQ, Estimation & Planning'),
+    ('structural_works', 'civil_works_contract', 5, 'Approvals & Site Mobilization'),
+    ('structural_works', 'civil_works_contract', 6, 'Foundation & Substructure Works'),
+    ('structural_works', 'civil_works_contract', 7, 'RCC / Steel Structural Works'),
+    ('structural_works', 'civil_works_contract', 8, 'Fabrication & Erection (where applicable)'),
+    ('structural_works', 'civil_works_contract', 9, 'Structural Finishing & Protection'),
+    ('structural_works', 'civil_works_contract', 10, 'Load Testing / Quality Testing (where applicable)'),
+    ('structural_works', 'civil_works_contract', 11, 'Structural Inspection & Rectification'),
+    ('structural_works', 'civil_works_contract', 12, 'Completion & Handover'),
+    ('material_supply', 'material_supply', 1, 'Customer Enquiry & Requirement'),
+    ('material_supply', 'material_supply', 2, 'Quotation & Order Confirmation'),
+    ('material_supply', 'material_supply', 3, 'Material Procurement / Stock Allocation'),
+    ('material_supply', 'material_supply', 4, 'Quality & Quantity Verification'),
+    ('material_supply', 'material_supply', 5, 'Dispatch & Transportation'),
+    ('material_supply', 'material_supply', 6, 'Site Delivery & Acknowledgement')
+  ), authoritative_defs AS (
+    SELECT
+      lower(project_code) AS project_code,
+      business_model,
+      sequence_number,
+      stage_name,
+      regexp_replace(
+        trim(both '_' from regexp_replace(
+          regexp_replace(
+            regexp_replace(lower(stage_name), '&', 'and', 'g'),
+            '\(.*?\)',
+            ' ',
+            'g'
+          ),
+          '[^a-z0-9]+',
+          '_',
+          'g'
+        )),
+        '_+',
+        '_',
+        'g'
+      ) AS template_code
+    FROM authoritative_raw
+  ), resolved_defs AS (
+    SELECT
+      pt.id AS project_type_id,
+      d.business_model,
+      d.template_code,
+      d.stage_name,
+      d.sequence_number
+    FROM authoritative_defs d
+    JOIN public.project_types pt
+      ON pt.company_id IS NULL
+     AND pt.is_active = true
+     AND lower(pt.code) = d.project_code
+  ), existing_targeted AS (
+    SELECT
+      pst.project_type_id,
+      pst.business_model,
+      pst.template_code,
+      pst.sequence_number,
+      pst.name
+    FROM public.project_stage_templates pst
+    JOIN resolved_defs d
+      ON d.project_type_id = pst.project_type_id
+     AND d.business_model = pst.business_model
+    WHERE pst.company_id IS NULL
+  )
+  SELECT count(*)
+  INTO v_ambiguous_count
+  FROM existing_targeted e
+  LEFT JOIN resolved_defs d
+    ON d.project_type_id = e.project_type_id
+   AND d.business_model = e.business_model
+   AND lower(d.template_code) = lower(e.template_code)
+  WHERE d.template_code IS NULL;
+
+  IF v_ambiguous_count > 0 THEN
+    RAISE EXCEPTION
+      '0031 aborted: % existing template rows cannot be mapped by exact template_code. Resolve ambiguities before applying.',
+      v_ambiguous_count
+      USING HINT = 'Use out/stage-templates-0031-reconciliation-report.md and explicitly map/deactivate rows.';
+  END IF;
+END $$;
+
+WITH authoritative_raw(project_code, business_model, sequence_number, stage_name) AS (
+VALUES
+    ('independent_house', 'contract_construction', 1, 'Client Requirements & Project Planning'),
+    ('independent_house', 'contract_construction', 2, 'Architectural Design & Drawings'),
+    ('independent_house', 'contract_construction', 3, 'Estimation, Quotation & Agreement'),
+    ('independent_house', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('independent_house', 'contract_construction', 5, 'Foundation & Plinth Construction'),
+    ('independent_house', 'contract_construction', 6, 'Structural Construction'),
+    ('independent_house', 'contract_construction', 7, 'Brickwork & Masonry'),
+    ('independent_house', 'contract_construction', 8, 'Plastering & Waterproofing'),
+    ('independent_house', 'contract_construction', 9, 'Electrical & Plumbing Works'),
+    ('independent_house', 'contract_construction', 10, 'Flooring, Doors & Windows'),
+    ('independent_house', 'contract_construction', 11, 'Painting & Final Finishing'),
+    ('independent_house', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
+    ('villa', 'contract_construction', 1, 'Client Requirements & Project Planning'),
+    ('villa', 'contract_construction', 2, 'Architectural Design & 3D Elevation'),
+    ('villa', 'contract_construction', 3, 'Structural & Engineering Design'),
+    ('villa', 'contract_construction', 4, 'Estimation, Quotation & Agreement'),
+    ('villa', 'contract_construction', 5, 'Approvals & Site Mobilization'),
+    ('villa', 'contract_construction', 6, 'Foundation & Plinth Construction'),
+    ('villa', 'contract_construction', 7, 'Structural Construction'),
+    ('villa', 'contract_construction', 8, 'Masonry, Plastering & Waterproofing'),
+    ('villa', 'contract_construction', 9, 'Electrical, Plumbing & HVAC Works'),
+    ('villa', 'contract_construction', 10, 'Flooring, Doors, Windows & Joinery'),
+    ('villa', 'contract_construction', 11, 'Interior, Exterior & Landscape Finishing'),
+    ('villa', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
+    ('apartment', 'contract_construction', 1, 'Client Requirements & Project Planning'),
+    ('apartment', 'contract_construction', 2, 'Architectural Design & Engineering'),
+    ('apartment', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
+    ('apartment', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('apartment', 'contract_construction', 5, 'Foundation & Basement Construction'),
+    ('apartment', 'contract_construction', 6, 'Structural Construction'),
+    ('apartment', 'contract_construction', 7, 'Masonry & Internal Plastering'),
+    ('apartment', 'contract_construction', 8, 'Electrical, Plumbing & Fire Systems'),
+    ('apartment', 'contract_construction', 9, 'Flooring, Doors & Windows'),
+    ('apartment', 'contract_construction', 10, 'Painting & Internal Finishing'),
+    ('apartment', 'contract_construction', 11, 'Lifts, Common Areas & External Works'),
+    ('apartment', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
+    ('commercial_building', 'contract_construction', 1, 'Client Requirements & Space Planning'),
+    ('commercial_building', 'contract_construction', 2, 'Architectural & Engineering Design'),
+    ('commercial_building', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
+    ('commercial_building', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('commercial_building', 'contract_construction', 5, 'Foundation & Basement Construction'),
+    ('commercial_building', 'contract_construction', 6, 'Structural Construction'),
+    ('commercial_building', 'contract_construction', 7, 'Masonry & Building Envelope'),
+    ('commercial_building', 'contract_construction', 8, 'Electrical, Plumbing, HVAC & Fire Systems'),
+    ('commercial_building', 'contract_construction', 9, 'Flooring, Ceilings & Interior Works'),
+    ('commercial_building', 'contract_construction', 10, 'Elevation & External Finishing'),
+    ('commercial_building', 'contract_construction', 11, 'Testing, Commissioning & Inspection'),
+    ('commercial_building', 'contract_construction', 12, 'Client Handover'),
+    ('renovation', 'contract_construction', 1, 'Existing Site Inspection & Assessment'),
+    ('renovation', 'contract_construction', 2, 'Client Requirements & Scope Finalization'),
+    ('renovation', 'contract_construction', 3, 'Design, Drawings & Estimation'),
+    ('renovation', 'contract_construction', 4, 'Agreement & Site Preparation'),
+    ('renovation', 'contract_construction', 5, 'Demolition & Dismantling'),
+    ('renovation', 'contract_construction', 6, 'Structural Repairs & Modifications'),
+    ('renovation', 'contract_construction', 7, 'Masonry & Plastering'),
+    ('renovation', 'contract_construction', 8, 'Electrical & Plumbing Modifications'),
+    ('renovation', 'contract_construction', 9, 'Flooring, Doors & Windows'),
+    ('renovation', 'contract_construction', 10, 'Painting & Finishing'),
+    ('renovation', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
+    ('renovation', 'contract_construction', 12, 'Client Handover'),
+    ('building_extension', 'contract_construction', 1, 'Existing Building Assessment'),
+    ('building_extension', 'contract_construction', 2, 'Extension Planning & Design'),
+    ('building_extension', 'contract_construction', 3, 'Structural Feasibility & Engineering'),
+    ('building_extension', 'contract_construction', 4, 'Estimation, Agreement & Approvals'),
+    ('building_extension', 'contract_construction', 5, 'Site Preparation & Protection'),
+    ('building_extension', 'contract_construction', 6, 'Foundation & Structural Modifications'),
+    ('building_extension', 'contract_construction', 7, 'New Structural Construction'),
+    ('building_extension', 'contract_construction', 8, 'Masonry & Plastering'),
+    ('building_extension', 'contract_construction', 9, 'Electrical & Plumbing Extensions'),
+    ('building_extension', 'contract_construction', 10, 'Flooring & Finishing'),
+    ('building_extension', 'contract_construction', 11, 'Integration & Quality Inspection'),
+    ('building_extension', 'contract_construction', 12, 'Client Handover'),
+    ('industrial_warehouse', 'contract_construction', 1, 'Client Requirements & Industrial Planning'),
+    ('industrial_warehouse', 'contract_construction', 2, 'Architectural & Structural Design'),
+    ('industrial_warehouse', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
+    ('industrial_warehouse', 'contract_construction', 4, 'Approvals & Site Mobilization'),
+    ('industrial_warehouse', 'contract_construction', 5, 'Site Development & Earthwork'),
+    ('industrial_warehouse', 'contract_construction', 6, 'Foundation & Industrial Flooring'),
+    ('industrial_warehouse', 'contract_construction', 7, 'Structural Steel / RCC Construction'),
+    ('industrial_warehouse', 'contract_construction', 8, 'Roofing & Cladding'),
+    ('industrial_warehouse', 'contract_construction', 9, 'Electrical, Plumbing & Fire Systems'),
+    ('industrial_warehouse', 'contract_construction', 10, 'Flooring, Drainage & External Development'),
+    ('industrial_warehouse', 'contract_construction', 11, 'Testing, Inspection & Commissioning'),
+    ('industrial_warehouse', 'contract_construction', 12, 'Client Handover'),
+    ('interior_fitout', 'contract_construction', 1, 'Site Survey & Client Requirements'),
+    ('interior_fitout', 'contract_construction', 2, 'Space Planning & Interior Design'),
+    ('interior_fitout', 'contract_construction', 3, 'Material Selection & BOQ'),
+    ('interior_fitout', 'contract_construction', 4, 'Quotation, Agreement & Mobilization'),
+    ('interior_fitout', 'contract_construction', 5, 'Dismantling & Site Preparation'),
+    ('interior_fitout', 'contract_construction', 6, 'Civil & Partition Works'),
+    ('interior_fitout', 'contract_construction', 7, 'Electrical, Plumbing & HVAC Works'),
+    ('interior_fitout', 'contract_construction', 8, 'Ceiling & Flooring Works'),
+    ('interior_fitout', 'contract_construction', 9, 'Carpentry & Custom Furniture'),
+    ('interior_fitout', 'contract_construction', 10, 'Painting, Fixtures & Finishing'),
+    ('interior_fitout', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
+    ('interior_fitout', 'contract_construction', 12, 'Client Handover'),
+    ('apartment', 'property_development', 1, 'Land Due Diligence & Title Verification'),
+    ('apartment', 'property_development', 2, 'Land Acquisition & Development Agreement'),
+    ('apartment', 'property_development', 3, 'Feasibility & Project Planning'),
+    ('apartment', 'property_development', 4, 'Architectural & Engineering Design'),
+    ('apartment', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
+    ('apartment', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
+    ('apartment', 'property_development', 7, 'Site Mobilization & Preparation'),
+    ('apartment', 'property_development', 8, 'Foundation & Basement Construction'),
+    ('apartment', 'property_development', 9, 'Structural Construction'),
+    ('apartment', 'property_development', 10, 'MEP & Internal Infrastructure'),
+    ('apartment', 'property_development', 11, 'Finishing & Common Area Development'),
+    ('apartment', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
+    ('apartment', 'property_development', 13, 'Sales, Registration & Customer Handover'),
+    ('villa', 'property_development', 1, 'Land Due Diligence & Title Verification'),
+    ('villa', 'property_development', 2, 'Land Acquisition & Development Agreement'),
+    ('villa', 'property_development', 3, 'Feasibility & Villa Planning'),
+    ('villa', 'property_development', 4, 'Architectural & Engineering Design'),
+    ('villa', 'property_development', 5, 'Approvals & Statutory Clearances'),
+    ('villa', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
+    ('villa', 'property_development', 7, 'Site Development & Infrastructure'),
+    ('villa', 'property_development', 8, 'Villa Foundation & Structural Construction'),
+    ('villa', 'property_development', 9, 'Masonry, Roofing & Waterproofing'),
+    ('villa', 'property_development', 10, 'MEP & Interior Finishing'),
+    ('villa', 'property_development', 11, 'Landscaping & Common Amenities'),
+    ('villa', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
+    ('villa', 'property_development', 13, 'Sales, Registration & Customer Handover'),
+    ('commercial_building', 'property_development', 1, 'Land Due Diligence & Title Verification'),
+    ('commercial_building', 'property_development', 2, 'Land Acquisition & Development Agreement'),
+    ('commercial_building', 'property_development', 3, 'Market Feasibility & Project Planning'),
+    ('commercial_building', 'property_development', 4, 'Architectural & Engineering Design'),
+    ('commercial_building', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
+    ('commercial_building', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
+    ('commercial_building', 'property_development', 7, 'Site Mobilization & Preparation'),
+    ('commercial_building', 'property_development', 8, 'Foundation & Basement Construction'),
+    ('commercial_building', 'property_development', 9, 'Structural Construction'),
+    ('commercial_building', 'property_development', 10, 'MEP, Fire Systems & Building Services'),
+    ('commercial_building', 'property_development', 11, 'Interior, External & Common Area Finishing'),
+    ('commercial_building', 'property_development', 12, 'Testing, Occupancy Approval & Completion'),
+    ('commercial_building', 'property_development', 13, 'Leasing / Sales, Registration & Handover'),
+    ('civil_infrastructure', 'civil_works_contract', 1, 'Tender & Work Order'),
+    ('civil_infrastructure', 'civil_works_contract', 2, 'Site Survey & Technical Planning'),
+    ('civil_infrastructure', 'civil_works_contract', 3, 'BOQ, Estimation & Project Scheduling'),
+    ('civil_infrastructure', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
+    ('civil_infrastructure', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
+    ('civil_infrastructure', 'civil_works_contract', 6, 'Foundation & Main Civil Works'),
+    ('civil_infrastructure', 'civil_works_contract', 7, 'Structural & Infrastructure Construction'),
+    ('civil_infrastructure', 'civil_works_contract', 8, 'Ancillary Works & Finishing'),
+    ('civil_infrastructure', 'civil_works_contract', 9, 'Quality Testing & Inspection'),
+    ('civil_infrastructure', 'civil_works_contract', 10, 'Measurements & RA Billing'),
+    ('civil_infrastructure', 'civil_works_contract', 11, 'Final Inspection & Defect Rectification'),
+    ('civil_infrastructure', 'civil_works_contract', 12, 'Project Completion & Handover'),
+    ('road_drainage', 'civil_works_contract', 1, 'Tender & Work Order'),
+    ('road_drainage', 'civil_works_contract', 2, 'Survey, Alignment & Setting Out'),
+    ('road_drainage', 'civil_works_contract', 3, 'BOQ & Project Planning'),
+    ('road_drainage', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
+    ('road_drainage', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
+    ('road_drainage', 'civil_works_contract', 6, 'Subgrade Preparation & Compaction'),
+    ('road_drainage', 'civil_works_contract', 7, 'Drainage, Culverts & Pipe Laying'),
+    ('road_drainage', 'civil_works_contract', 8, 'Base Course & Road Construction'),
+    ('road_drainage', 'civil_works_contract', 9, 'Chambers, Kerbs & Ancillary Works'),
+    ('road_drainage', 'civil_works_contract', 10, 'Road Surface & Finishing'),
+    ('road_drainage', 'civil_works_contract', 11, 'Quality Testing & Final Inspection'),
+    ('road_drainage', 'civil_works_contract', 12, 'Measurements & Project Handover'),
+    ('structural_works', 'civil_works_contract', 1, 'Tender / Client Requirements & Work Order'),
+    ('structural_works', 'civil_works_contract', 2, 'Structural Survey & Assessment'),
+    ('structural_works', 'civil_works_contract', 3, 'Structural Design & Engineering'),
+    ('structural_works', 'civil_works_contract', 4, 'BOQ, Estimation & Planning'),
+    ('structural_works', 'civil_works_contract', 5, 'Approvals & Site Mobilization'),
+    ('structural_works', 'civil_works_contract', 6, 'Foundation & Substructure Works'),
+    ('structural_works', 'civil_works_contract', 7, 'RCC / Steel Structural Works'),
+    ('structural_works', 'civil_works_contract', 8, 'Fabrication & Erection (where applicable)'),
+    ('structural_works', 'civil_works_contract', 9, 'Structural Finishing & Protection'),
+    ('structural_works', 'civil_works_contract', 10, 'Load Testing / Quality Testing (where applicable)'),
+    ('structural_works', 'civil_works_contract', 11, 'Structural Inspection & Rectification'),
+    ('structural_works', 'civil_works_contract', 12, 'Completion & Handover'),
+    ('material_supply', 'material_supply', 1, 'Customer Enquiry & Requirement'),
+    ('material_supply', 'material_supply', 2, 'Quotation & Order Confirmation'),
+    ('material_supply', 'material_supply', 3, 'Material Procurement / Stock Allocation'),
+    ('material_supply', 'material_supply', 4, 'Quality & Quantity Verification'),
+    ('material_supply', 'material_supply', 5, 'Dispatch & Transportation'),
+    ('material_supply', 'material_supply', 6, 'Site Delivery & Acknowledgement')
+), authoritative_defs AS (
+  SELECT
+    lower(project_code) AS project_code,
+    business_model,
+    sequence_number,
+    stage_name,
+    regexp_replace(
+      trim(both '_' from regexp_replace(
+        regexp_replace(
+          regexp_replace(lower(stage_name), '&', 'and', 'g'),
+          '\(.*?\)',
+          ' ',
+          'g'
+        ),
+        '[^a-z0-9]+',
+        '_',
+        'g'
+      )),
+      '_+',
+      '_',
+      'g'
+    ) AS template_code
+  FROM authoritative_raw
+), resolved_defs AS (
+  SELECT
+    NULL::uuid AS company_id,
+    pt.id AS project_type_id,
+    d.business_model,
+    d.template_code,
+    d.stage_name AS name,
+    d.sequence_number,
+    0::numeric AS default_completion_percentage,
+    true AS is_active
+  FROM authoritative_defs d
+  JOIN public.project_types pt
+    ON pt.company_id IS NULL
+   AND pt.is_active = true
+   AND lower(pt.code) = d.project_code
+)
+INSERT INTO public.project_stage_templates (
+  company_id,
+  project_type_id,
+  business_model,
+  template_code,
+  name,
+  sequence_number,
+  default_completion_percentage,
+  is_active
+)
+SELECT
+  r.company_id,
+  r.project_type_id,
+  r.business_model,
+  r.template_code,
+  r.name,
+  r.sequence_number,
+  r.default_completion_percentage,
+  r.is_active
+FROM resolved_defs r
+ON CONFLICT ON CONSTRAINT uq_project_stage_templates
+DO UPDATE SET
+  name = EXCLUDED.name,
+  sequence_number = EXCLUDED.sequence_number,
+  default_completion_percentage = EXCLUDED.default_completion_percentage,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
+-- Explicit deactivations only (none currently authorized).
+WITH explicit_deactivate(project_code, business_model, template_code) AS (
+  SELECT NULL::text, NULL::text, NULL::text
+  WHERE false
+)
+UPDATE public.project_stage_templates pst
+SET
+  is_active = false,
+  updated_at = now()
+FROM explicit_deactivate d
+JOIN public.project_types pt
+  ON pt.company_id IS NULL
+ AND pt.is_active = true
+ AND lower(pt.code) = lower(d.project_code)
+WHERE pst.company_id IS NULL
+  AND pst.project_type_id = pt.id
+  AND pst.business_model = d.business_model
+  AND lower(pst.template_code) = lower(d.template_code)
+  AND pst.is_active = true;
+
+COMMIT;
+-- <<< 0031_stage_template_master_data_sync.sql
+
+-- ===== END APP MIGRATIONS SNAPSHOT =====
+
