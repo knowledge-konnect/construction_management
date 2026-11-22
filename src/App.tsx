@@ -1,40 +1,53 @@
 ﻿import Layout from '@/components/Layout';
 import { AppLoader } from '@/components/loading/Loaders';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import QuotationBuilder from '@/components/quotation/QuotationBuilder';
 import RequireCompany from '@/components/RequireCompany';
 import ToastViewport from '@/components/ToastViewport';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { CompanyProvider } from '@/context/CompanyContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { getSafeRedirectPath } from '@/lib/utils';
-import AccessManagementPage from '@/pages/AccessManagementPage';
-import BillingPage from '@/pages/BillingPage';
 import ChangePasswordPage from '@/pages/ChangePasswordPage';
 import CompanySetupPage from '@/pages/CompanySetupPage';
-import ComponentShowcasePage from '@/pages/ComponentShowcasePage';
-import CustomersPage from '@/pages/CustomersPage';
-import DashboardPage from '@/pages/DashboardPage';
-import ExpensesPage from '@/pages/ExpensesPage';
-import ExternalDashboardPage from '@/pages/ExternalDashboardPage';
-import FlatBillingEditor from '@/pages/FlatBillingEditor';
-import FlatBillingPage from '@/pages/FlatBillingPage';
-import InvestorsPage from '@/pages/InvestorsPage';
-import InvoicesPage from '@/pages/InvoicesPage';
 import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/LoginPage';
-import PartiesPage from '@/pages/PartiesPage';
-import ProfilePage from '@/pages/ProfilePage';
-import ProjectsPage, { ProjectCreatePage, ProjectDetailPage, ProjectEditPage } from '@/pages/ProjectsPage';
-import QuotationsPage from '@/pages/QuotationsPage';
-import ReceiptsPage from '@/pages/ReceiptsPage';
-import ReportsPage from '@/pages/ReportsPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage';
-import SettingsPage from '@/pages/SettingsPage';
-import SuppliersPage from '@/pages/SuppliersPage';
-import TeamPage from '@/pages/TeamPage';
-import TemplatesPage from '@/pages/TemplatesPage';
+import { Suspense, lazy, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
+const AccessManagementPage = lazy(() => import('@/pages/AccessManagementPage'));
+const BillingPage = lazy(() => import('@/pages/BillingPage'));
+const ComponentShowcasePage = lazy(() => import('@/pages/ComponentShowcasePage'));
+const CustomersPage = lazy(() => import('@/pages/CustomersPage'));
+const ExpensesPage = lazy(() => import('@/pages/ExpensesPage'));
+const ExternalDashboardPage = lazy(() => import('@/pages/ExternalDashboardPage'));
+const FlatBillingEditor = lazy(() => import('@/pages/FlatBillingEditor'));
+const FlatBillingPage = lazy(() => import('@/pages/FlatBillingPage'));
+const InvestorsPage = lazy(() => import('@/pages/InvestorsPage'));
+const InvoicesPage = lazy(() => import('@/pages/InvoicesPage'));
+const PartiesPage = lazy(() => import('@/pages/PartiesPage'));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const ProjectsPage = lazy(() => import('@/pages/ProjectsPage'));
+const ProjectDetailPage = lazy(() => import('@/pages/ProjectsPage').then((module) => ({ default: module.ProjectDetailPage })));
+const ProjectCreatePage = lazy(() => import('@/pages/ProjectsPage').then((module) => ({ default: module.ProjectCreatePage })));
+const ProjectEditPage = lazy(() => import('@/pages/ProjectsPage').then((module) => ({ default: module.ProjectEditPage })));
+const QuotationBuilder = lazy(() => import('@/components/quotation/QuotationBuilder'));
+const QuotationsPage = lazy(() => import('@/pages/QuotationsPage'));
+const ReceiptsPage = lazy(() => import('@/pages/ReceiptsPage'));
+const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
+const TeamPage = lazy(() => import('@/pages/TeamPage'));
+const TemplatesPage = lazy(() => import('@/pages/TemplatesPage'));
+
+function withRouteLoader(node: ReactNode) {
+  return (
+    <Suspense fallback={<AppLoader message="Loading page…" />}>
+      {node}
+    </Suspense>
+  );
+}
 
 // Shown at "/" — the public landing page for logged-out visitors.
 // Signed-in users are sent straight to their dashboard instead.
@@ -82,7 +95,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <DashboardPage />
+                        {withRouteLoader(<DashboardPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -93,7 +106,7 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <Layout>
-                      <ProfilePage />
+                      {withRouteLoader(<ProfilePage />)}
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -103,7 +116,7 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <Layout>
-                      <ExternalDashboardPage mode="client" />
+                      {withRouteLoader(<ExternalDashboardPage mode="client" />)}
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -113,7 +126,7 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <Layout>
-                      <ExternalDashboardPage mode="investor" />
+                      {withRouteLoader(<ExternalDashboardPage mode="investor" />)}
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -124,7 +137,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <ProjectsPage />
+                        {withRouteLoader(<ProjectsPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -136,7 +149,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <ProjectDetailPage />
+                        {withRouteLoader(<ProjectDetailPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -148,7 +161,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <ProjectCreatePage />
+                        {withRouteLoader(<ProjectCreatePage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -160,7 +173,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <ProjectEditPage />
+                        {withRouteLoader(<ProjectEditPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -172,7 +185,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <AccessManagementPage />
+                        {withRouteLoader(<AccessManagementPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -184,7 +197,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <QuotationsPage />
+                        {withRouteLoader(<QuotationsPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -196,7 +209,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <QuotationBuilder />
+                        {withRouteLoader(<QuotationBuilder />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -208,7 +221,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <QuotationBuilder />
+                        {withRouteLoader(<QuotationBuilder />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -220,7 +233,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <PartiesPage />
+                        {withRouteLoader(<PartiesPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -232,7 +245,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <CustomersPage />
+                        {withRouteLoader(<CustomersPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -244,7 +257,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <SuppliersPage />
+                        {withRouteLoader(<SuppliersPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -256,7 +269,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <InvestorsPage />
+                        {withRouteLoader(<InvestorsPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -268,7 +281,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <ExpensesPage />
+                        {withRouteLoader(<ExpensesPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -280,7 +293,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <BillingPage />
+                        {withRouteLoader(<BillingPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -292,7 +305,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <InvoicesPage />
+                        {withRouteLoader(<InvoicesPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -304,7 +317,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <ReceiptsPage />
+                        {withRouteLoader(<ReceiptsPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -316,7 +329,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <FlatBillingPage />
+                        {withRouteLoader(<FlatBillingPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -328,7 +341,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <ReportsPage />
+                        {withRouteLoader(<ReportsPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -340,7 +353,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <FlatBillingPage />
+                        {withRouteLoader(<FlatBillingPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -352,7 +365,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <FlatBillingEditor />
+                        {withRouteLoader(<FlatBillingEditor />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -364,7 +377,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <FlatBillingEditor />
+                        {withRouteLoader(<FlatBillingEditor />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -376,7 +389,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <TemplatesPage />
+                        {withRouteLoader(<TemplatesPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -388,7 +401,7 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <SettingsPage />
+                        {withRouteLoader(<SettingsPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
@@ -400,13 +413,13 @@ export default function App() {
                   <ProtectedRoute>
                     <RequireCompany>
                       <Layout>
-                        <TeamPage />
+                        {withRouteLoader(<TeamPage />)}
                       </Layout>
                     </RequireCompany>
                   </ProtectedRoute>
                 }
               />
-              <Route path="/component-showcase" element={<ComponentShowcasePage />} />
+              <Route path="/component-showcase" element={withRouteLoader(<ComponentShowcasePage />)} />
               <Route path="/" element={<PublicHome />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

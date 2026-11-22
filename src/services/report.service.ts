@@ -21,6 +21,7 @@ export interface ReportSummary {
 export interface DashboardReport {
     projectsCount: number;
     activeProjects: number;
+    projectsAtRisk: number;
     totalContract: number;
     totalBilled: number;
     totalOutstanding: number;
@@ -37,12 +38,42 @@ export interface DashboardReport {
 export interface DashboardProjectSummary {
     projectId: string;
     projectName: string;
+    status: string;
+    businessModel: string | null;
     contractValue: number;
+    projectedSalesValue: number;
+    projectBudget: number;
+    expectedEndDate: string | null;
     billed: number;
     collected: number;
     outstanding: number;
     expenses: number;
     netCashFlow: number;
+    budgetUtilization: number | null;
+}
+
+export interface ProjectProgressSummary {
+    projectId: string;
+    projectName: string;
+    status: string;
+    expectedEndDate: string | null;
+    currentStageName: string | null;
+    progressPercent: number | null;
+    latestProgressDate: string | null;
+}
+
+export interface PendingSupplierPayment {
+    expenseId: string;
+    projectId: string | null;
+    outstanding: number;
+    dueDate: string | null;
+    isOverdue: boolean;
+}
+
+export interface DashboardV2Response {
+    dashboard: DashboardReport;
+    projectProgress: ProjectProgressSummary[];
+    pendingSupplierPayments: PendingSupplierPayment[];
 }
 
 export interface MonthlyFinancialEntry {
@@ -164,8 +195,9 @@ export async function getReportSummary(): Promise<ReportSummary | null> {
     return data.summary;
 }
 
-export async function getDashboardReport(): Promise<DashboardReport | null> {
-    const { data, error } = await apiGet<{ dashboard: DashboardReport }>('/api/reports/dashboard');
+export async function getDashboardReport(projectId?: string): Promise<DashboardReport | null> {
+    const query = projectId ? `?projectId=${encodeURIComponent(projectId)}` : '';
+    const { data, error } = await apiGet<{ dashboard: DashboardReport }>(`/api/reports/dashboard${query}`);
     if (error || !data?.dashboard) {
         console.warn('Failed to load dashboard report', error);
         return null;
@@ -173,8 +205,18 @@ export async function getDashboardReport(): Promise<DashboardReport | null> {
     return data.dashboard;
 }
 
-export async function getMonthlyFinancialReport(): Promise<MonthlyFinancialReport | null> {
-    const { data, error } = await apiGet<MonthlyFinancialReport>('/api/reports/monthly');
+export async function getDashboardV2(): Promise<DashboardV2Response | null> {
+    const { data, error } = await apiGet<DashboardV2Response>('/api/reports/dashboard-v2');
+    if (error || !data?.dashboard) {
+        console.warn('Failed to load dashboard v2 report', error);
+        return null;
+    }
+    return data;
+}
+
+export async function getMonthlyFinancialReport(projectId?: string): Promise<MonthlyFinancialReport | null> {
+    const query = projectId ? `?projectId=${encodeURIComponent(projectId)}` : '';
+    const { data, error } = await apiGet<MonthlyFinancialReport>(`/api/reports/monthly${query}`);
     if (error || !data || !Array.isArray(data.monthly)) {
         console.warn('Failed to load monthly financial report', error);
         return null;

@@ -7,8 +7,7 @@ import { apiDelete, apiGet, apiPost, apiPut } from '@/services/apiClient';
 import { createCustomer, listCustomers } from '@/services/customer.service';
 import { listParties, type PartyRecord } from '@/services/party.service';
 import { listProjects } from '@/services/project.service';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import type jsPDF from 'jspdf';
 import { Download, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -304,7 +303,12 @@ export default function InvoicesPage() {
         setShowCreateInvoiceForm(false);
     };
 
-    const downloadInvoicePdf = (invoice: any) => {
+    const downloadInvoicePdf = async (invoice: any) => {
+        const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+            import('jspdf'),
+            import('jspdf-autotable'),
+        ]);
+
         const customerName = (customerMap.get(invoice.customer_id ?? '') ?? invoice.customer ?? null)?.name ?? 'Customer';
         const projectName = (projectMap.get(invoice.project_id ?? '') ?? invoice.project ?? null)?.name ?? 'Project';
         const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -373,7 +377,8 @@ export default function InvoicesPage() {
         doc.save(invoicePdfFilename(invoice.invoice_number ?? invoice.id, 'invoice'));
     };
 
-    const downloadReceiptPdf = (receipt: any) => {
+    const downloadReceiptPdf = async (receipt: any) => {
+        const { default: jsPDF } = await import('jspdf');
         const customerName = (customerMap.get(receipt.customerId ?? receipt.customer_id ?? '') ?? receipt.customer ?? null)?.name ?? 'Customer';
         const projectName = (projectMap.get(receipt.projectId ?? receipt.project_id ?? '') ?? receipt.project ?? null)?.name ?? 'Project';
         const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -608,7 +613,15 @@ export default function InvoicesPage() {
             return;
         }
 
-        const result = await apiPost<{ allocation?: any; error?: string }>(`/api/receipts/${allocationTarget.receiptId}/allocations`, {
+        const result = await apiPost<{
+            allocation?: any;
+            receiptRemaining?: number;
+            invoiceOutstanding?: number;
+            receiptRemainingAfter?: number;
+            invoiceOutstandingAfter?: number;
+            allocatedAmount?: number;
+            error?: string;
+        }>(`/api/receipts/${allocationTarget.receiptId}/allocations`, {
             invoiceId: allocationInvoiceId,
             amount: Number(allocationAmount),
         });
@@ -616,6 +629,38 @@ export default function InvoicesPage() {
         if (result.error) {
             push('error', result.error);
             return;
+        }
+
+        const allocationData = result.data;
+
+        const receiptRemainingAfter = Number(allocationData?.receiptRemainingAfter ?? allocationData?.receiptRemaining);
+        if (Number.isFinite(receiptRemainingAfter)) {
+            setReceipts((previous) => previous.map((receipt) => {
+                if ((receipt.id ?? receipt.receiptId) !== allocationTarget.receiptId) return receipt;
+                const amount = Number(receipt.amount ?? 0);
+                const unallocatedAmount = Math.max(0, receiptRemainingAfter);
+                return {
+                    ...receipt,
+                    unallocatedAmount,
+                    allocatedAmount: Math.max(0, amount - unallocatedAmount),
+                };
+            }));
+        }
+
+        const invoiceOutstandingAfter = Number(allocationData?.invoiceOutstandingAfter ?? allocationData?.invoiceOutstanding);
+        if (Number.isFinite(invoiceOutstandingAfter)) {
+            setInvoices((previous) => previous.map((invoice) => {
+                if ((invoice.id ?? invoice.invoiceId) !== allocationInvoiceId) return invoice;
+                const grandTotal = Number(invoice.grand_total ?? invoice.grandTotal ?? 0);
+                const outstanding = Math.max(0, invoiceOutstandingAfter);
+                return {
+                    ...invoice,
+                    outstanding_amount: outstanding,
+                    outstandingAmount: outstanding,
+                    paid_amount: Math.max(0, grandTotal - outstanding),
+                    paidAmount: Math.max(0, grandTotal - outstanding),
+                };
+            }));
         }
 
         push('success', `Allocated to invoice: ${allocationTarget.receiptNumber}`);
@@ -693,7 +738,7 @@ export default function InvoicesPage() {
                                 <Trash2 className="h-3.5 w-3.5" />
                                 Delete
                             </AppButton>
-                            <AppButton variant="secondary" className="!min-h-[32px] !px-2 !py-1 text-xs" onClick={() => downloadInvoicePdf(i)}>
+                            <AppButton variant="secondary" className="!min-h-[32px] !px-2 !py-1 text-xs" onClick={() => void downloadInvoicePdf(i)}>
                                 <Download className="h-3.5 w-3.5" />
                                 PDF
                             </AppButton>
@@ -704,7 +749,7 @@ export default function InvoicesPage() {
                     )}
                     {String(i.status ?? 'Draft') === 'Issued' && (
                         <>
-                            <AppButton variant="secondary" className="!min-h-[32px] !px-2 !py-1 text-xs" onClick={() => downloadInvoicePdf(i)}>
+                            <AppButton variant="secondary" className="!min-h-[32px] !px-2 !py-1 text-xs" onClick={() => void downloadInvoicePdf(i)}>
                                 <Download className="h-3.5 w-3.5" />
                                 PDF
                             </AppButton>
@@ -799,7 +844,7 @@ export default function InvoicesPage() {
                             <Trash2 className="h-3.5 w-3.5" />
                             Delete
                         </AppButton>
-                        <AppButton variant="secondary" className="!min-h-[32px] !px-2 !py-1 text-[11px]" onClick={() => downloadReceiptPdf(r)}>
+                        <AppButton variant="secondary" className="!min-h-[32px] !px-2 !py-1 text-[11px]" onClick={() => void downloadReceiptPdf(r)}>
                             <Download className="h-3.5 w-3.5" />
                             PDF
                         </AppButton>

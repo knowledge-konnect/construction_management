@@ -18,8 +18,10 @@ export default function AnimatedBrandMark({ className = 'h-14 w-14' }: { classNa
     <svg
       viewBox="0 0 512 512"
       className={className}
-      role="img"
-      aria-label="BuilderDocs"
+      // Decorative here: the visible "BuilderDocs" text and loading message right next
+      // to this mark already say the same thing, so an aria-label would have a screen
+      // reader announce "BuilderDocs" twice for the same loading state.
+      aria-hidden="true"
     >
       <rect width="512" height="512" rx="112" fill="#F5F7FA" />
 

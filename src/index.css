@@ -299,6 +299,23 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Dashboard-specific compact financial table sizing to avoid desktop overflow. */
+  .project-summary-table .data-table thead th,
+  .project-summary-table .data-table tbody td {
+    padding: 0.65rem 0.7rem;
+  }
+
+  @media (min-width: 1024px) {
+    .project-summary-table .data-table {
+      table-layout: fixed;
+    }
+
+    .project-summary-table .data-table thead th:not(:first-child),
+    .project-summary-table .data-table tbody td:not(:first-child) {
+      white-space: nowrap;
+    }
+  }
+
   /* pagination bar and empty state that go with the table */
   .data-footer {
     background: linear-gradient(180deg, #F8FAFC, #F1F5F9);
@@ -443,55 +460,150 @@
    reduced-motion override below) just shows the plain, fully-built mark.
    ========================================================================== */
 @keyframes bd-mark-cycle {
-  0%, 100% { opacity: 0; }
-  6% { opacity: 1; }
-  80% { opacity: 1; }
-  92% { opacity: 0; }
+
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  6% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  92% {
+    opacity: 0;
+  }
 }
 
 @keyframes bd-mark-rise-1 {
-  0%, 6% { transform: scaleY(0); }
-  20% { transform: scaleY(1); }
+
+  0%,
+  6% {
+    transform: scaleY(0);
+  }
+
+  20% {
+    transform: scaleY(1);
+  }
 }
 
 @keyframes bd-mark-rise-2 {
-  0%, 11% { transform: scaleY(0); }
-  26% { transform: scaleY(1); }
+
+  0%,
+  11% {
+    transform: scaleY(0);
+  }
+
+  26% {
+    transform: scaleY(1);
+  }
 }
 
 @keyframes bd-mark-rise-3 {
-  0%, 16% { transform: scaleY(0); }
-  32% { transform: scaleY(1); }
+
+  0%,
+  16% {
+    transform: scaleY(0);
+  }
+
+  32% {
+    transform: scaleY(1);
+  }
 }
 
 @keyframes bd-mark-doc-appear {
-  0%, 34% { opacity: 0; transform: scale(0.85); }
-  48% { opacity: 1; transform: scale(1); }
+
+  0%,
+  34% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+
+  48% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes bd-mark-draw-1 {
-  0%, 48% { stroke-dashoffset: 94; }
-  58% { stroke-dashoffset: 0; }
+
+  0%,
+  48% {
+    stroke-dashoffset: 94;
+  }
+
+  58% {
+    stroke-dashoffset: 0;
+  }
 }
 
 @keyframes bd-mark-draw-2 {
-  0%, 54% { stroke-dashoffset: 124; }
-  64% { stroke-dashoffset: 0; }
+
+  0%,
+  54% {
+    stroke-dashoffset: 124;
+  }
+
+  64% {
+    stroke-dashoffset: 0;
+  }
 }
 
 @keyframes bd-mark-draw-3 {
-  0%, 60% { stroke-dashoffset: 82; }
-  70% { stroke-dashoffset: 0; }
+
+  0%,
+  60% {
+    stroke-dashoffset: 82;
+  }
+
+  70% {
+    stroke-dashoffset: 0;
+  }
 }
 
-.bd-mark-cycle { animation: bd-mark-cycle 4.8s ease-in-out infinite; }
-.bd-mark-rise-1 { animation: bd-mark-rise-1 4.8s ease-out infinite; }
-.bd-mark-rise-2 { animation: bd-mark-rise-2 4.8s ease-out infinite; }
-.bd-mark-rise-3 { animation: bd-mark-rise-3 4.8s ease-out infinite; }
-.bd-mark-doc { animation: bd-mark-doc-appear 4.8s ease-out infinite; }
-.bd-mark-draw-1 { animation: bd-mark-draw-1 4.8s ease-out infinite; }
-.bd-mark-draw-2 { animation: bd-mark-draw-2 4.8s ease-out infinite; }
-.bd-mark-draw-3 { animation: bd-mark-draw-3 4.8s ease-out infinite; }
+/* All eight pieces share one cycle length so they stay in sync — change this once to
+   speed up or slow down the whole build-and-draw sequence. The keyframe PERCENTAGES
+   (above) control the pacing between buildings/document/lines; this only controls how
+   long one full loop takes. */
+:root {
+  --bd-mark-cycle: 4.8s;
+}
+
+.bd-mark-cycle {
+  animation: bd-mark-cycle var(--bd-mark-cycle) ease-in-out infinite;
+}
+
+.bd-mark-rise-1 {
+  animation: bd-mark-rise-1 var(--bd-mark-cycle) ease-out infinite;
+}
+
+.bd-mark-rise-2 {
+  animation: bd-mark-rise-2 var(--bd-mark-cycle) ease-out infinite;
+}
+
+.bd-mark-rise-3 {
+  animation: bd-mark-rise-3 var(--bd-mark-cycle) ease-out infinite;
+}
+
+.bd-mark-doc {
+  animation: bd-mark-doc-appear var(--bd-mark-cycle) ease-out infinite;
+}
+
+.bd-mark-draw-1 {
+  animation: bd-mark-draw-1 var(--bd-mark-cycle) ease-out infinite;
+}
+
+.bd-mark-draw-2 {
+  animation: bd-mark-draw-2 var(--bd-mark-cycle) ease-out infinite;
+}
+
+.bd-mark-draw-3 {
+  animation: bd-mark-draw-3 var(--bd-mark-cycle) ease-out infinite;
+}
 
 /* ==========================================================================
    Reduced motion: covers the spinners, pings, entrances and smooth scroll
