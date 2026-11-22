@@ -5,7 +5,7 @@
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.5
 
--- Started on 2026-10-30 12:24:44
+-- Started on 2026-11-20 15:12:57
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -13,14 +13,14 @@ SET idle_in_transaction_session_timeout = 0;
 SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', 'public, extensions', false);
+SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 25 (class 2615 OID 16498)
+-- TOC entry 28 (class 2615 OID 16498)
 -- Name: auth; Type: SCHEMA; Schema: -; Owner: supabase_admin
 --
 
@@ -40,7 +40,7 @@ CREATE SCHEMA extensions;
 ALTER SCHEMA extensions OWNER TO postgres;
 
 --
--- TOC entry 24 (class 2615 OID 16578)
+-- TOC entry 27 (class 2615 OID 16578)
 -- Name: graphql; Type: SCHEMA; Schema: -; Owner: supabase_admin
 --
 
@@ -50,7 +50,7 @@ CREATE SCHEMA graphql;
 ALTER SCHEMA graphql OWNER TO supabase_admin;
 
 --
--- TOC entry 23 (class 2615 OID 16567)
+-- TOC entry 26 (class 2615 OID 16567)
 -- Name: graphql_public; Type: SCHEMA; Schema: -; Owner: supabase_admin
 --
 
@@ -70,7 +70,7 @@ CREATE SCHEMA pgbouncer;
 ALTER SCHEMA pgbouncer OWNER TO pgbouncer;
 
 --
--- TOC entry 29 (class 2615 OID 16559)
+-- TOC entry 31 (class 2615 OID 16559)
 -- Name: realtime; Type: SCHEMA; Schema: -; Owner: supabase_admin
 --
 
@@ -80,7 +80,7 @@ CREATE SCHEMA realtime;
 ALTER SCHEMA realtime OWNER TO supabase_admin;
 
 --
--- TOC entry 26 (class 2615 OID 16546)
+-- TOC entry 29 (class 2615 OID 16546)
 -- Name: storage; Type: SCHEMA; Schema: -; Owner: supabase_admin
 --
 
@@ -90,7 +90,7 @@ CREATE SCHEMA storage;
 ALTER SCHEMA storage OWNER TO supabase_admin;
 
 --
--- TOC entry 22 (class 2615 OID 16607)
+-- TOC entry 25 (class 2615 OID 16607)
 -- Name: vault; Type: SCHEMA; Schema: -; Owner: supabase_admin
 --
 
@@ -100,7 +100,7 @@ CREATE SCHEMA vault;
 ALTER SCHEMA vault OWNER TO supabase_admin;
 
 --
--- TOC entry 2 (class 3079 OID 16393)
+-- TOC entry 4 (class 3079 OID 16393)
 -- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -108,8 +108,8 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA extensions;
 
 
 --
--- TOC entry 5019 (class 0 OID 0)
--- Dependencies: 2
+-- TOC entry 5302 (class 0 OID 0)
+-- Dependencies: 4
 -- Name: EXTENSION pg_stat_statements; Type: COMMENT; Schema: -; Owner:
 --
 
@@ -117,7 +117,7 @@ COMMENT ON EXTENSION pg_stat_statements IS 'track planning and execution statist
 
 
 --
--- TOC entry 4 (class 3079 OID 16447)
+-- TOC entry 2 (class 3079 OID 16447)
 -- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -125,8 +125,8 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
 
 --
--- TOC entry 5020 (class 0 OID 0)
--- Dependencies: 4
+-- TOC entry 5303 (class 0 OID 0)
+-- Dependencies: 2
 -- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner:
 --
 
@@ -142,7 +142,7 @@ CREATE EXTENSION IF NOT EXISTS supabase_vault WITH SCHEMA vault;
 
 
 --
--- TOC entry 5021 (class 0 OID 0)
+-- TOC entry 5304 (class 0 OID 0)
 -- Dependencies: 5
 -- Name: EXTENSION supabase_vault; Type: COMMENT; Schema: -; Owner:
 --
@@ -159,7 +159,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions;
 
 
 --
--- TOC entry 5022 (class 0 OID 0)
+-- TOC entry 5305 (class 0 OID 0)
 -- Dependencies: 3
 -- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner:
 --
@@ -168,7 +168,7 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
--- TOC entry 1125 (class 1247 OID 16744)
+-- TOC entry 1153 (class 1247 OID 16744)
 -- Name: aal_level; Type: TYPE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -182,7 +182,7 @@ CREATE TYPE auth.aal_level AS ENUM (
 ALTER TYPE auth.aal_level OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 1149 (class 1247 OID 16885)
+-- TOC entry 1177 (class 1247 OID 16885)
 -- Name: code_challenge_method; Type: TYPE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -195,7 +195,7 @@ CREATE TYPE auth.code_challenge_method AS ENUM (
 ALTER TYPE auth.code_challenge_method OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 1122 (class 1247 OID 16738)
+-- TOC entry 1150 (class 1247 OID 16738)
 -- Name: factor_status; Type: TYPE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -208,7 +208,7 @@ CREATE TYPE auth.factor_status AS ENUM (
 ALTER TYPE auth.factor_status OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 1119 (class 1247 OID 16733)
+-- TOC entry 1147 (class 1247 OID 16733)
 -- Name: factor_type; Type: TYPE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -223,7 +223,7 @@ CREATE TYPE auth.factor_type AS ENUM (
 ALTER TYPE auth.factor_type OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 1167 (class 1247 OID 16988)
+-- TOC entry 1195 (class 1247 OID 16988)
 -- Name: oauth_authorization_status; Type: TYPE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -238,7 +238,7 @@ CREATE TYPE auth.oauth_authorization_status AS ENUM (
 ALTER TYPE auth.oauth_authorization_status OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 1179 (class 1247 OID 17061)
+-- TOC entry 1207 (class 1247 OID 17061)
 -- Name: oauth_client_type; Type: TYPE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -251,7 +251,7 @@ CREATE TYPE auth.oauth_client_type AS ENUM (
 ALTER TYPE auth.oauth_client_type OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 1161 (class 1247 OID 16966)
+-- TOC entry 1189 (class 1247 OID 16966)
 -- Name: oauth_registration_type; Type: TYPE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -264,7 +264,7 @@ CREATE TYPE auth.oauth_registration_type AS ENUM (
 ALTER TYPE auth.oauth_registration_type OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 1170 (class 1247 OID 16998)
+-- TOC entry 1198 (class 1247 OID 16998)
 -- Name: oauth_response_type; Type: TYPE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -276,7 +276,7 @@ CREATE TYPE auth.oauth_response_type AS ENUM (
 ALTER TYPE auth.oauth_response_type OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 1155 (class 1247 OID 16927)
+-- TOC entry 1183 (class 1247 OID 16927)
 -- Name: one_time_token_type; Type: TYPE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -293,7 +293,7 @@ CREATE TYPE auth.one_time_token_type AS ENUM (
 ALTER TYPE auth.one_time_token_type OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 1194 (class 1247 OID 17177)
+-- TOC entry 1222 (class 1247 OID 17177)
 -- Name: action; Type: TYPE; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -309,7 +309,7 @@ CREATE TYPE realtime.action AS ENUM (
 ALTER TYPE realtime.action OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 1197 (class 1247 OID 17188)
+-- TOC entry 1225 (class 1247 OID 17188)
 -- Name: equality_op; Type: TYPE; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -333,7 +333,7 @@ CREATE TYPE realtime.equality_op AS ENUM (
 ALTER TYPE realtime.equality_op OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 1200 (class 1247 OID 17217)
+-- TOC entry 1228 (class 1247 OID 17217)
 -- Name: user_defined_filter; Type: TYPE; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -348,7 +348,7 @@ CREATE TYPE realtime.user_defined_filter AS (
 ALTER TYPE realtime.user_defined_filter OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 1203 (class 1247 OID 17220)
+-- TOC entry 1231 (class 1247 OID 17220)
 -- Name: wal_column; Type: TYPE; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -365,7 +365,7 @@ CREATE TYPE realtime.wal_column AS (
 ALTER TYPE realtime.wal_column OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 1206 (class 1247 OID 17223)
+-- TOC entry 1234 (class 1247 OID 17223)
 -- Name: wal_rls; Type: TYPE; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -380,7 +380,7 @@ CREATE TYPE realtime.wal_rls AS (
 ALTER TYPE realtime.wal_rls OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 1233 (class 1247 OID 17408)
+-- TOC entry 1261 (class 1247 OID 17408)
 -- Name: buckettype; Type: TYPE; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -394,7 +394,7 @@ CREATE TYPE storage.buckettype AS ENUM (
 ALTER TYPE storage.buckettype OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 407 (class 1255 OID 16544)
+-- TOC entry 417 (class 1255 OID 16544)
 -- Name: email(); Type: FUNCTION; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -412,8 +412,8 @@ $$;
 ALTER FUNCTION auth.email() OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5023 (class 0 OID 0)
--- Dependencies: 407
+-- TOC entry 5306 (class 0 OID 0)
+-- Dependencies: 417
 -- Name: FUNCTION email(); Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -421,7 +421,7 @@ COMMENT ON FUNCTION auth.email() IS 'Deprecated. Use auth.jwt() -> ''email'' ins
 
 
 --
--- TOC entry 420 (class 1255 OID 16715)
+-- TOC entry 430 (class 1255 OID 16715)
 -- Name: jwt(); Type: FUNCTION; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -439,7 +439,7 @@ $$;
 ALTER FUNCTION auth.jwt() OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 406 (class 1255 OID 16543)
+-- TOC entry 416 (class 1255 OID 16543)
 -- Name: role(); Type: FUNCTION; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -457,8 +457,8 @@ $$;
 ALTER FUNCTION auth.role() OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5026 (class 0 OID 0)
--- Dependencies: 406
+-- TOC entry 5309 (class 0 OID 0)
+-- Dependencies: 416
 -- Name: FUNCTION role(); Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -466,7 +466,7 @@ COMMENT ON FUNCTION auth.role() IS 'Deprecated. Use auth.jwt() -> ''role'' inste
 
 
 --
--- TOC entry 405 (class 1255 OID 16542)
+-- TOC entry 415 (class 1255 OID 16542)
 -- Name: uid(); Type: FUNCTION; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -484,8 +484,8 @@ $$;
 ALTER FUNCTION auth.uid() OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5028 (class 0 OID 0)
--- Dependencies: 405
+-- TOC entry 5311 (class 0 OID 0)
+-- Dependencies: 415
 -- Name: FUNCTION uid(); Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -493,7 +493,7 @@ COMMENT ON FUNCTION auth.uid() IS 'Deprecated. Use auth.jwt() -> ''sub'' instead
 
 
 --
--- TOC entry 408 (class 1255 OID 16551)
+-- TOC entry 418 (class 1255 OID 16551)
 -- Name: grant_pg_cron_access(); Type: FUNCTION; Schema: extensions; Owner: supabase_admin
 --
 
@@ -535,8 +535,8 @@ $$;
 ALTER FUNCTION extensions.grant_pg_cron_access() OWNER TO supabase_admin;
 
 --
--- TOC entry 5044 (class 0 OID 0)
--- Dependencies: 408
+-- TOC entry 5327 (class 0 OID 0)
+-- Dependencies: 418
 -- Name: FUNCTION grant_pg_cron_access(); Type: COMMENT; Schema: extensions; Owner: supabase_admin
 --
 
@@ -544,7 +544,7 @@ COMMENT ON FUNCTION extensions.grant_pg_cron_access() IS 'Grants access to pg_cr
 
 
 --
--- TOC entry 412 (class 1255 OID 16572)
+-- TOC entry 422 (class 1255 OID 16572)
 -- Name: grant_pg_graphql_access(); Type: FUNCTION; Schema: extensions; Owner: supabase_admin
 --
 
@@ -595,8 +595,8 @@ $_$;
 ALTER FUNCTION extensions.grant_pg_graphql_access() OWNER TO supabase_admin;
 
 --
--- TOC entry 5046 (class 0 OID 0)
--- Dependencies: 412
+-- TOC entry 5329 (class 0 OID 0)
+-- Dependencies: 422
 -- Name: FUNCTION grant_pg_graphql_access(); Type: COMMENT; Schema: extensions; Owner: supabase_admin
 --
 
@@ -604,7 +604,7 @@ COMMENT ON FUNCTION extensions.grant_pg_graphql_access() IS 'Grants access to pg
 
 
 --
--- TOC entry 409 (class 1255 OID 16553)
+-- TOC entry 419 (class 1255 OID 16553)
 -- Name: grant_pg_net_access(); Type: FUNCTION; Schema: extensions; Owner: supabase_admin
 --
 
@@ -659,8 +659,8 @@ $$;
 ALTER FUNCTION extensions.grant_pg_net_access() OWNER TO supabase_admin;
 
 --
--- TOC entry 5048 (class 0 OID 0)
--- Dependencies: 409
+-- TOC entry 5331 (class 0 OID 0)
+-- Dependencies: 419
 -- Name: FUNCTION grant_pg_net_access(); Type: COMMENT; Schema: extensions; Owner: supabase_admin
 --
 
@@ -668,7 +668,7 @@ COMMENT ON FUNCTION extensions.grant_pg_net_access() IS 'Grants access to pg_net
 
 
 --
--- TOC entry 410 (class 1255 OID 16563)
+-- TOC entry 420 (class 1255 OID 16563)
 -- Name: pgrst_ddl_watch(); Type: FUNCTION; Schema: extensions; Owner: supabase_admin
 --
 
@@ -705,7 +705,7 @@ END; $$;
 ALTER FUNCTION extensions.pgrst_ddl_watch() OWNER TO supabase_admin;
 
 --
--- TOC entry 411 (class 1255 OID 16564)
+-- TOC entry 421 (class 1255 OID 16564)
 -- Name: pgrst_drop_watch(); Type: FUNCTION; Schema: extensions; Owner: supabase_admin
 --
 
@@ -740,7 +740,7 @@ END; $$;
 ALTER FUNCTION extensions.pgrst_drop_watch() OWNER TO supabase_admin;
 
 --
--- TOC entry 413 (class 1255 OID 16574)
+-- TOC entry 423 (class 1255 OID 16574)
 -- Name: set_graphql_placeholder(); Type: FUNCTION; Schema: extensions; Owner: supabase_admin
 --
 
@@ -802,8 +802,8 @@ $_$;
 ALTER FUNCTION extensions.set_graphql_placeholder() OWNER TO supabase_admin;
 
 --
--- TOC entry 5077 (class 0 OID 0)
--- Dependencies: 413
+-- TOC entry 5360 (class 0 OID 0)
+-- Dependencies: 423
 -- Name: FUNCTION set_graphql_placeholder(); Type: COMMENT; Schema: extensions; Owner: supabase_admin
 --
 
@@ -811,7 +811,7 @@ COMMENT ON FUNCTION extensions.set_graphql_placeholder() IS 'Reintroduces placeh
 
 
 --
--- TOC entry 419 (class 1255 OID 16665)
+-- TOC entry 429 (class 1255 OID 16665)
 -- Name: graphql(text, text, jsonb, jsonb); Type: FUNCTION; Schema: graphql_public; Owner: supabase_admin
 --
 
@@ -847,7 +847,7 @@ CREATE FUNCTION graphql_public.graphql("operationName" text DEFAULT NULL::text, 
 ALTER FUNCTION graphql_public.graphql("operationName" text, query text, variables jsonb, extensions jsonb) OWNER TO supabase_admin;
 
 --
--- TOC entry 355 (class 1255 OID 16391)
+-- TOC entry 365 (class 1255 OID 16391)
 -- Name: get_auth(text); Type: FUNCTION; Schema: pgbouncer; Owner: supabase_admin
 --
 
@@ -874,7 +874,734 @@ CREATE FUNCTION pgbouncer.get_auth(p_usename text) RETURNS TABLE(username text, 
 ALTER FUNCTION pgbouncer.get_auth(p_usename text) OWNER TO supabase_admin;
 
 --
--- TOC entry 461 (class 1255 OID 25936)
+-- TOC entry 490 (class 1255 OID 27677)
+-- Name: allocate_document_number(uuid, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.allocate_document_number(p_company_id uuid, p_document_type text) RETURNS text
+    LANGUAGE plpgsql
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_local  timestamp := (now() AT TIME ZONE 'Asia/Kolkata');
+  v_fy     integer;
+  v_prefix text;
+  v_used   text;
+  v_next   integer;
+BEGIN
+  IF p_document_type NOT IN ('Quotation', 'BookingReceipt') THEN
+    RAISE EXCEPTION 'Unsupported document type %', p_document_type USING ERRCODE = '22023';
+  END IF;
+
+  -- Indian financial year (Apr-Mar), stored as its starting calendar year.
+  v_fy := CASE WHEN extract(month FROM v_local) >= 4
+               THEN extract(year FROM v_local)::integer
+               ELSE extract(year FROM v_local)::integer - 1 END;
+
+  SELECT CASE WHEN p_document_type = 'BookingReceipt'
+              THEN COALESCE(NULLIF(s.booking_prefix, ''), 'BR')
+              ELSE COALESCE(NULLIF(s.quotation_prefix, ''), 'QTN') END
+    INTO v_prefix
+  FROM public.company_settings s WHERE s.company_id = p_company_id;
+
+  v_prefix := COALESCE(v_prefix, CASE WHEN p_document_type = 'BookingReceipt' THEN 'BR' ELSE 'QTN' END);
+
+  -- First use of a (company, type, year) takes number 1 and leaves next_number = 2;
+  -- afterwards every call atomically bumps it. A rolled-back caller gives the number back.
+  INSERT INTO public.document_sequences AS ds (company_id, document_type, financial_year, prefix, next_number)
+  VALUES (p_company_id, p_document_type, v_fy, v_prefix, 2)
+  ON CONFLICT (company_id, document_type, financial_year)
+  DO UPDATE SET next_number = ds.next_number + 1, updated_at = now()
+  RETURNING ds.prefix, ds.next_number - 1 INTO v_used, v_next;
+
+  RETURN v_used || '/' || v_fy::text || '/' || lpad(v_next::text, 3, '0');
+END;
+$$;
+
+
+ALTER FUNCTION public.allocate_document_number(p_company_id uuid, p_document_type text) OWNER TO postgres;
+
+--
+-- TOC entry 494 (class 1255 OID 27707)
+-- Name: apply_receipt_allocation(uuid, uuid, uuid, numeric); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.apply_receipt_allocation(p_company_id uuid, p_receipt_id uuid, p_invoice_id uuid, p_requested_amount numeric) RETURNS jsonb
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_receipt record;
+    v_invoice record;
+    v_receipt_total_allocated numeric;
+    v_invoice_total_allocated numeric;
+    v_receipt_remaining numeric;
+    v_invoice_outstanding numeric;
+    v_allocated_amount numeric;
+    v_allocation record;
+BEGIN
+    SELECT *
+    INTO v_receipt
+    FROM public.project_receipts
+    WHERE id = p_receipt_id
+      AND company_id = p_company_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Receipt not found.';
+    END IF;
+
+    SELECT *
+    INTO v_invoice
+    FROM public.invoices
+    WHERE id = p_invoice_id
+      AND company_id = p_company_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Invoice not found.';
+    END IF;
+
+    IF v_invoice.status = 'Cancelled' THEN
+        RAISE EXCEPTION 'Cancelled invoices cannot receive payment allocations.';
+    END IF;
+
+    IF v_invoice.status <> 'Issued' THEN
+        RAISE EXCEPTION 'Only issued invoices can receive payment allocations.';
+    END IF;
+
+    SELECT COALESCE(SUM(allocated_amount), 0)
+    INTO v_receipt_total_allocated
+    FROM public.payment_allocations
+    WHERE receipt_id = p_receipt_id;
+
+    SELECT COALESCE(SUM(allocated_amount), 0)
+    INTO v_invoice_total_allocated
+    FROM public.payment_allocations
+    WHERE invoice_id = p_invoice_id;
+
+    -- Balances before this allocation
+    v_receipt_remaining :=
+        GREATEST(v_receipt.amount - v_receipt_total_allocated, 0::numeric);
+
+    v_invoice_outstanding :=
+        GREATEST(v_invoice.grand_total - v_invoice_total_allocated, 0::numeric);
+
+    IF p_requested_amount IS NULL OR p_requested_amount <= 0 THEN
+        RAISE EXCEPTION 'Allocation amount must be greater than zero.';
+    END IF;
+
+    IF v_receipt_remaining <= 0 THEN
+        RAISE EXCEPTION 'This receipt has no remaining balance to allocate.';
+    END IF;
+
+    IF v_invoice_outstanding <= 0 THEN
+        RAISE EXCEPTION 'This invoice is already fully paid.';
+    END IF;
+
+    v_allocated_amount :=
+        LEAST(p_requested_amount, v_receipt_remaining, v_invoice_outstanding);
+
+    IF v_allocated_amount <= 0 THEN
+        RAISE EXCEPTION
+            'Requested amount exceeds the remaining receipt balance or invoice outstanding amount.';
+    END IF;
+
+    INSERT INTO public.payment_allocations (
+        company_id,
+        invoice_id,
+        receipt_id,
+        allocated_amount
+    )
+    VALUES (
+        p_company_id,
+        p_invoice_id,
+        p_receipt_id,
+        v_allocated_amount
+    )
+    RETURNING * INTO v_allocation;
+
+    RETURN jsonb_build_object(
+        'allocation', jsonb_build_object(
+            'id', v_allocation.id,
+            'companyId', v_allocation.company_id,
+            'invoiceId', v_allocation.invoice_id,
+            'receiptId', v_allocation.receipt_id,
+            'allocatedAmount', v_allocation.allocated_amount,
+            'createdAt', v_allocation.created_at
+        ),
+
+        -- Existing fields retained for compatibility (pre-allocation balances)
+        'receiptRemaining', v_receipt_remaining,
+        'invoiceOutstanding', v_invoice_outstanding,
+
+        -- New fields (post-allocation balances)
+        'receiptRemainingAfter',
+            v_receipt_remaining - v_allocated_amount,
+        'invoiceOutstandingAfter',
+            v_invoice_outstanding - v_allocated_amount,
+
+        'allocatedAmount', v_allocated_amount
+    );
+END;
+$$;
+
+
+ALTER FUNCTION public.apply_receipt_allocation(p_company_id uuid, p_receipt_id uuid, p_invoice_id uuid, p_requested_amount numeric) OWNER TO postgres;
+
+--
+-- TOC entry 493 (class 1255 OID 27706)
+-- Name: cancel_booking_receipt_unit(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.cancel_booking_receipt_unit(p_document_id uuid) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  v_booking record;
+  v_unit record;
+BEGIN
+  SELECT brd.document_id, brd.project_unit_id, brd.booking_status, brd.prior_unit_status, d.company_id, d.project_id, d.is_deleted
+    INTO v_booking
+  FROM public.booking_receipt_details brd
+  JOIN public.documents d ON d.id = brd.document_id
+  WHERE brd.document_id = p_document_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Booking document not found.';
+  END IF;
+
+  IF v_booking.is_deleted THEN
+    RAISE EXCEPTION 'This receipt has been deleted and can no longer be modified.';
+  END IF;
+
+  IF v_booking.project_unit_id IS NULL THEN
+    UPDATE public.booking_receipt_details
+    SET booking_status = 'Cancelled'
+    WHERE document_id = p_document_id;
+    RETURN;
+  END IF;
+
+  SELECT pu.status, pu.company_id, pu.project_id
+    INTO v_unit
+  FROM public.project_units pu
+  WHERE pu.id = v_booking.project_unit_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Unit linked to this booking no longer exists.';
+  END IF;
+
+  UPDATE public.booking_receipt_details
+  SET booking_status = 'Cancelled'
+  WHERE document_id = p_document_id;
+
+  IF v_unit.status = 'booked' THEN
+    UPDATE public.project_units
+    SET status = COALESCE(v_booking.prior_unit_status, 'available'),
+        updated_at = now()
+    WHERE id = v_booking.project_unit_id;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION public.cancel_booking_receipt_unit(p_document_id uuid) OWNER TO postgres;
+
+--
+-- TOC entry 492 (class 1255 OID 27705)
+-- Name: confirm_booking_receipt_unit(uuid, uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.confirm_booking_receipt_unit(p_document_id uuid, p_project_unit_id uuid) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  v_document record;
+  v_unit record;
+  v_active_booking_count integer;
+BEGIN
+  SELECT d.id, d.company_id, d.project_id, d.is_deleted, d.status
+    INTO v_document
+  FROM public.documents d
+  WHERE d.id = p_document_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN RAISE EXCEPTION 'Booking document not found.'; END IF;
+  IF v_document.is_deleted THEN RAISE EXCEPTION 'This receipt has been deleted and can no longer be modified.'; END IF;
+
+  SELECT pu.id, pu.company_id, pu.project_id, pu.status
+    INTO v_unit
+  FROM public.project_units pu
+  WHERE pu.id = p_project_unit_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN RAISE EXCEPTION 'Selected project unit was not found.'; END IF;
+  IF v_unit.company_id <> v_document.company_id THEN RAISE EXCEPTION 'Selected unit does not belong to this company.'; END IF;
+  IF v_unit.project_id <> v_document.project_id THEN RAISE EXCEPTION 'Selected unit does not belong to this project.'; END IF;
+
+  IF v_unit.status = 'booked' THEN
+    SELECT count(*) INTO v_active_booking_count
+    FROM public.booking_receipt_details brd
+    JOIN public.documents d ON d.id = brd.document_id
+    WHERE brd.project_unit_id = p_project_unit_id
+      AND brd.booking_status IN ('Confirmed', 'Completed')
+      AND brd.document_id <> p_document_id
+      AND d.is_deleted = false;
+
+    IF v_active_booking_count > 0 THEN RAISE EXCEPTION 'This unit already has an active booking.'; END IF;
+  ELSIF v_unit.status NOT IN ('available', 'allocated') THEN
+    RAISE EXCEPTION 'This unit is not available for booking.';
+  END IF;
+
+  UPDATE public.booking_receipt_details
+  SET project_unit_id = p_project_unit_id,
+      booking_status = 'Confirmed',
+      prior_unit_status = CASE WHEN v_unit.status = 'booked' THEN COALESCE(prior_unit_status, 'available') ELSE v_unit.status END
+  WHERE document_id = p_document_id;
+
+  UPDATE public.project_units
+  SET status = 'booked', updated_at = now()
+  WHERE id = p_project_unit_id;
+END;
+$$;
+
+
+ALTER FUNCTION public.confirm_booking_receipt_unit(p_document_id uuid, p_project_unit_id uuid) OWNER TO postgres;
+
+--
+-- TOC entry 484 (class 1255 OID 27502)
+-- Name: create_project_with_stages(uuid, uuid, uuid, uuid, uuid, text, text, text, text, text, numeric, numeric, date, date, date, text, jsonb); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.create_project_with_stages(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb DEFAULT NULL::jsonb) RETURNS uuid
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+  v_project_id uuid;
+  v_has_stage_drafts boolean := false;
+  v_project_type_code text := NULL;
+BEGIN
+  INSERT INTO public.projects (
+    company_id,
+    customer_id,
+    source_document_id,
+    project_type_id,
+    project_type_snapshot,
+    project_number,
+    name,
+    description,
+    site_address,
+    contract_amount,
+    budget_amount,
+    start_date,
+    expected_end_date,
+    actual_end_date,
+    status,
+    created_by
+  ) VALUES (
+    p_company_id,
+    p_customer_id,
+    p_source_document_id,
+    p_project_type_id,
+    p_project_type_snapshot,
+    p_project_number,
+    p_name,
+    p_description,
+    p_site_address,
+    COALESCE(p_contract_amount, 0),
+    p_budget_amount,
+    p_start_date,
+    p_expected_end_date,
+    p_actual_end_date,
+    COALESCE(p_status, 'planned'),
+    p_created_by
+  )
+  RETURNING id INTO v_project_id;
+
+  v_has_stage_drafts := p_stage_drafts IS NOT NULL
+    AND jsonb_typeof(p_stage_drafts) = 'array'
+    AND jsonb_array_length(p_stage_drafts) > 0;
+
+  IF p_project_type_id IS NOT NULL THEN
+    SELECT code INTO v_project_type_code
+    FROM public.project_types
+    WHERE id = p_project_type_id;
+  END IF;
+
+  IF v_has_stage_drafts THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      planned_start_date,
+      planned_end_date,
+      completion_percentage,
+      status,
+      created_by
+    )
+    SELECT
+      v_project_id,
+      COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), 'New stage') AS name,
+      row_number() OVER (
+        ORDER BY
+          COALESCE(
+            CASE
+              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
+                THEN (draft.stage_row ->> 'sequenceNumber')::integer
+              ELSE NULL
+            END,
+            draft.stage_ord
+          ),
+          draft.stage_ord
+      ) AS sequence_number,
+      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
+      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
+      0,
+      'pending',
+      p_created_by
+    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
+    WHERE COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), '') <> ''
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  ELSIF p_project_type_id IS NOT NULL AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      completion_percentage,
+      status,
+      created_by
+    )
+    WITH resolved_templates AS (
+      SELECT DISTINCT ON (lower(coalesce(template_code, '')))
+        template_code,
+        name,
+        sequence_number,
+        company_id,
+        updated_at,
+        id
+      FROM public.project_stage_templates
+      WHERE project_type_id = p_project_type_id
+        AND is_active = true
+        AND (company_id = p_company_id OR company_id IS NULL)
+      ORDER BY
+        lower(coalesce(template_code, '')),
+        (company_id = p_company_id) DESC,
+        updated_at DESC,
+        id DESC
+    ),
+    ordered_templates AS (
+      SELECT
+        name,
+        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
+      FROM resolved_templates
+    )
+    SELECT
+      v_project_id,
+      ordered_templates.name,
+      ordered_templates.sequence_number,
+      0,
+      'pending',
+      p_created_by
+    FROM ordered_templates
+    ON CONFLICT (project_id, sequence_number) DO NOTHING;
+  END IF;
+
+  RETURN v_project_id;
+END;
+$_$;
+
+
+ALTER FUNCTION public.create_project_with_stages(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb) OWNER TO postgres;
+
+--
+-- TOC entry 489 (class 1255 OID 27557)
+-- Name: create_project_with_stages_with_business_model(uuid, uuid, uuid, uuid, uuid, text, text, text, text, text, numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric, text, integer, uuid, text, text, date, integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.create_project_with_stages_with_business_model(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb DEFAULT NULL::jsonb, p_business_model text DEFAULT NULL::text, p_projected_sales_value numeric DEFAULT NULL::numeric, p_land_cost numeric DEFAULT NULL::numeric, p_development_arrangement text DEFAULT NULL::text, p_total_project_flats integer DEFAULT NULL::integer, p_landowner_party_id uuid DEFAULT NULL::uuid, p_jda_agreement_reference text DEFAULT NULL::text, p_jda_agreement_document_url text DEFAULT NULL::text, p_jda_agreement_date date DEFAULT NULL::date, p_builder_share_units integer DEFAULT NULL::integer, p_landowner_share_units integer DEFAULT NULL::integer) RETURNS uuid
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+  v_project_id uuid;
+  v_stage_drafts_supplied boolean := false;
+  v_has_stage_drafts boolean := false;
+  v_project_type_code text := NULL;
+  v_enabled_models text[];
+  v_model_text text;
+  v_arrangement_text text;
+BEGIN
+  IF p_business_model IS NULL OR NULLIF(trim(p_business_model), '') IS NULL THEN
+    RAISE EXCEPTION 'business_model is required for project creation and must be one of: contract_construction, property_development, civil_works_contract, material_supply.'
+    USING HINT = 'Provide a non-blank business_model value for this project.';
+  END IF;
+
+  v_model_text := lower(trim(p_business_model));
+  IF v_model_text NOT IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply') THEN
+    RAISE EXCEPTION 'Invalid business_model value: %. Allowed values are contract_construction, property_development, civil_works_contract, material_supply.', p_business_model
+    USING HINT = 'Provide a supported business_model value for this project.';
+  END IF;
+
+  IF p_development_arrangement IS NOT NULL AND NULLIF(trim(p_development_arrangement), '') IS NOT NULL THEN
+    v_arrangement_text := lower(trim(p_development_arrangement));
+    IF v_arrangement_text NOT IN ('self', 'joint_development') THEN
+      RAISE EXCEPTION 'Invalid development_arrangement value: %. Allowed values are self or joint_development.', p_development_arrangement
+      USING HINT = 'Provide a supported development arrangement for property development projects.';
+    END IF;
+  END IF;
+
+  IF v_model_text <> 'property_development' AND (
+    p_development_arrangement IS NOT NULL
+    OR p_landowner_party_id IS NOT NULL
+    OR p_jda_agreement_reference IS NOT NULL
+    OR p_jda_agreement_document_url IS NOT NULL
+    OR p_jda_agreement_date IS NOT NULL
+    OR p_total_project_flats IS NOT NULL
+    OR p_builder_share_units IS NOT NULL
+    OR p_landowner_share_units IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'Development arrangement and JDA fields are permitted only when business_model = property_development.';
+  END IF;
+
+  IF v_model_text = 'property_development' AND v_arrangement_text IS NULL THEN
+    RAISE EXCEPTION 'Property development projects require an explicit development arrangement: self or joint_development.'
+    USING HINT = 'Set development_arrangement when creating a property development project.';
+  END IF;
+
+  IF v_arrangement_text = 'self' THEN
+    IF p_landowner_party_id IS NOT NULL
+       OR p_jda_agreement_reference IS NOT NULL
+       OR p_jda_agreement_document_url IS NOT NULL
+       OR p_jda_agreement_date IS NOT NULL
+       OR p_total_project_flats IS NOT NULL
+       OR p_builder_share_units IS NOT NULL
+       OR p_landowner_share_units IS NOT NULL THEN
+      RAISE EXCEPTION 'Self development must not contain landowner, JDA or flat-sharing fields.'
+      USING HINT = 'Leave landowner and JDA fields empty for self development.';
+    END IF;
+  END IF;
+
+  IF v_arrangement_text = 'joint_development' THEN
+    IF p_landowner_party_id IS NULL THEN
+      RAISE EXCEPTION 'Joint development requires landowner_party_id.'
+      USING HINT = 'Provide a landowner party for joint development projects.';
+    END IF;
+
+    IF p_total_project_flats IS NULL OR p_total_project_flats <= 0 OR p_total_project_flats <> floor(p_total_project_flats::numeric) THEN
+      RAISE EXCEPTION 'Joint development requires total_project_flats as a positive whole number.'
+      USING HINT = 'Set total_project_flats to a whole number greater than zero.';
+    END IF;
+
+    IF p_builder_share_units IS NULL OR p_landowner_share_units IS NULL THEN
+      RAISE EXCEPTION 'Joint development requires builder_share_units and landowner_share_units.'
+      USING HINT = 'Provide both share counts.';
+    END IF;
+
+    IF p_builder_share_units < 0 OR p_landowner_share_units < 0 THEN
+      RAISE EXCEPTION 'Builder and landowner share flats must be non-negative.'
+      USING HINT = 'All share counts must be zero or greater.';
+    END IF;
+
+    IF p_builder_share_units + p_landowner_share_units <> p_total_project_flats THEN
+      RAISE EXCEPTION 'Builder and landowner share flats must add up to the total project flats.'
+      USING HINT = 'Use builder_share_units + landowner_share_units = total_project_flats.';
+    END IF;
+  END IF;
+
+  IF p_stage_drafts IS NOT NULL AND jsonb_typeof(p_stage_drafts) <> 'array' THEN
+    RAISE EXCEPTION 'stage_drafts must be a JSON array when provided.'
+    USING HINT = 'Provide stage_drafts as an array of stage objects.';
+  END IF;
+
+  SELECT enabled_business_models INTO v_enabled_models
+  FROM public.company_settings
+  WHERE company_id = p_company_id;
+
+  IF v_enabled_models IS NULL OR NOT (v_model_text = ANY (v_enabled_models)) THEN
+    RAISE EXCEPTION 'Business model % is not enabled for company %.', v_model_text, p_company_id
+    USING HINT = 'Update company_settings.enabled_business_models to include this business model before creating the project.';
+  END IF;
+
+  INSERT INTO public.projects (
+    company_id,
+    customer_id,
+    source_document_id,
+    project_type_id,
+    project_type_snapshot,
+    business_model,
+    projected_sales_value,
+    land_cost,
+    development_arrangement,
+    total_project_flats,
+    landowner_party_id,
+    jda_agreement_reference,
+    jda_agreement_document_url,
+    jda_agreement_date,
+    builder_share_units,
+    landowner_share_units,
+    project_number,
+    name,
+    description,
+    site_address,
+    contract_amount,
+    budget_amount,
+    start_date,
+    expected_end_date,
+    actual_end_date,
+    status,
+    created_by
+  ) VALUES (
+    p_company_id,
+    p_customer_id,
+    p_source_document_id,
+    p_project_type_id,
+    p_project_type_snapshot,
+    v_model_text,
+    p_projected_sales_value,
+    p_land_cost,
+    CASE WHEN v_model_text = 'property_development' THEN v_arrangement_text ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' THEN p_total_project_flats ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_party_id ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_reference ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_document_url ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_date ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_builder_share_units ELSE NULL END,
+    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_share_units ELSE NULL END,
+    p_project_number,
+    p_name,
+    p_description,
+    p_site_address,
+    COALESCE(p_contract_amount, 0),
+    p_budget_amount,
+    p_start_date,
+    p_expected_end_date,
+    p_actual_end_date,
+    COALESCE(p_status, 'planned'),
+    p_created_by
+  )
+  RETURNING id INTO v_project_id;
+
+  v_stage_drafts_supplied := p_stage_drafts IS NOT NULL
+    AND jsonb_typeof(p_stage_drafts) = 'array';
+
+  v_has_stage_drafts := v_stage_drafts_supplied
+    AND jsonb_array_length(p_stage_drafts) > 0;
+
+  IF v_has_stage_drafts THEN
+    IF EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements(p_stage_drafts) AS draft(stage_row)
+      WHERE jsonb_typeof(draft.stage_row) <> 'object'
+         OR NULLIF(trim(draft.stage_row ->> 'name'), '') IS NULL
+    ) THEN
+      RAISE EXCEPTION 'Each custom stage must be an object with a non-blank name.'
+      USING HINT = 'Provide stage entries like {"name":"Foundation", "sequenceNumber":1}.';
+    END IF;
+  END IF;
+
+  IF p_project_type_id IS NOT NULL THEN
+    SELECT code INTO v_project_type_code
+    FROM public.project_types
+    WHERE id = p_project_type_id;
+  END IF;
+
+  IF v_has_stage_drafts THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      planned_start_date,
+      planned_end_date,
+      completion_percentage,
+      status,
+      created_by
+    )
+    SELECT
+      v_project_id,
+      NULLIF(trim(draft.stage_row ->> 'name'), '') AS name,
+      row_number() OVER (
+        ORDER BY
+          COALESCE(
+            CASE
+              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
+                THEN (draft.stage_row ->> 'sequenceNumber')::integer
+              ELSE NULL
+            END,
+            draft.stage_ord
+          ),
+          draft.stage_ord
+      ) AS sequence_number,
+      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
+      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
+      0,
+      'pending',
+      p_created_by
+    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
+    ;
+  ELSIF NOT v_stage_drafts_supplied
+    AND p_project_type_id IS NOT NULL
+    AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
+    INSERT INTO public.project_stages (
+      project_id,
+      name,
+      sequence_number,
+      completion_percentage,
+      status,
+      created_by
+    )
+    WITH resolved_templates AS (
+      SELECT DISTINCT ON (
+        COALESCE(
+          NULLIF(lower(trim(template_code)), ''),
+          '__null__' || id::text
+        )
+      )
+        template_code,
+        name,
+        sequence_number,
+        company_id,
+        updated_at,
+        id
+      FROM public.project_stage_templates
+      WHERE project_type_id = p_project_type_id
+        AND business_model = v_model_text
+        AND is_active = true
+        AND (company_id = p_company_id OR company_id IS NULL)
+      ORDER BY
+        COALESCE(
+          NULLIF(lower(trim(template_code)), ''),
+          '__null__' || id::text
+        ),
+        (company_id = p_company_id) DESC,
+        updated_at DESC,
+        id DESC
+    ),
+    ordered_templates AS (
+      SELECT
+        name,
+        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
+      FROM resolved_templates
+    )
+    SELECT
+      v_project_id,
+      ordered_templates.name,
+      ordered_templates.sequence_number,
+      0,
+      'pending',
+      p_created_by
+    FROM ordered_templates
+    ;
+  END IF;
+
+  RETURN v_project_id;
+END;
+$_$;
+
+
+ALTER FUNCTION public.create_project_with_stages_with_business_model(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb, p_business_model text, p_projected_sales_value numeric, p_land_cost numeric, p_development_arrangement text, p_total_project_flats integer, p_landowner_party_id uuid, p_jda_agreement_reference text, p_jda_agreement_document_url text, p_jda_agreement_date date, p_builder_share_units integer, p_landowner_share_units integer) OWNER TO postgres;
+
+--
+-- TOC entry 471 (class 1255 OID 25936)
 -- Name: current_app_user_id(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -888,7 +1615,7 @@ $$;
 ALTER FUNCTION public.current_app_user_id() OWNER TO postgres;
 
 --
--- TOC entry 447 (class 1255 OID 17772)
+-- TOC entry 457 (class 1255 OID 17772)
 -- Name: current_user_id(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -902,7 +1629,351 @@ $$;
 ALTER FUNCTION public.current_user_id() OWNER TO postgres;
 
 --
--- TOC entry 448 (class 1255 OID 17879)
+-- TOC entry 500 (class 1255 OID 27817)
+-- Name: enforce_invoice_allocation_balance(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.enforce_invoice_allocation_balance() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_allocated numeric(18,2);
+BEGIN
+    SELECT COALESCE(SUM(allocated_amount), 0)
+      INTO v_allocated
+    FROM public.payment_allocations
+    WHERE invoice_id = OLD.id
+      AND company_id = OLD.company_id;
+
+    IF v_allocated > NEW.grand_total THEN
+        RAISE EXCEPTION
+          'Invoice grand_total cannot be lower than its existing allocations. Allocated: %, new total: %.',
+          v_allocated, NEW.grand_total;
+    END IF;
+
+    IF NEW.status <> 'Issued' AND v_allocated > 0 THEN
+        RAISE EXCEPTION
+          'An invoice with existing allocations cannot be moved out of Issued status. Reverse its allocations first.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.enforce_invoice_allocation_balance() OWNER TO postgres;
+
+--
+-- TOC entry 496 (class 1255 OID 27809)
+-- Name: enforce_payment_allocation_balance(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.enforce_payment_allocation_balance() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_parent_id uuid;
+    v_receipt_amount numeric(18,2);
+    v_receipt_voided_at timestamptz;
+    v_invoice_total numeric(18,2);
+    v_invoice_status text;
+    v_receipt_allocated numeric(18,2);
+    v_invoice_allocated numeric(18,2);
+    v_company_id uuid;
+    v_exclude_id uuid;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        -- Serialize deletion with concurrent allocation changes.
+        FOR v_parent_id IN
+            SELECT DISTINCT x
+            FROM unnest(ARRAY[OLD.receipt_id]) AS t(x)
+            WHERE x IS NOT NULL
+            ORDER BY x
+        LOOP
+            PERFORM 1
+            FROM public.project_receipts
+            WHERE id = v_parent_id AND company_id = OLD.company_id
+            FOR UPDATE;
+        END LOOP;
+
+        FOR v_parent_id IN
+            SELECT DISTINCT x
+            FROM unnest(ARRAY[OLD.invoice_id]) AS t(x)
+            WHERE x IS NOT NULL
+            ORDER BY x
+        LOOP
+            PERFORM 1
+            FROM public.invoices
+            WHERE id = v_parent_id AND company_id = OLD.company_id
+            FOR UPDATE;
+        END LOOP;
+
+        RETURN OLD;
+    END IF;
+
+    IF TG_OP = 'UPDATE' AND NEW.company_id IS DISTINCT FROM OLD.company_id THEN
+        RAISE EXCEPTION 'Changing company_id on a payment allocation is not allowed.';
+    END IF;
+
+    v_company_id := NEW.company_id;
+    IF TG_OP = 'UPDATE' THEN
+        v_exclude_id := OLD.id;
+    END IF;
+
+    -- Lock old and new receipt parents in UUID order.
+    FOR v_parent_id IN
+        SELECT DISTINCT x
+        FROM unnest(
+            CASE WHEN TG_OP = 'UPDATE'
+                 THEN ARRAY[OLD.receipt_id, NEW.receipt_id]
+                 ELSE ARRAY[NEW.receipt_id]
+            END
+        ) AS t(x)
+        WHERE x IS NOT NULL
+        ORDER BY x
+    LOOP
+        PERFORM 1
+        FROM public.project_receipts
+        WHERE id = v_parent_id AND company_id = v_company_id
+        FOR UPDATE;
+    END LOOP;
+
+    -- Then lock old and new invoice parents in UUID order.
+    FOR v_parent_id IN
+        SELECT DISTINCT x
+        FROM unnest(
+            CASE WHEN TG_OP = 'UPDATE'
+                 THEN ARRAY[OLD.invoice_id, NEW.invoice_id]
+                 ELSE ARRAY[NEW.invoice_id]
+            END
+        ) AS t(x)
+        WHERE x IS NOT NULL
+        ORDER BY x
+    LOOP
+        PERFORM 1
+        FROM public.invoices
+        WHERE id = v_parent_id AND company_id = v_company_id
+        FOR UPDATE;
+    END LOOP;
+
+    SELECT amount, voided_at
+      INTO v_receipt_amount, v_receipt_voided_at
+    FROM public.project_receipts
+    WHERE id = NEW.receipt_id AND company_id = v_company_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Receipt not found for this company.';
+    END IF;
+
+    IF v_receipt_voided_at IS NOT NULL THEN
+        RAISE EXCEPTION 'A voided receipt cannot have payment allocations.';
+    END IF;
+
+    SELECT grand_total, status
+      INTO v_invoice_total, v_invoice_status
+    FROM public.invoices
+    WHERE id = NEW.invoice_id AND company_id = v_company_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Invoice not found for this company.';
+    END IF;
+
+    IF v_invoice_status <> 'Issued' THEN
+        RAISE EXCEPTION 'Only issued invoices can have payment allocations.';
+    END IF;
+
+    SELECT COALESCE(SUM(allocated_amount), 0)
+      INTO v_receipt_allocated
+    FROM public.payment_allocations
+    WHERE receipt_id = NEW.receipt_id
+      AND company_id = v_company_id
+      AND (v_exclude_id IS NULL OR id <> v_exclude_id);
+
+    SELECT COALESCE(SUM(allocated_amount), 0)
+      INTO v_invoice_allocated
+    FROM public.payment_allocations
+    WHERE invoice_id = NEW.invoice_id
+      AND company_id = v_company_id
+      AND (v_exclude_id IS NULL OR id <> v_exclude_id);
+
+    IF v_receipt_allocated + NEW.allocated_amount > v_receipt_amount THEN
+        RAISE EXCEPTION
+          'Allocation exceeds the receipt balance. Available: %, requested: %.',
+          v_receipt_amount - v_receipt_allocated, NEW.allocated_amount;
+    END IF;
+
+    IF v_invoice_allocated + NEW.allocated_amount > v_invoice_total THEN
+        RAISE EXCEPTION
+          'Allocation exceeds the invoice outstanding amount. Available: %, requested: %.',
+          v_invoice_total - v_invoice_allocated, NEW.allocated_amount;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.enforce_payment_allocation_balance() OWNER TO postgres;
+
+--
+-- TOC entry 498 (class 1255 OID 27813)
+-- Name: enforce_project_expense_bill_balance(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.enforce_project_expense_bill_balance() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_paid_total numeric(18,2);
+BEGIN
+    IF NEW.bill_amount IS NOT DISTINCT FROM OLD.bill_amount
+       AND NEW.status IS NOT DISTINCT FROM OLD.status
+       AND NEW.voided_at IS NOT DISTINCT FROM OLD.voided_at THEN
+        RETURN NEW;
+    END IF;
+
+    SELECT COALESCE(SUM(amount), 0)
+      INTO v_paid_total
+    FROM public.project_expense_payments
+    WHERE project_expense_id = OLD.id
+      AND company_id = OLD.company_id
+      AND voided_at IS NULL;
+
+    IF v_paid_total > NEW.bill_amount THEN
+        RAISE EXCEPTION
+          'Bill amount cannot be lower than active payments. Active payments: %, new bill amount: %.',
+          v_paid_total, NEW.bill_amount;
+    END IF;
+
+    IF (NEW.status = 'void' OR NEW.voided_at IS NOT NULL)
+       AND v_paid_total > 0 THEN
+        RAISE EXCEPTION
+          'An expense with active payments cannot be voided. Void or reverse its payments first.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.enforce_project_expense_bill_balance() OWNER TO postgres;
+
+--
+-- TOC entry 497 (class 1255 OID 27811)
+-- Name: enforce_project_expense_payment_balance(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.enforce_project_expense_payment_balance() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_expense_id uuid;
+    v_company_id uuid;
+    v_bill_amount numeric(18,2);
+    v_expense_status text;
+    v_expense_voided_at timestamptz;
+    v_paid_total numeric(18,2);
+    v_exclude_id uuid;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        PERFORM 1
+        FROM public.project_expenses
+        WHERE id = OLD.project_expense_id AND company_id = OLD.company_id
+        FOR UPDATE;
+        RETURN OLD;
+    END IF;
+
+    IF TG_OP = 'UPDATE' AND NEW.company_id IS DISTINCT FROM OLD.company_id THEN
+        RAISE EXCEPTION 'Changing company_id on an expense payment is not allowed.';
+    END IF;
+
+    v_expense_id := NEW.project_expense_id;
+    v_company_id := NEW.company_id;
+    IF TG_OP = 'UPDATE' THEN
+        v_exclude_id := OLD.id;
+    END IF;
+
+    PERFORM 1
+    FROM public.project_expenses
+    WHERE id = v_expense_id AND company_id = v_company_id
+    FOR UPDATE;
+
+    SELECT bill_amount, status, voided_at
+      INTO v_bill_amount, v_expense_status, v_expense_voided_at
+    FROM public.project_expenses
+    WHERE id = v_expense_id AND company_id = v_company_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Expense not found for this company.';
+    END IF;
+
+    -- Voiding a payment is allowed; it no longer counts toward the paid total.
+    IF NEW.voided_at IS NOT NULL THEN
+        RETURN NEW;
+    END IF;
+
+    IF v_expense_status = 'void' OR v_expense_voided_at IS NOT NULL THEN
+        RAISE EXCEPTION 'Payments cannot be added to a voided expense.';
+    END IF;
+
+    SELECT COALESCE(SUM(amount), 0)
+      INTO v_paid_total
+    FROM public.project_expense_payments
+    WHERE project_expense_id = v_expense_id
+      AND company_id = v_company_id
+      AND voided_at IS NULL
+      AND (v_exclude_id IS NULL OR id <> v_exclude_id);
+
+    IF v_paid_total + NEW.amount > v_bill_amount THEN
+        RAISE EXCEPTION
+          'Payment exceeds the expense outstanding amount. Available: %, requested: %.',
+          v_bill_amount - v_paid_total, NEW.amount;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.enforce_project_expense_payment_balance() OWNER TO postgres;
+
+--
+-- TOC entry 499 (class 1255 OID 27815)
+-- Name: enforce_project_receipt_allocation_balance(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.enforce_project_receipt_allocation_balance() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_allocated numeric(18,2);
+BEGIN
+    SELECT COALESCE(SUM(allocated_amount), 0)
+      INTO v_allocated
+    FROM public.payment_allocations
+    WHERE receipt_id = OLD.id
+      AND company_id = OLD.company_id;
+
+    IF v_allocated > NEW.amount THEN
+        RAISE EXCEPTION
+          'Receipt amount cannot be lower than its existing allocations. Allocated: %, new amount: %.',
+          v_allocated, NEW.amount;
+    END IF;
+
+    IF NEW.voided_at IS NOT NULL AND v_allocated > 0 THEN
+        RAISE EXCEPTION
+          'A receipt with existing allocations cannot be voided. Reverse its allocations first.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.enforce_project_receipt_allocation_balance() OWNER TO postgres;
+
+--
+-- TOC entry 458 (class 1255 OID 17879)
 -- Name: next_document_sequence(uuid, text); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -928,7 +1999,356 @@ $$;
 ALTER FUNCTION public.next_document_sequence(p_company_id uuid, p_document_type text) OWNER TO postgres;
 
 --
--- TOC entry 460 (class 1255 OID 25935)
+-- TOC entry 491 (class 1255 OID 27678)
+-- Name: save_quotation(uuid, jsonb, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.save_quotation(p_company_id uuid, p_payload jsonb, p_expected_version integer DEFAULT NULL::integer) RETURNS jsonb
+    LANGUAGE plpgsql
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_id        uuid := NULLIF(p_payload->>'id', '')::uuid;
+  v_existing  public.documents%ROWTYPE;
+  v_is_new    boolean;
+  v_number    text;
+  v_status    text := COALESCE(NULLIF(p_payload->>'status', ''), 'Draft');
+
+  v_sub       numeric(18,2);
+  v_add       numeric(18,2);
+  v_base      numeric(18,2);
+  v_dtype     text := COALESCE(NULLIF(p_payload->>'discount_type', ''), 'None');
+  v_dval      numeric(18,2) := COALESCE(NULLIF(p_payload->>'discount_value', '')::numeric, 0);
+  v_damt      numeric(18,2);
+  v_tax_on    boolean := COALESCE((p_payload->>'tax_applicable')::boolean, false);
+  v_tax_rate  numeric(5,2) := COALESCE(NULLIF(p_payload->>'tax_percentage', '')::numeric, 0);
+  v_taxable   numeric(18,2);
+  v_tax       numeric(18,2);
+  v_grand     numeric(18,2);
+  v_pay_pct   numeric;
+
+  v_brand     jsonb;
+  v_version   integer;
+  v_section   jsonb;
+  v_sec_id    uuid;
+  v_sec_ord   integer;
+  v_new_id    uuid;
+BEGIN
+  IF v_id IS NULL THEN
+    RAISE EXCEPTION 'Quotation id is required.' USING ERRCODE = '22023';
+  END IF;
+
+  SELECT * INTO v_existing FROM public.documents WHERE id = v_id FOR UPDATE;
+  v_is_new := NOT FOUND;
+
+  IF NOT v_is_new THEN
+    IF v_existing.company_id <> p_company_id THEN
+      RAISE EXCEPTION 'This document belongs to a different company.' USING ERRCODE = '42501';
+    END IF;
+    IF v_existing.document_type <> 'Quotation' THEN
+      RAISE EXCEPTION 'This document is not a quotation.' USING ERRCODE = '22023';
+    END IF;
+    IF v_existing.is_deleted THEN
+      RAISE EXCEPTION 'This quotation has been deleted and can no longer be modified.' USING ERRCODE = 'P0409';
+    END IF;
+    IF p_expected_version IS NOT NULL AND v_existing.version <> p_expected_version THEN
+      RAISE EXCEPTION 'This quotation was changed elsewhere. Reload it before saving.'
+        USING ERRCODE = '40001', DETAIL = format('current_version=%s', v_existing.version);
+    END IF;
+    v_number := v_existing.document_number;
+  ELSE
+    v_number := public.allocate_document_number(p_company_id, 'Quotation');
+  END IF;
+
+  SELECT COALESCE(SUM(round(COALESCE(NULLIF(i->>'quantity', '')::numeric, 0)
+                          * COALESCE(NULLIF(i->>'rate', '')::numeric, 0), 2)), 0)
+    INTO v_sub
+  FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) s,
+       jsonb_array_elements(COALESCE(s->'items', '[]'::jsonb)) i
+  WHERE COALESCE(i->>'row_type', 'item') = 'item';
+
+  SELECT COALESCE(SUM(round(COALESCE(NULLIF(c->>'amount', '')::numeric, 0), 2)), 0)
+    INTO v_add
+  FROM jsonb_array_elements(COALESCE(p_payload->'additional_charge_items', '[]'::jsonb)) c;
+
+  IF v_dtype NOT IN ('None', 'Percentage', 'Fixed Amount') THEN
+    RAISE EXCEPTION 'Invalid discount type: %', v_dtype USING ERRCODE = '22023';
+  END IF;
+  IF v_dval < 0 OR (v_dtype = 'Percentage' AND v_dval > 100) THEN
+    RAISE EXCEPTION 'Invalid discount value.' USING ERRCODE = '22023';
+  END IF;
+
+  v_base := v_sub + v_add;
+  v_damt := CASE v_dtype
+              WHEN 'Percentage'   THEN round(v_base * v_dval / 100, 2)
+              WHEN 'Fixed Amount' THEN round(v_dval, 2)
+              ELSE 0 END;
+  IF v_dtype = 'None' THEN v_dval := 0; END IF;
+  IF v_damt > v_base THEN
+    RAISE EXCEPTION 'Discount amount cannot exceed subtotal.' USING ERRCODE = '22023';
+  END IF;
+
+  v_taxable := v_base - v_damt;
+  IF NOT v_tax_on THEN v_tax_rate := 0; END IF;
+  v_tax   := CASE WHEN v_tax_rate > 0 THEN round(v_taxable * v_tax_rate / 100, 2) ELSE 0 END;
+  v_grand := v_taxable + v_tax;
+
+  SELECT COALESCE(SUM(NULLIF(p->>'percentage', '')::numeric), 0)
+    INTO v_pay_pct
+  FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) p;
+  IF v_pay_pct > 100.0001 THEN
+    RAISE EXCEPTION 'Payment schedule adds up to more than 100%%.' USING ERRCODE = '22023';
+  END IF;
+
+  IF v_status = 'Draft' THEN
+    v_brand := NULL;
+  ELSIF NOT v_is_new AND v_existing.brand_snapshot IS NOT NULL THEN
+    v_brand := v_existing.brand_snapshot;
+  ELSE
+    SELECT jsonb_strip_nulls(jsonb_build_object(
+             'companyName', c.name,         'logoUrl', c.logo_url,
+             'primaryColor', c.primary_color, 'secondaryColor', c.secondary_color,
+             'address', c.address,          'mobile', c.phone,
+             'email', c.email,              'website', c.website,
+             'gstin', c.gst_number,         'pan', c.pan_number,
+             'bankName', s.bank_name,       'accountName', s.account_name,
+             'accountNumber', s.account_number, 'ifsc', s.ifsc,
+             'branch', s.branch,            'upiId', s.upi_id,
+             'authorizedPersonName', s.authorized_person, 'designation', s.designation,
+             'signatureImage', s.signature_url,
+             'snapshotAt', to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')))
+      INTO v_brand
+    FROM public.companies c
+    LEFT JOIN public.company_settings s ON s.company_id = c.id
+    WHERE c.id = p_company_id;
+  END IF;
+
+  INSERT INTO public.documents AS d (
+    id, company_id, customer_id, party_id, document_type, document_number, status,
+    quotation_date, valid_until, project_type_id, project_name, project_type, project_location,
+    area_unit_id, builtup_area, area_unit, floors,
+    subtotal, additional_charges, discount, discount_type, discount_amount,
+    tax_rate_id, tax_name, tax_percentage, tax_amount, grand_total,
+    notes, internal_notes, validity, questionnaire, additional_charge_items, brand_snapshot,
+    version, created_at, updated_at
+  ) VALUES (
+    v_id, p_company_id, NULLIF(p_payload->>'customer_id', '')::uuid, NULLIF(p_payload->>'party_id', '')::uuid,
+    'Quotation', v_number, v_status,
+    NULLIF(p_payload->>'quotation_date', '')::date, NULLIF(p_payload->>'valid_until', '')::date,
+    NULLIF(p_payload->>'project_type_id', '')::uuid,
+    COALESCE(p_payload->>'project_name', ''), COALESCE(p_payload->>'project_type', ''),
+    COALESCE(p_payload->>'project_location', ''),
+    NULLIF(p_payload->>'area_unit_id', '')::uuid, NULLIF(p_payload->>'builtup_area', '')::numeric,
+    COALESCE(p_payload->>'area_unit', ''), COALESCE(p_payload->>'floors', ''),
+    v_sub, v_add, v_dval, v_dtype, v_damt,
+    NULLIF(p_payload->>'tax_rate_id', '')::uuid, NULLIF(p_payload->>'tax_name', ''), v_tax_rate, v_tax, v_grand,
+    COALESCE(p_payload->>'notes', ''), COALESCE(p_payload->>'internal_notes', ''),
+    NULLIF(p_payload->>'validity', ''),
+    CASE WHEN jsonb_typeof(p_payload->'questionnaire') = 'object' THEN p_payload->'questionnaire' END,
+    COALESCE(p_payload->'additional_charge_items', '[]'::jsonb), v_brand,
+    1, now(), now()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    customer_id = EXCLUDED.customer_id, party_id = EXCLUDED.party_id, status = EXCLUDED.status,
+    quotation_date = EXCLUDED.quotation_date, valid_until = EXCLUDED.valid_until,
+    project_type_id = EXCLUDED.project_type_id, project_name = EXCLUDED.project_name,
+    project_type = EXCLUDED.project_type, project_location = EXCLUDED.project_location,
+    area_unit_id = EXCLUDED.area_unit_id, builtup_area = EXCLUDED.builtup_area,
+    area_unit = EXCLUDED.area_unit, floors = EXCLUDED.floors,
+    subtotal = EXCLUDED.subtotal, additional_charges = EXCLUDED.additional_charges,
+    discount = EXCLUDED.discount, discount_type = EXCLUDED.discount_type,
+    discount_amount = EXCLUDED.discount_amount,
+    tax_rate_id = EXCLUDED.tax_rate_id, tax_name = EXCLUDED.tax_name,
+    tax_percentage = EXCLUDED.tax_percentage, tax_amount = EXCLUDED.tax_amount,
+    grand_total = EXCLUDED.grand_total, notes = EXCLUDED.notes,
+    internal_notes = EXCLUDED.internal_notes, validity = EXCLUDED.validity,
+    questionnaire = EXCLUDED.questionnaire, additional_charge_items = EXCLUDED.additional_charge_items,
+    brand_snapshot = EXCLUDED.brand_snapshot,
+    version = d.version + 1, updated_at = now()
+  RETURNING d.version INTO v_version;
+
+  DELETE FROM public.document_sections       WHERE document_id = v_id;
+  DELETE FROM public.document_terms          WHERE document_id = v_id;
+  DELETE FROM public.document_specifications WHERE document_id = v_id;
+  DELETE FROM public.document_inclusions     WHERE document_id = v_id;
+  DELETE FROM public.document_exclusions     WHERE document_id = v_id;
+  DELETE FROM public.payment_schedules       WHERE document_id = v_id;
+
+  v_sec_ord := 0;
+  FOR v_section IN SELECT value FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) LOOP
+    v_new_id := NULLIF(v_section->>'id', '')::uuid;
+    IF v_new_id IS NULL OR EXISTS (SELECT 1 FROM public.document_sections WHERE id = v_new_id) THEN
+      v_new_id := gen_random_uuid();
+    END IF;
+
+    INSERT INTO public.document_sections (id, document_id, section_name, display_order)
+    VALUES (
+      v_new_id,
+      v_id,
+      v_section->>'section_name',
+      COALESCE(NULLIF(v_section->>'display_order', '')::integer, v_sec_ord)
+    )
+    RETURNING id INTO v_sec_id;
+
+    INSERT INTO public.document_items (id, section_id, description, quantity, unit_id, unit, rate, amount, display_order, row_type)
+    SELECT CASE WHEN NULLIF(t.i->>'id', '') IS NOT NULL
+                 AND NOT EXISTS (SELECT 1 FROM public.document_items x WHERE x.id = (t.i->>'id')::uuid)
+                THEN (t.i->>'id')::uuid ELSE gen_random_uuid() END,
+           v_sec_id,
+           t.i->>'description',
+           t.qty,
+           NULLIF(t.i->>'unit_id', '')::uuid,
+           NULLIF(t.i->>'unit', ''),
+           t.rate,
+           CASE WHEN t.rtype = 'item' THEN round(t.qty * t.rate, 2) ELSE 0 END,
+           COALESCE(NULLIF(t.i->>'display_order', '')::integer, (t.ord - 1)::integer),
+           t.rtype
+    FROM (
+      SELECT i, ord,
+             COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) AS qty,
+             COALESCE(NULLIF(i->>'rate', '')::numeric, 0)     AS rate,
+             CASE
+               WHEN i->>'row_type' IN ('item', 'note') THEN i->>'row_type'
+               WHEN COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) = 0
+                AND COALESCE(NULLIF(i->>'rate', '')::numeric, 0) = 0 THEN 'note'
+               ELSE 'item'
+             END AS rtype
+      FROM jsonb_array_elements(COALESCE(v_section->'items', '[]'::jsonb)) WITH ORDINALITY AS e(i, ord)
+    ) t;
+
+    v_sec_ord := v_sec_ord + 1;
+  END LOOP;
+
+  INSERT INTO public.document_specifications (id, document_id, specification_type, description, display_order)
+  SELECT CASE WHEN NULLIF(e.s->>'id', '') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM public.document_specifications x WHERE x.id = (e.s->>'id')::uuid)
+             THEN (e.s->>'id')::uuid ELSE gen_random_uuid() END, v_id,
+         e.s->>'specification_type', e.s->>'description',
+         COALESCE(NULLIF(e.s->>'display_order', '')::integer, (e.ord - 1)::integer)
+  FROM jsonb_array_elements(COALESCE(p_payload->'specifications', '[]'::jsonb)) WITH ORDINALITY AS e(s, ord);
+
+  INSERT INTO public.document_inclusions (document_id, description, display_order)
+  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
+  FROM jsonb_array_elements_text(COALESCE(p_payload->'inclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
+  WHERE btrim(e.txt) <> '';
+
+  INSERT INTO public.document_exclusions (document_id, description, display_order)
+  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
+  FROM jsonb_array_elements_text(COALESCE(p_payload->'exclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
+  WHERE btrim(e.txt) <> '';
+
+  -- Payment schedule: every percentage-based stage is rounded normally EXCEPT the last
+  -- one (by display order among percentage-based stages), which absorbs whatever
+  -- rounding residue is left so the set always sums to exactly
+  -- round(total_pct * grand_total / 100, 2) — never off by a paisa from independent
+  -- per-row rounding. A stage given an explicit amount (no percentage) passes through
+  -- untouched; it isn't part of this reconciliation.
+  WITH schedule AS (
+    SELECT e.p, e.ord, NULLIF(e.p->>'percentage', '')::numeric AS pct
+    FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) WITH ORDINALITY AS e(p, ord)
+  ), pct_rows AS (
+    SELECT ord, pct, round(v_grand * pct / 100, 2) AS naive_amount,
+           row_number() OVER (ORDER BY ord DESC) AS rn_from_end
+    FROM schedule WHERE pct IS NOT NULL
+  ), pct_totals AS (
+    SELECT COALESCE(SUM(pct), 0) AS total_pct,
+           COALESCE(SUM(naive_amount) FILTER (WHERE rn_from_end <> 1), 0) AS sum_of_others
+    FROM pct_rows
+  )
+  INSERT INTO public.payment_schedules (id, document_id, stage_name, percentage, amount, due_date, status, notes, display_order)
+  SELECT CASE WHEN NULLIF(s.p->>'id', '') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM public.payment_schedules x WHERE x.id = (s.p->>'id')::uuid)
+             THEN (s.p->>'id')::uuid ELSE gen_random_uuid() END,
+         v_id,
+         s.p->>'stage_name',
+         s.pct,
+         CASE
+           WHEN s.pct IS NULL THEN NULLIF(s.p->>'amount', '')::numeric
+           WHEN pr.rn_from_end = 1 THEN round(v_grand * t.total_pct / 100, 2) - t.sum_of_others
+           ELSE pr.naive_amount
+         END,
+         NULLIF(s.p->>'due_date', '')::date,
+         NULLIF(s.p->>'status', ''),
+         NULLIF(s.p->>'notes', ''),
+         COALESCE(NULLIF(s.p->>'display_order', '')::integer, (s.ord - 1)::integer)
+  FROM schedule s
+  LEFT JOIN pct_rows pr ON pr.ord = s.ord
+  CROSS JOIN pct_totals t
+  ORDER BY s.ord;
+
+  INSERT INTO public.document_terms (id, document_id, description, display_order)
+  SELECT CASE WHEN NULLIF(e.t->>'id', '') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM public.document_terms x WHERE x.id = (e.t->>'id')::uuid)
+             THEN (e.t->>'id')::uuid ELSE gen_random_uuid() END, v_id,
+         e.t->>'description',
+         COALESCE(NULLIF(e.t->>'display_order', '')::integer, (e.ord - 1)::integer)
+  FROM jsonb_array_elements(COALESCE(p_payload->'terms', '[]'::jsonb)) WITH ORDINALITY AS e(t, ord);
+
+  RETURN jsonb_build_object(
+    'id', v_id,
+    'document_number', v_number,
+    'version', v_version,
+    'is_new', v_is_new,
+    'subtotal', v_sub,
+    'additional_charges', v_add,
+    'discount_amount', v_damt,
+    'taxable_amount', v_taxable,
+    'tax_amount', v_tax,
+    'grand_total', v_grand
+  );
+END;
+$$;
+
+
+ALTER FUNCTION public.save_quotation(p_company_id uuid, p_payload jsonb, p_expected_version integer) OWNER TO postgres;
+
+--
+-- TOC entry 495 (class 1255 OID 27796)
+-- Name: set_material_receipt_line_purchase_order(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.set_material_receipt_line_purchase_order() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_receipt_po_id uuid;
+  v_line_po_id uuid;
+BEGIN
+  SELECT purchase_order_id
+    INTO v_receipt_po_id
+  FROM public.material_receipts
+  WHERE id = NEW.material_receipt_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Material receipt % was not found.', NEW.material_receipt_id;
+  END IF;
+
+  SELECT purchase_order_id
+    INTO v_line_po_id
+  FROM public.purchase_order_lines
+  WHERE id = NEW.purchase_order_line_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Purchase order line % was not found.', NEW.purchase_order_line_id;
+  END IF;
+
+  IF v_receipt_po_id <> v_line_po_id THEN
+    RAISE EXCEPTION
+      'Purchase order line % does not belong to the purchase order for material receipt %.',
+      NEW.purchase_order_line_id, NEW.material_receipt_id;
+  END IF;
+
+  NEW.purchase_order_id := v_receipt_po_id;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.set_material_receipt_line_purchase_order() OWNER TO postgres;
+
+--
+-- TOC entry 470 (class 1255 OID 25935)
 -- Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -945,7 +2365,7 @@ $$;
 ALTER FUNCTION public.set_updated_at() OWNER TO postgres;
 
 --
--- TOC entry 464 (class 1255 OID 26806)
+-- TOC entry 474 (class 1255 OID 26806)
 -- Name: validate_attachment_links(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -984,7 +2404,7 @@ $$;
 ALTER FUNCTION public.validate_attachment_links() OWNER TO postgres;
 
 --
--- TOC entry 466 (class 1255 OID 26808)
+-- TOC entry 476 (class 1255 OID 26808)
 -- Name: validate_document_customer_scope(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1014,7 +2434,7 @@ $$;
 ALTER FUNCTION public.validate_document_customer_scope() OWNER TO postgres;
 
 --
--- TOC entry 472 (class 1255 OID 26814)
+-- TOC entry 482 (class 1255 OID 26814)
 -- Name: validate_document_item_unit_scope(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1053,7 +2473,7 @@ $$;
 ALTER FUNCTION public.validate_document_item_unit_scope() OWNER TO postgres;
 
 --
--- TOC entry 465 (class 1255 OID 26807)
+-- TOC entry 475 (class 1255 OID 26807)
 -- Name: validate_document_master_scope(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1104,7 +2524,7 @@ $$;
 ALTER FUNCTION public.validate_document_master_scope() OWNER TO postgres;
 
 --
--- TOC entry 470 (class 1255 OID 26812)
+-- TOC entry 480 (class 1255 OID 26812)
 -- Name: validate_expense_master_scope(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1136,7 +2556,7 @@ $$;
 ALTER FUNCTION public.validate_expense_master_scope() OWNER TO postgres;
 
 --
--- TOC entry 471 (class 1255 OID 26813)
+-- TOC entry 481 (class 1255 OID 26813)
 -- Name: validate_payment_method_scope(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1171,7 +2591,7 @@ $$;
 ALTER FUNCTION public.validate_payment_method_scope() OWNER TO postgres;
 
 --
--- TOC entry 463 (class 1255 OID 26805)
+-- TOC entry 473 (class 1255 OID 26805)
 -- Name: validate_progress_stage_link(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1201,7 +2621,7 @@ $$;
 ALTER FUNCTION public.validate_progress_stage_link() OWNER TO postgres;
 
 --
--- TOC entry 468 (class 1255 OID 26810)
+-- TOC entry 478 (class 1255 OID 26810)
 -- Name: validate_project_customer_scope(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1231,7 +2651,7 @@ $$;
 ALTER FUNCTION public.validate_project_customer_scope() OWNER TO postgres;
 
 --
--- TOC entry 467 (class 1255 OID 26809)
+-- TOC entry 477 (class 1255 OID 26809)
 -- Name: validate_project_master_scope(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1260,7 +2680,7 @@ $$;
 ALTER FUNCTION public.validate_project_master_scope() OWNER TO postgres;
 
 --
--- TOC entry 462 (class 1255 OID 26804)
+-- TOC entry 472 (class 1255 OID 26804)
 -- Name: validate_project_source_quotation(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1301,7 +2721,7 @@ $$;
 ALTER FUNCTION public.validate_project_source_quotation() OWNER TO postgres;
 
 --
--- TOC entry 469 (class 1255 OID 26811)
+-- TOC entry 479 (class 1255 OID 26811)
 -- Name: validate_stage_template_scope(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1341,7 +2761,7 @@ $$;
 ALTER FUNCTION public.validate_stage_template_scope() OWNER TO postgres;
 
 --
--- TOC entry 421 (class 1255 OID 17224)
+-- TOC entry 431 (class 1255 OID 17224)
 -- Name: apply_rls(jsonb, integer); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -1719,7 +3139,7 @@ $$;
 ALTER FUNCTION realtime.apply_rls(wal jsonb, max_record_bytes integer) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 459 (class 1255 OID 25594)
+-- TOC entry 469 (class 1255 OID 25594)
 -- Name: authorize(text, text, text, text, text, text[], text[]); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -1791,7 +3211,7 @@ $$;
 ALTER FUNCTION realtime.authorize(role_name text, topic_name text, claims text, sub text, headers text, read_extensions text[], write_extensions text[], OUT read_allowed boolean[], OUT write_allowed boolean[]) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 422 (class 1255 OID 17227)
+-- TOC entry 432 (class 1255 OID 17227)
 -- Name: broadcast_changes(text, text, text, text, text, record, record, text); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -1823,7 +3243,7 @@ $$;
 ALTER FUNCTION realtime.broadcast_changes(topic_name text, event_name text, operation text, table_name text, table_schema text, new record, old record, level text) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 423 (class 1255 OID 17228)
+-- TOC entry 433 (class 1255 OID 17228)
 -- Name: build_prepared_statement_sql(text, regclass, realtime.wal_column[]); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -1859,7 +3279,7 @@ CREATE FUNCTION realtime.build_prepared_statement_sql(prepared_statement_name te
 ALTER FUNCTION realtime.build_prepared_statement_sql(prepared_statement_name text, entity regclass, columns realtime.wal_column[]) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 424 (class 1255 OID 17229)
+-- TOC entry 434 (class 1255 OID 17229)
 -- Name: cast(text, regtype); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -1881,7 +3301,7 @@ $$;
 ALTER FUNCTION realtime."cast"(val text, type_ regtype) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 425 (class 1255 OID 17230)
+-- TOC entry 435 (class 1255 OID 17230)
 -- Name: check_equality_op(realtime.equality_op, regtype, text, text); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -1923,7 +3343,7 @@ $$;
 ALTER FUNCTION realtime.check_equality_op(op realtime.equality_op, type_ regtype, val_1 text, val_2 text) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 426 (class 1255 OID 17231)
+-- TOC entry 436 (class 1255 OID 17231)
 -- Name: check_equality_op(realtime.equality_op, regtype, text, text, boolean); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -1998,7 +3418,7 @@ $$;
 ALTER FUNCTION realtime.check_equality_op(op realtime.equality_op, type_ regtype, val_1 text, val_2 text, negate boolean) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 427 (class 1255 OID 17232)
+-- TOC entry 437 (class 1255 OID 17232)
 -- Name: is_visible_through_filters(realtime.wal_column[], realtime.user_defined_filter[]); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2031,7 +3451,7 @@ $$;
 ALTER FUNCTION realtime.is_visible_through_filters(columns realtime.wal_column[], filters realtime.user_defined_filter[]) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 428 (class 1255 OID 17233)
+-- TOC entry 438 (class 1255 OID 17233)
 -- Name: list_changes(name, name, integer, integer); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2104,7 +3524,7 @@ $$;
 ALTER FUNCTION realtime.list_changes(publication name, slot_name name, max_changes integer, max_record_bytes integer) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 458 (class 1255 OID 25592)
+-- TOC entry 468 (class 1255 OID 25592)
 -- Name: list_changes_sync(name, name, integer, integer); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2177,7 +3597,7 @@ $$;
 ALTER FUNCTION realtime.list_changes_sync(publication name, slot_name name, max_changes integer, max_record_bytes integer) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 429 (class 1255 OID 17234)
+-- TOC entry 439 (class 1255 OID 17234)
 -- Name: quote_wal2json(regclass); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2197,7 +3617,7 @@ $$;
 ALTER FUNCTION realtime.quote_wal2json(entity regclass) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 430 (class 1255 OID 17235)
+-- TOC entry 440 (class 1255 OID 17235)
 -- Name: send(jsonb, text, text, boolean); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2234,7 +3654,7 @@ $$;
 ALTER FUNCTION realtime.send(payload jsonb, event text, topic text, private boolean) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 431 (class 1255 OID 17236)
+-- TOC entry 441 (class 1255 OID 17236)
 -- Name: send_binary(bytea, text, text, boolean); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2262,7 +3682,7 @@ $$;
 ALTER FUNCTION realtime.send_binary(payload bytea, event text, topic text, private boolean) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 457 (class 1255 OID 25590)
+-- TOC entry 467 (class 1255 OID 25590)
 -- Name: settled_changes(name, integer, text[]); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2356,7 +3776,7 @@ $$;
 ALTER FUNCTION realtime.settled_changes(slot_name name, max_changes integer, VARIADIC opts text[]) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 432 (class 1255 OID 17237)
+-- TOC entry 442 (class 1255 OID 17237)
 -- Name: subscription_check_filters(); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2488,7 +3908,7 @@ $$;
 ALTER FUNCTION realtime.subscription_check_filters() OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 433 (class 1255 OID 17240)
+-- TOC entry 443 (class 1255 OID 17240)
 -- Name: to_regrole(text); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2500,7 +3920,7 @@ CREATE FUNCTION realtime.to_regrole(role_name text) RETURNS regrole
 ALTER FUNCTION realtime.to_regrole(role_name text) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 434 (class 1255 OID 17241)
+-- TOC entry 444 (class 1255 OID 17241)
 -- Name: topic(); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2514,7 +3934,7 @@ $$;
 ALTER FUNCTION realtime.topic() OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 435 (class 1255 OID 17242)
+-- TOC entry 445 (class 1255 OID 17242)
 -- Name: wal2json_escape_identifier(text); Type: FUNCTION; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -2529,7 +3949,7 @@ $$;
 ALTER FUNCTION realtime.wal2json_escape_identifier(name text) OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 446 (class 1255 OID 17474)
+-- TOC entry 456 (class 1255 OID 17474)
 -- Name: allow_any_operation(text[]); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2563,7 +3983,7 @@ $$;
 ALTER FUNCTION storage.allow_any_operation(expected_operations text[]) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 445 (class 1255 OID 17473)
+-- TOC entry 455 (class 1255 OID 17473)
 -- Name: allow_only_operation(text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2596,7 +4016,7 @@ $$;
 ALTER FUNCTION storage.allow_only_operation(expected_operation text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 440 (class 1255 OID 17349)
+-- TOC entry 450 (class 1255 OID 17349)
 -- Name: can_insert_object(text, text, uuid, jsonb); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2616,7 +4036,74 @@ $$;
 ALTER FUNCTION storage.can_insert_object(bucketid text, name text, owner uuid, metadata jsonb) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 450 (class 1255 OID 25485)
+-- TOC entry 488 (class 1255 OID 27533)
+-- Name: delete_lifecycle_objects(uuid[]); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.delete_lifecycle_objects(object_ids uuid[]) RETURNS TABLE(id uuid, is_delete_marker boolean, metadata jsonb)
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    object_id uuid;
+    deleted_row storage.objects%ROWTYPE;
+    deleted_ids uuid[];
+    deleted_markers boolean[];
+    deleted_metadata jsonb[];
+    bulk_deleted boolean := false;
+BEGIN
+    -- Surface pre-existing deferred violations instead of treating them as blocked rows.
+    SET CONSTRAINTS ALL IMMEDIATE;
+    PERFORM set_config('storage.allow_delete_query', 'true', true);
+
+    -- One subxact keeps the subxid cache from overflowing; rows return only once it commits.
+    BEGIN
+        WITH deleted AS (
+            DELETE FROM storage.objects AS object_row
+              WHERE object_row.id = ANY(object_ids) AND object_row.archived_at IS NOT NULL
+              RETURNING object_row.id, object_row.is_delete_marker, object_row.metadata
+        )
+        SELECT array_agg(deleted.id), array_agg(deleted.is_delete_marker), array_agg(deleted.metadata)
+          INTO deleted_ids, deleted_markers, deleted_metadata
+          FROM deleted;
+        bulk_deleted := true;
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- User triggers may use insufficient_privilege to block a row.
+            IF SQLSTATE <> '42501' AND left(SQLSTATE, 2) IN ('08', '40', '42', '53', '55', '57', '58', 'XX') THEN
+                RAISE;
+            END IF;
+    END;
+    IF bulk_deleted THEN
+        RETURN QUERY SELECT * FROM unnest(deleted_ids, deleted_markers, deleted_metadata);
+        RETURN;
+    END IF;
+
+    FOREACH object_id IN ARRAY object_ids LOOP
+        BEGIN
+            DELETE FROM storage.objects AS object_row
+              WHERE object_row.id = object_id AND object_row.archived_at IS NOT NULL
+              RETURNING object_row.* INTO deleted_row;
+            IF FOUND THEN
+                id := deleted_row.id;
+                is_delete_marker := deleted_row.is_delete_marker;
+                metadata := deleted_row.metadata;
+                RETURN NEXT;
+            END IF;
+        EXCEPTION
+            WHEN OTHERS THEN
+                IF SQLSTATE <> '42501' AND left(SQLSTATE, 2) IN ('08', '40', '42', '53', '55', '57', '58', 'XX') THEN
+                    RAISE;
+                END IF;
+        END;
+    END LOOP;
+END;
+$$;
+
+
+ALTER FUNCTION storage.delete_lifecycle_objects(object_ids uuid[]) OWNER TO supabase_storage_admin;
+
+--
+-- TOC entry 460 (class 1255 OID 25485)
 -- Name: enforce_bucket_lifecycle_service_role(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2625,14 +4112,9 @@ CREATE FUNCTION storage.enforce_bucket_lifecycle_service_role() RETURNS trigger
     SET search_path TO 'pg_catalog'
     AS $$
 BEGIN
-  IF current_user::text IS DISTINCT FROM TG_ARGV[0]
-     AND (
-       OLD.lifecycle_configuration IS DISTINCT FROM NEW.lifecycle_configuration
-       OR OLD.lifecycle_configuration_generation IS DISTINCT FROM NEW.lifecycle_configuration_generation
-     ) THEN
-    -- AFTER runs only after caller RLS has accepted the proposed row. The API
-    -- recognizes this specific error after rolling back its permission probe;
-    -- direct non-service writes still fail and cannot persist the change.
+  IF current_user::text IS DISTINCT FROM TG_ARGV[0] THEN
+    -- Keep this check AFTER caller RLS accepts the proposed row. The API
+    -- recognizes this exact signal after rolling back its permission probe.
     RAISE EXCEPTION 'bucket control columns may only be changed by the configured storage service role'
       USING ERRCODE = 'PST01',
             SCHEMA = TG_TABLE_SCHEMA,
@@ -2648,7 +4130,7 @@ $$;
 ALTER FUNCTION storage.enforce_bucket_lifecycle_service_role() OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 442 (class 1255 OID 17405)
+-- TOC entry 452 (class 1255 OID 17405)
 -- Name: enforce_bucket_name_length(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2667,7 +4149,33 @@ $$;
 ALTER FUNCTION storage.enforce_bucket_name_length() OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 438 (class 1255 OID 17324)
+-- TOC entry 483 (class 1255 OID 27285)
+-- Name: enforce_versioning_status_transition(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.enforce_versioning_status_transition() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.versioning_status = OLD.versioning_status THEN
+        RETURN NEW;
+    END IF;
+
+    IF NEW.versioning_status = 'DISABLED' OR
+       (OLD.versioning_status = 'DISABLED' AND NEW.versioning_status = 'SUSPENDED') THEN
+        RAISE EXCEPTION 'Cannot transition bucket versioning status from % to %',
+            OLD.versioning_status, NEW.versioning_status;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION storage.enforce_versioning_status_transition() OWNER TO supabase_storage_admin;
+
+--
+-- TOC entry 448 (class 1255 OID 17324)
 -- Name: extension(text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2691,7 +4199,7 @@ $$;
 ALTER FUNCTION storage.extension(name text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 437 (class 1255 OID 17323)
+-- TOC entry 447 (class 1255 OID 17323)
 -- Name: filename(text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2710,7 +4218,7 @@ $$;
 ALTER FUNCTION storage.filename(name text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 436 (class 1255 OID 17322)
+-- TOC entry 446 (class 1255 OID 17322)
 -- Name: foldername(text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2731,7 +4239,7 @@ $$;
 ALTER FUNCTION storage.foldername(name text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 443 (class 1255 OID 17462)
+-- TOC entry 453 (class 1255 OID 17462)
 -- Name: get_common_prefix(text, text, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2755,7 +4263,7 @@ $$;
 ALTER FUNCTION storage.get_common_prefix(p_key text, p_prefix text, p_delimiter text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 456 (class 1255 OID 25497)
+-- TOC entry 466 (class 1255 OID 25497)
 -- Name: get_size_by_bucket(text, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2789,7 +4297,7 @@ $$;
 ALTER FUNCTION storage.get_size_by_bucket(noncurrent_versions text, delete_markers text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 451 (class 1255 OID 25489)
+-- TOC entry 461 (class 1255 OID 25489)
 -- Name: list_multipart_uploads_with_delimiter(text, text, text, integer, text, text, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -2856,7 +4364,7 @@ $_$;
 ALTER FUNCTION storage.list_multipart_uploads_with_delimiter(bucket_id text, prefix_param text, delimiter_param text, max_keys integer, next_key_token text, next_upload_token text, raw_prefix_param text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 452 (class 1255 OID 25490)
+-- TOC entry 462 (class 1255 OID 25490)
 -- Name: list_objects_with_delimiter(text, text, text, integer, text, text, text, text, text, timestamp with time zone, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -3489,7 +4997,7 @@ $_$;
 ALTER FUNCTION storage.list_objects_with_delimiter(_bucket_id text, prefix_param text, delimiter_param text, max_keys integer, start_after text, next_token text, sort_order text, noncurrent_versions text, delete_markers text, next_token_archived_at timestamp with time zone, next_token_version text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 441 (class 1255 OID 17404)
+-- TOC entry 451 (class 1255 OID 17404)
 -- Name: operation(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -3505,7 +5013,39 @@ $$;
 ALTER FUNCTION storage.operation() OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 449 (class 1255 OID 25484)
+-- TOC entry 485 (class 1255 OID 27527)
+-- Name: protect_active_lifecycle_states(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.protect_active_lifecycle_states() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog'
+    AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM storage.bucket_lifecycle_states
+        WHERE bucket_id = OLD.id
+          AND NOT (
+              continuation IS NULL
+              OR (continuation @> '{"continuationVersion": 1}' AND continuation #> '{batch,inFlight}' IS NULL)
+          )
+    ) THEN
+        RAISE EXCEPTION 'update or delete on table "buckets" violates foreign key constraint "bucket_lifecycle_states_bucket_id_fkey" on table "bucket_lifecycle_states"'
+            USING ERRCODE = 'foreign_key_violation',
+                  DETAIL = format('Key (id)=(%s) is still referenced from table "bucket_lifecycle_states".', OLD.id),
+                  SCHEMA = 'storage',
+                  TABLE = 'bucket_lifecycle_states',
+                  CONSTRAINT = 'bucket_lifecycle_states_bucket_id_fkey';
+    END IF;
+    RETURN OLD;
+END;
+$$;
+
+
+ALTER FUNCTION storage.protect_active_lifecycle_states() OWNER TO supabase_storage_admin;
+
+--
+-- TOC entry 459 (class 1255 OID 25484)
 -- Name: protect_bucket_control_columns(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -3566,7 +5106,7 @@ $$;
 ALTER FUNCTION storage.protect_bucket_control_columns() OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 444 (class 1255 OID 17469)
+-- TOC entry 454 (class 1255 OID 17469)
 -- Name: protect_delete(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -3588,7 +5128,84 @@ $$;
 ALTER FUNCTION storage.protect_delete() OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 453 (class 1255 OID 25492)
+-- TOC entry 486 (class 1255 OID 27529)
+-- Name: reconcile_lifecycle_state(text, boolean); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.reconcile_lifecycle_state(target_bucket_id text, policy_changed boolean) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog'
+    AS $$
+DECLARE
+    bucket storage.buckets%ROWTYPE;
+    active boolean;
+    idle boolean;
+    state_generation uuid;
+BEGIN
+    SELECT * INTO bucket FROM storage.buckets WHERE id = target_bucket_id FOR NO KEY UPDATE;
+    IF NOT FOUND THEN
+        RETURN;
+    END IF;
+
+    SELECT continuation IS NULL OR (
+               continuation @> '{"continuationVersion": 1}'
+               AND continuation #> '{batch,inFlight}' IS NULL
+           ), generation
+    INTO idle, state_generation
+    FROM storage.bucket_lifecycle_states
+    WHERE bucket_id = target_bucket_id
+    FOR UPDATE;
+
+    IF bucket.lifecycle_configuration IS NULL THEN
+        DELETE FROM storage.bucket_lifecycle_states
+        WHERE bucket_id = target_bucket_id
+          AND idle IS TRUE;
+
+        UPDATE storage.bucket_lifecycle_states
+        SET next_run_at = clock_timestamp(), updated_at = clock_timestamp()
+        WHERE bucket_id = target_bucket_id
+          AND idle IS NOT TRUE;
+        RETURN;
+    END IF;
+
+    active := bucket.versioning_status <> 'DISABLED'
+        AND bucket.lifecycle_configuration @> '{"rules":[{"status":"Enabled"}]}'::jsonb;
+
+    -- The state row records the generation it was reconciled with so callers need not detect
+    -- policy changes. Rows without a recorded generation keep their work.
+    policy_changed := policy_changed OR (
+        state_generation IS NOT NULL AND state_generation <> bucket.lifecycle_configuration_generation
+    );
+
+    INSERT INTO storage.bucket_lifecycle_states AS state (bucket_id, generation, next_run_at)
+    VALUES (bucket.id, bucket.lifecycle_configuration_generation, CASE WHEN active THEN clock_timestamp() END)
+    ON CONFLICT (bucket_id) DO UPDATE
+    SET next_run_at = CASE
+            WHEN policy_changed THEN
+                CASE WHEN active OR idle IS NOT TRUE THEN clock_timestamp() END
+            ELSE EXCLUDED.next_run_at
+        END,
+        generation = EXCLUDED.generation,
+        claim_id = CASE WHEN policy_changed AND idle IS TRUE
+                        THEN NULL ELSE state.claim_id END,
+        claim_until = CASE WHEN policy_changed AND idle IS TRUE
+                           THEN NULL ELSE state.claim_until END,
+        continuation = CASE WHEN policy_changed AND idle IS TRUE
+                            THEN NULL ELSE state.continuation END,
+        failure_count = CASE WHEN policy_changed AND idle IS TRUE
+                             THEN 0 ELSE state.failure_count END,
+        last_error = CASE WHEN policy_changed AND idle IS TRUE
+                          THEN NULL ELSE state.last_error END,
+        updated_at = clock_timestamp()
+    WHERE policy_changed OR (state.next_run_at IS NULL AND EXCLUDED.next_run_at IS NOT NULL);
+END;
+$$;
+
+
+ALTER FUNCTION storage.reconcile_lifecycle_state(target_bucket_id text, policy_changed boolean) OWNER TO supabase_storage_admin;
+
+--
+-- TOC entry 463 (class 1255 OID 25492)
 -- Name: search(text, text, integer, integer, integer, text, text, text, text, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -4147,7 +5764,7 @@ $_$;
 ALTER FUNCTION storage.search(prefix text, bucketname text, limits integer, levels integer, offsets integer, search text, sortcolumn text, sortorder text, noncurrent_versions text, delete_markers text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 454 (class 1255 OID 25494)
+-- TOC entry 464 (class 1255 OID 25494)
 -- Name: search_by_timestamp(text, text, integer, integer, text, text, text, text, text, text, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -4322,7 +5939,7 @@ $_$;
 ALTER FUNCTION storage.search_by_timestamp(p_prefix text, p_bucket_id text, p_limit integer, p_level integer, p_start_after text, p_sort_order text, p_sort_column text, p_sort_column_after text, noncurrent_versions text, delete_markers text, p_start_after_version text) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 455 (class 1255 OID 25496)
+-- TOC entry 465 (class 1255 OID 25496)
 -- Name: search_v2(text, text, integer, integer, text, text, text, text, text, text, timestamp with time zone, text, boolean); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -4394,7 +6011,7 @@ $$;
 ALTER FUNCTION storage.search_v2(prefix text, bucket_name text, limits integer, levels integer, start_after text, sort_order text, sort_column text, sort_column_after text, noncurrent_versions text, delete_markers text, start_after_archived_at timestamp with time zone, start_after_version text, start_after_is_continuation boolean) OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 439 (class 1255 OID 17339)
+-- TOC entry 449 (class 1255 OID 17339)
 -- Name: update_updated_at_column(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -4410,12 +6027,34 @@ $$;
 
 ALTER FUNCTION storage.update_updated_at_column() OWNER TO supabase_storage_admin;
 
+--
+-- TOC entry 487 (class 1255 OID 27530)
+-- Name: wake_lifecycle_state(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.wake_lifecycle_state() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog'
+    AS $$
+BEGIN
+    IF TG_OP = 'INSERT' AND NEW.lifecycle_configuration IS NULL THEN
+        RETURN NEW;
+    END IF;
+
+    PERFORM storage.reconcile_lifecycle_state(NEW.id, false);
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION storage.wake_lifecycle_state() OWNER TO supabase_storage_admin;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- TOC entry 259 (class 1259 OID 16529)
+-- TOC entry 261 (class 1259 OID 16529)
 -- Name: audit_log_entries; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4431,8 +6070,8 @@ CREATE TABLE auth.audit_log_entries (
 ALTER TABLE auth.audit_log_entries OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5128 (class 0 OID 0)
--- Dependencies: 259
+-- TOC entry 5428 (class 0 OID 0)
+-- Dependencies: 261
 -- Name: TABLE audit_log_entries; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4440,7 +6079,7 @@ COMMENT ON TABLE auth.audit_log_entries IS 'Auth: Audit trail for user actions.'
 
 
 --
--- TOC entry 278 (class 1259 OID 17084)
+-- TOC entry 280 (class 1259 OID 17084)
 -- Name: custom_oauth_providers; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4494,7 +6133,7 @@ CREATE TABLE auth.custom_oauth_providers (
 ALTER TABLE auth.custom_oauth_providers OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 272 (class 1259 OID 16889)
+-- TOC entry 274 (class 1259 OID 16889)
 -- Name: flow_state; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4522,8 +6161,8 @@ CREATE TABLE auth.flow_state (
 ALTER TABLE auth.flow_state OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5131 (class 0 OID 0)
--- Dependencies: 272
+-- TOC entry 5431 (class 0 OID 0)
+-- Dependencies: 274
 -- Name: TABLE flow_state; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4531,7 +6170,7 @@ COMMENT ON TABLE auth.flow_state IS 'Stores metadata for all OAuth/SSO login flo
 
 
 --
--- TOC entry 263 (class 1259 OID 16687)
+-- TOC entry 265 (class 1259 OID 16687)
 -- Name: identities; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4551,8 +6190,8 @@ CREATE TABLE auth.identities (
 ALTER TABLE auth.identities OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5133 (class 0 OID 0)
--- Dependencies: 263
+-- TOC entry 5433 (class 0 OID 0)
+-- Dependencies: 265
 -- Name: TABLE identities; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4560,8 +6199,8 @@ COMMENT ON TABLE auth.identities IS 'Auth: Stores identities associated to a use
 
 
 --
--- TOC entry 5134 (class 0 OID 0)
--- Dependencies: 263
+-- TOC entry 5434 (class 0 OID 0)
+-- Dependencies: 265
 -- Name: COLUMN identities.email; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4569,7 +6208,7 @@ COMMENT ON COLUMN auth.identities.email IS 'Auth: Email is a generated column th
 
 
 --
--- TOC entry 258 (class 1259 OID 16522)
+-- TOC entry 260 (class 1259 OID 16522)
 -- Name: instances; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4585,8 +6224,8 @@ CREATE TABLE auth.instances (
 ALTER TABLE auth.instances OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5136 (class 0 OID 0)
--- Dependencies: 258
+-- TOC entry 5436 (class 0 OID 0)
+-- Dependencies: 260
 -- Name: TABLE instances; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4594,7 +6233,7 @@ COMMENT ON TABLE auth.instances IS 'Auth: Manages users across multiple sites.';
 
 
 --
--- TOC entry 267 (class 1259 OID 16776)
+-- TOC entry 269 (class 1259 OID 16776)
 -- Name: mfa_amr_claims; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4610,8 +6249,8 @@ CREATE TABLE auth.mfa_amr_claims (
 ALTER TABLE auth.mfa_amr_claims OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5138 (class 0 OID 0)
--- Dependencies: 267
+-- TOC entry 5438 (class 0 OID 0)
+-- Dependencies: 269
 -- Name: TABLE mfa_amr_claims; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4619,7 +6258,7 @@ COMMENT ON TABLE auth.mfa_amr_claims IS 'auth: stores authenticator method refer
 
 
 --
--- TOC entry 266 (class 1259 OID 16764)
+-- TOC entry 268 (class 1259 OID 16764)
 -- Name: mfa_challenges; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4637,8 +6276,8 @@ CREATE TABLE auth.mfa_challenges (
 ALTER TABLE auth.mfa_challenges OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5140 (class 0 OID 0)
--- Dependencies: 266
+-- TOC entry 5440 (class 0 OID 0)
+-- Dependencies: 268
 -- Name: TABLE mfa_challenges; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4646,7 +6285,7 @@ COMMENT ON TABLE auth.mfa_challenges IS 'auth: stores metadata about challenge r
 
 
 --
--- TOC entry 265 (class 1259 OID 16751)
+-- TOC entry 267 (class 1259 OID 16751)
 -- Name: mfa_factors; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4670,8 +6309,8 @@ CREATE TABLE auth.mfa_factors (
 ALTER TABLE auth.mfa_factors OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5142 (class 0 OID 0)
--- Dependencies: 265
+-- TOC entry 5442 (class 0 OID 0)
+-- Dependencies: 267
 -- Name: TABLE mfa_factors; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4679,8 +6318,8 @@ COMMENT ON TABLE auth.mfa_factors IS 'auth: stores metadata about factors';
 
 
 --
--- TOC entry 5143 (class 0 OID 0)
--- Dependencies: 265
+-- TOC entry 5443 (class 0 OID 0)
+-- Dependencies: 267
 -- Name: COLUMN mfa_factors.last_webauthn_challenge_data; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4688,7 +6327,7 @@ COMMENT ON COLUMN auth.mfa_factors.last_webauthn_challenge_data IS 'Stores the l
 
 
 --
--- TOC entry 299 (class 1259 OID 25551)
+-- TOC entry 301 (class 1259 OID 25551)
 -- Name: mfa_recovery_code_sets; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4707,7 +6346,7 @@ CREATE TABLE auth.mfa_recovery_code_sets (
 ALTER TABLE auth.mfa_recovery_code_sets OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 300 (class 1259 OID 25574)
+-- TOC entry 302 (class 1259 OID 25574)
 -- Name: mfa_recovery_codes; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4723,7 +6362,7 @@ CREATE TABLE auth.mfa_recovery_codes (
 ALTER TABLE auth.mfa_recovery_codes OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 275 (class 1259 OID 17001)
+-- TOC entry 277 (class 1259 OID 17001)
 -- Name: oauth_authorizations; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4759,7 +6398,7 @@ CREATE TABLE auth.oauth_authorizations (
 ALTER TABLE auth.oauth_authorizations OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 277 (class 1259 OID 17074)
+-- TOC entry 279 (class 1259 OID 17074)
 -- Name: oauth_client_states; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4774,8 +6413,8 @@ CREATE TABLE auth.oauth_client_states (
 ALTER TABLE auth.oauth_client_states OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5148 (class 0 OID 0)
--- Dependencies: 277
+-- TOC entry 5448 (class 0 OID 0)
+-- Dependencies: 279
 -- Name: TABLE oauth_client_states; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4783,7 +6422,7 @@ COMMENT ON TABLE auth.oauth_client_states IS 'Stores OAuth states for third-part
 
 
 --
--- TOC entry 274 (class 1259 OID 16971)
+-- TOC entry 276 (class 1259 OID 16971)
 -- Name: oauth_clients; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4811,7 +6450,7 @@ CREATE TABLE auth.oauth_clients (
 ALTER TABLE auth.oauth_clients OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 276 (class 1259 OID 17034)
+-- TOC entry 278 (class 1259 OID 17034)
 -- Name: oauth_consents; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4831,7 +6470,7 @@ CREATE TABLE auth.oauth_consents (
 ALTER TABLE auth.oauth_consents OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 273 (class 1259 OID 16939)
+-- TOC entry 275 (class 1259 OID 16939)
 -- Name: one_time_tokens; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4844,6 +6483,7 @@ CREATE TABLE auth.one_time_tokens (
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     expires_at timestamp with time zone,
+    link_token_hash text,
     CONSTRAINT one_time_tokens_token_hash_check CHECK ((char_length(token_hash) > 0))
 );
 
@@ -4851,7 +6491,7 @@ CREATE TABLE auth.one_time_tokens (
 ALTER TABLE auth.one_time_tokens OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 257 (class 1259 OID 16511)
+-- TOC entry 259 (class 1259 OID 16511)
 -- Name: refresh_tokens; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4871,8 +6511,8 @@ CREATE TABLE auth.refresh_tokens (
 ALTER TABLE auth.refresh_tokens OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5153 (class 0 OID 0)
--- Dependencies: 257
+-- TOC entry 5453 (class 0 OID 0)
+-- Dependencies: 259
 -- Name: TABLE refresh_tokens; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4880,7 +6520,7 @@ COMMENT ON TABLE auth.refresh_tokens IS 'Auth: Store of tokens used to refresh J
 
 
 --
--- TOC entry 256 (class 1259 OID 16510)
+-- TOC entry 258 (class 1259 OID 16510)
 -- Name: refresh_tokens_id_seq; Type: SEQUENCE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4895,8 +6535,8 @@ CREATE SEQUENCE auth.refresh_tokens_id_seq
 ALTER SEQUENCE auth.refresh_tokens_id_seq OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5155 (class 0 OID 0)
--- Dependencies: 256
+-- TOC entry 5455 (class 0 OID 0)
+-- Dependencies: 258
 -- Name: refresh_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4904,7 +6544,7 @@ ALTER SEQUENCE auth.refresh_tokens_id_seq OWNED BY auth.refresh_tokens.id;
 
 
 --
--- TOC entry 270 (class 1259 OID 16818)
+-- TOC entry 272 (class 1259 OID 16818)
 -- Name: saml_providers; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4918,6 +6558,7 @@ CREATE TABLE auth.saml_providers (
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     name_id_format text,
+    dedicated_scope boolean,
     CONSTRAINT "entity_id not empty" CHECK ((char_length(entity_id) > 0)),
     CONSTRAINT "metadata_url not empty" CHECK (((metadata_url = NULL::text) OR (char_length(metadata_url) > 0))),
     CONSTRAINT "metadata_xml not empty" CHECK ((char_length(metadata_xml) > 0))
@@ -4927,8 +6568,8 @@ CREATE TABLE auth.saml_providers (
 ALTER TABLE auth.saml_providers OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5157 (class 0 OID 0)
--- Dependencies: 270
+-- TOC entry 5457 (class 0 OID 0)
+-- Dependencies: 272
 -- Name: TABLE saml_providers; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4936,7 +6577,7 @@ COMMENT ON TABLE auth.saml_providers IS 'Auth: Manages SAML Identity Provider co
 
 
 --
--- TOC entry 271 (class 1259 OID 16836)
+-- TOC entry 273 (class 1259 OID 16836)
 -- Name: saml_relay_states; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4956,8 +6597,8 @@ CREATE TABLE auth.saml_relay_states (
 ALTER TABLE auth.saml_relay_states OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5159 (class 0 OID 0)
--- Dependencies: 271
+-- TOC entry 5459 (class 0 OID 0)
+-- Dependencies: 273
 -- Name: TABLE saml_relay_states; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4965,7 +6606,7 @@ COMMENT ON TABLE auth.saml_relay_states IS 'Auth: Contains SAML Relay State info
 
 
 --
--- TOC entry 260 (class 1259 OID 16537)
+-- TOC entry 262 (class 1259 OID 16537)
 -- Name: schema_migrations; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4977,8 +6618,8 @@ CREATE TABLE auth.schema_migrations (
 ALTER TABLE auth.schema_migrations OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5161 (class 0 OID 0)
--- Dependencies: 260
+-- TOC entry 5461 (class 0 OID 0)
+-- Dependencies: 262
 -- Name: TABLE schema_migrations; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -4986,7 +6627,7 @@ COMMENT ON TABLE auth.schema_migrations IS 'Auth: Manages updates to the auth sy
 
 
 --
--- TOC entry 298 (class 1259 OID 25530)
+-- TOC entry 300 (class 1259 OID 25530)
 -- Name: scim_tokens; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5008,7 +6649,7 @@ CREATE TABLE auth.scim_tokens (
 ALTER TABLE auth.scim_tokens OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 297 (class 1259 OID 25499)
+-- TOC entry 299 (class 1259 OID 25499)
 -- Name: scim_users; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5029,7 +6670,7 @@ CREATE TABLE auth.scim_users (
 ALTER TABLE auth.scim_users OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 264 (class 1259 OID 16717)
+-- TOC entry 266 (class 1259 OID 16717)
 -- Name: sessions; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5056,8 +6697,8 @@ CREATE TABLE auth.sessions (
 ALTER TABLE auth.sessions OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5165 (class 0 OID 0)
--- Dependencies: 264
+-- TOC entry 5465 (class 0 OID 0)
+-- Dependencies: 266
 -- Name: TABLE sessions; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5065,8 +6706,8 @@ COMMENT ON TABLE auth.sessions IS 'Auth: Stores session data associated to a use
 
 
 --
--- TOC entry 5166 (class 0 OID 0)
--- Dependencies: 264
+-- TOC entry 5466 (class 0 OID 0)
+-- Dependencies: 266
 -- Name: COLUMN sessions.not_after; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5074,8 +6715,8 @@ COMMENT ON COLUMN auth.sessions.not_after IS 'Auth: Not after is a nullable colu
 
 
 --
--- TOC entry 5167 (class 0 OID 0)
--- Dependencies: 264
+-- TOC entry 5467 (class 0 OID 0)
+-- Dependencies: 266
 -- Name: COLUMN sessions.refresh_token_hmac_key; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5083,8 +6724,8 @@ COMMENT ON COLUMN auth.sessions.refresh_token_hmac_key IS 'Holds a HMAC-SHA256 k
 
 
 --
--- TOC entry 5168 (class 0 OID 0)
--- Dependencies: 264
+-- TOC entry 5468 (class 0 OID 0)
+-- Dependencies: 266
 -- Name: COLUMN sessions.refresh_token_counter; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5092,7 +6733,7 @@ COMMENT ON COLUMN auth.sessions.refresh_token_counter IS 'Holds the ID (counter)
 
 
 --
--- TOC entry 269 (class 1259 OID 16803)
+-- TOC entry 271 (class 1259 OID 16803)
 -- Name: sso_domains; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5109,8 +6750,8 @@ CREATE TABLE auth.sso_domains (
 ALTER TABLE auth.sso_domains OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5170 (class 0 OID 0)
--- Dependencies: 269
+-- TOC entry 5470 (class 0 OID 0)
+-- Dependencies: 271
 -- Name: TABLE sso_domains; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5118,7 +6759,7 @@ COMMENT ON TABLE auth.sso_domains IS 'Auth: Manages SSO email address domain map
 
 
 --
--- TOC entry 268 (class 1259 OID 16794)
+-- TOC entry 270 (class 1259 OID 16794)
 -- Name: sso_providers; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5135,8 +6776,8 @@ CREATE TABLE auth.sso_providers (
 ALTER TABLE auth.sso_providers OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5172 (class 0 OID 0)
--- Dependencies: 268
+-- TOC entry 5472 (class 0 OID 0)
+-- Dependencies: 270
 -- Name: TABLE sso_providers; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5144,8 +6785,8 @@ COMMENT ON TABLE auth.sso_providers IS 'Auth: Manages SSO identity provider info
 
 
 --
--- TOC entry 5173 (class 0 OID 0)
--- Dependencies: 268
+-- TOC entry 5473 (class 0 OID 0)
+-- Dependencies: 270
 -- Name: COLUMN sso_providers.resource_id; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5153,7 +6794,7 @@ COMMENT ON COLUMN auth.sso_providers.resource_id IS 'Auth: Uniquely identifies a
 
 
 --
--- TOC entry 255 (class 1259 OID 16499)
+-- TOC entry 257 (class 1259 OID 16499)
 -- Name: users; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5200,8 +6841,8 @@ CREATE TABLE auth.users (
 ALTER TABLE auth.users OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 5175 (class 0 OID 0)
--- Dependencies: 255
+-- TOC entry 5475 (class 0 OID 0)
+-- Dependencies: 257
 -- Name: TABLE users; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5209,8 +6850,8 @@ COMMENT ON TABLE auth.users IS 'Auth: Stores user login data within a secure sch
 
 
 --
--- TOC entry 5176 (class 0 OID 0)
--- Dependencies: 255
+-- TOC entry 5476 (class 0 OID 0)
+-- Dependencies: 257
 -- Name: COLUMN users.is_sso_user; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5218,7 +6859,7 @@ COMMENT ON COLUMN auth.users.is_sso_user IS 'Auth: Set this column to true when 
 
 
 --
--- TOC entry 280 (class 1259 OID 17149)
+-- TOC entry 282 (class 1259 OID 17149)
 -- Name: webauthn_challenges; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5236,7 +6877,7 @@ CREATE TABLE auth.webauthn_challenges (
 ALTER TABLE auth.webauthn_challenges OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 279 (class 1259 OID 17126)
+-- TOC entry 281 (class 1259 OID 17126)
 -- Name: webauthn_credentials; Type: TABLE; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -5261,7 +6902,7 @@ CREATE TABLE auth.webauthn_credentials (
 ALTER TABLE auth.webauthn_credentials OWNER TO supabase_auth_admin;
 
 --
--- TOC entry 324 (class 1259 OID 26419)
+-- TOC entry 326 (class 1259 OID 26419)
 -- Name: booking_receipt_details; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5272,14 +6913,24 @@ CREATE TABLE public.booking_receipt_details (
     floor text,
     block_tower text,
     rate_per_sqft numeric(18,2),
-    buyer_pan_aadhar text
+    buyer_pan_aadhar text,
+    project_unit_id uuid,
+    booking_status text,
+    prior_unit_status text,
+    agreement_value numeric(18,2),
+    balance_due numeric(18,2),
+    payment_mode text,
+    due_date date,
+    CONSTRAINT chk_booking_receipt_details_booking_status CHECK (((booking_status IS NULL) OR (booking_status = ANY (ARRAY['Draft'::text, 'Confirmed'::text, 'Cancelled'::text, 'Completed'::text])))),
+    CONSTRAINT chk_booking_receipt_details_payment_mode CHECK (((payment_mode IS NULL) OR (payment_mode = ANY (ARRAY['Cash'::text, 'Cheque'::text, 'UPI'::text, 'NEFT / RTGS'::text, 'Bank Transfer'::text])))),
+    CONSTRAINT chk_booking_receipt_details_prior_unit_status CHECK (((prior_unit_status IS NULL) OR (prior_unit_status = ANY (ARRAY['available'::text, 'allocated'::text, 'booked'::text]))))
 );
 
 
 ALTER TABLE public.booking_receipt_details OWNER TO postgres;
 
 --
--- TOC entry 305 (class 1259 OID 26003)
+-- TOC entry 307 (class 1259 OID 26003)
 -- Name: companies; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5307,7 +6958,7 @@ CREATE TABLE public.companies (
 ALTER TABLE public.companies OWNER TO postgres;
 
 --
--- TOC entry 326 (class 1259 OID 26450)
+-- TOC entry 328 (class 1259 OID 26450)
 -- Name: company_quotation_usage; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5328,7 +6979,7 @@ CREATE TABLE public.company_quotation_usage (
 ALTER TABLE public.company_quotation_usage OWNER TO postgres;
 
 --
--- TOC entry 306 (class 1259 OID 26023)
+-- TOC entry 308 (class 1259 OID 26023)
 -- Name: company_settings; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5352,6 +7003,7 @@ CREATE TABLE public.company_settings (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     invoice_prefix text DEFAULT 'INV'::text NOT NULL,
+    enabled_business_models text[] DEFAULT ARRAY['contract_construction'::text, 'property_development'::text, 'civil_works_contract'::text, 'material_supply'::text] NOT NULL,
     CONSTRAINT company_settings_default_tax_rate_check CHECK (((default_tax_rate >= (0)::numeric) AND (default_tax_rate <= (100)::numeric))),
     CONSTRAINT company_settings_default_validity_days_check CHECK ((default_validity_days > 0))
 );
@@ -5360,7 +7012,7 @@ CREATE TABLE public.company_settings (
 ALTER TABLE public.company_settings OWNER TO postgres;
 
 --
--- TOC entry 325 (class 1259 OID 26431)
+-- TOC entry 327 (class 1259 OID 26431)
 -- Name: company_subscriptions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5381,7 +7033,7 @@ CREATE TABLE public.company_subscriptions (
 ALTER TABLE public.company_subscriptions OWNER TO postgres;
 
 --
--- TOC entry 307 (class 1259 OID 26043)
+-- TOC entry 309 (class 1259 OID 26043)
 -- Name: company_users; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5400,7 +7052,7 @@ CREATE TABLE public.company_users (
 ALTER TABLE public.company_users OWNER TO postgres;
 
 --
--- TOC entry 308 (class 1259 OID 26068)
+-- TOC entry 310 (class 1259 OID 26068)
 -- Name: customers; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5421,42 +7073,45 @@ CREATE TABLE public.customers (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     gstin text,
     gst_registration_type text,
-    gst_state_code character varying(2)
+    gst_state_code character varying(2),
+    party_id uuid
 );
 
 
 ALTER TABLE public.customers OWNER TO postgres;
 
 --
--- TOC entry 321 (class 1259 OID 26374)
+-- TOC entry 323 (class 1259 OID 26374)
 -- Name: document_exclusions; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.document_exclusions (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     document_id uuid NOT NULL,
-    description text NOT NULL
+    description text NOT NULL,
+    display_order integer DEFAULT 0 NOT NULL
 );
 
 
 ALTER TABLE public.document_exclusions OWNER TO postgres;
 
 --
--- TOC entry 320 (class 1259 OID 26361)
+-- TOC entry 322 (class 1259 OID 26361)
 -- Name: document_inclusions; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.document_inclusions (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     document_id uuid NOT NULL,
-    description text NOT NULL
+    description text NOT NULL,
+    display_order integer DEFAULT 0 NOT NULL
 );
 
 
 ALTER TABLE public.document_inclusions OWNER TO postgres;
 
 --
--- TOC entry 318 (class 1259 OID 26320)
+-- TOC entry 320 (class 1259 OID 26320)
 -- Name: document_items; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5480,18 +7135,20 @@ CREATE TABLE public.document_items (
     cgst_amount numeric(18,2) DEFAULT 0 NOT NULL,
     sgst_amount numeric(18,2) DEFAULT 0 NOT NULL,
     igst_amount numeric(18,2) DEFAULT 0 NOT NULL,
+    row_type text DEFAULT 'item'::text NOT NULL,
     CONSTRAINT chk_document_items_tax_treatment CHECK ((tax_treatment = ANY (ARRAY['taxable'::text, 'zero_rated'::text, 'exempt'::text, 'nil_rated'::text, 'non_gst'::text]))),
     CONSTRAINT document_items_amount_check CHECK ((amount >= (0)::numeric)),
     CONSTRAINT document_items_display_order_check CHECK ((display_order >= 0)),
     CONSTRAINT document_items_quantity_check CHECK ((quantity >= (0)::numeric)),
-    CONSTRAINT document_items_rate_check CHECK ((rate >= (0)::numeric))
+    CONSTRAINT document_items_rate_check CHECK ((rate >= (0)::numeric)),
+    CONSTRAINT document_items_row_type_check CHECK ((row_type = ANY (ARRAY['item'::text, 'note'::text])))
 );
 
 
 ALTER TABLE public.document_items OWNER TO postgres;
 
 --
--- TOC entry 317 (class 1259 OID 26305)
+-- TOC entry 319 (class 1259 OID 26305)
 -- Name: document_sections; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5507,7 +7164,7 @@ CREATE TABLE public.document_sections (
 ALTER TABLE public.document_sections OWNER TO postgres;
 
 --
--- TOC entry 315 (class 1259 OID 26213)
+-- TOC entry 317 (class 1259 OID 26213)
 -- Name: document_sequences; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5528,7 +7185,7 @@ CREATE TABLE public.document_sequences (
 ALTER TABLE public.document_sequences OWNER TO postgres;
 
 --
--- TOC entry 319 (class 1259 OID 26346)
+-- TOC entry 321 (class 1259 OID 26346)
 -- Name: document_specifications; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5545,7 +7202,7 @@ CREATE TABLE public.document_specifications (
 ALTER TABLE public.document_specifications OWNER TO postgres;
 
 --
--- TOC entry 323 (class 1259 OID 26404)
+-- TOC entry 325 (class 1259 OID 26404)
 -- Name: document_terms; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5561,7 +7218,7 @@ CREATE TABLE public.document_terms (
 ALTER TABLE public.document_terms OWNER TO postgres;
 
 --
--- TOC entry 316 (class 1259 OID 26233)
+-- TOC entry 318 (class 1259 OID 26233)
 -- Name: documents; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5569,7 +7226,6 @@ CREATE TABLE public.documents (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     company_id uuid NOT NULL,
     customer_id uuid,
-    project_id uuid,
     document_type text NOT NULL,
     document_number text NOT NULL,
     status text DEFAULT 'Draft'::text NOT NULL,
@@ -5613,11 +7269,23 @@ CREATE TABLE public.documents (
     place_of_supply_state_code character varying(2),
     supply_type text,
     reverse_charge boolean DEFAULT false NOT NULL,
+    party_id uuid,
+    project_id uuid,
+    version integer DEFAULT 1 NOT NULL,
+    discount_type text DEFAULT 'None'::text NOT NULL,
+    discount_amount numeric(18,2) DEFAULT 0 NOT NULL,
+    additional_charge_items jsonb DEFAULT '[]'::jsonb NOT NULL,
+    questionnaire jsonb,
+    internal_notes text,
+    validity text,
+    brand_snapshot jsonb,
     CONSTRAINT chk_documents_supply_type CHECK (((supply_type IS NULL) OR (supply_type = ANY (ARRAY['intra_state'::text, 'inter_state'::text])))),
     CONSTRAINT documents_additional_charges_check CHECK ((additional_charges >= (0)::numeric)),
     CONSTRAINT documents_cgst_amount_check CHECK ((cgst_amount >= (0)::numeric)),
     CONSTRAINT documents_cgst_percentage_check CHECK (((cgst_percentage >= (0)::numeric) AND (cgst_percentage <= (100)::numeric))),
+    CONSTRAINT documents_discount_amount_check CHECK ((discount_amount >= (0)::numeric)),
     CONSTRAINT documents_discount_check CHECK ((discount >= (0)::numeric)),
+    CONSTRAINT documents_discount_type_check CHECK ((discount_type = ANY (ARRAY['None'::text, 'Percentage'::text, 'Fixed Amount'::text]))),
     CONSTRAINT documents_document_type_check CHECK ((document_type = ANY (ARRAY['Quotation'::text, 'BookingReceipt'::text]))),
     CONSTRAINT documents_grand_total_check CHECK ((grand_total >= (0)::numeric)),
     CONSTRAINT documents_igst_amount_check CHECK ((igst_amount >= (0)::numeric)),
@@ -5628,14 +7296,14 @@ CREATE TABLE public.documents (
     CONSTRAINT documents_subtotal_check CHECK ((subtotal >= (0)::numeric)),
     CONSTRAINT documents_tax_amount_check CHECK ((tax_amount >= (0)::numeric)),
     CONSTRAINT documents_tax_percentage_check CHECK (((tax_percentage >= (0)::numeric) AND (tax_percentage <= (100)::numeric))),
-    CONSTRAINT fk_documents_project_company FOREIGN KEY (project_id, company_id) REFERENCES public.projects(id, company_id) ON DELETE SET NULL
+    CONSTRAINT documents_version_check CHECK ((version >= 1))
 );
 
 
 ALTER TABLE public.documents OWNER TO postgres;
 
 --
--- TOC entry 310 (class 1259 OID 26110)
+-- TOC entry 312 (class 1259 OID 26110)
 -- Name: expense_categories; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5655,7 +7323,7 @@ CREATE TABLE public.expense_categories (
 ALTER TABLE public.expense_categories OWNER TO postgres;
 
 --
--- TOC entry 342 (class 1259 OID 27021)
+-- TOC entry 344 (class 1259 OID 27021)
 -- Name: investors; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5672,7 +7340,7 @@ CREATE TABLE public.investors (
 ALTER TABLE public.investors OWNER TO postgres;
 
 --
--- TOC entry 340 (class 1259 OID 26974)
+-- TOC entry 342 (class 1259 OID 26974)
 -- Name: invoice_items; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5707,7 +7375,7 @@ CREATE TABLE public.invoice_items (
 ALTER TABLE public.invoice_items OWNER TO postgres;
 
 --
--- TOC entry 339 (class 1259 OID 26935)
+-- TOC entry 341 (class 1259 OID 26935)
 -- Name: invoices; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5742,8 +7410,12 @@ CREATE TABLE public.invoices (
     cgst_rate numeric(5,2) DEFAULT 0 NOT NULL,
     sgst_rate numeric(5,2) DEFAULT 0 NOT NULL,
     igst_rate numeric(5,2) DEFAULT 0 NOT NULL,
+    discount_amount numeric(18,2) DEFAULT 0 NOT NULL,
+    discount_percentage numeric(5,2) DEFAULT 0 NOT NULL,
     CONSTRAINT chk_invoices_supply_type CHECK (((supply_type IS NULL) OR (supply_type = ANY (ARRAY['intra_state'::text, 'inter_state'::text])))),
     CONSTRAINT invoices_check CHECK (((due_date IS NULL) OR (due_date >= invoice_date))),
+    CONSTRAINT invoices_discount_amount_check CHECK ((discount_amount >= (0)::numeric)),
+    CONSTRAINT invoices_discount_percentage_check CHECK (((discount_percentage >= (0)::numeric) AND (discount_percentage <= (100)::numeric))),
     CONSTRAINT invoices_grand_total_check CHECK ((grand_total >= (0)::numeric)),
     CONSTRAINT invoices_status_check CHECK ((status = ANY (ARRAY['Draft'::text, 'Issued'::text, 'Cancelled'::text]))),
     CONSTRAINT invoices_subtotal_check CHECK ((subtotal >= (0)::numeric)),
@@ -5754,7 +7426,98 @@ CREATE TABLE public.invoices (
 ALTER TABLE public.invoices OWNER TO postgres;
 
 --
--- TOC entry 304 (class 1259 OID 25987)
+-- TOC entry 349 (class 1259 OID 27244)
+-- Name: material_receipt_lines; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.material_receipt_lines (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    material_receipt_id uuid NOT NULL,
+    purchase_order_line_id uuid NOT NULL,
+    ordered_quantity numeric(18,4) DEFAULT 0 NOT NULL,
+    previously_received_quantity numeric(18,4) DEFAULT 0 NOT NULL,
+    quantity_received numeric(18,4) DEFAULT 0 NOT NULL,
+    accepted_quantity numeric(18,4) DEFAULT 0 NOT NULL,
+    rejected_quantity numeric(18,4) DEFAULT 0 NOT NULL,
+    remaining_quantity numeric(18,4) DEFAULT 0 NOT NULL,
+    notes text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    purchase_order_id uuid NOT NULL,
+    CONSTRAINT material_receipt_lines_accepted_quantity_check CHECK ((accepted_quantity >= (0)::numeric)),
+    CONSTRAINT material_receipt_lines_ordered_quantity_check CHECK ((ordered_quantity >= (0)::numeric)),
+    CONSTRAINT material_receipt_lines_previously_received_quantity_check CHECK ((previously_received_quantity >= (0)::numeric)),
+    CONSTRAINT material_receipt_lines_quantity_received_check CHECK ((quantity_received >= (0)::numeric)),
+    CONSTRAINT material_receipt_lines_rejected_quantity_check CHECK ((rejected_quantity >= (0)::numeric)),
+    CONSTRAINT material_receipt_lines_remaining_quantity_check CHECK ((remaining_quantity >= (0)::numeric))
+);
+
+
+ALTER TABLE public.material_receipt_lines OWNER TO postgres;
+
+--
+-- TOC entry 348 (class 1259 OID 27209)
+-- Name: material_receipts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.material_receipts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    company_id uuid NOT NULL,
+    project_id uuid NOT NULL,
+    purchase_order_id uuid NOT NULL,
+    supplier_party_id uuid NOT NULL,
+    receipt_number text NOT NULL,
+    receipt_date date DEFAULT CURRENT_DATE NOT NULL,
+    delivery_reference_number text,
+    notes text,
+    status text DEFAULT 'draft'::text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT material_receipts_status_check CHECK ((status = ANY (ARRAY['draft'::text, 'accepted'::text, 'rejected'::text])))
+);
+
+
+ALTER TABLE public.material_receipts OWNER TO postgres;
+
+--
+-- TOC entry 345 (class 1259 OID 27097)
+-- Name: parties; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.parties (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    company_id uuid NOT NULL,
+    name text NOT NULL,
+    entity_type text DEFAULT 'person'::text NOT NULL,
+    contact_person_name text,
+    is_customer boolean DEFAULT false NOT NULL,
+    is_supplier boolean DEFAULT false NOT NULL,
+    is_investor boolean DEFAULT false NOT NULL,
+    email text,
+    mobile text,
+    address text,
+    city text,
+    state text,
+    pincode text,
+    gstin text,
+    gst_registration_type text,
+    gst_state_code text,
+    notes text,
+    is_active boolean DEFAULT true NOT NULL,
+    is_deleted boolean DEFAULT false NOT NULL,
+    deleted_at timestamp with time zone,
+    deleted_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT parties_entity_type_check CHECK ((entity_type = ANY (ARRAY['person'::text, 'business'::text]))),
+    CONSTRAINT parties_has_role CHECK (true)
+);
+
+
+ALTER TABLE public.parties OWNER TO postgres;
+
+--
+-- TOC entry 306 (class 1259 OID 25987)
 -- Name: password_resets; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5771,7 +7534,7 @@ CREATE TABLE public.password_resets (
 ALTER TABLE public.password_resets OWNER TO postgres;
 
 --
--- TOC entry 341 (class 1259 OID 26998)
+-- TOC entry 343 (class 1259 OID 26998)
 -- Name: payment_allocations; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5789,7 +7552,7 @@ CREATE TABLE public.payment_allocations (
 ALTER TABLE public.payment_allocations OWNER TO postgres;
 
 --
--- TOC entry 312 (class 1259 OID 26148)
+-- TOC entry 314 (class 1259 OID 26148)
 -- Name: payment_methods; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5808,7 +7571,7 @@ CREATE TABLE public.payment_methods (
 ALTER TABLE public.payment_methods OWNER TO postgres;
 
 --
--- TOC entry 322 (class 1259 OID 26387)
+-- TOC entry 324 (class 1259 OID 26387)
 -- Name: payment_schedules; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5821,6 +7584,7 @@ CREATE TABLE public.payment_schedules (
     due_date date,
     status text,
     display_order integer DEFAULT 0 NOT NULL,
+    notes text,
     CONSTRAINT payment_schedules_amount_check CHECK (((amount IS NULL) OR (amount >= (0)::numeric))),
     CONSTRAINT payment_schedules_display_order_check CHECK ((display_order >= 0)),
     CONSTRAINT payment_schedules_percentage_check CHECK (((percentage IS NULL) OR ((percentage >= (0)::numeric) AND (percentage <= (100)::numeric))))
@@ -5830,7 +7594,7 @@ CREATE TABLE public.payment_schedules (
 ALTER TABLE public.payment_schedules OWNER TO postgres;
 
 --
--- TOC entry 296 (class 1259 OID 17479)
+-- TOC entry 298 (class 1259 OID 17479)
 -- Name: profiles; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5846,7 +7610,7 @@ CREATE TABLE public.profiles (
 ALTER TABLE public.profiles OWNER TO postgres;
 
 --
--- TOC entry 335 (class 1259 OID 26715)
+-- TOC entry 337 (class 1259 OID 26715)
 -- Name: project_attachments; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5863,6 +7627,7 @@ CREATE TABLE public.project_attachments (
     uploaded_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone,
+    CONSTRAINT ck_attachment_single_parent CHECK ((NOT ((expense_id IS NOT NULL) AND (progress_update_id IS NOT NULL)))),
     CONSTRAINT project_attachments_file_size_bytes_check CHECK (((file_size_bytes IS NULL) OR (file_size_bytes >= 0))),
     CONSTRAINT project_attachments_visibility_status_check CHECK ((visibility_status = ANY (ARRAY['internal'::text, 'published'::text])))
 );
@@ -5871,7 +7636,7 @@ CREATE TABLE public.project_attachments (
 ALTER TABLE public.project_attachments OWNER TO postgres;
 
 --
--- TOC entry 334 (class 1259 OID 26685)
+-- TOC entry 336 (class 1259 OID 26685)
 -- Name: project_client_access; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5896,7 +7661,7 @@ CREATE TABLE public.project_client_access (
 ALTER TABLE public.project_client_access OWNER TO postgres;
 
 --
--- TOC entry 332 (class 1259 OID 26626)
+-- TOC entry 334 (class 1259 OID 26626)
 -- Name: project_expense_payments; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5921,7 +7686,7 @@ CREATE TABLE public.project_expense_payments (
 ALTER TABLE public.project_expense_payments OWNER TO postgres;
 
 --
--- TOC entry 331 (class 1259 OID 26596)
+-- TOC entry 333 (class 1259 OID 26596)
 -- Name: project_expenses; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5944,7 +7709,10 @@ CREATE TABLE public.project_expenses (
     voided_at timestamp with time zone,
     company_id uuid NOT NULL,
     supplier_id uuid,
+    party_id uuid,
+    expense_type text DEFAULT 'direct'::text NOT NULL,
     CONSTRAINT project_expenses_bill_amount_check CHECK ((bill_amount >= (0)::numeric)),
+    CONSTRAINT project_expenses_expense_type_check CHECK ((expense_type = ANY (ARRAY['direct'::text, 'supplier_bill'::text]))),
     CONSTRAINT project_expenses_status_check CHECK ((status = ANY (ARRAY['unpaid'::text, 'partially_paid'::text, 'paid'::text, 'void'::text]))),
     CONSTRAINT project_expenses_visibility_status_check CHECK ((visibility_status = ANY (ARRAY['internal'::text, 'published'::text])))
 );
@@ -5953,7 +7721,7 @@ CREATE TABLE public.project_expenses (
 ALTER TABLE public.project_expenses OWNER TO postgres;
 
 --
--- TOC entry 337 (class 1259 OID 26783)
+-- TOC entry 339 (class 1259 OID 26783)
 -- Name: project_investor_contributions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5975,7 +7743,7 @@ CREATE TABLE public.project_investor_contributions (
 ALTER TABLE public.project_investor_contributions OWNER TO postgres;
 
 --
--- TOC entry 336 (class 1259 OID 26747)
+-- TOC entry 338 (class 1259 OID 26747)
 -- Name: project_investors; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -5996,6 +7764,7 @@ CREATE TABLE public.project_investors (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     investor_id uuid NOT NULL,
+    party_id uuid,
     CONSTRAINT project_investors_investment_percentage_check CHECK (((investment_percentage >= (0)::numeric) AND (investment_percentage <= (100)::numeric)))
 );
 
@@ -6003,7 +7772,7 @@ CREATE TABLE public.project_investors (
 ALTER TABLE public.project_investors OWNER TO postgres;
 
 --
--- TOC entry 330 (class 1259 OID 26562)
+-- TOC entry 332 (class 1259 OID 26562)
 -- Name: project_progress_updates; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6029,7 +7798,7 @@ CREATE TABLE public.project_progress_updates (
 ALTER TABLE public.project_progress_updates OWNER TO postgres;
 
 --
--- TOC entry 333 (class 1259 OID 26653)
+-- TOC entry 335 (class 1259 OID 26653)
 -- Name: project_receipts; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6059,7 +7828,7 @@ CREATE TABLE public.project_receipts (
 ALTER TABLE public.project_receipts OWNER TO postgres;
 
 --
--- TOC entry 314 (class 1259 OID 26187)
+-- TOC entry 316 (class 1259 OID 26187)
 -- Name: project_stage_templates; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6074,6 +7843,8 @@ CREATE TABLE public.project_stage_templates (
     is_active boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    business_model text NOT NULL,
+    CONSTRAINT project_stage_templates_business_model_chk CHECK ((business_model = ANY (ARRAY['contract_construction'::text, 'property_development'::text, 'civil_works_contract'::text, 'material_supply'::text]))),
     CONSTRAINT project_stage_templates_default_completion_percentage_check CHECK (((default_completion_percentage >= (0)::numeric) AND (default_completion_percentage <= (100)::numeric))),
     CONSTRAINT project_stage_templates_sequence_number_check CHECK ((sequence_number > 0))
 );
@@ -6082,7 +7853,7 @@ CREATE TABLE public.project_stage_templates (
 ALTER TABLE public.project_stage_templates OWNER TO postgres;
 
 --
--- TOC entry 329 (class 1259 OID 26534)
+-- TOC entry 331 (class 1259 OID 26534)
 -- Name: project_stages; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6102,14 +7873,14 @@ CREATE TABLE public.project_stages (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT project_stages_completion_percentage_check CHECK (((completion_percentage >= (0)::numeric) AND (completion_percentage <= (100)::numeric))),
     CONSTRAINT project_stages_sequence_number_check CHECK ((sequence_number > 0)),
-    CONSTRAINT project_stages_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'in_progress'::text, 'completed'::text, 'on_hold'::text])))
+    CONSTRAINT project_stages_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'in_progress'::text, 'completed'::text, 'on_hold'::text, 'skipped'::text])))
 );
 
 
 ALTER TABLE public.project_stages OWNER TO postgres;
 
 --
--- TOC entry 309 (class 1259 OID 26091)
+-- TOC entry 311 (class 1259 OID 26091)
 -- Name: project_types; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6129,7 +7900,30 @@ CREATE TABLE public.project_types (
 ALTER TABLE public.project_types OWNER TO postgres;
 
 --
--- TOC entry 328 (class 1259 OID 26490)
+-- TOC entry 352 (class 1259 OID 27565)
+-- Name: project_units; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.project_units (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    company_id uuid NOT NULL,
+    project_id uuid NOT NULL,
+    flat_no text NOT NULL,
+    floor integer,
+    block_tower text,
+    share_type text NOT NULL,
+    status text DEFAULT 'available'::text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT project_units_check CHECK (((status = ANY (ARRAY['available'::text, 'allocated'::text, 'booked'::text])) AND (((share_type = 'builder'::text) AND (status = ANY (ARRAY['available'::text, 'allocated'::text, 'booked'::text]))) OR ((share_type = 'landowner'::text) AND (status = ANY (ARRAY['allocated'::text, 'booked'::text])))))),
+    CONSTRAINT project_units_share_type_check CHECK ((share_type = ANY (ARRAY['builder'::text, 'landowner'::text])))
+);
+
+
+ALTER TABLE public.project_units OWNER TO postgres;
+
+--
+-- TOC entry 330 (class 1259 OID 26490)
 -- Name: projects; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6153,15 +7947,87 @@ CREATE TABLE public.projects (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone,
+    budget_amount numeric(18,2),
+    business_model text,
+    projected_sales_value numeric(18,2),
+    land_cost numeric(18,2),
+    development_arrangement text,
+    total_project_flats integer,
+    landowner_party_id uuid,
+    jda_agreement_reference text,
+    jda_agreement_document_url text,
+    jda_agreement_date date,
+    builder_share_units integer,
+    landowner_share_units integer,
+    CONSTRAINT projects_budget_amount_check CHECK (((budget_amount IS NULL) OR (budget_amount >= (0)::numeric))),
+    CONSTRAINT projects_builder_share_units_non_negative_chk CHECK (((builder_share_units IS NULL) OR (builder_share_units >= 0))),
+    CONSTRAINT projects_business_model_check CHECK (((business_model IS NULL) OR (business_model = ANY (ARRAY['contract_construction'::text, 'property_development'::text, 'civil_works_contract'::text, 'material_supply'::text])))),
     CONSTRAINT projects_contract_amount_check CHECK ((contract_amount >= (0)::numeric)),
-    CONSTRAINT projects_status_check CHECK ((status = ANY (ARRAY['planned'::text, 'in_progress'::text, 'on_hold'::text, 'completed'::text, 'cancelled'::text])))
+    CONSTRAINT projects_development_arrangement_chk CHECK (((development_arrangement IS NULL) OR (development_arrangement = ANY (ARRAY['self'::text, 'joint_development'::text])))),
+    CONSTRAINT projects_land_cost_check CHECK (((land_cost IS NULL) OR (land_cost >= (0)::numeric))),
+    CONSTRAINT projects_landowner_share_units_non_negative_chk CHECK (((landowner_share_units IS NULL) OR (landowner_share_units >= 0))),
+    CONSTRAINT projects_projected_sales_value_check CHECK (((projected_sales_value IS NULL) OR (projected_sales_value >= (0)::numeric))),
+    CONSTRAINT projects_status_check CHECK ((status = ANY (ARRAY['planned'::text, 'in_progress'::text, 'on_hold'::text, 'completed'::text, 'cancelled'::text]))),
+    CONSTRAINT projects_total_project_flats_positive_chk CHECK (((total_project_flats IS NULL) OR (total_project_flats > 0)))
 );
 
 
 ALTER TABLE public.projects OWNER TO postgres;
 
 --
--- TOC entry 303 (class 1259 OID 25971)
+-- TOC entry 347 (class 1259 OID 27183)
+-- Name: purchase_order_lines; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.purchase_order_lines (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    purchase_order_id uuid NOT NULL,
+    description text NOT NULL,
+    quantity numeric(18,4) DEFAULT 0 NOT NULL,
+    unit text,
+    rate numeric(18,2) DEFAULT 0 NOT NULL,
+    line_amount numeric(18,2) DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT purchase_order_lines_line_amount_check CHECK ((line_amount >= (0)::numeric)),
+    CONSTRAINT purchase_order_lines_quantity_check CHECK ((quantity >= (0)::numeric)),
+    CONSTRAINT purchase_order_lines_rate_check CHECK ((rate >= (0)::numeric))
+);
+
+
+ALTER TABLE public.purchase_order_lines OWNER TO postgres;
+
+--
+-- TOC entry 346 (class 1259 OID 27147)
+-- Name: purchase_orders; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.purchase_orders (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    company_id uuid NOT NULL,
+    project_id uuid NOT NULL,
+    supplier_party_id uuid NOT NULL,
+    po_number text NOT NULL,
+    order_date date DEFAULT CURRENT_DATE NOT NULL,
+    expected_delivery_date date,
+    status text DEFAULT 'draft'::text NOT NULL,
+    subtotal numeric(18,2) DEFAULT 0 NOT NULL,
+    tax_amount numeric(18,2) DEFAULT 0 NOT NULL,
+    total_amount numeric(18,2) DEFAULT 0 NOT NULL,
+    notes text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT purchase_orders_status_check CHECK ((status = ANY (ARRAY['draft'::text, 'approved'::text, 'cancelled'::text, 'closed'::text]))),
+    CONSTRAINT purchase_orders_subtotal_check CHECK ((subtotal >= (0)::numeric)),
+    CONSTRAINT purchase_orders_tax_amount_check CHECK ((tax_amount >= (0)::numeric)),
+    CONSTRAINT purchase_orders_total_amount_check CHECK ((total_amount >= (0)::numeric))
+);
+
+
+ALTER TABLE public.purchase_orders OWNER TO postgres;
+
+--
+-- TOC entry 305 (class 1259 OID 25971)
 -- Name: refresh_tokens; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6180,7 +8046,7 @@ CREATE TABLE public.refresh_tokens (
 ALTER TABLE public.refresh_tokens OWNER TO postgres;
 
 --
--- TOC entry 327 (class 1259 OID 26469)
+-- TOC entry 329 (class 1259 OID 26469)
 -- Name: subscription_payments; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6203,7 +8069,7 @@ CREATE TABLE public.subscription_payments (
 ALTER TABLE public.subscription_payments OWNER TO postgres;
 
 --
--- TOC entry 338 (class 1259 OID 26875)
+-- TOC entry 340 (class 1259 OID 26875)
 -- Name: suppliers; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6222,7 +8088,7 @@ CREATE TABLE public.suppliers (
 ALTER TABLE public.suppliers OWNER TO postgres;
 
 --
--- TOC entry 313 (class 1259 OID 26167)
+-- TOC entry 315 (class 1259 OID 26167)
 -- Name: tax_rates; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6245,7 +8111,7 @@ CREATE TABLE public.tax_rates (
 ALTER TABLE public.tax_rates OWNER TO postgres;
 
 --
--- TOC entry 311 (class 1259 OID 26129)
+-- TOC entry 313 (class 1259 OID 26129)
 -- Name: units_of_measure; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6265,7 +8131,7 @@ CREATE TABLE public.units_of_measure (
 ALTER TABLE public.units_of_measure OWNER TO postgres;
 
 --
--- TOC entry 302 (class 1259 OID 25954)
+-- TOC entry 304 (class 1259 OID 25954)
 -- Name: user_profiles; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6285,7 +8151,7 @@ CREATE TABLE public.user_profiles (
 ALTER TABLE public.user_profiles OWNER TO postgres;
 
 --
--- TOC entry 301 (class 1259 OID 25937)
+-- TOC entry 303 (class 1259 OID 25937)
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -6307,7 +8173,7 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- TOC entry 284 (class 1259 OID 17243)
+-- TOC entry 286 (class 1259 OID 17243)
 -- Name: messages; Type: TABLE; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -6329,7 +8195,7 @@ PARTITION BY RANGE (inserted_at);
 ALTER TABLE realtime.messages OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 285 (class 1259 OID 17250)
+-- TOC entry 287 (class 1259 OID 17250)
 -- Name: schema_migrations; Type: TABLE; Schema: realtime; Owner: supabase_admin
 --
 
@@ -6342,7 +8208,7 @@ CREATE TABLE realtime.schema_migrations (
 ALTER TABLE realtime.schema_migrations OWNER TO supabase_admin;
 
 --
--- TOC entry 286 (class 1259 OID 17253)
+-- TOC entry 288 (class 1259 OID 17253)
 -- Name: subscription; Type: TABLE; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -6363,7 +8229,7 @@ CREATE TABLE realtime.subscription (
 ALTER TABLE realtime.subscription OWNER TO supabase_realtime_admin;
 
 --
--- TOC entry 287 (class 1259 OID 17263)
+-- TOC entry 289 (class 1259 OID 17263)
 -- Name: subscription_id_seq; Type: SEQUENCE; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -6378,7 +8244,35 @@ ALTER TABLE realtime.subscription ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTI
 
 
 --
--- TOC entry 289 (class 1259 OID 17294)
+-- TOC entry 350 (class 1259 OID 27506)
+-- Name: bucket_lifecycle_states; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE TABLE storage.bucket_lifecycle_states (
+    bucket_id text NOT NULL,
+    generation uuid,
+    next_run_at timestamp with time zone,
+    claim_id uuid,
+    claim_until timestamp with time zone,
+    continuation jsonb,
+    last_started_at timestamp with time zone,
+    last_completed_at timestamp with time zone,
+    last_success_at timestamp with time zone,
+    last_result jsonb,
+    failure_count integer DEFAULT 0 NOT NULL,
+    last_error jsonb,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT bucket_lifecycle_continuation_object_check CHECK (((continuation IS NULL) OR (jsonb_typeof(continuation) = 'object'::text))),
+    CONSTRAINT bucket_lifecycle_failure_count_check CHECK ((failure_count >= 0)),
+    CONSTRAINT bucket_lifecycle_last_result_object_check CHECK (((last_result IS NULL) OR (jsonb_typeof(last_result) = 'object'::text))),
+    CONSTRAINT bucket_lifecycle_recovery_due_check CHECK (((next_run_at IS NOT NULL) OR (NOT jsonb_path_exists(COALESCE(continuation, '{}'::jsonb), '$."batch"."inFlight"'::jsonpath))))
+);
+
+
+ALTER TABLE storage.bucket_lifecycle_states OWNER TO supabase_storage_admin;
+
+--
+-- TOC entry 291 (class 1259 OID 17294)
 -- Name: buckets; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6404,7 +8298,6 @@ CASE
     ELSE false
 END))),
     CONSTRAINT buckets_lifecycle_configuration_standard_only_check CHECK (((type = 'STANDARD'::storage.buckettype) OR ((lifecycle_configuration IS NULL) AND (lifecycle_configuration_generation IS NULL)))),
-    CONSTRAINT buckets_versioning_dark_check CHECK ((versioning_status = 'DISABLED'::text)),
     CONSTRAINT buckets_versioning_standard_only_check CHECK (((type = 'STANDARD'::storage.buckettype) OR (versioning_status = 'DISABLED'::text))),
     CONSTRAINT buckets_versioning_status_check CHECK ((versioning_status = ANY (ARRAY['DISABLED'::text, 'ENABLED'::text, 'SUSPENDED'::text])))
 );
@@ -6413,8 +8306,8 @@ END))),
 ALTER TABLE storage.buckets OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 5229 (class 0 OID 0)
--- Dependencies: 289
+-- TOC entry 5536 (class 0 OID 0)
+-- Dependencies: 291
 -- Name: COLUMN buckets.owner; Type: COMMENT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6422,7 +8315,7 @@ COMMENT ON COLUMN storage.buckets.owner IS 'Field is deprecated, use owner_id in
 
 
 --
--- TOC entry 293 (class 1259 OID 17414)
+-- TOC entry 295 (class 1259 OID 17414)
 -- Name: buckets_analytics; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6440,7 +8333,7 @@ CREATE TABLE storage.buckets_analytics (
 ALTER TABLE storage.buckets_analytics OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 294 (class 1259 OID 17427)
+-- TOC entry 296 (class 1259 OID 17427)
 -- Name: buckets_vectors; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6455,7 +8348,23 @@ CREATE TABLE storage.buckets_vectors (
 ALTER TABLE storage.buckets_vectors OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 288 (class 1259 OID 17286)
+-- TOC entry 351 (class 1259 OID 27534)
+-- Name: lifecycle_abandoned_artifacts; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE TABLE storage.lifecycle_abandoned_artifacts (
+    bucket_id text NOT NULL,
+    key text NOT NULL,
+    name text NOT NULL,
+    version text,
+    attempted_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE storage.lifecycle_abandoned_artifacts OWNER TO supabase_storage_admin;
+
+--
+-- TOC entry 290 (class 1259 OID 17286)
 -- Name: migrations; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6470,7 +8379,7 @@ CREATE TABLE storage.migrations (
 ALTER TABLE storage.migrations OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 290 (class 1259 OID 17304)
+-- TOC entry 292 (class 1259 OID 17304)
 -- Name: objects; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6496,8 +8405,8 @@ CREATE TABLE storage.objects (
 ALTER TABLE storage.objects OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 5233 (class 0 OID 0)
--- Dependencies: 290
+-- TOC entry 5541 (class 0 OID 0)
+-- Dependencies: 292
 -- Name: COLUMN objects.owner; Type: COMMENT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6505,7 +8414,7 @@ COMMENT ON COLUMN storage.objects.owner IS 'Field is deprecated, use owner_id in
 
 
 --
--- TOC entry 291 (class 1259 OID 17353)
+-- TOC entry 293 (class 1259 OID 17353)
 -- Name: s3_multipart_uploads; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6526,7 +8435,7 @@ CREATE TABLE storage.s3_multipart_uploads (
 ALTER TABLE storage.s3_multipart_uploads OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 292 (class 1259 OID 17367)
+-- TOC entry 294 (class 1259 OID 17367)
 -- Name: s3_multipart_uploads_parts; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6547,7 +8456,7 @@ CREATE TABLE storage.s3_multipart_uploads_parts (
 ALTER TABLE storage.s3_multipart_uploads_parts OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 295 (class 1259 OID 17437)
+-- TOC entry 297 (class 1259 OID 17437)
 -- Name: vector_indexes; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -6567,7 +8476,7 @@ CREATE TABLE storage.vector_indexes (
 ALTER TABLE storage.vector_indexes OWNER TO supabase_storage_admin;
 
 --
--- TOC entry 3832 (class 2604 OID 16514)
+-- TOC entry 3884 (class 2604 OID 16514)
 -- Name: refresh_tokens id; Type: DEFAULT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6575,7 +8484,7 @@ ALTER TABLE ONLY auth.refresh_tokens ALTER COLUMN id SET DEFAULT nextval('auth.r
 
 
 --
--- TOC entry 4329 (class 2606 OID 16789)
+-- TOC entry 4477 (class 2606 OID 16789)
 -- Name: mfa_amr_claims amr_id_pk; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6584,7 +8493,7 @@ ALTER TABLE ONLY auth.mfa_amr_claims
 
 
 --
--- TOC entry 4298 (class 2606 OID 16535)
+-- TOC entry 4446 (class 2606 OID 16535)
 -- Name: audit_log_entries audit_log_entries_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6593,7 +8502,7 @@ ALTER TABLE ONLY auth.audit_log_entries
 
 
 --
--- TOC entry 4384 (class 2606 OID 17121)
+-- TOC entry 4533 (class 2606 OID 17121)
 -- Name: custom_oauth_providers custom_oauth_providers_identifier_key; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6602,7 +8511,7 @@ ALTER TABLE ONLY auth.custom_oauth_providers
 
 
 --
--- TOC entry 4386 (class 2606 OID 17119)
+-- TOC entry 4535 (class 2606 OID 17119)
 -- Name: custom_oauth_providers custom_oauth_providers_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6611,7 +8520,7 @@ ALTER TABLE ONLY auth.custom_oauth_providers
 
 
 --
--- TOC entry 4352 (class 2606 OID 16895)
+-- TOC entry 4500 (class 2606 OID 16895)
 -- Name: flow_state flow_state_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6620,7 +8529,7 @@ ALTER TABLE ONLY auth.flow_state
 
 
 --
--- TOC entry 4307 (class 2606 OID 16913)
+-- TOC entry 4455 (class 2606 OID 16913)
 -- Name: identities identities_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6629,7 +8538,7 @@ ALTER TABLE ONLY auth.identities
 
 
 --
--- TOC entry 4309 (class 2606 OID 16923)
+-- TOC entry 4457 (class 2606 OID 16923)
 -- Name: identities identities_provider_id_provider_unique; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6638,7 +8547,7 @@ ALTER TABLE ONLY auth.identities
 
 
 --
--- TOC entry 4296 (class 2606 OID 16528)
+-- TOC entry 4444 (class 2606 OID 16528)
 -- Name: instances instances_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6647,7 +8556,7 @@ ALTER TABLE ONLY auth.instances
 
 
 --
--- TOC entry 4331 (class 2606 OID 16782)
+-- TOC entry 4479 (class 2606 OID 16782)
 -- Name: mfa_amr_claims mfa_amr_claims_session_id_authentication_method_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6656,7 +8565,7 @@ ALTER TABLE ONLY auth.mfa_amr_claims
 
 
 --
--- TOC entry 4327 (class 2606 OID 16770)
+-- TOC entry 4475 (class 2606 OID 16770)
 -- Name: mfa_challenges mfa_challenges_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6665,7 +8574,7 @@ ALTER TABLE ONLY auth.mfa_challenges
 
 
 --
--- TOC entry 4319 (class 2606 OID 16963)
+-- TOC entry 4467 (class 2606 OID 16963)
 -- Name: mfa_factors mfa_factors_last_challenged_at_key; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6674,7 +8583,7 @@ ALTER TABLE ONLY auth.mfa_factors
 
 
 --
--- TOC entry 4321 (class 2606 OID 16757)
+-- TOC entry 4469 (class 2606 OID 16757)
 -- Name: mfa_factors mfa_factors_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6683,7 +8592,7 @@ ALTER TABLE ONLY auth.mfa_factors
 
 
 --
--- TOC entry 4454 (class 2606 OID 25563)
+-- TOC entry 4605 (class 2606 OID 25563)
 -- Name: mfa_recovery_code_sets mfa_recovery_code_sets_mfa_factor_id_key; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6692,7 +8601,7 @@ ALTER TABLE ONLY auth.mfa_recovery_code_sets
 
 
 --
--- TOC entry 4456 (class 2606 OID 25559)
+-- TOC entry 4607 (class 2606 OID 25559)
 -- Name: mfa_recovery_code_sets mfa_recovery_code_sets_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6701,7 +8610,7 @@ ALTER TABLE ONLY auth.mfa_recovery_code_sets
 
 
 --
--- TOC entry 4458 (class 2606 OID 25561)
+-- TOC entry 4609 (class 2606 OID 25561)
 -- Name: mfa_recovery_code_sets mfa_recovery_code_sets_user_id_key; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6710,7 +8619,7 @@ ALTER TABLE ONLY auth.mfa_recovery_code_sets
 
 
 --
--- TOC entry 4460 (class 2606 OID 25581)
+-- TOC entry 4611 (class 2606 OID 25581)
 -- Name: mfa_recovery_codes mfa_recovery_codes_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6719,7 +8628,7 @@ ALTER TABLE ONLY auth.mfa_recovery_codes
 
 
 --
--- TOC entry 4365 (class 2606 OID 17022)
+-- TOC entry 4514 (class 2606 OID 17022)
 -- Name: oauth_authorizations oauth_authorizations_authorization_code_key; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6728,7 +8637,7 @@ ALTER TABLE ONLY auth.oauth_authorizations
 
 
 --
--- TOC entry 4367 (class 2606 OID 17020)
+-- TOC entry 4516 (class 2606 OID 17020)
 -- Name: oauth_authorizations oauth_authorizations_authorization_id_key; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6737,7 +8646,7 @@ ALTER TABLE ONLY auth.oauth_authorizations
 
 
 --
--- TOC entry 4369 (class 2606 OID 17018)
+-- TOC entry 4518 (class 2606 OID 17018)
 -- Name: oauth_authorizations oauth_authorizations_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6746,7 +8655,7 @@ ALTER TABLE ONLY auth.oauth_authorizations
 
 
 --
--- TOC entry 4379 (class 2606 OID 17080)
+-- TOC entry 4528 (class 2606 OID 17080)
 -- Name: oauth_client_states oauth_client_states_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6755,7 +8664,7 @@ ALTER TABLE ONLY auth.oauth_client_states
 
 
 --
--- TOC entry 4362 (class 2606 OID 16982)
+-- TOC entry 4511 (class 2606 OID 16982)
 -- Name: oauth_clients oauth_clients_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6764,7 +8673,7 @@ ALTER TABLE ONLY auth.oauth_clients
 
 
 --
--- TOC entry 4373 (class 2606 OID 17044)
+-- TOC entry 4522 (class 2606 OID 17044)
 -- Name: oauth_consents oauth_consents_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6773,7 +8682,7 @@ ALTER TABLE ONLY auth.oauth_consents
 
 
 --
--- TOC entry 4375 (class 2606 OID 17046)
+-- TOC entry 4524 (class 2606 OID 17046)
 -- Name: oauth_consents oauth_consents_user_client_unique; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6782,7 +8691,7 @@ ALTER TABLE ONLY auth.oauth_consents
 
 
 --
--- TOC entry 4356 (class 2606 OID 16948)
+-- TOC entry 4505 (class 2606 OID 16948)
 -- Name: one_time_tokens one_time_tokens_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6791,7 +8700,7 @@ ALTER TABLE ONLY auth.one_time_tokens
 
 
 --
--- TOC entry 4290 (class 2606 OID 16518)
+-- TOC entry 4438 (class 2606 OID 16518)
 -- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6800,7 +8709,7 @@ ALTER TABLE ONLY auth.refresh_tokens
 
 
 --
--- TOC entry 4293 (class 2606 OID 16700)
+-- TOC entry 4441 (class 2606 OID 16700)
 -- Name: refresh_tokens refresh_tokens_token_unique; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6809,7 +8718,7 @@ ALTER TABLE ONLY auth.refresh_tokens
 
 
 --
--- TOC entry 4341 (class 2606 OID 16829)
+-- TOC entry 4489 (class 2606 OID 16829)
 -- Name: saml_providers saml_providers_entity_id_key; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6818,7 +8727,7 @@ ALTER TABLE ONLY auth.saml_providers
 
 
 --
--- TOC entry 4343 (class 2606 OID 16827)
+-- TOC entry 4491 (class 2606 OID 16827)
 -- Name: saml_providers saml_providers_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6827,7 +8736,7 @@ ALTER TABLE ONLY auth.saml_providers
 
 
 --
--- TOC entry 4348 (class 2606 OID 16843)
+-- TOC entry 4496 (class 2606 OID 16843)
 -- Name: saml_relay_states saml_relay_states_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6836,7 +8745,7 @@ ALTER TABLE ONLY auth.saml_relay_states
 
 
 --
--- TOC entry 4301 (class 2606 OID 16541)
+-- TOC entry 4449 (class 2606 OID 16541)
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6845,7 +8754,7 @@ ALTER TABLE ONLY auth.schema_migrations
 
 
 --
--- TOC entry 4449 (class 2606 OID 25540)
+-- TOC entry 4600 (class 2606 OID 25540)
 -- Name: scim_tokens scim_tokens_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6854,7 +8763,7 @@ ALTER TABLE ONLY auth.scim_tokens
 
 
 --
--- TOC entry 4441 (class 2606 OID 25510)
+-- TOC entry 4592 (class 2606 OID 25510)
 -- Name: scim_users scim_users_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6863,7 +8772,7 @@ ALTER TABLE ONLY auth.scim_users
 
 
 --
--- TOC entry 4314 (class 2606 OID 16721)
+-- TOC entry 4462 (class 2606 OID 16721)
 -- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6872,7 +8781,7 @@ ALTER TABLE ONLY auth.sessions
 
 
 --
--- TOC entry 4338 (class 2606 OID 16810)
+-- TOC entry 4486 (class 2606 OID 16810)
 -- Name: sso_domains sso_domains_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6881,7 +8790,7 @@ ALTER TABLE ONLY auth.sso_domains
 
 
 --
--- TOC entry 4333 (class 2606 OID 16801)
+-- TOC entry 4481 (class 2606 OID 16801)
 -- Name: sso_providers sso_providers_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6890,7 +8799,7 @@ ALTER TABLE ONLY auth.sso_providers
 
 
 --
--- TOC entry 4283 (class 2606 OID 16883)
+-- TOC entry 4431 (class 2606 OID 16883)
 -- Name: users users_phone_key; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6899,7 +8808,7 @@ ALTER TABLE ONLY auth.users
 
 
 --
--- TOC entry 4285 (class 2606 OID 16505)
+-- TOC entry 4433 (class 2606 OID 16505)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6908,7 +8817,7 @@ ALTER TABLE ONLY auth.users
 
 
 --
--- TOC entry 4394 (class 2606 OID 17158)
+-- TOC entry 4543 (class 2606 OID 17158)
 -- Name: webauthn_challenges webauthn_challenges_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6917,7 +8826,7 @@ ALTER TABLE ONLY auth.webauthn_challenges
 
 
 --
--- TOC entry 4390 (class 2606 OID 17141)
+-- TOC entry 4539 (class 2606 OID 17141)
 -- Name: webauthn_credentials webauthn_credentials_pkey; Type: CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -6926,7 +8835,7 @@ ALTER TABLE ONLY auth.webauthn_credentials
 
 
 --
--- TOC entry 4544 (class 2606 OID 26425)
+-- TOC entry 4711 (class 2606 OID 26425)
 -- Name: booking_receipt_details booking_receipt_details_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6935,7 +8844,7 @@ ALTER TABLE ONLY public.booking_receipt_details
 
 
 --
--- TOC entry 4479 (class 2606 OID 26017)
+-- TOC entry 4632 (class 2606 OID 26017)
 -- Name: companies companies_id_owner_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6944,7 +8853,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- TOC entry 4481 (class 2606 OID 26015)
+-- TOC entry 4634 (class 2606 OID 26015)
 -- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6953,7 +8862,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- TOC entry 4548 (class 2606 OID 26463)
+-- TOC entry 4717 (class 2606 OID 26463)
 -- Name: company_quotation_usage company_quotation_usage_company_id_usage_year_usage_month_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6962,7 +8871,7 @@ ALTER TABLE ONLY public.company_quotation_usage
 
 
 --
--- TOC entry 4550 (class 2606 OID 26461)
+-- TOC entry 4719 (class 2606 OID 26461)
 -- Name: company_quotation_usage company_quotation_usage_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6971,7 +8880,7 @@ ALTER TABLE ONLY public.company_quotation_usage
 
 
 --
--- TOC entry 4483 (class 2606 OID 26037)
+-- TOC entry 4636 (class 2606 OID 26037)
 -- Name: company_settings company_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6980,7 +8889,7 @@ ALTER TABLE ONLY public.company_settings
 
 
 --
--- TOC entry 4546 (class 2606 OID 26444)
+-- TOC entry 4715 (class 2606 OID 26444)
 -- Name: company_subscriptions company_subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6989,7 +8898,7 @@ ALTER TABLE ONLY public.company_subscriptions
 
 
 --
--- TOC entry 4485 (class 2606 OID 26057)
+-- TOC entry 4638 (class 2606 OID 26057)
 -- Name: company_users company_users_company_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6998,7 +8907,7 @@ ALTER TABLE ONLY public.company_users
 
 
 --
--- TOC entry 4487 (class 2606 OID 26055)
+-- TOC entry 4640 (class 2606 OID 26055)
 -- Name: company_users company_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7007,7 +8916,7 @@ ALTER TABLE ONLY public.company_users
 
 
 --
--- TOC entry 4490 (class 2606 OID 26080)
+-- TOC entry 4643 (class 2606 OID 26080)
 -- Name: customers customers_id_company_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7016,7 +8925,7 @@ ALTER TABLE ONLY public.customers
 
 
 --
--- TOC entry 4492 (class 2606 OID 26078)
+-- TOC entry 4645 (class 2606 OID 26078)
 -- Name: customers customers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7025,7 +8934,7 @@ ALTER TABLE ONLY public.customers
 
 
 --
--- TOC entry 4538 (class 2606 OID 26381)
+-- TOC entry 4702 (class 2606 OID 26381)
 -- Name: document_exclusions document_exclusions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7034,7 +8943,7 @@ ALTER TABLE ONLY public.document_exclusions
 
 
 --
--- TOC entry 4536 (class 2606 OID 26368)
+-- TOC entry 4699 (class 2606 OID 26368)
 -- Name: document_inclusions document_inclusions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7043,7 +8952,7 @@ ALTER TABLE ONLY public.document_inclusions
 
 
 --
--- TOC entry 4532 (class 2606 OID 26335)
+-- TOC entry 4693 (class 2606 OID 26335)
 -- Name: document_items document_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7052,7 +8961,7 @@ ALTER TABLE ONLY public.document_items
 
 
 --
--- TOC entry 4530 (class 2606 OID 26314)
+-- TOC entry 4690 (class 2606 OID 26314)
 -- Name: document_sections document_sections_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7061,7 +8970,7 @@ ALTER TABLE ONLY public.document_sections
 
 
 --
--- TOC entry 4518 (class 2606 OID 26227)
+-- TOC entry 4675 (class 2606 OID 26227)
 -- Name: document_sequences document_sequences_company_id_document_type_financial_year_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7070,7 +8979,7 @@ ALTER TABLE ONLY public.document_sequences
 
 
 --
--- TOC entry 4520 (class 2606 OID 26225)
+-- TOC entry 4677 (class 2606 OID 26225)
 -- Name: document_sequences document_sequences_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7079,7 +8988,7 @@ ALTER TABLE ONLY public.document_sequences
 
 
 --
--- TOC entry 4534 (class 2606 OID 26355)
+-- TOC entry 4696 (class 2606 OID 26355)
 -- Name: document_specifications document_specifications_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7088,7 +8997,7 @@ ALTER TABLE ONLY public.document_specifications
 
 
 --
--- TOC entry 4542 (class 2606 OID 26413)
+-- TOC entry 4708 (class 2606 OID 26413)
 -- Name: document_terms document_terms_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7097,7 +9006,7 @@ ALTER TABLE ONLY public.document_terms
 
 
 --
--- TOC entry 4522 (class 2606 OID 26272)
+-- TOC entry 4679 (class 2606 OID 26272)
 -- Name: documents documents_company_id_document_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7106,7 +9015,7 @@ ALTER TABLE ONLY public.documents
 
 
 --
--- TOC entry 4524 (class 2606 OID 26274)
+-- TOC entry 4681 (class 2606 OID 26274)
 -- Name: documents documents_id_company_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7115,7 +9024,7 @@ ALTER TABLE ONLY public.documents
 
 
 --
--- TOC entry 4526 (class 2606 OID 26270)
+-- TOC entry 4683 (class 2606 OID 26270)
 -- Name: documents documents_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7124,7 +9033,7 @@ ALTER TABLE ONLY public.documents
 
 
 --
--- TOC entry 4498 (class 2606 OID 26121)
+-- TOC entry 4654 (class 2606 OID 26121)
 -- Name: expense_categories expense_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7133,7 +9042,7 @@ ALTER TABLE ONLY public.expense_categories
 
 
 --
--- TOC entry 4628 (class 2606 OID 27031)
+-- TOC entry 4817 (class 2606 OID 27031)
 -- Name: investors investors_id_company_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7142,7 +9051,7 @@ ALTER TABLE ONLY public.investors
 
 
 --
--- TOC entry 4630 (class 2606 OID 27029)
+-- TOC entry 4819 (class 2606 OID 27029)
 -- Name: investors investors_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7151,7 +9060,7 @@ ALTER TABLE ONLY public.investors
 
 
 --
--- TOC entry 4621 (class 2606 OID 26992)
+-- TOC entry 4810 (class 2606 OID 26992)
 -- Name: invoice_items invoice_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7160,7 +9069,7 @@ ALTER TABLE ONLY public.invoice_items
 
 
 --
--- TOC entry 4614 (class 2606 OID 26958)
+-- TOC entry 4803 (class 2606 OID 26958)
 -- Name: invoices invoices_company_id_invoice_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7169,7 +9078,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- TOC entry 4616 (class 2606 OID 26956)
+-- TOC entry 4805 (class 2606 OID 26956)
 -- Name: invoices invoices_id_company_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7178,7 +9087,7 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- TOC entry 4618 (class 2606 OID 26954)
+-- TOC entry 4807 (class 2606 OID 26954)
 -- Name: invoices invoices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7187,7 +9096,43 @@ ALTER TABLE ONLY public.invoices
 
 
 --
--- TOC entry 4475 (class 2606 OID 25995)
+-- TOC entry 4850 (class 2606 OID 27265)
+-- Name: material_receipt_lines material_receipt_lines_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipt_lines
+    ADD CONSTRAINT material_receipt_lines_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4843 (class 2606 OID 27223)
+-- Name: material_receipts material_receipts_company_id_receipt_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipts
+    ADD CONSTRAINT material_receipts_company_id_receipt_number_key UNIQUE (company_id, receipt_number);
+
+
+--
+-- TOC entry 4845 (class 2606 OID 27221)
+-- Name: material_receipts material_receipts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipts
+    ADD CONSTRAINT material_receipts_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4824 (class 2606 OID 27114)
+-- Name: parties parties_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.parties
+    ADD CONSTRAINT parties_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4628 (class 2606 OID 25995)
 -- Name: password_resets password_resets_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7196,7 +9141,7 @@ ALTER TABLE ONLY public.password_resets
 
 
 --
--- TOC entry 4477 (class 2606 OID 25997)
+-- TOC entry 4630 (class 2606 OID 25997)
 -- Name: password_resets password_resets_token_hash_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7205,7 +9150,7 @@ ALTER TABLE ONLY public.password_resets
 
 
 --
--- TOC entry 4625 (class 2606 OID 27005)
+-- TOC entry 4814 (class 2606 OID 27005)
 -- Name: payment_allocations payment_allocations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7214,7 +9159,7 @@ ALTER TABLE ONLY public.payment_allocations
 
 
 --
--- TOC entry 4506 (class 2606 OID 26159)
+-- TOC entry 4662 (class 2606 OID 26159)
 -- Name: payment_methods payment_methods_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7223,7 +9168,7 @@ ALTER TABLE ONLY public.payment_methods
 
 
 --
--- TOC entry 4540 (class 2606 OID 26398)
+-- TOC entry 4706 (class 2606 OID 26398)
 -- Name: payment_schedules payment_schedules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7232,7 +9177,7 @@ ALTER TABLE ONLY public.payment_schedules
 
 
 --
--- TOC entry 4435 (class 2606 OID 17487)
+-- TOC entry 4586 (class 2606 OID 17487)
 -- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7241,7 +9186,7 @@ ALTER TABLE ONLY public.profiles
 
 
 --
--- TOC entry 4595 (class 2606 OID 26726)
+-- TOC entry 4779 (class 2606 OID 26726)
 -- Name: project_attachments project_attachments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7250,7 +9195,7 @@ ALTER TABLE ONLY public.project_attachments
 
 
 --
--- TOC entry 4591 (class 2606 OID 26697)
+-- TOC entry 4772 (class 2606 OID 26697)
 -- Name: project_client_access project_client_access_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7259,7 +9204,7 @@ ALTER TABLE ONLY public.project_client_access
 
 
 --
--- TOC entry 4593 (class 2606 OID 26699)
+-- TOC entry 4774 (class 2606 OID 26699)
 -- Name: project_client_access project_client_access_project_id_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7268,7 +9213,7 @@ ALTER TABLE ONLY public.project_client_access
 
 
 --
--- TOC entry 4580 (class 2606 OID 26637)
+-- TOC entry 4759 (class 2606 OID 26637)
 -- Name: project_expense_payments project_expense_payments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7277,7 +9222,7 @@ ALTER TABLE ONLY public.project_expense_payments
 
 
 --
--- TOC entry 4576 (class 2606 OID 26610)
+-- TOC entry 4753 (class 2606 OID 26610)
 -- Name: project_expenses project_expenses_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7286,7 +9231,7 @@ ALTER TABLE ONLY public.project_expenses
 
 
 --
--- TOC entry 4606 (class 2606 OID 26793)
+-- TOC entry 4793 (class 2606 OID 26793)
 -- Name: project_investor_contributions project_investor_contributions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7295,7 +9240,7 @@ ALTER TABLE ONLY public.project_investor_contributions
 
 
 --
--- TOC entry 4597 (class 2606 OID 26767)
+-- TOC entry 4784 (class 2606 OID 26767)
 -- Name: project_investors project_investors_id_project_id_company_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7304,7 +9249,7 @@ ALTER TABLE ONLY public.project_investors
 
 
 --
--- TOC entry 4599 (class 2606 OID 26761)
+-- TOC entry 4786 (class 2606 OID 26761)
 -- Name: project_investors project_investors_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7313,7 +9258,7 @@ ALTER TABLE ONLY public.project_investors
 
 
 --
--- TOC entry 4601 (class 2606 OID 26765)
+-- TOC entry 4788 (class 2606 OID 26765)
 -- Name: project_investors project_investors_project_id_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7322,7 +9267,7 @@ ALTER TABLE ONLY public.project_investors
 
 
 --
--- TOC entry 4603 (class 2606 OID 26763)
+-- TOC entry 4790 (class 2606 OID 26763)
 -- Name: project_investors project_investors_project_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7331,7 +9276,7 @@ ALTER TABLE ONLY public.project_investors
 
 
 --
--- TOC entry 4571 (class 2606 OID 26575)
+-- TOC entry 4745 (class 2606 OID 26575)
 -- Name: project_progress_updates project_progress_updates_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7340,7 +9285,7 @@ ALTER TABLE ONLY public.project_progress_updates
 
 
 --
--- TOC entry 4584 (class 2606 OID 26667)
+-- TOC entry 4764 (class 2606 OID 26667)
 -- Name: project_receipts project_receipts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7349,7 +9294,7 @@ ALTER TABLE ONLY public.project_receipts
 
 
 --
--- TOC entry 4586 (class 2606 OID 26669)
+-- TOC entry 4766 (class 2606 OID 26669)
 -- Name: project_receipts project_receipts_project_id_receipt_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7358,7 +9303,7 @@ ALTER TABLE ONLY public.project_receipts
 
 
 --
--- TOC entry 4514 (class 2606 OID 26200)
+-- TOC entry 4671 (class 2606 OID 26200)
 -- Name: project_stage_templates project_stage_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7367,7 +9312,7 @@ ALTER TABLE ONLY public.project_stage_templates
 
 
 --
--- TOC entry 4566 (class 2606 OID 26549)
+-- TOC entry 4738 (class 2606 OID 26549)
 -- Name: project_stages project_stages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7376,7 +9321,7 @@ ALTER TABLE ONLY public.project_stages
 
 
 --
--- TOC entry 4568 (class 2606 OID 26551)
+-- TOC entry 4740 (class 2606 OID 26551)
 -- Name: project_stages project_stages_project_id_sequence_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7385,7 +9330,7 @@ ALTER TABLE ONLY public.project_stages
 
 
 --
--- TOC entry 4494 (class 2606 OID 26102)
+-- TOC entry 4650 (class 2606 OID 26102)
 -- Name: project_types project_types_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7394,7 +9339,16 @@ ALTER TABLE ONLY public.project_types
 
 
 --
--- TOC entry 4558 (class 2606 OID 26505)
+-- TOC entry 4861 (class 2606 OID 27577)
+-- Name: project_units project_units_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.project_units
+    ADD CONSTRAINT project_units_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4730 (class 2606 OID 26505)
 -- Name: projects projects_company_id_project_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7403,7 +9357,7 @@ ALTER TABLE ONLY public.projects
 
 
 --
--- TOC entry 4560 (class 2606 OID 26507)
+-- TOC entry 4732 (class 2606 OID 26507)
 -- Name: projects projects_id_company_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7412,7 +9366,7 @@ ALTER TABLE ONLY public.projects
 
 
 --
--- TOC entry 4562 (class 2606 OID 26503)
+-- TOC entry 4734 (class 2606 OID 26503)
 -- Name: projects projects_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7421,7 +9375,34 @@ ALTER TABLE ONLY public.projects
 
 
 --
--- TOC entry 4471 (class 2606 OID 25979)
+-- TOC entry 4836 (class 2606 OID 27198)
+-- Name: purchase_order_lines purchase_order_lines_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.purchase_order_lines
+    ADD CONSTRAINT purchase_order_lines_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4830 (class 2606 OID 27167)
+-- Name: purchase_orders purchase_orders_company_id_po_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.purchase_orders
+    ADD CONSTRAINT purchase_orders_company_id_po_number_key UNIQUE (company_id, po_number);
+
+
+--
+-- TOC entry 4832 (class 2606 OID 27165)
+-- Name: purchase_orders purchase_orders_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.purchase_orders
+    ADD CONSTRAINT purchase_orders_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4623 (class 2606 OID 25979)
 -- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7430,7 +9411,7 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- TOC entry 4473 (class 2606 OID 25981)
+-- TOC entry 4625 (class 2606 OID 25981)
 -- Name: refresh_tokens refresh_tokens_token_hash_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7439,7 +9420,7 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- TOC entry 4552 (class 2606 OID 26482)
+-- TOC entry 4721 (class 2606 OID 26482)
 -- Name: subscription_payments subscription_payments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7448,7 +9429,7 @@ ALTER TABLE ONLY public.subscription_payments
 
 
 --
--- TOC entry 4554 (class 2606 OID 26484)
+-- TOC entry 4723 (class 2606 OID 26484)
 -- Name: subscription_payments subscription_payments_razorpay_order_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7457,7 +9438,7 @@ ALTER TABLE ONLY public.subscription_payments
 
 
 --
--- TOC entry 4608 (class 2606 OID 26885)
+-- TOC entry 4796 (class 2606 OID 26885)
 -- Name: suppliers suppliers_id_company_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7466,7 +9447,7 @@ ALTER TABLE ONLY public.suppliers
 
 
 --
--- TOC entry 4610 (class 2606 OID 26883)
+-- TOC entry 4798 (class 2606 OID 26883)
 -- Name: suppliers suppliers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7475,7 +9456,7 @@ ALTER TABLE ONLY public.suppliers
 
 
 --
--- TOC entry 4510 (class 2606 OID 26179)
+-- TOC entry 4666 (class 2606 OID 26179)
 -- Name: tax_rates tax_rates_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7484,7 +9465,7 @@ ALTER TABLE ONLY public.tax_rates
 
 
 --
--- TOC entry 4502 (class 2606 OID 26140)
+-- TOC entry 4658 (class 2606 OID 26140)
 -- Name: units_of_measure units_of_measure_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7493,7 +9474,7 @@ ALTER TABLE ONLY public.units_of_measure
 
 
 --
--- TOC entry 4500 (class 2606 OID 26123)
+-- TOC entry 4656 (class 2606 OID 26123)
 -- Name: expense_categories uq_expense_categories; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7502,7 +9483,7 @@ ALTER TABLE ONLY public.expense_categories
 
 
 --
--- TOC entry 4508 (class 2606 OID 26161)
+-- TOC entry 4664 (class 2606 OID 26161)
 -- Name: payment_methods uq_payment_methods; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7511,7 +9492,7 @@ ALTER TABLE ONLY public.payment_methods
 
 
 --
--- TOC entry 4578 (class 2606 OID 26892)
+-- TOC entry 4755 (class 2606 OID 26892)
 -- Name: project_expenses uq_project_expenses_id_company; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7520,16 +9501,16 @@ ALTER TABLE ONLY public.project_expenses
 
 
 --
--- TOC entry 4516 (class 2606 OID 26202)
+-- TOC entry 4673 (class 2606 OID 27739)
 -- Name: project_stage_templates uq_project_stage_templates; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_stage_templates
-    ADD CONSTRAINT uq_project_stage_templates UNIQUE NULLS NOT DISTINCT (company_id, project_type_id, template_code);
+    ADD CONSTRAINT uq_project_stage_templates UNIQUE NULLS NOT DISTINCT (company_id, project_type_id, business_model, template_code);
 
 
 --
--- TOC entry 4496 (class 2606 OID 26104)
+-- TOC entry 4652 (class 2606 OID 26104)
 -- Name: project_types uq_project_types; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7538,7 +9519,7 @@ ALTER TABLE ONLY public.project_types
 
 
 --
--- TOC entry 4589 (class 2606 OID 26919)
+-- TOC entry 4769 (class 2606 OID 26919)
 -- Name: project_receipts uq_receipts_id_company; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7547,7 +9528,7 @@ ALTER TABLE ONLY public.project_receipts
 
 
 --
--- TOC entry 4512 (class 2606 OID 26181)
+-- TOC entry 4668 (class 2606 OID 26181)
 -- Name: tax_rates uq_tax_rates; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7556,7 +9537,7 @@ ALTER TABLE ONLY public.tax_rates
 
 
 --
--- TOC entry 4504 (class 2606 OID 26142)
+-- TOC entry 4660 (class 2606 OID 26142)
 -- Name: units_of_measure uq_units_of_measure; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7565,7 +9546,7 @@ ALTER TABLE ONLY public.units_of_measure
 
 
 --
--- TOC entry 4467 (class 2606 OID 25963)
+-- TOC entry 4618 (class 2606 OID 25963)
 -- Name: user_profiles user_profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7574,7 +9555,7 @@ ALTER TABLE ONLY public.user_profiles
 
 
 --
--- TOC entry 4469 (class 2606 OID 25965)
+-- TOC entry 4620 (class 2606 OID 25965)
 -- Name: user_profiles user_profiles_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7583,7 +9564,7 @@ ALTER TABLE ONLY public.user_profiles
 
 
 --
--- TOC entry 4463 (class 2606 OID 25953)
+-- TOC entry 4614 (class 2606 OID 25953)
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7592,7 +9573,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4465 (class 2606 OID 25951)
+-- TOC entry 4616 (class 2606 OID 25951)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7601,7 +9582,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4179 (class 2606 OID 17264)
+-- TOC entry 4286 (class 2606 OID 17264)
 -- Name: messages messages_payload_exclusive; Type: CHECK CONSTRAINT; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -7610,7 +9591,7 @@ ALTER TABLE realtime.messages
 
 
 --
--- TOC entry 4398 (class 2606 OID 17266)
+-- TOC entry 4547 (class 2606 OID 17266)
 -- Name: messages messages_pkey; Type: CONSTRAINT; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -7619,7 +9600,7 @@ ALTER TABLE ONLY realtime.messages
 
 
 --
--- TOC entry 4403 (class 2606 OID 17268)
+-- TOC entry 4552 (class 2606 OID 17268)
 -- Name: subscription pk_subscription; Type: CONSTRAINT; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -7628,7 +9609,7 @@ ALTER TABLE ONLY realtime.subscription
 
 
 --
--- TOC entry 4400 (class 2606 OID 17270)
+-- TOC entry 4549 (class 2606 OID 17270)
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: realtime; Owner: supabase_admin
 --
 
@@ -7637,7 +9618,16 @@ ALTER TABLE ONLY realtime.schema_migrations
 
 
 --
--- TOC entry 4427 (class 2606 OID 17460)
+-- TOC entry 4853 (class 2606 OID 27518)
+-- Name: bucket_lifecycle_states bucket_lifecycle_states_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
+--
+
+ALTER TABLE ONLY storage.bucket_lifecycle_states
+    ADD CONSTRAINT bucket_lifecycle_states_pkey PRIMARY KEY (bucket_id);
+
+
+--
+-- TOC entry 4578 (class 2606 OID 17460)
 -- Name: buckets_analytics buckets_analytics_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -7646,7 +9636,7 @@ ALTER TABLE ONLY storage.buckets_analytics
 
 
 --
--- TOC entry 4411 (class 2606 OID 17302)
+-- TOC entry 4560 (class 2606 OID 17302)
 -- Name: buckets buckets_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -7655,7 +9645,7 @@ ALTER TABLE ONLY storage.buckets
 
 
 --
--- TOC entry 4430 (class 2606 OID 17436)
+-- TOC entry 4581 (class 2606 OID 17436)
 -- Name: buckets_vectors buckets_vectors_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -7664,7 +9654,16 @@ ALTER TABLE ONLY storage.buckets_vectors
 
 
 --
--- TOC entry 4406 (class 2606 OID 17293)
+-- TOC entry 4856 (class 2606 OID 27541)
+-- Name: lifecycle_abandoned_artifacts lifecycle_abandoned_artifacts_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
+--
+
+ALTER TABLE ONLY storage.lifecycle_abandoned_artifacts
+    ADD CONSTRAINT lifecycle_abandoned_artifacts_pkey PRIMARY KEY (bucket_id, key);
+
+
+--
+-- TOC entry 4555 (class 2606 OID 17293)
 -- Name: migrations migrations_name_key; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -7673,7 +9672,7 @@ ALTER TABLE ONLY storage.migrations
 
 
 --
--- TOC entry 4408 (class 2606 OID 17291)
+-- TOC entry 4557 (class 2606 OID 17291)
 -- Name: migrations migrations_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -7682,7 +9681,7 @@ ALTER TABLE ONLY storage.migrations
 
 
 --
--- TOC entry 4420 (class 2606 OID 17314)
+-- TOC entry 4571 (class 2606 OID 17314)
 -- Name: objects objects_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -7691,7 +9690,7 @@ ALTER TABLE ONLY storage.objects
 
 
 --
--- TOC entry 4425 (class 2606 OID 17376)
+-- TOC entry 4576 (class 2606 OID 17376)
 -- Name: s3_multipart_uploads_parts s3_multipart_uploads_parts_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -7700,7 +9699,7 @@ ALTER TABLE ONLY storage.s3_multipart_uploads_parts
 
 
 --
--- TOC entry 4423 (class 2606 OID 17361)
+-- TOC entry 4574 (class 2606 OID 17361)
 -- Name: s3_multipart_uploads s3_multipart_uploads_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -7709,7 +9708,7 @@ ALTER TABLE ONLY storage.s3_multipart_uploads
 
 
 --
--- TOC entry 4433 (class 2606 OID 17446)
+-- TOC entry 4584 (class 2606 OID 17446)
 -- Name: vector_indexes vector_indexes_pkey; Type: CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -7718,7 +9717,7 @@ ALTER TABLE ONLY storage.vector_indexes
 
 
 --
--- TOC entry 4299 (class 1259 OID 16536)
+-- TOC entry 4447 (class 1259 OID 16536)
 -- Name: audit_logs_instance_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7726,7 +9725,7 @@ CREATE INDEX audit_logs_instance_id_idx ON auth.audit_log_entries USING btree (i
 
 
 --
--- TOC entry 4269 (class 1259 OID 16710)
+-- TOC entry 4417 (class 1259 OID 16710)
 -- Name: confirmation_token_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7734,7 +9733,7 @@ CREATE UNIQUE INDEX confirmation_token_idx ON auth.users USING btree (confirmati
 
 
 --
--- TOC entry 4380 (class 1259 OID 17125)
+-- TOC entry 4529 (class 1259 OID 17125)
 -- Name: custom_oauth_providers_created_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7742,7 +9741,7 @@ CREATE INDEX custom_oauth_providers_created_at_idx ON auth.custom_oauth_provider
 
 
 --
--- TOC entry 4381 (class 1259 OID 17124)
+-- TOC entry 4530 (class 1259 OID 17124)
 -- Name: custom_oauth_providers_enabled_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7750,7 +9749,7 @@ CREATE INDEX custom_oauth_providers_enabled_idx ON auth.custom_oauth_providers U
 
 
 --
--- TOC entry 4382 (class 1259 OID 17122)
+-- TOC entry 4531 (class 1259 OID 17122)
 -- Name: custom_oauth_providers_identifier_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7758,7 +9757,7 @@ CREATE INDEX custom_oauth_providers_identifier_idx ON auth.custom_oauth_provider
 
 
 --
--- TOC entry 4387 (class 1259 OID 17123)
+-- TOC entry 4536 (class 1259 OID 17123)
 -- Name: custom_oauth_providers_provider_type_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7766,7 +9765,7 @@ CREATE INDEX custom_oauth_providers_provider_type_idx ON auth.custom_oauth_provi
 
 
 --
--- TOC entry 4270 (class 1259 OID 16712)
+-- TOC entry 4418 (class 1259 OID 16712)
 -- Name: email_change_token_current_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7774,7 +9773,7 @@ CREATE UNIQUE INDEX email_change_token_current_idx ON auth.users USING btree (em
 
 
 --
--- TOC entry 4271 (class 1259 OID 16713)
+-- TOC entry 4419 (class 1259 OID 16713)
 -- Name: email_change_token_new_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7782,7 +9781,7 @@ CREATE UNIQUE INDEX email_change_token_new_idx ON auth.users USING btree (email_
 
 
 --
--- TOC entry 4317 (class 1259 OID 16791)
+-- TOC entry 4465 (class 1259 OID 16791)
 -- Name: factor_id_created_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7790,7 +9789,7 @@ CREATE INDEX factor_id_created_at_idx ON auth.mfa_factors USING btree (user_id, 
 
 
 --
--- TOC entry 4350 (class 1259 OID 16899)
+-- TOC entry 4498 (class 1259 OID 16899)
 -- Name: flow_state_created_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7798,7 +9797,7 @@ CREATE INDEX flow_state_created_at_idx ON auth.flow_state USING btree (created_a
 
 
 --
--- TOC entry 4305 (class 1259 OID 16879)
+-- TOC entry 4453 (class 1259 OID 16879)
 -- Name: identities_email_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7806,8 +9805,8 @@ CREATE INDEX identities_email_idx ON auth.identities USING btree (email text_pat
 
 
 --
--- TOC entry 5240 (class 0 OID 0)
--- Dependencies: 4305
+-- TOC entry 5548 (class 0 OID 0)
+-- Dependencies: 4453
 -- Name: INDEX identities_email_idx; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7815,7 +9814,7 @@ COMMENT ON INDEX auth.identities_email_idx IS 'Auth: Ensures indexed queries on 
 
 
 --
--- TOC entry 4310 (class 1259 OID 16707)
+-- TOC entry 4458 (class 1259 OID 16707)
 -- Name: identities_user_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7823,7 +9822,7 @@ CREATE INDEX identities_user_id_idx ON auth.identities USING btree (user_id);
 
 
 --
--- TOC entry 4353 (class 1259 OID 16896)
+-- TOC entry 4501 (class 1259 OID 16896)
 -- Name: idx_auth_code; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7831,7 +9830,7 @@ CREATE INDEX idx_auth_code ON auth.flow_state USING btree (auth_code);
 
 
 --
--- TOC entry 4377 (class 1259 OID 17081)
+-- TOC entry 4526 (class 1259 OID 17081)
 -- Name: idx_oauth_client_states_created_at; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7839,7 +9838,7 @@ CREATE INDEX idx_oauth_client_states_created_at ON auth.oauth_client_states USIN
 
 
 --
--- TOC entry 4354 (class 1259 OID 16897)
+-- TOC entry 4502 (class 1259 OID 16897)
 -- Name: idx_user_id_auth_method; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7847,7 +9846,7 @@ CREATE INDEX idx_user_id_auth_method ON auth.flow_state USING btree (user_id, au
 
 
 --
--- TOC entry 4272 (class 1259 OID 17168)
+-- TOC entry 4420 (class 1259 OID 17168)
 -- Name: idx_users_created_at_desc; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7855,7 +9854,7 @@ CREATE INDEX idx_users_created_at_desc ON auth.users USING btree (created_at DES
 
 
 --
--- TOC entry 4273 (class 1259 OID 17167)
+-- TOC entry 4421 (class 1259 OID 17167)
 -- Name: idx_users_email; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7863,7 +9862,7 @@ CREATE INDEX idx_users_email ON auth.users USING btree (email);
 
 
 --
--- TOC entry 4274 (class 1259 OID 17169)
+-- TOC entry 4422 (class 1259 OID 17169)
 -- Name: idx_users_last_sign_in_at_desc; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7871,7 +9870,7 @@ CREATE INDEX idx_users_last_sign_in_at_desc ON auth.users USING btree (last_sign
 
 
 --
--- TOC entry 4275 (class 1259 OID 17170)
+-- TOC entry 4423 (class 1259 OID 17170)
 -- Name: idx_users_name; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7879,7 +9878,7 @@ CREATE INDEX idx_users_name ON auth.users USING btree (((raw_user_meta_data ->> 
 
 
 --
--- TOC entry 4325 (class 1259 OID 16902)
+-- TOC entry 4473 (class 1259 OID 16902)
 -- Name: mfa_challenge_created_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7887,7 +9886,7 @@ CREATE INDEX mfa_challenge_created_at_idx ON auth.mfa_challenges USING btree (cr
 
 
 --
--- TOC entry 4322 (class 1259 OID 16763)
+-- TOC entry 4470 (class 1259 OID 16763)
 -- Name: mfa_factors_user_friendly_name_unique; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7895,7 +9894,7 @@ CREATE UNIQUE INDEX mfa_factors_user_friendly_name_unique ON auth.mfa_factors US
 
 
 --
--- TOC entry 4323 (class 1259 OID 16908)
+-- TOC entry 4471 (class 1259 OID 16908)
 -- Name: mfa_factors_user_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7903,7 +9902,7 @@ CREATE INDEX mfa_factors_user_id_idx ON auth.mfa_factors USING btree (user_id);
 
 
 --
--- TOC entry 4461 (class 1259 OID 25587)
+-- TOC entry 4612 (class 1259 OID 25587)
 -- Name: mfa_recovery_codes_set_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7911,7 +9910,7 @@ CREATE INDEX mfa_recovery_codes_set_id_idx ON auth.mfa_recovery_codes USING btre
 
 
 --
--- TOC entry 4363 (class 1259 OID 17033)
+-- TOC entry 4512 (class 1259 OID 17033)
 -- Name: oauth_auth_pending_exp_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7919,7 +9918,7 @@ CREATE INDEX oauth_auth_pending_exp_idx ON auth.oauth_authorizations USING btree
 
 
 --
--- TOC entry 4360 (class 1259 OID 16986)
+-- TOC entry 4509 (class 1259 OID 16986)
 -- Name: oauth_clients_deleted_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7927,7 +9926,7 @@ CREATE INDEX oauth_clients_deleted_at_idx ON auth.oauth_clients USING btree (del
 
 
 --
--- TOC entry 4370 (class 1259 OID 17059)
+-- TOC entry 4519 (class 1259 OID 17059)
 -- Name: oauth_consents_active_client_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7935,7 +9934,7 @@ CREATE INDEX oauth_consents_active_client_idx ON auth.oauth_consents USING btree
 
 
 --
--- TOC entry 4371 (class 1259 OID 17057)
+-- TOC entry 4520 (class 1259 OID 17057)
 -- Name: oauth_consents_active_user_client_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7943,7 +9942,7 @@ CREATE INDEX oauth_consents_active_user_client_idx ON auth.oauth_consents USING 
 
 
 --
--- TOC entry 4376 (class 1259 OID 17058)
+-- TOC entry 4525 (class 1259 OID 17058)
 -- Name: oauth_consents_user_order_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7951,7 +9950,15 @@ CREATE INDEX oauth_consents_user_order_idx ON auth.oauth_consents USING btree (u
 
 
 --
--- TOC entry 4357 (class 1259 OID 16955)
+-- TOC entry 4503 (class 1259 OID 27696)
+-- Name: one_time_tokens_link_token_hash_hash_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
+--
+
+CREATE INDEX one_time_tokens_link_token_hash_hash_idx ON auth.one_time_tokens USING hash (link_token_hash);
+
+
+--
+-- TOC entry 4506 (class 1259 OID 16955)
 -- Name: one_time_tokens_relates_to_hash_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7959,7 +9966,7 @@ CREATE INDEX one_time_tokens_relates_to_hash_idx ON auth.one_time_tokens USING h
 
 
 --
--- TOC entry 4358 (class 1259 OID 16954)
+-- TOC entry 4507 (class 1259 OID 16954)
 -- Name: one_time_tokens_token_hash_hash_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7967,7 +9974,7 @@ CREATE INDEX one_time_tokens_token_hash_hash_idx ON auth.one_time_tokens USING h
 
 
 --
--- TOC entry 4359 (class 1259 OID 16956)
+-- TOC entry 4508 (class 1259 OID 16956)
 -- Name: one_time_tokens_user_id_token_type_key; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7975,7 +9982,7 @@ CREATE UNIQUE INDEX one_time_tokens_user_id_token_type_key ON auth.one_time_toke
 
 
 --
--- TOC entry 4276 (class 1259 OID 16714)
+-- TOC entry 4424 (class 1259 OID 16714)
 -- Name: reauthentication_token_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7983,7 +9990,7 @@ CREATE UNIQUE INDEX reauthentication_token_idx ON auth.users USING btree (reauth
 
 
 --
--- TOC entry 4277 (class 1259 OID 16711)
+-- TOC entry 4425 (class 1259 OID 16711)
 -- Name: recovery_token_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7991,7 +9998,7 @@ CREATE UNIQUE INDEX recovery_token_idx ON auth.users USING btree (recovery_token
 
 
 --
--- TOC entry 4286 (class 1259 OID 16519)
+-- TOC entry 4434 (class 1259 OID 16519)
 -- Name: refresh_tokens_instance_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -7999,7 +10006,7 @@ CREATE INDEX refresh_tokens_instance_id_idx ON auth.refresh_tokens USING btree (
 
 
 --
--- TOC entry 4287 (class 1259 OID 16520)
+-- TOC entry 4435 (class 1259 OID 16520)
 -- Name: refresh_tokens_instance_id_user_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8007,7 +10014,7 @@ CREATE INDEX refresh_tokens_instance_id_user_id_idx ON auth.refresh_tokens USING
 
 
 --
--- TOC entry 4288 (class 1259 OID 16706)
+-- TOC entry 4436 (class 1259 OID 16706)
 -- Name: refresh_tokens_parent_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8015,7 +10022,7 @@ CREATE INDEX refresh_tokens_parent_idx ON auth.refresh_tokens USING btree (paren
 
 
 --
--- TOC entry 4291 (class 1259 OID 16793)
+-- TOC entry 4439 (class 1259 OID 16793)
 -- Name: refresh_tokens_session_id_revoked_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8023,7 +10030,7 @@ CREATE INDEX refresh_tokens_session_id_revoked_idx ON auth.refresh_tokens USING 
 
 
 --
--- TOC entry 4294 (class 1259 OID 16898)
+-- TOC entry 4442 (class 1259 OID 16898)
 -- Name: refresh_tokens_updated_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8031,7 +10038,7 @@ CREATE INDEX refresh_tokens_updated_at_idx ON auth.refresh_tokens USING btree (u
 
 
 --
--- TOC entry 4344 (class 1259 OID 16835)
+-- TOC entry 4492 (class 1259 OID 16835)
 -- Name: saml_providers_sso_provider_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8039,7 +10046,7 @@ CREATE INDEX saml_providers_sso_provider_id_idx ON auth.saml_providers USING btr
 
 
 --
--- TOC entry 4345 (class 1259 OID 16900)
+-- TOC entry 4493 (class 1259 OID 16900)
 -- Name: saml_relay_states_created_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8047,7 +10054,7 @@ CREATE INDEX saml_relay_states_created_at_idx ON auth.saml_relay_states USING bt
 
 
 --
--- TOC entry 4346 (class 1259 OID 16850)
+-- TOC entry 4494 (class 1259 OID 16850)
 -- Name: saml_relay_states_for_email_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8055,7 +10062,7 @@ CREATE INDEX saml_relay_states_for_email_idx ON auth.saml_relay_states USING btr
 
 
 --
--- TOC entry 4349 (class 1259 OID 16849)
+-- TOC entry 4497 (class 1259 OID 16849)
 -- Name: saml_relay_states_sso_provider_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8063,7 +10070,7 @@ CREATE INDEX saml_relay_states_sso_provider_id_idx ON auth.saml_relay_states USI
 
 
 --
--- TOC entry 4447 (class 1259 OID 25548)
+-- TOC entry 4598 (class 1259 OID 25548)
 -- Name: scim_tokens_expires_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8071,7 +10078,7 @@ CREATE INDEX scim_tokens_expires_at_idx ON auth.scim_tokens USING btree (expires
 
 
 --
--- TOC entry 4450 (class 1259 OID 25549)
+-- TOC entry 4601 (class 1259 OID 25549)
 -- Name: scim_tokens_revoked_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8079,7 +10086,7 @@ CREATE INDEX scim_tokens_revoked_at_idx ON auth.scim_tokens USING btree (revoked
 
 
 --
--- TOC entry 4451 (class 1259 OID 25547)
+-- TOC entry 4602 (class 1259 OID 25547)
 -- Name: scim_tokens_sso_provider_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8087,7 +10094,7 @@ CREATE INDEX scim_tokens_sso_provider_id_idx ON auth.scim_tokens USING btree (ss
 
 
 --
--- TOC entry 4452 (class 1259 OID 25546)
+-- TOC entry 4603 (class 1259 OID 25546)
 -- Name: scim_tokens_token_hash_key; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8095,7 +10102,7 @@ CREATE UNIQUE INDEX scim_tokens_token_hash_key ON auth.scim_tokens USING btree (
 
 
 --
--- TOC entry 4436 (class 1259 OID 25526)
+-- TOC entry 4587 (class 1259 OID 25526)
 -- Name: scim_users_created_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8103,7 +10110,7 @@ CREATE INDEX scim_users_created_at_idx ON auth.scim_users USING btree (sso_provi
 
 
 --
--- TOC entry 4437 (class 1259 OID 25529)
+-- TOC entry 4588 (class 1259 OID 25529)
 -- Name: scim_users_deleted_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8111,7 +10118,7 @@ CREATE INDEX scim_users_deleted_at_idx ON auth.scim_users USING btree (deleted_a
 
 
 --
--- TOC entry 4438 (class 1259 OID 25522)
+-- TOC entry 4589 (class 1259 OID 25522)
 -- Name: scim_users_external_id_key; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8119,7 +10126,7 @@ CREATE UNIQUE INDEX scim_users_external_id_key ON auth.scim_users USING btree (s
 
 
 --
--- TOC entry 4439 (class 1259 OID 25524)
+-- TOC entry 4590 (class 1259 OID 25524)
 -- Name: scim_users_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8127,7 +10134,7 @@ CREATE INDEX scim_users_id_idx ON auth.scim_users USING btree (sso_provider_id, 
 
 
 --
--- TOC entry 4442 (class 1259 OID 25528)
+-- TOC entry 4593 (class 1259 OID 25528)
 -- Name: scim_users_sso_provider_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8135,7 +10142,7 @@ CREATE INDEX scim_users_sso_provider_id_idx ON auth.scim_users USING btree (sso_
 
 
 --
--- TOC entry 4443 (class 1259 OID 25527)
+-- TOC entry 4594 (class 1259 OID 25527)
 -- Name: scim_users_updated_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8143,7 +10150,7 @@ CREATE INDEX scim_users_updated_at_idx ON auth.scim_users USING btree (sso_provi
 
 
 --
--- TOC entry 4444 (class 1259 OID 25523)
+-- TOC entry 4595 (class 1259 OID 25523)
 -- Name: scim_users_user_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8151,7 +10158,7 @@ CREATE INDEX scim_users_user_id_idx ON auth.scim_users USING btree (user_id);
 
 
 --
--- TOC entry 4445 (class 1259 OID 25525)
+-- TOC entry 4596 (class 1259 OID 25525)
 -- Name: scim_users_user_name_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8159,7 +10166,7 @@ CREATE INDEX scim_users_user_name_idx ON auth.scim_users USING btree (sso_provid
 
 
 --
--- TOC entry 4446 (class 1259 OID 25521)
+-- TOC entry 4597 (class 1259 OID 25521)
 -- Name: scim_users_user_name_key; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8167,7 +10174,7 @@ CREATE UNIQUE INDEX scim_users_user_name_key ON auth.scim_users USING btree (sso
 
 
 --
--- TOC entry 4311 (class 1259 OID 16901)
+-- TOC entry 4459 (class 1259 OID 16901)
 -- Name: sessions_not_after_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8175,7 +10182,7 @@ CREATE INDEX sessions_not_after_idx ON auth.sessions USING btree (not_after DESC
 
 
 --
--- TOC entry 4312 (class 1259 OID 17071)
+-- TOC entry 4460 (class 1259 OID 17071)
 -- Name: sessions_oauth_client_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8183,7 +10190,7 @@ CREATE INDEX sessions_oauth_client_id_idx ON auth.sessions USING btree (oauth_cl
 
 
 --
--- TOC entry 4315 (class 1259 OID 16792)
+-- TOC entry 4463 (class 1259 OID 16792)
 -- Name: sessions_user_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8191,7 +10198,7 @@ CREATE INDEX sessions_user_id_idx ON auth.sessions USING btree (user_id);
 
 
 --
--- TOC entry 4336 (class 1259 OID 16817)
+-- TOC entry 4484 (class 1259 OID 16817)
 -- Name: sso_domains_domain_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8199,7 +10206,7 @@ CREATE UNIQUE INDEX sso_domains_domain_idx ON auth.sso_domains USING btree (lowe
 
 
 --
--- TOC entry 4339 (class 1259 OID 16816)
+-- TOC entry 4487 (class 1259 OID 16816)
 -- Name: sso_domains_sso_provider_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8207,7 +10214,7 @@ CREATE INDEX sso_domains_sso_provider_id_idx ON auth.sso_domains USING btree (ss
 
 
 --
--- TOC entry 4334 (class 1259 OID 16802)
+-- TOC entry 4482 (class 1259 OID 16802)
 -- Name: sso_providers_resource_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8215,7 +10222,7 @@ CREATE UNIQUE INDEX sso_providers_resource_id_idx ON auth.sso_providers USING bt
 
 
 --
--- TOC entry 4335 (class 1259 OID 16964)
+-- TOC entry 4483 (class 1259 OID 16964)
 -- Name: sso_providers_resource_id_pattern_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8223,7 +10230,7 @@ CREATE INDEX sso_providers_resource_id_pattern_idx ON auth.sso_providers USING b
 
 
 --
--- TOC entry 4324 (class 1259 OID 16961)
+-- TOC entry 4472 (class 1259 OID 16961)
 -- Name: unique_phone_factor_per_user; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8231,7 +10238,7 @@ CREATE UNIQUE INDEX unique_phone_factor_per_user ON auth.mfa_factors USING btree
 
 
 --
--- TOC entry 4316 (class 1259 OID 16790)
+-- TOC entry 4464 (class 1259 OID 16790)
 -- Name: user_id_created_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8239,7 +10246,7 @@ CREATE INDEX user_id_created_at_idx ON auth.sessions USING btree (user_id, creat
 
 
 --
--- TOC entry 4278 (class 1259 OID 16870)
+-- TOC entry 4426 (class 1259 OID 16870)
 -- Name: users_email_partial_key; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8247,8 +10254,8 @@ CREATE UNIQUE INDEX users_email_partial_key ON auth.users USING btree (email) WH
 
 
 --
--- TOC entry 5241 (class 0 OID 0)
--- Dependencies: 4278
+-- TOC entry 5549 (class 0 OID 0)
+-- Dependencies: 4426
 -- Name: INDEX users_email_partial_key; Type: COMMENT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8256,7 +10263,7 @@ COMMENT ON INDEX auth.users_email_partial_key IS 'Auth: A partial unique index t
 
 
 --
--- TOC entry 4279 (class 1259 OID 16708)
+-- TOC entry 4427 (class 1259 OID 16708)
 -- Name: users_instance_id_email_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8264,7 +10271,7 @@ CREATE INDEX users_instance_id_email_idx ON auth.users USING btree (instance_id,
 
 
 --
--- TOC entry 4280 (class 1259 OID 16509)
+-- TOC entry 4428 (class 1259 OID 16509)
 -- Name: users_instance_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8272,7 +10279,7 @@ CREATE INDEX users_instance_id_idx ON auth.users USING btree (instance_id);
 
 
 --
--- TOC entry 4281 (class 1259 OID 16925)
+-- TOC entry 4429 (class 1259 OID 16925)
 -- Name: users_is_anonymous_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8280,7 +10287,7 @@ CREATE INDEX users_is_anonymous_idx ON auth.users USING btree (is_anonymous);
 
 
 --
--- TOC entry 4392 (class 1259 OID 17165)
+-- TOC entry 4541 (class 1259 OID 17165)
 -- Name: webauthn_challenges_expires_at_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8288,7 +10295,7 @@ CREATE INDEX webauthn_challenges_expires_at_idx ON auth.webauthn_challenges USIN
 
 
 --
--- TOC entry 4395 (class 1259 OID 17164)
+-- TOC entry 4544 (class 1259 OID 17164)
 -- Name: webauthn_challenges_user_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8296,7 +10303,7 @@ CREATE INDEX webauthn_challenges_user_id_idx ON auth.webauthn_challenges USING b
 
 
 --
--- TOC entry 4388 (class 1259 OID 17147)
+-- TOC entry 4537 (class 1259 OID 17147)
 -- Name: webauthn_credentials_credential_id_key; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8304,7 +10311,7 @@ CREATE UNIQUE INDEX webauthn_credentials_credential_id_key ON auth.webauthn_cred
 
 
 --
--- TOC entry 4391 (class 1259 OID 17148)
+-- TOC entry 4540 (class 1259 OID 17148)
 -- Name: webauthn_credentials_user_id_idx; Type: INDEX; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8312,7 +10319,111 @@ CREATE INDEX webauthn_credentials_user_id_idx ON auth.webauthn_credentials USING
 
 
 --
--- TOC entry 4527 (class 1259 OID 26828)
+-- TOC entry 4775 (class 1259 OID 27851)
+-- Name: idx_attachments_expense_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_attachments_expense_project ON public.project_attachments USING btree (expense_id, project_id);
+
+
+--
+-- TOC entry 4776 (class 1259 OID 27852)
+-- Name: idx_attachments_progress_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_attachments_progress_project ON public.project_attachments USING btree (progress_update_id, project_id);
+
+
+--
+-- TOC entry 4777 (class 1259 OID 27853)
+-- Name: idx_attachments_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_attachments_project ON public.project_attachments USING btree (project_id);
+
+
+--
+-- TOC entry 4712 (class 1259 OID 27894)
+-- Name: idx_booking_receipt_details_project_unit; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_booking_receipt_details_project_unit ON public.booking_receipt_details USING btree (project_unit_id);
+
+
+--
+-- TOC entry 4646 (class 1259 OID 27892)
+-- Name: idx_customers_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_customers_company ON public.customers USING btree (company_id);
+
+
+--
+-- TOC entry 4647 (class 1259 OID 27145)
+-- Name: idx_customers_company_party_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_customers_company_party_unique ON public.customers USING btree (company_id, party_id) WHERE (party_id IS NOT NULL);
+
+
+--
+-- TOC entry 4648 (class 1259 OID 27859)
+-- Name: idx_customers_party_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_customers_party_company ON public.customers USING btree (party_id, company_id);
+
+
+--
+-- TOC entry 4703 (class 1259 OID 27888)
+-- Name: idx_document_exclusions_document; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_document_exclusions_document ON public.document_exclusions USING btree (document_id);
+
+
+--
+-- TOC entry 4700 (class 1259 OID 27887)
+-- Name: idx_document_inclusions_document; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_document_inclusions_document ON public.document_inclusions USING btree (document_id);
+
+
+--
+-- TOC entry 4694 (class 1259 OID 27885)
+-- Name: idx_document_items_section; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_document_items_section ON public.document_items USING btree (section_id);
+
+
+--
+-- TOC entry 4691 (class 1259 OID 27886)
+-- Name: idx_document_sections_document; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_document_sections_document ON public.document_sections USING btree (document_id);
+
+
+--
+-- TOC entry 4697 (class 1259 OID 27890)
+-- Name: idx_document_specifications_document; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_document_specifications_document ON public.document_specifications USING btree (document_id);
+
+
+--
+-- TOC entry 4709 (class 1259 OID 27889)
+-- Name: idx_document_terms_document; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_document_terms_document ON public.document_terms USING btree (document_id);
+
+
+--
+-- TOC entry 4684 (class 1259 OID 26828)
 -- Name: idx_documents_company_type_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8320,7 +10431,7 @@ CREATE INDEX idx_documents_company_type_status ON public.documents USING btree (
 
 
 --
--- TOC entry 4528 (class 1259 OID 26827)
+-- TOC entry 4685 (class 1259 OID 26827)
 -- Name: idx_documents_company_updated; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8328,7 +10439,39 @@ CREATE INDEX idx_documents_company_updated ON public.documents USING btree (comp
 
 
 --
--- TOC entry 4572 (class 1259 OID 27044)
+-- TOC entry 4686 (class 1259 OID 27896)
+-- Name: idx_documents_customer; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_documents_customer ON public.documents USING btree (customer_id);
+
+
+--
+-- TOC entry 4687 (class 1259 OID 27860)
+-- Name: idx_documents_party_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_documents_party_company ON public.documents USING btree (party_id, company_id);
+
+
+--
+-- TOC entry 4688 (class 1259 OID 27847)
+-- Name: idx_documents_project_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_documents_project_company ON public.documents USING btree (project_id, company_id);
+
+
+--
+-- TOC entry 4757 (class 1259 OID 27854)
+-- Name: idx_expense_payments_expense_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_expense_payments_expense_company ON public.project_expense_payments USING btree (project_expense_id, company_id);
+
+
+--
+-- TOC entry 4747 (class 1259 OID 27044)
 -- Name: idx_expenses_company; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8336,7 +10479,7 @@ CREATE INDEX idx_expenses_company ON public.project_expenses USING btree (compan
 
 
 --
--- TOC entry 4573 (class 1259 OID 27045)
+-- TOC entry 4748 (class 1259 OID 27045)
 -- Name: idx_expenses_supplier; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8344,7 +10487,7 @@ CREATE INDEX idx_expenses_supplier ON public.project_expenses USING btree (suppl
 
 
 --
--- TOC entry 4604 (class 1259 OID 26835)
+-- TOC entry 4791 (class 1259 OID 26835)
 -- Name: idx_investor_contrib_investor_date; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8352,7 +10495,7 @@ CREATE INDEX idx_investor_contrib_investor_date ON public.project_investor_contr
 
 
 --
--- TOC entry 4626 (class 1259 OID 27052)
+-- TOC entry 4815 (class 1259 OID 27052)
 -- Name: idx_investors_company; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8360,7 +10503,7 @@ CREATE INDEX idx_investors_company ON public.investors USING btree (company_id);
 
 
 --
--- TOC entry 4619 (class 1259 OID 27049)
+-- TOC entry 4808 (class 1259 OID 27049)
 -- Name: idx_invoice_items_invoice; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8368,7 +10511,7 @@ CREATE INDEX idx_invoice_items_invoice ON public.invoice_items USING btree (invo
 
 
 --
--- TOC entry 4611 (class 1259 OID 27047)
+-- TOC entry 4799 (class 1259 OID 27047)
 -- Name: idx_invoices_company_date; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8376,7 +10519,7 @@ CREATE INDEX idx_invoices_company_date ON public.invoices USING btree (company_i
 
 
 --
--- TOC entry 4612 (class 1259 OID 27048)
+-- TOC entry 4800 (class 1259 OID 27048)
 -- Name: idx_invoices_customer; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8384,7 +10527,95 @@ CREATE INDEX idx_invoices_customer ON public.invoices USING btree (customer_id);
 
 
 --
--- TOC entry 4622 (class 1259 OID 27050)
+-- TOC entry 4801 (class 1259 OID 27848)
+-- Name: idx_invoices_project_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_invoices_project_company ON public.invoices USING btree (project_id, company_id);
+
+
+--
+-- TOC entry 4847 (class 1259 OID 27279)
+-- Name: idx_material_receipt_lines_po_line; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_material_receipt_lines_po_line ON public.material_receipt_lines USING btree (purchase_order_line_id, created_at DESC);
+
+
+--
+-- TOC entry 4848 (class 1259 OID 27278)
+-- Name: idx_material_receipt_lines_receipt; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_material_receipt_lines_receipt ON public.material_receipt_lines USING btree (material_receipt_id, purchase_order_line_id);
+
+
+--
+-- TOC entry 4838 (class 1259 OID 27850)
+-- Name: idx_material_receipts_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_material_receipts_project ON public.material_receipts USING btree (project_id);
+
+
+--
+-- TOC entry 4839 (class 1259 OID 27276)
+-- Name: idx_material_receipts_project_po; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_material_receipts_project_po ON public.material_receipts USING btree (company_id, project_id, purchase_order_id, receipt_date DESC);
+
+
+--
+-- TOC entry 4840 (class 1259 OID 27849)
+-- Name: idx_material_receipts_purchase_order; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_material_receipts_purchase_order ON public.material_receipts USING btree (purchase_order_id);
+
+
+--
+-- TOC entry 4841 (class 1259 OID 27277)
+-- Name: idx_material_receipts_supplier; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_material_receipts_supplier ON public.material_receipts USING btree (supplier_party_id, status);
+
+
+--
+-- TOC entry 4820 (class 1259 OID 27125)
+-- Name: idx_parties_company_active_updated; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_parties_company_active_updated ON public.parties USING btree (company_id, is_active, updated_at DESC);
+
+
+--
+-- TOC entry 4821 (class 1259 OID 27126)
+-- Name: idx_parties_company_role_lookup; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_parties_company_role_lookup ON public.parties USING btree (company_id, is_customer, is_supplier, is_investor);
+
+
+--
+-- TOC entry 4822 (class 1259 OID 27127)
+-- Name: idx_parties_company_search; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_parties_company_search ON public.parties USING btree (company_id, name, email, mobile, gstin);
+
+
+--
+-- TOC entry 4626 (class 1259 OID 27884)
+-- Name: idx_password_resets_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_password_resets_user ON public.password_resets USING btree (user_id);
+
+
+--
+-- TOC entry 4811 (class 1259 OID 27050)
 -- Name: idx_payment_allocations_invoice; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8392,7 +10623,7 @@ CREATE INDEX idx_payment_allocations_invoice ON public.payment_allocations USING
 
 
 --
--- TOC entry 4623 (class 1259 OID 27051)
+-- TOC entry 4812 (class 1259 OID 27051)
 -- Name: idx_payment_allocations_receipt; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8400,7 +10631,15 @@ CREATE INDEX idx_payment_allocations_receipt ON public.payment_allocations USING
 
 
 --
--- TOC entry 4569 (class 1259 OID 26834)
+-- TOC entry 4704 (class 1259 OID 27891)
+-- Name: idx_payment_schedules_document; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_payment_schedules_document ON public.payment_schedules USING btree (document_id);
+
+
+--
+-- TOC entry 4742 (class 1259 OID 26834)
 -- Name: idx_progress_updates_project_date; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8408,7 +10647,31 @@ CREATE INDEX idx_progress_updates_project_date ON public.project_progress_update
 
 
 --
--- TOC entry 4574 (class 1259 OID 26831)
+-- TOC entry 4743 (class 1259 OID 27856)
+-- Name: idx_progress_updates_stage_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_progress_updates_stage_project ON public.project_progress_updates USING btree (stage_id, project_id);
+
+
+--
+-- TOC entry 4770 (class 1259 OID 27897)
+-- Name: idx_project_client_access_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_project_client_access_user ON public.project_client_access USING btree (user_id);
+
+
+--
+-- TOC entry 4749 (class 1259 OID 27591)
+-- Name: idx_project_expenses_company_expense_type; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_project_expenses_company_expense_type ON public.project_expenses USING btree (company_id, expense_type);
+
+
+--
+-- TOC entry 4750 (class 1259 OID 26831)
 -- Name: idx_project_expenses_project_bill_date; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8416,7 +10679,39 @@ CREATE INDEX idx_project_expenses_project_bill_date ON public.project_expenses U
 
 
 --
--- TOC entry 4581 (class 1259 OID 26832)
+-- TOC entry 4751 (class 1259 OID 27592)
+-- Name: idx_project_expenses_project_expense_type; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_project_expenses_project_expense_type ON public.project_expenses USING btree (project_id, expense_type);
+
+
+--
+-- TOC entry 4780 (class 1259 OID 27855)
+-- Name: idx_project_investors_investor_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_project_investors_investor_company ON public.project_investors USING btree (investor_id, company_id);
+
+
+--
+-- TOC entry 4781 (class 1259 OID 27861)
+-- Name: idx_project_investors_party_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_project_investors_party_company ON public.project_investors USING btree (party_id, company_id);
+
+
+--
+-- TOC entry 4782 (class 1259 OID 27134)
+-- Name: idx_project_investors_project_party_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_project_investors_project_party_unique ON public.project_investors USING btree (project_id, party_id) WHERE (party_id IS NOT NULL);
+
+
+--
+-- TOC entry 4760 (class 1259 OID 26832)
 -- Name: idx_project_receipts_project_received_date; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8424,7 +10719,15 @@ CREATE INDEX idx_project_receipts_project_received_date ON public.project_receip
 
 
 --
--- TOC entry 4564 (class 1259 OID 26833)
+-- TOC entry 4669 (class 1259 OID 27882)
+-- Name: idx_project_stage_templates_project_type; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_project_stage_templates_project_type ON public.project_stage_templates USING btree (project_type_id);
+
+
+--
+-- TOC entry 4736 (class 1259 OID 26833)
 -- Name: idx_project_stages_project_sequence; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8432,7 +10735,47 @@ CREATE INDEX idx_project_stages_project_sequence ON public.project_stages USING 
 
 
 --
--- TOC entry 4555 (class 1259 OID 26830)
+-- TOC entry 4857 (class 1259 OID 27584)
+-- Name: idx_project_units_company_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_project_units_company_project ON public.project_units USING btree (company_id, project_id, flat_no);
+
+
+--
+-- TOC entry 4858 (class 1259 OID 27583)
+-- Name: idx_project_units_project_flat_no_case_insensitive; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_project_units_project_flat_no_case_insensitive ON public.project_units USING btree (project_id, lower(TRIM(BOTH FROM flat_no)));
+
+
+--
+-- TOC entry 4859 (class 1259 OID 27585)
+-- Name: idx_project_units_project_share; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_project_units_project_share ON public.project_units USING btree (project_id, share_type, status);
+
+
+--
+-- TOC entry 4724 (class 1259 OID 27547)
+-- Name: idx_projects_business_model; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_projects_business_model ON public.projects USING btree (company_id, business_model) WHERE (business_model IS NOT NULL);
+
+
+--
+-- TOC entry 4725 (class 1259 OID 27564)
+-- Name: idx_projects_company_id_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_projects_company_id_id ON public.projects USING btree (company_id, id);
+
+
+--
+-- TOC entry 4726 (class 1259 OID 26830)
 -- Name: idx_projects_company_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8440,7 +10783,7 @@ CREATE INDEX idx_projects_company_status ON public.projects USING btree (company
 
 
 --
--- TOC entry 4556 (class 1259 OID 26829)
+-- TOC entry 4727 (class 1259 OID 26829)
 -- Name: idx_projects_company_updated; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8448,7 +10791,47 @@ CREATE INDEX idx_projects_company_updated ON public.projects USING btree (compan
 
 
 --
--- TOC entry 4582 (class 1259 OID 27046)
+-- TOC entry 4728 (class 1259 OID 27895)
+-- Name: idx_projects_customer; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_projects_customer ON public.projects USING btree (customer_id);
+
+
+--
+-- TOC entry 4834 (class 1259 OID 27206)
+-- Name: idx_purchase_order_lines_order; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_purchase_order_lines_order ON public.purchase_order_lines USING btree (purchase_order_id, created_at);
+
+
+--
+-- TOC entry 4826 (class 1259 OID 27204)
+-- Name: idx_purchase_orders_company_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_purchase_orders_company_project ON public.purchase_orders USING btree (company_id, project_id, created_at DESC);
+
+
+--
+-- TOC entry 4827 (class 1259 OID 27858)
+-- Name: idx_purchase_orders_project_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_purchase_orders_project_company ON public.purchase_orders USING btree (project_id, company_id);
+
+
+--
+-- TOC entry 4828 (class 1259 OID 27205)
+-- Name: idx_purchase_orders_supplier; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_purchase_orders_supplier ON public.purchase_orders USING btree (supplier_party_id, status);
+
+
+--
+-- TOC entry 4761 (class 1259 OID 27046)
 -- Name: idx_receipts_company; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8456,7 +10839,31 @@ CREATE INDEX idx_receipts_company ON public.project_receipts USING btree (compan
 
 
 --
--- TOC entry 4587 (class 1259 OID 27058)
+-- TOC entry 4762 (class 1259 OID 27857)
+-- Name: idx_receipts_customer_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_receipts_customer_company ON public.project_receipts USING btree (customer_id, company_id);
+
+
+--
+-- TOC entry 4621 (class 1259 OID 27883)
+-- Name: idx_refresh_tokens_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_refresh_tokens_user ON public.refresh_tokens USING btree (user_id);
+
+
+--
+-- TOC entry 4794 (class 1259 OID 27893)
+-- Name: idx_suppliers_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_suppliers_company ON public.suppliers USING btree (company_id);
+
+
+--
+-- TOC entry 4767 (class 1259 OID 27058)
 -- Name: uq_company_level_receipt_number; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8464,7 +10871,7 @@ CREATE UNIQUE INDEX uq_company_level_receipt_number ON public.project_receipts U
 
 
 --
--- TOC entry 4488 (class 1259 OID 27043)
+-- TOC entry 4641 (class 1259 OID 27043)
 -- Name: uq_company_users_user_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8472,7 +10879,55 @@ CREATE UNIQUE INDEX uq_company_users_user_id ON public.company_users USING btree
 
 
 --
--- TOC entry 4563 (class 1259 OID 26533)
+-- TOC entry 4713 (class 1259 OID 27704)
+-- Name: ux_active_booking_per_unit; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ux_active_booking_per_unit ON public.booking_receipt_details USING btree (project_unit_id) WHERE ((project_unit_id IS NOT NULL) AND (booking_status = ANY (ARRAY['Confirmed'::text, 'Completed'::text])));
+
+
+--
+-- TOC entry 4846 (class 1259 OID 27759)
+-- Name: ux_material_receipts_id_po; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ux_material_receipts_id_po ON public.material_receipts USING btree (id, purchase_order_id);
+
+
+--
+-- TOC entry 4825 (class 1259 OID 27756)
+-- Name: ux_parties_id_company; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ux_parties_id_company ON public.parties USING btree (id, company_id);
+
+
+--
+-- TOC entry 4746 (class 1259 OID 27754)
+-- Name: ux_progress_updates_id_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ux_progress_updates_id_project ON public.project_progress_updates USING btree (id, project_id);
+
+
+--
+-- TOC entry 4756 (class 1259 OID 27755)
+-- Name: ux_project_expenses_id_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ux_project_expenses_id_project ON public.project_expenses USING btree (id, project_id);
+
+
+--
+-- TOC entry 4741 (class 1259 OID 27753)
+-- Name: ux_project_stages_id_project; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ux_project_stages_id_project ON public.project_stages USING btree (id, project_id);
+
+
+--
+-- TOC entry 4735 (class 1259 OID 26533)
 -- Name: ux_projects_company_source_document; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -8480,7 +10935,23 @@ CREATE UNIQUE INDEX ux_projects_company_source_document ON public.projects USING
 
 
 --
--- TOC entry 4401 (class 1259 OID 17271)
+-- TOC entry 4837 (class 1259 OID 27758)
+-- Name: ux_purchase_order_lines_id_po; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ux_purchase_order_lines_id_po ON public.purchase_order_lines USING btree (id, purchase_order_id);
+
+
+--
+-- TOC entry 4833 (class 1259 OID 27757)
+-- Name: ux_purchase_orders_id_company_project_supplier; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ux_purchase_orders_id_company_project_supplier ON public.purchase_orders USING btree (id, company_id, project_id, supplier_party_id);
+
+
+--
+-- TOC entry 4550 (class 1259 OID 17271)
 -- Name: ix_realtime_subscription_entity; Type: INDEX; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -8488,7 +10959,7 @@ CREATE INDEX ix_realtime_subscription_entity ON realtime.subscription USING btre
 
 
 --
--- TOC entry 4396 (class 1259 OID 17272)
+-- TOC entry 4545 (class 1259 OID 17272)
 -- Name: messages_inserted_at_topic_index; Type: INDEX; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -8496,7 +10967,7 @@ CREATE INDEX messages_inserted_at_topic_index ON ONLY realtime.messages USING bt
 
 
 --
--- TOC entry 4404 (class 1259 OID 17273)
+-- TOC entry 4553 (class 1259 OID 17273)
 -- Name: subscription_subscription_id_entity_filters_action_filter_selec; Type: INDEX; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -8504,7 +10975,7 @@ CREATE UNIQUE INDEX subscription_subscription_id_entity_filters_action_filter_se
 
 
 --
--- TOC entry 4409 (class 1259 OID 17303)
+-- TOC entry 4558 (class 1259 OID 17303)
 -- Name: bname; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8512,7 +10983,15 @@ CREATE UNIQUE INDEX bname ON storage.buckets USING btree (name);
 
 
 --
--- TOC entry 4428 (class 1259 OID 17461)
+-- TOC entry 4851 (class 1259 OID 27524)
+-- Name: bucket_lifecycle_states_due_idx; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE INDEX bucket_lifecycle_states_due_idx ON storage.bucket_lifecycle_states USING btree (next_run_at, bucket_id) WHERE (next_run_at IS NOT NULL);
+
+
+--
+-- TOC entry 4579 (class 1259 OID 17461)
 -- Name: buckets_analytics_unique_name_idx; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8520,7 +10999,7 @@ CREATE UNIQUE INDEX buckets_analytics_unique_name_idx ON storage.buckets_analyti
 
 
 --
--- TOC entry 4421 (class 1259 OID 17387)
+-- TOC entry 4572 (class 1259 OID 17387)
 -- Name: idx_multipart_uploads_list; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8528,7 +11007,7 @@ CREATE INDEX idx_multipart_uploads_list ON storage.s3_multipart_uploads USING bt
 
 
 --
--- TOC entry 4412 (class 1259 OID 17352)
+-- TOC entry 4561 (class 1259 OID 17352)
 -- Name: idx_objects_bucket_id_name; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8536,7 +11015,7 @@ CREATE INDEX idx_objects_bucket_id_name ON storage.objects USING btree (bucket_i
 
 
 --
--- TOC entry 4413 (class 1259 OID 17468)
+-- TOC entry 4562 (class 1259 OID 17468)
 -- Name: idx_objects_bucket_id_name_lower; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8544,7 +11023,7 @@ CREATE INDEX idx_objects_bucket_id_name_lower ON storage.objects USING btree (bu
 
 
 --
--- TOC entry 4414 (class 1259 OID 25479)
+-- TOC entry 4563 (class 1259 OID 25479)
 -- Name: idx_objects_current_version; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8552,7 +11031,7 @@ CREATE UNIQUE INDEX idx_objects_current_version ON storage.objects USING btree (
 
 
 --
--- TOC entry 4415 (class 1259 OID 25498)
+-- TOC entry 4564 (class 1259 OID 25498)
 -- Name: idx_objects_delete_markers; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8560,7 +11039,7 @@ CREATE INDEX idx_objects_delete_markers ON storage.objects USING btree (bucket_i
 
 
 --
--- TOC entry 4416 (class 1259 OID 25480)
+-- TOC entry 4565 (class 1259 OID 25480)
 -- Name: idx_objects_null_version; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8568,7 +11047,15 @@ CREATE UNIQUE INDEX idx_objects_null_version ON storage.objects USING btree (buc
 
 
 --
--- TOC entry 4417 (class 1259 OID 17321)
+-- TOC entry 4854 (class 1259 OID 27542)
+-- Name: lifecycle_abandoned_artifacts_attempted_at_idx; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE INDEX lifecycle_abandoned_artifacts_attempted_at_idx ON storage.lifecycle_abandoned_artifacts USING btree (attempted_at);
+
+
+--
+-- TOC entry 4566 (class 1259 OID 17321)
 -- Name: name_prefix_search; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8576,7 +11063,23 @@ CREATE INDEX name_prefix_search ON storage.objects USING btree (name text_patter
 
 
 --
--- TOC entry 4418 (class 1259 OID 25478)
+-- TOC entry 4567 (class 1259 OID 27526)
+-- Name: objects_archived_due_idx; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE INDEX objects_archived_due_idx ON storage.objects USING btree (bucket_id, archived_at, name COLLATE "C") INCLUDE (id, version, is_delete_marker) WHERE (archived_at IS NOT NULL);
+
+
+--
+-- TOC entry 4568 (class 1259 OID 27525)
+-- Name: objects_archived_order_uq; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE UNIQUE INDEX objects_archived_order_uq ON storage.objects USING btree (bucket_id, name COLLATE "C", archived_at) WHERE (archived_at IS NOT NULL);
+
+
+--
+-- TOC entry 4569 (class 1259 OID 25478)
 -- Name: objects_bucket_id_name_version_key; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8584,7 +11087,7 @@ CREATE UNIQUE INDEX objects_bucket_id_name_version_key ON storage.objects USING 
 
 
 --
--- TOC entry 4431 (class 1259 OID 17452)
+-- TOC entry 4582 (class 1259 OID 17452)
 -- Name: vector_indexes_name_bucket_id_idx; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8592,295 +11095,391 @@ CREATE UNIQUE INDEX vector_indexes_name_bucket_id_idx ON storage.vector_indexes 
 
 
 --
--- TOC entry 4788 (class 2620 OID 26817)
+-- TOC entry 5062 (class 2620 OID 27281)
+-- Name: material_receipt_lines set_material_receipt_lines_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_material_receipt_lines_updated_at BEFORE UPDATE ON public.material_receipt_lines FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- TOC entry 5061 (class 2620 OID 27280)
+-- Name: material_receipts set_material_receipts_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_material_receipts_updated_at BEFORE UPDATE ON public.material_receipts FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- TOC entry 5058 (class 2620 OID 27128)
+-- Name: parties set_parties_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_parties_updated_at BEFORE UPDATE ON public.parties FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- TOC entry 5064 (class 2620 OID 27586)
+-- Name: project_units set_project_units_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_project_units_updated_at BEFORE UPDATE ON public.project_units FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- TOC entry 5060 (class 2620 OID 27208)
+-- Name: purchase_order_lines set_purchase_order_lines_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_purchase_order_lines_updated_at BEFORE UPDATE ON public.purchase_order_lines FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- TOC entry 5059 (class 2620 OID 27207)
+-- Name: purchase_orders set_purchase_orders_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_purchase_orders_updated_at BEFORE UPDATE ON public.purchase_orders FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- TOC entry 5054 (class 2620 OID 26817)
 -- Name: project_attachments trg_attachment_link_validation; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_attachment_link_validation BEFORE INSERT OR UPDATE OF progress_update_id, expense_id, project_id ON public.project_attachments FOR EACH ROW EXECUTE FUNCTION validate_attachment_links();
+CREATE TRIGGER trg_attachment_link_validation BEFORE INSERT OR UPDATE OF progress_update_id, expense_id, project_id ON public.project_attachments FOR EACH ROW EXECUTE FUNCTION public.validate_attachment_links();
 
 
 --
--- TOC entry 4787 (class 2620 OID 26855)
+-- TOC entry 5053 (class 2620 OID 26855)
 -- Name: project_client_access trg_client_access_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_client_access_updated_at BEFORE UPDATE ON public.project_client_access FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_client_access_updated_at BEFORE UPDATE ON public.project_client_access FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4756 (class 2620 OID 26838)
+-- TOC entry 5019 (class 2620 OID 26838)
 -- Name: companies trg_companies_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_companies_updated_at BEFORE UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_companies_updated_at BEFORE UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4757 (class 2620 OID 26839)
+-- TOC entry 5020 (class 2620 OID 26839)
 -- Name: company_settings trg_company_settings_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_company_settings_updated_at BEFORE UPDATE ON public.company_settings FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_company_settings_updated_at BEFORE UPDATE ON public.company_settings FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4772 (class 2620 OID 26857)
+-- TOC entry 5035 (class 2620 OID 26857)
 -- Name: company_subscriptions trg_company_subscriptions_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_company_subscriptions_updated_at BEFORE UPDATE ON public.company_subscriptions FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_company_subscriptions_updated_at BEFORE UPDATE ON public.company_subscriptions FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4773 (class 2620 OID 26858)
+-- TOC entry 5036 (class 2620 OID 26858)
 -- Name: company_quotation_usage trg_company_usage_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_company_usage_updated_at BEFORE UPDATE ON public.company_quotation_usage FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_company_usage_updated_at BEFORE UPDATE ON public.company_quotation_usage FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4758 (class 2620 OID 26840)
+-- TOC entry 5021 (class 2620 OID 26840)
 -- Name: company_users trg_company_users_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_company_users_updated_at BEFORE UPDATE ON public.company_users FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_company_users_updated_at BEFORE UPDATE ON public.company_users FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4759 (class 2620 OID 26841)
+-- TOC entry 5022 (class 2620 OID 26841)
 -- Name: customers trg_customers_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_customers_updated_at BEFORE UPDATE ON public.customers FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_customers_updated_at BEFORE UPDATE ON public.customers FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4771 (class 2620 OID 26826)
+-- TOC entry 5034 (class 2620 OID 26826)
 -- Name: document_items trg_document_items_unit_scope; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_document_items_unit_scope BEFORE INSERT OR UPDATE OF unit_id, section_id ON public.document_items FOR EACH ROW EXECUTE FUNCTION validate_document_item_unit_scope();
+CREATE TRIGGER trg_document_items_unit_scope BEFORE INSERT OR UPDATE OF unit_id, section_id ON public.document_items FOR EACH ROW EXECUTE FUNCTION public.validate_document_item_unit_scope();
 
 
 --
--- TOC entry 4767 (class 2620 OID 26848)
+-- TOC entry 5030 (class 2620 OID 26848)
 -- Name: document_sequences trg_document_sequences_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_document_sequences_updated_at BEFORE UPDATE ON public.document_sequences FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_document_sequences_updated_at BEFORE UPDATE ON public.document_sequences FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4768 (class 2620 OID 26819)
+-- TOC entry 5031 (class 2620 OID 26819)
 -- Name: documents trg_documents_customer_scope; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_documents_customer_scope BEFORE INSERT OR UPDATE OF customer_id, company_id ON public.documents FOR EACH ROW EXECUTE FUNCTION validate_document_customer_scope();
+CREATE TRIGGER trg_documents_customer_scope BEFORE INSERT OR UPDATE OF customer_id, company_id ON public.documents FOR EACH ROW EXECUTE FUNCTION public.validate_document_customer_scope();
 
 
 --
--- TOC entry 4769 (class 2620 OID 26818)
+-- TOC entry 5032 (class 2620 OID 26818)
 -- Name: documents trg_documents_master_scope; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_documents_master_scope BEFORE INSERT OR UPDATE OF project_type_id, area_unit_id, tax_rate_id, company_id ON public.documents FOR EACH ROW EXECUTE FUNCTION validate_document_master_scope();
+CREATE TRIGGER trg_documents_master_scope BEFORE INSERT OR UPDATE OF project_type_id, area_unit_id, tax_rate_id, company_id ON public.documents FOR EACH ROW EXECUTE FUNCTION public.validate_document_master_scope();
 
 
 --
--- TOC entry 4770 (class 2620 OID 26849)
+-- TOC entry 5033 (class 2620 OID 26849)
 -- Name: documents trg_documents_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_documents_updated_at BEFORE UPDATE ON public.documents FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_documents_updated_at BEFORE UPDATE ON public.documents FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4761 (class 2620 OID 26843)
+-- TOC entry 5056 (class 2620 OID 27828)
+-- Name: invoices trg_enforce_invoice_allocation_balance; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_enforce_invoice_allocation_balance BEFORE UPDATE OF grand_total, status ON public.invoices FOR EACH ROW EXECUTE FUNCTION public.enforce_invoice_allocation_balance();
+
+
+--
+-- TOC entry 5057 (class 2620 OID 27824)
+-- Name: payment_allocations trg_enforce_payment_allocation_balance; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_enforce_payment_allocation_balance BEFORE INSERT OR DELETE OR UPDATE ON public.payment_allocations FOR EACH ROW EXECUTE FUNCTION public.enforce_payment_allocation_balance();
+
+
+--
+-- TOC entry 5045 (class 2620 OID 27826)
+-- Name: project_expenses trg_enforce_project_expense_bill_balance; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_enforce_project_expense_bill_balance BEFORE UPDATE OF bill_amount, status, voided_at ON public.project_expenses FOR EACH ROW EXECUTE FUNCTION public.enforce_project_expense_bill_balance();
+
+
+--
+-- TOC entry 5048 (class 2620 OID 27825)
+-- Name: project_expense_payments trg_enforce_project_expense_payment_balance; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_enforce_project_expense_payment_balance BEFORE INSERT OR DELETE OR UPDATE ON public.project_expense_payments FOR EACH ROW EXECUTE FUNCTION public.enforce_project_expense_payment_balance();
+
+
+--
+-- TOC entry 5050 (class 2620 OID 27827)
+-- Name: project_receipts trg_enforce_project_receipt_allocation_balance; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_enforce_project_receipt_allocation_balance BEFORE UPDATE OF amount, voided_at ON public.project_receipts FOR EACH ROW EXECUTE FUNCTION public.enforce_project_receipt_allocation_balance();
+
+
+--
+-- TOC entry 5024 (class 2620 OID 26843)
 -- Name: expense_categories trg_expense_categories_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_expense_categories_updated_at BEFORE UPDATE ON public.expense_categories FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_expense_categories_updated_at BEFORE UPDATE ON public.expense_categories FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4784 (class 2620 OID 26825)
+-- TOC entry 5049 (class 2620 OID 26825)
 -- Name: project_expense_payments trg_expense_payments_method_scope; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_expense_payments_method_scope BEFORE INSERT OR UPDATE OF payment_method_id, project_expense_id ON public.project_expense_payments FOR EACH ROW EXECUTE FUNCTION validate_payment_method_scope();
+CREATE TRIGGER trg_expense_payments_method_scope BEFORE INSERT OR UPDATE OF payment_method_id, project_expense_id ON public.project_expense_payments FOR EACH ROW EXECUTE FUNCTION public.validate_payment_method_scope();
 
 
 --
--- TOC entry 4782 (class 2620 OID 26823)
+-- TOC entry 5046 (class 2620 OID 26823)
 -- Name: project_expenses trg_expenses_master_scope; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_expenses_master_scope BEFORE INSERT OR UPDATE OF category_id, project_id ON public.project_expenses FOR EACH ROW EXECUTE FUNCTION validate_expense_master_scope();
+CREATE TRIGGER trg_expenses_master_scope BEFORE INSERT OR UPDATE OF category_id, project_id ON public.project_expenses FOR EACH ROW EXECUTE FUNCTION public.validate_expense_master_scope();
 
 
 --
--- TOC entry 4783 (class 2620 OID 26853)
+-- TOC entry 5047 (class 2620 OID 26853)
 -- Name: project_expenses trg_expenses_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_expenses_updated_at BEFORE UPDATE ON public.project_expenses FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_expenses_updated_at BEFORE UPDATE ON public.project_expenses FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4789 (class 2620 OID 26856)
+-- TOC entry 5055 (class 2620 OID 26856)
 -- Name: project_investors trg_investors_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_investors_updated_at BEFORE UPDATE ON public.project_investors FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_investors_updated_at BEFORE UPDATE ON public.project_investors FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4763 (class 2620 OID 26845)
+-- TOC entry 5026 (class 2620 OID 26845)
 -- Name: payment_methods trg_payment_methods_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_payment_methods_updated_at BEFORE UPDATE ON public.payment_methods FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_payment_methods_updated_at BEFORE UPDATE ON public.payment_methods FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4780 (class 2620 OID 26816)
+-- TOC entry 5043 (class 2620 OID 26816)
 -- Name: project_progress_updates trg_progress_stage_validation; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_progress_stage_validation BEFORE INSERT OR UPDATE OF stage_id, project_id ON public.project_progress_updates FOR EACH ROW EXECUTE FUNCTION validate_progress_stage_link();
+CREATE TRIGGER trg_progress_stage_validation BEFORE INSERT OR UPDATE OF stage_id, project_id ON public.project_progress_updates FOR EACH ROW EXECUTE FUNCTION public.validate_progress_stage_link();
 
 
 --
--- TOC entry 4781 (class 2620 OID 26852)
+-- TOC entry 5044 (class 2620 OID 26852)
 -- Name: project_progress_updates trg_progress_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_progress_updated_at BEFORE UPDATE ON public.project_progress_updates FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_progress_updated_at BEFORE UPDATE ON public.project_progress_updates FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4760 (class 2620 OID 26842)
+-- TOC entry 5023 (class 2620 OID 26842)
 -- Name: project_types trg_project_types_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_project_types_updated_at BEFORE UPDATE ON public.project_types FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_project_types_updated_at BEFORE UPDATE ON public.project_types FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4775 (class 2620 OID 26821)
+-- TOC entry 5038 (class 2620 OID 26821)
 -- Name: projects trg_projects_customer_scope; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_projects_customer_scope BEFORE INSERT OR UPDATE OF customer_id, company_id ON public.projects FOR EACH ROW EXECUTE FUNCTION validate_project_customer_scope();
+CREATE TRIGGER trg_projects_customer_scope BEFORE INSERT OR UPDATE OF customer_id, company_id ON public.projects FOR EACH ROW EXECUTE FUNCTION public.validate_project_customer_scope();
 
 
 --
--- TOC entry 4776 (class 2620 OID 26820)
+-- TOC entry 5039 (class 2620 OID 26820)
 -- Name: projects trg_projects_master_scope; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_projects_master_scope BEFORE INSERT OR UPDATE OF project_type_id, company_id ON public.projects FOR EACH ROW EXECUTE FUNCTION validate_project_master_scope();
+CREATE TRIGGER trg_projects_master_scope BEFORE INSERT OR UPDATE OF project_type_id, company_id ON public.projects FOR EACH ROW EXECUTE FUNCTION public.validate_project_master_scope();
 
 
 --
--- TOC entry 4777 (class 2620 OID 26815)
+-- TOC entry 5040 (class 2620 OID 26815)
 -- Name: projects trg_projects_source_validation; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_projects_source_validation BEFORE INSERT OR UPDATE OF source_document_id, company_id ON public.projects FOR EACH ROW EXECUTE FUNCTION validate_project_source_quotation();
+CREATE TRIGGER trg_projects_source_validation BEFORE INSERT OR UPDATE OF source_document_id, company_id ON public.projects FOR EACH ROW EXECUTE FUNCTION public.validate_project_source_quotation();
 
 
 --
--- TOC entry 4778 (class 2620 OID 26850)
+-- TOC entry 5041 (class 2620 OID 26850)
 -- Name: projects trg_projects_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_projects_updated_at BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_projects_updated_at BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4785 (class 2620 OID 26824)
+-- TOC entry 5051 (class 2620 OID 26824)
 -- Name: project_receipts trg_receipts_method_scope; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_receipts_method_scope BEFORE INSERT OR UPDATE OF payment_method_id, project_id ON public.project_receipts FOR EACH ROW EXECUTE FUNCTION validate_payment_method_scope();
+CREATE TRIGGER trg_receipts_method_scope BEFORE INSERT OR UPDATE OF payment_method_id, project_id ON public.project_receipts FOR EACH ROW EXECUTE FUNCTION public.validate_payment_method_scope();
 
 
 --
--- TOC entry 4786 (class 2620 OID 26854)
+-- TOC entry 5052 (class 2620 OID 26854)
 -- Name: project_receipts trg_receipts_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_receipts_updated_at BEFORE UPDATE ON public.project_receipts FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_receipts_updated_at BEFORE UPDATE ON public.project_receipts FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4765 (class 2620 OID 26822)
+-- TOC entry 5063 (class 2620 OID 27808)
+-- Name: material_receipt_lines trg_set_material_receipt_line_purchase_order; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_set_material_receipt_line_purchase_order BEFORE INSERT OR UPDATE OF material_receipt_id, purchase_order_line_id ON public.material_receipt_lines FOR EACH ROW EXECUTE FUNCTION public.set_material_receipt_line_purchase_order();
+
+
+--
+-- TOC entry 5028 (class 2620 OID 26822)
 -- Name: project_stage_templates trg_stage_templates_scope; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_stage_templates_scope BEFORE INSERT OR UPDATE OF company_id, project_type_id ON public.project_stage_templates FOR EACH ROW EXECUTE FUNCTION validate_stage_template_scope();
+CREATE TRIGGER trg_stage_templates_scope BEFORE INSERT OR UPDATE OF company_id, project_type_id ON public.project_stage_templates FOR EACH ROW EXECUTE FUNCTION public.validate_stage_template_scope();
 
 
 --
--- TOC entry 4766 (class 2620 OID 26847)
+-- TOC entry 5029 (class 2620 OID 26847)
 -- Name: project_stage_templates trg_stage_templates_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_stage_templates_updated_at BEFORE UPDATE ON public.project_stage_templates FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_stage_templates_updated_at BEFORE UPDATE ON public.project_stage_templates FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4779 (class 2620 OID 26851)
+-- TOC entry 5042 (class 2620 OID 26851)
 -- Name: project_stages trg_stages_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_stages_updated_at BEFORE UPDATE ON public.project_stages FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_stages_updated_at BEFORE UPDATE ON public.project_stages FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4774 (class 2620 OID 26859)
+-- TOC entry 5037 (class 2620 OID 26859)
 -- Name: subscription_payments trg_subscription_payments_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_subscription_payments_updated_at BEFORE UPDATE ON public.subscription_payments FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_subscription_payments_updated_at BEFORE UPDATE ON public.subscription_payments FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4764 (class 2620 OID 26846)
+-- TOC entry 5027 (class 2620 OID 26846)
 -- Name: tax_rates trg_tax_rates_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_tax_rates_updated_at BEFORE UPDATE ON public.tax_rates FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_tax_rates_updated_at BEFORE UPDATE ON public.tax_rates FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4762 (class 2620 OID 26844)
+-- TOC entry 5025 (class 2620 OID 26844)
 -- Name: units_of_measure trg_units_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_units_updated_at BEFORE UPDATE ON public.units_of_measure FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_units_updated_at BEFORE UPDATE ON public.units_of_measure FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4755 (class 2620 OID 26837)
+-- TOC entry 5018 (class 2620 OID 26837)
 -- Name: user_profiles trg_user_profiles_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_user_profiles_updated_at BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_user_profiles_updated_at BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4754 (class 2620 OID 26836)
+-- TOC entry 5017 (class 2620 OID 26836)
 -- Name: users trg_users_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
--- TOC entry 4746 (class 2620 OID 17274)
+-- TOC entry 5005 (class 2620 OID 17274)
 -- Name: subscription tr_check_filters; Type: TRIGGER; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -8888,7 +11487,7 @@ CREATE TRIGGER tr_check_filters BEFORE INSERT OR UPDATE ON realtime.subscription
 
 
 --
--- TOC entry 4747 (class 2620 OID 17406)
+-- TOC entry 5006 (class 2620 OID 17406)
 -- Name: buckets enforce_bucket_name_length_trigger; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8896,7 +11495,23 @@ CREATE TRIGGER enforce_bucket_name_length_trigger BEFORE INSERT OR UPDATE OF nam
 
 
 --
--- TOC entry 4748 (class 2620 OID 25486)
+-- TOC entry 5007 (class 2620 OID 27286)
+-- Name: buckets enforce_versioning_status_transition; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE TRIGGER enforce_versioning_status_transition BEFORE UPDATE OF versioning_status ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.enforce_versioning_status_transition();
+
+
+--
+-- TOC entry 5008 (class 2620 OID 27528)
+-- Name: buckets protect_active_lifecycle_states; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE TRIGGER protect_active_lifecycle_states BEFORE DELETE ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.protect_active_lifecycle_states();
+
+
+--
+-- TOC entry 5009 (class 2620 OID 25486)
 -- Name: buckets protect_bucket_control_insert; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8904,7 +11519,7 @@ CREATE TRIGGER protect_bucket_control_insert BEFORE INSERT ON storage.buckets FO
 
 
 --
--- TOC entry 4749 (class 2620 OID 25487)
+-- TOC entry 5010 (class 2620 OID 25487)
 -- Name: buckets protect_bucket_control_update; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8912,7 +11527,7 @@ CREATE TRIGGER protect_bucket_control_update BEFORE UPDATE OF lifecycle_configur
 
 
 --
--- TOC entry 4750 (class 2620 OID 25488)
+-- TOC entry 5011 (class 2620 OID 25488)
 -- Name: buckets protect_bucket_control_update_role; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8920,7 +11535,7 @@ CREATE TRIGGER protect_bucket_control_update_role AFTER UPDATE OF lifecycle_conf
 
 
 --
--- TOC entry 4751 (class 2620 OID 17470)
+-- TOC entry 5012 (class 2620 OID 17470)
 -- Name: buckets protect_buckets_delete; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8928,7 +11543,7 @@ CREATE TRIGGER protect_buckets_delete BEFORE DELETE ON storage.buckets FOR EACH 
 
 
 --
--- TOC entry 4752 (class 2620 OID 17471)
+-- TOC entry 5015 (class 2620 OID 17471)
 -- Name: objects protect_objects_delete; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8936,7 +11551,7 @@ CREATE TRIGGER protect_objects_delete BEFORE DELETE ON storage.objects FOR EACH 
 
 
 --
--- TOC entry 4753 (class 2620 OID 17340)
+-- TOC entry 5016 (class 2620 OID 17340)
 -- Name: objects update_objects_updated_at; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -8944,7 +11559,23 @@ CREATE TRIGGER update_objects_updated_at BEFORE UPDATE ON storage.objects FOR EA
 
 
 --
--- TOC entry 4632 (class 2606 OID 16694)
+-- TOC entry 5013 (class 2620 OID 27532)
+-- Name: buckets wake_lifecycle_on_policy_write; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE TRIGGER wake_lifecycle_on_policy_write AFTER INSERT OR UPDATE OF lifecycle_configuration_generation ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.wake_lifecycle_state();
+
+
+--
+-- TOC entry 5014 (class 2620 OID 27531)
+-- Name: buckets wake_lifecycle_on_versioning_enable; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE TRIGGER wake_lifecycle_on_versioning_enable AFTER UPDATE OF versioning_status ON storage.buckets FOR EACH ROW WHEN ((new.lifecycle_configuration IS NOT NULL)) EXECUTE FUNCTION storage.wake_lifecycle_state();
+
+
+--
+-- TOC entry 4863 (class 2606 OID 16694)
 -- Name: identities identities_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8953,7 +11584,7 @@ ALTER TABLE ONLY auth.identities
 
 
 --
--- TOC entry 4637 (class 2606 OID 16783)
+-- TOC entry 4868 (class 2606 OID 16783)
 -- Name: mfa_amr_claims mfa_amr_claims_session_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8962,7 +11593,7 @@ ALTER TABLE ONLY auth.mfa_amr_claims
 
 
 --
--- TOC entry 4636 (class 2606 OID 16771)
+-- TOC entry 4867 (class 2606 OID 16771)
 -- Name: mfa_challenges mfa_challenges_auth_factor_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8971,7 +11602,7 @@ ALTER TABLE ONLY auth.mfa_challenges
 
 
 --
--- TOC entry 4635 (class 2606 OID 16758)
+-- TOC entry 4866 (class 2606 OID 16758)
 -- Name: mfa_factors mfa_factors_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8980,7 +11611,7 @@ ALTER TABLE ONLY auth.mfa_factors
 
 
 --
--- TOC entry 4658 (class 2606 OID 25569)
+-- TOC entry 4889 (class 2606 OID 25569)
 -- Name: mfa_recovery_code_sets mfa_recovery_code_sets_mfa_factor_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8989,7 +11620,7 @@ ALTER TABLE ONLY auth.mfa_recovery_code_sets
 
 
 --
--- TOC entry 4659 (class 2606 OID 25564)
+-- TOC entry 4890 (class 2606 OID 25564)
 -- Name: mfa_recovery_code_sets mfa_recovery_code_sets_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -8998,7 +11629,7 @@ ALTER TABLE ONLY auth.mfa_recovery_code_sets
 
 
 --
--- TOC entry 4660 (class 2606 OID 25582)
+-- TOC entry 4891 (class 2606 OID 25582)
 -- Name: mfa_recovery_codes mfa_recovery_codes_mfa_recovery_code_set_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9007,7 +11638,7 @@ ALTER TABLE ONLY auth.mfa_recovery_codes
 
 
 --
--- TOC entry 4643 (class 2606 OID 17023)
+-- TOC entry 4874 (class 2606 OID 17023)
 -- Name: oauth_authorizations oauth_authorizations_client_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9016,7 +11647,7 @@ ALTER TABLE ONLY auth.oauth_authorizations
 
 
 --
--- TOC entry 4644 (class 2606 OID 17028)
+-- TOC entry 4875 (class 2606 OID 17028)
 -- Name: oauth_authorizations oauth_authorizations_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9025,7 +11656,7 @@ ALTER TABLE ONLY auth.oauth_authorizations
 
 
 --
--- TOC entry 4645 (class 2606 OID 17052)
+-- TOC entry 4876 (class 2606 OID 17052)
 -- Name: oauth_consents oauth_consents_client_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9034,7 +11665,7 @@ ALTER TABLE ONLY auth.oauth_consents
 
 
 --
--- TOC entry 4646 (class 2606 OID 17047)
+-- TOC entry 4877 (class 2606 OID 17047)
 -- Name: oauth_consents oauth_consents_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9043,7 +11674,7 @@ ALTER TABLE ONLY auth.oauth_consents
 
 
 --
--- TOC entry 4642 (class 2606 OID 16949)
+-- TOC entry 4873 (class 2606 OID 16949)
 -- Name: one_time_tokens one_time_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9052,7 +11683,7 @@ ALTER TABLE ONLY auth.one_time_tokens
 
 
 --
--- TOC entry 4631 (class 2606 OID 16727)
+-- TOC entry 4862 (class 2606 OID 16727)
 -- Name: refresh_tokens refresh_tokens_session_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9061,7 +11692,7 @@ ALTER TABLE ONLY auth.refresh_tokens
 
 
 --
--- TOC entry 4639 (class 2606 OID 16830)
+-- TOC entry 4870 (class 2606 OID 16830)
 -- Name: saml_providers saml_providers_sso_provider_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9070,7 +11701,7 @@ ALTER TABLE ONLY auth.saml_providers
 
 
 --
--- TOC entry 4640 (class 2606 OID 16903)
+-- TOC entry 4871 (class 2606 OID 16903)
 -- Name: saml_relay_states saml_relay_states_flow_state_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9079,7 +11710,7 @@ ALTER TABLE ONLY auth.saml_relay_states
 
 
 --
--- TOC entry 4641 (class 2606 OID 16844)
+-- TOC entry 4872 (class 2606 OID 16844)
 -- Name: saml_relay_states saml_relay_states_sso_provider_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9088,7 +11719,7 @@ ALTER TABLE ONLY auth.saml_relay_states
 
 
 --
--- TOC entry 4657 (class 2606 OID 25541)
+-- TOC entry 4888 (class 2606 OID 25541)
 -- Name: scim_tokens scim_tokens_sso_provider_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9097,7 +11728,7 @@ ALTER TABLE ONLY auth.scim_tokens
 
 
 --
--- TOC entry 4655 (class 2606 OID 25511)
+-- TOC entry 4886 (class 2606 OID 25511)
 -- Name: scim_users scim_users_sso_provider_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9106,7 +11737,7 @@ ALTER TABLE ONLY auth.scim_users
 
 
 --
--- TOC entry 4656 (class 2606 OID 25516)
+-- TOC entry 4887 (class 2606 OID 25516)
 -- Name: scim_users scim_users_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9115,7 +11746,7 @@ ALTER TABLE ONLY auth.scim_users
 
 
 --
--- TOC entry 4633 (class 2606 OID 17066)
+-- TOC entry 4864 (class 2606 OID 17066)
 -- Name: sessions sessions_oauth_client_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9124,7 +11755,7 @@ ALTER TABLE ONLY auth.sessions
 
 
 --
--- TOC entry 4634 (class 2606 OID 16722)
+-- TOC entry 4865 (class 2606 OID 16722)
 -- Name: sessions sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9133,7 +11764,7 @@ ALTER TABLE ONLY auth.sessions
 
 
 --
--- TOC entry 4638 (class 2606 OID 16811)
+-- TOC entry 4869 (class 2606 OID 16811)
 -- Name: sso_domains sso_domains_sso_provider_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9142,7 +11773,7 @@ ALTER TABLE ONLY auth.sso_domains
 
 
 --
--- TOC entry 4648 (class 2606 OID 17159)
+-- TOC entry 4879 (class 2606 OID 17159)
 -- Name: webauthn_challenges webauthn_challenges_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9151,7 +11782,7 @@ ALTER TABLE ONLY auth.webauthn_challenges
 
 
 --
--- TOC entry 4647 (class 2606 OID 17142)
+-- TOC entry 4878 (class 2606 OID 17142)
 -- Name: webauthn_credentials webauthn_credentials_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -9160,439 +11791,637 @@ ALTER TABLE ONLY auth.webauthn_credentials
 
 
 --
--- TOC entry 4692 (class 2606 OID 26426)
+-- TOC entry 4926 (class 2606 OID 26426)
 -- Name: booking_receipt_details booking_receipt_details_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.booking_receipt_details
-    ADD CONSTRAINT booking_receipt_details_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+    ADD CONSTRAINT booking_receipt_details_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.documents(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4664 (class 2606 OID 26018)
+-- TOC entry 4895 (class 2606 OID 26018)
 -- Name: companies companies_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.companies
-    ADD CONSTRAINT companies_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES users(id);
+    ADD CONSTRAINT companies_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4694 (class 2606 OID 26464)
+-- TOC entry 4929 (class 2606 OID 26464)
 -- Name: company_quotation_usage company_quotation_usage_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.company_quotation_usage
-    ADD CONSTRAINT company_quotation_usage_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT company_quotation_usage_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4665 (class 2606 OID 26038)
+-- TOC entry 4896 (class 2606 OID 26038)
 -- Name: company_settings company_settings_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.company_settings
-    ADD CONSTRAINT company_settings_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT company_settings_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4693 (class 2606 OID 26445)
+-- TOC entry 4928 (class 2606 OID 26445)
 -- Name: company_subscriptions company_subscriptions_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.company_subscriptions
-    ADD CONSTRAINT company_subscriptions_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT company_subscriptions_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4666 (class 2606 OID 26058)
+-- TOC entry 4897 (class 2606 OID 26058)
 -- Name: company_users company_users_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.company_users
-    ADD CONSTRAINT company_users_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT company_users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4667 (class 2606 OID 26063)
+-- TOC entry 4898 (class 2606 OID 26063)
 -- Name: company_users company_users_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.company_users
-    ADD CONSTRAINT company_users_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT company_users_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4668 (class 2606 OID 26081)
+-- TOC entry 4899 (class 2606 OID 26081)
 -- Name: customers customers_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.customers
-    ADD CONSTRAINT customers_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT customers_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4669 (class 2606 OID 26086)
+-- TOC entry 4900 (class 2606 OID 26086)
 -- Name: customers customers_deleted_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.customers
-    ADD CONSTRAINT customers_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES users(id);
+    ADD CONSTRAINT customers_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4689 (class 2606 OID 26382)
+-- TOC entry 4923 (class 2606 OID 26382)
 -- Name: document_exclusions document_exclusions_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.document_exclusions
-    ADD CONSTRAINT document_exclusions_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+    ADD CONSTRAINT document_exclusions_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.documents(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4688 (class 2606 OID 26369)
+-- TOC entry 4922 (class 2606 OID 26369)
 -- Name: document_inclusions document_inclusions_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.document_inclusions
-    ADD CONSTRAINT document_inclusions_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+    ADD CONSTRAINT document_inclusions_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.documents(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4685 (class 2606 OID 26336)
+-- TOC entry 4919 (class 2606 OID 26336)
 -- Name: document_items document_items_section_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.document_items
-    ADD CONSTRAINT document_items_section_id_fkey FOREIGN KEY (section_id) REFERENCES document_sections(id) ON DELETE CASCADE;
+    ADD CONSTRAINT document_items_section_id_fkey FOREIGN KEY (section_id) REFERENCES public.document_sections(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4686 (class 2606 OID 26341)
+-- TOC entry 4920 (class 2606 OID 26341)
 -- Name: document_items document_items_unit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.document_items
-    ADD CONSTRAINT document_items_unit_id_fkey FOREIGN KEY (unit_id) REFERENCES units_of_measure(id) ON DELETE SET NULL;
+    ADD CONSTRAINT document_items_unit_id_fkey FOREIGN KEY (unit_id) REFERENCES public.units_of_measure(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4684 (class 2606 OID 26315)
+-- TOC entry 4918 (class 2606 OID 26315)
 -- Name: document_sections document_sections_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.document_sections
-    ADD CONSTRAINT document_sections_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+    ADD CONSTRAINT document_sections_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.documents(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4677 (class 2606 OID 26228)
+-- TOC entry 4909 (class 2606 OID 26228)
 -- Name: document_sequences document_sequences_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.document_sequences
-    ADD CONSTRAINT document_sequences_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT document_sequences_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4687 (class 2606 OID 26356)
+-- TOC entry 4921 (class 2606 OID 26356)
 -- Name: document_specifications document_specifications_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.document_specifications
-    ADD CONSTRAINT document_specifications_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+    ADD CONSTRAINT document_specifications_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.documents(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4691 (class 2606 OID 26414)
+-- TOC entry 4925 (class 2606 OID 26414)
 -- Name: document_terms document_terms_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.document_terms
-    ADD CONSTRAINT document_terms_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+    ADD CONSTRAINT document_terms_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.documents(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4678 (class 2606 OID 26285)
+-- TOC entry 4910 (class 2606 OID 26285)
 -- Name: documents documents_area_unit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.documents
-    ADD CONSTRAINT documents_area_unit_id_fkey FOREIGN KEY (area_unit_id) REFERENCES units_of_measure(id) ON DELETE SET NULL;
+    ADD CONSTRAINT documents_area_unit_id_fkey FOREIGN KEY (area_unit_id) REFERENCES public.units_of_measure(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4679 (class 2606 OID 26275)
+-- TOC entry 4911 (class 2606 OID 26275)
 -- Name: documents documents_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.documents
-    ADD CONSTRAINT documents_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT;
+    ADD CONSTRAINT documents_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4680 (class 2606 OID 26295)
+-- TOC entry 4912 (class 2606 OID 26295)
 -- Name: documents documents_deleted_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.documents
-    ADD CONSTRAINT documents_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES users(id);
+    ADD CONSTRAINT documents_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4681 (class 2606 OID 26280)
+-- TOC entry 4913 (class 2606 OID 26280)
 -- Name: documents documents_project_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.documents
-    ADD CONSTRAINT documents_project_type_id_fkey FOREIGN KEY (project_type_id) REFERENCES project_types(id) ON DELETE SET NULL;
+    ADD CONSTRAINT documents_project_type_id_fkey FOREIGN KEY (project_type_id) REFERENCES public.project_types(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4682 (class 2606 OID 26290)
+-- TOC entry 4914 (class 2606 OID 26290)
 -- Name: documents documents_tax_rate_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.documents
-    ADD CONSTRAINT documents_tax_rate_id_fkey FOREIGN KEY (tax_rate_id) REFERENCES tax_rates(id) ON DELETE SET NULL;
+    ADD CONSTRAINT documents_tax_rate_id_fkey FOREIGN KEY (tax_rate_id) REFERENCES public.tax_rates(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4671 (class 2606 OID 26124)
+-- TOC entry 4903 (class 2606 OID 26124)
 -- Name: expense_categories expense_categories_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.expense_categories
-    ADD CONSTRAINT expense_categories_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT expense_categories_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4742 (class 2606 OID 27011)
+-- TOC entry 4981 (class 2606 OID 27011)
 -- Name: payment_allocations fk_allocation_invoice_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.payment_allocations
-    ADD CONSTRAINT fk_allocation_invoice_company FOREIGN KEY (invoice_id, company_id) REFERENCES invoices(id, company_id) ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_allocation_invoice_company FOREIGN KEY (invoice_id, company_id) REFERENCES public.invoices(id, company_id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4743 (class 2606 OID 27016)
+-- TOC entry 4982 (class 2606 OID 27016)
 -- Name: payment_allocations fk_allocation_receipt_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.payment_allocations
-    ADD CONSTRAINT fk_allocation_receipt_company FOREIGN KEY (receipt_id, company_id) REFERENCES project_receipts(id, company_id) ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_allocation_receipt_company FOREIGN KEY (receipt_id, company_id) REFERENCES public.project_receipts(id, company_id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4683 (class 2606 OID 26300)
+-- TOC entry 4963 (class 2606 OID 27765)
+-- Name: project_attachments fk_attachments_expense_project; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.project_attachments
+    ADD CONSTRAINT fk_attachments_expense_project FOREIGN KEY (expense_id, project_id) REFERENCES public.project_expenses(id, project_id) ON DELETE SET NULL (expense_id);
+
+
+--
+-- TOC entry 4964 (class 2606 OID 27770)
+-- Name: project_attachments fk_attachments_progress_project; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.project_attachments
+    ADD CONSTRAINT fk_attachments_progress_project FOREIGN KEY (progress_update_id, project_id) REFERENCES public.project_progress_updates(id, project_id) ON DELETE SET NULL (progress_update_id);
+
+
+--
+-- TOC entry 4927 (class 2606 OID 27697)
+-- Name: booking_receipt_details fk_booking_receipt_details_project_unit; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.booking_receipt_details
+    ADD CONSTRAINT fk_booking_receipt_details_project_unit FOREIGN KEY (project_unit_id) REFERENCES public.project_units(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4901 (class 2606 OID 27862)
+-- Name: customers fk_customers_party_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.customers
+    ADD CONSTRAINT fk_customers_party_company FOREIGN KEY (party_id, company_id) REFERENCES public.parties(id, company_id) ON DELETE SET NULL (party_id);
+
+
+--
+-- TOC entry 4915 (class 2606 OID 26300)
 -- Name: documents fk_documents_customer; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.documents
-    ADD CONSTRAINT fk_documents_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL;
+    ADD CONSTRAINT fk_documents_customer FOREIGN KEY (customer_id) REFERENCES public.customers(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4713 (class 2606 OID 26908)
+-- TOC entry 4916 (class 2606 OID 27867)
+-- Name: documents fk_documents_party_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.documents
+    ADD CONSTRAINT fk_documents_party_company FOREIGN KEY (party_id, company_id) REFERENCES public.parties(id, company_id) ON DELETE SET NULL (party_id);
+
+
+--
+-- TOC entry 4917 (class 2606 OID 27877)
+-- Name: documents fk_documents_project_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.documents
+    ADD CONSTRAINT fk_documents_project_company FOREIGN KEY (project_id, company_id) REFERENCES public.projects(id, company_id) ON DELETE SET NULL (project_id);
+
+
+--
+-- TOC entry 4949 (class 2606 OID 26908)
 -- Name: project_expense_payments fk_expense_payments_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expense_payments
-    ADD CONSTRAINT fk_expense_payments_company FOREIGN KEY (company_id) REFERENCES companies(id);
+    ADD CONSTRAINT fk_expense_payments_company FOREIGN KEY (company_id) REFERENCES public.companies(id);
 
 
 --
--- TOC entry 4714 (class 2606 OID 26913)
+-- TOC entry 4950 (class 2606 OID 26913)
 -- Name: project_expense_payments fk_expense_payments_expense_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expense_payments
-    ADD CONSTRAINT fk_expense_payments_expense_company FOREIGN KEY (project_expense_id, company_id) REFERENCES project_expenses(id, company_id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_expense_payments_expense_company FOREIGN KEY (project_expense_id, company_id) REFERENCES public.project_expenses(id, company_id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4707 (class 2606 OID 26893)
+-- TOC entry 4943 (class 2606 OID 26893)
 -- Name: project_expenses fk_expenses_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expenses
-    ADD CONSTRAINT fk_expenses_company FOREIGN KEY (company_id) REFERENCES companies(id);
+    ADD CONSTRAINT fk_expenses_company FOREIGN KEY (company_id) REFERENCES public.companies(id);
 
 
 --
--- TOC entry 4708 (class 2606 OID 26898)
+-- TOC entry 4944 (class 2606 OID 26898)
 -- Name: project_expenses fk_expenses_project_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expenses
-    ADD CONSTRAINT fk_expenses_project_company FOREIGN KEY (project_id, company_id) REFERENCES projects(id, company_id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_expenses_project_company FOREIGN KEY (project_id, company_id) REFERENCES public.projects(id, company_id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4709 (class 2606 OID 26903)
+-- TOC entry 4945 (class 2606 OID 26903)
 -- Name: project_expenses fk_expenses_supplier_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expenses
-    ADD CONSTRAINT fk_expenses_supplier_company FOREIGN KEY (supplier_id, company_id) REFERENCES suppliers(id, company_id) ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_expenses_supplier_company FOREIGN KEY (supplier_id, company_id) REFERENCES public.suppliers(id, company_id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4735 (class 2606 OID 26799)
+-- TOC entry 4974 (class 2606 OID 26799)
 -- Name: project_investor_contributions fk_investor_contribution_owner; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_investor_contributions
-    ADD CONSTRAINT fk_investor_contribution_owner FOREIGN KEY (project_investor_id, project_id, company_id) REFERENCES project_investors(id, project_id, company_id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_investor_contribution_owner FOREIGN KEY (project_investor_id, project_id, company_id) REFERENCES public.project_investors(id, project_id, company_id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4738 (class 2606 OID 26964)
+-- TOC entry 4977 (class 2606 OID 26964)
 -- Name: invoices fk_invoice_customer_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.invoices
-    ADD CONSTRAINT fk_invoice_customer_company FOREIGN KEY (customer_id, company_id) REFERENCES customers(id, company_id) ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_invoice_customer_company FOREIGN KEY (customer_id, company_id) REFERENCES public.customers(id, company_id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4739 (class 2606 OID 26969)
+-- TOC entry 4978 (class 2606 OID 26969)
 -- Name: invoices fk_invoice_project_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.invoices
-    ADD CONSTRAINT fk_invoice_project_company FOREIGN KEY (project_id, company_id) REFERENCES projects(id, company_id) ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_invoice_project_company FOREIGN KEY (project_id, company_id) REFERENCES public.projects(id, company_id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4731 (class 2606 OID 27037)
+-- TOC entry 4999 (class 2606 OID 27803)
+-- Name: material_receipt_lines fk_material_receipt_lines_po_line_po; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipt_lines
+    ADD CONSTRAINT fk_material_receipt_lines_po_line_po FOREIGN KEY (purchase_order_line_id, purchase_order_id) REFERENCES public.purchase_order_lines(id, purchase_order_id);
+
+
+--
+-- TOC entry 5000 (class 2606 OID 27798)
+-- Name: material_receipt_lines fk_material_receipt_lines_receipt_po; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipt_lines
+    ADD CONSTRAINT fk_material_receipt_lines_receipt_po FOREIGN KEY (material_receipt_id, purchase_order_id) REFERENCES public.material_receipts(id, purchase_order_id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4993 (class 2606 OID 27786)
+-- Name: material_receipts fk_material_receipts_po_context; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipts
+    ADD CONSTRAINT fk_material_receipts_po_context FOREIGN KEY (purchase_order_id, company_id, project_id, supplier_party_id) REFERENCES public.purchase_orders(id, company_id, project_id, supplier_party_id);
+
+
+--
+-- TOC entry 4994 (class 2606 OID 27791)
+-- Name: material_receipts fk_material_receipts_supplier_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipts
+    ADD CONSTRAINT fk_material_receipts_supplier_company FOREIGN KEY (supplier_party_id, company_id) REFERENCES public.parties(id, company_id);
+
+
+--
+-- TOC entry 4938 (class 2606 OID 27760)
+-- Name: project_progress_updates fk_progress_updates_stage_project; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.project_progress_updates
+    ADD CONSTRAINT fk_progress_updates_stage_project FOREIGN KEY (stage_id, project_id) REFERENCES public.project_stages(id, project_id) ON DELETE SET NULL (stage_id);
+
+
+--
+-- TOC entry 4969 (class 2606 OID 27037)
 -- Name: project_investors fk_project_investor_master; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_investors
-    ADD CONSTRAINT fk_project_investor_master FOREIGN KEY (investor_id, company_id) REFERENCES investors(id, company_id) ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_project_investor_master FOREIGN KEY (investor_id, company_id) REFERENCES public.investors(id, company_id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4732 (class 2606 OID 26778)
+-- TOC entry 4970 (class 2606 OID 27872)
+-- Name: project_investors fk_project_investors_party_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.project_investors
+    ADD CONSTRAINT fk_project_investors_party_company FOREIGN KEY (party_id, company_id) REFERENCES public.parties(id, company_id) ON DELETE SET NULL (party_id);
+
+
+--
+-- TOC entry 4971 (class 2606 OID 26778)
 -- Name: project_investors fk_project_investors_project_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_investors
-    ADD CONSTRAINT fk_project_investors_project_company FOREIGN KEY (project_id, company_id) REFERENCES projects(id, company_id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_project_investors_project_company FOREIGN KEY (project_id, company_id) REFERENCES public.projects(id, company_id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4696 (class 2606 OID 26523)
+-- TOC entry 4931 (class 2606 OID 26523)
 -- Name: projects fk_projects_customer; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.projects
-    ADD CONSTRAINT fk_projects_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL;
+    ADD CONSTRAINT fk_projects_customer FOREIGN KEY (customer_id) REFERENCES public.customers(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4697 (class 2606 OID 26528)
+-- TOC entry 4932 (class 2606 OID 26528)
 -- Name: projects fk_projects_source_document_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.projects
-    ADD CONSTRAINT fk_projects_source_document_company FOREIGN KEY (source_document_id, company_id) REFERENCES documents(id, company_id) ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_projects_source_document_company FOREIGN KEY (source_document_id, company_id) REFERENCES public.documents(id, company_id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4718 (class 2606 OID 26920)
+-- TOC entry 4987 (class 2606 OID 27776)
+-- Name: purchase_orders fk_purchase_orders_project_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.purchase_orders
+    ADD CONSTRAINT fk_purchase_orders_project_company FOREIGN KEY (project_id, company_id) REFERENCES public.projects(id, company_id);
+
+
+--
+-- TOC entry 4988 (class 2606 OID 27781)
+-- Name: purchase_orders fk_purchase_orders_supplier_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.purchase_orders
+    ADD CONSTRAINT fk_purchase_orders_supplier_company FOREIGN KEY (supplier_party_id, company_id) REFERENCES public.parties(id, company_id);
+
+
+--
+-- TOC entry 4954 (class 2606 OID 26920)
 -- Name: project_receipts fk_receipts_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_receipts
-    ADD CONSTRAINT fk_receipts_company FOREIGN KEY (company_id) REFERENCES companies(id);
+    ADD CONSTRAINT fk_receipts_company FOREIGN KEY (company_id) REFERENCES public.companies(id);
 
 
 --
--- TOC entry 4719 (class 2606 OID 27053)
+-- TOC entry 4955 (class 2606 OID 27053)
 -- Name: project_receipts fk_receipts_customer_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_receipts
-    ADD CONSTRAINT fk_receipts_customer_company FOREIGN KEY (customer_id, company_id) REFERENCES customers(id, company_id) ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_receipts_customer_company FOREIGN KEY (customer_id, company_id) REFERENCES public.customers(id, company_id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4720 (class 2606 OID 26925)
+-- TOC entry 4956 (class 2606 OID 26925)
 -- Name: project_receipts fk_receipts_project_company; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_receipts
-    ADD CONSTRAINT fk_receipts_project_company FOREIGN KEY (project_id, company_id) REFERENCES projects(id, company_id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_receipts_project_company FOREIGN KEY (project_id, company_id) REFERENCES public.projects(id, company_id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4745 (class 2606 OID 27032)
+-- TOC entry 4984 (class 2606 OID 27032)
 -- Name: investors investors_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.investors
-    ADD CONSTRAINT investors_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT investors_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4741 (class 2606 OID 26993)
+-- TOC entry 4980 (class 2606 OID 26993)
 -- Name: invoice_items invoice_items_invoice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.invoice_items
-    ADD CONSTRAINT invoice_items_invoice_id_fkey FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE RESTRICT;
+    ADD CONSTRAINT invoice_items_invoice_id_fkey FOREIGN KEY (invoice_id) REFERENCES public.invoices(id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4740 (class 2606 OID 26959)
+-- TOC entry 4979 (class 2606 OID 26959)
 -- Name: invoices invoices_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.invoices
-    ADD CONSTRAINT invoices_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT;
+    ADD CONSTRAINT invoices_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4663 (class 2606 OID 25998)
+-- TOC entry 5001 (class 2606 OID 27266)
+-- Name: material_receipt_lines material_receipt_lines_material_receipt_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipt_lines
+    ADD CONSTRAINT material_receipt_lines_material_receipt_id_fkey FOREIGN KEY (material_receipt_id) REFERENCES public.material_receipts(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 5002 (class 2606 OID 27271)
+-- Name: material_receipt_lines material_receipt_lines_purchase_order_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipt_lines
+    ADD CONSTRAINT material_receipt_lines_purchase_order_line_id_fkey FOREIGN KEY (purchase_order_line_id) REFERENCES public.purchase_order_lines(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4995 (class 2606 OID 27224)
+-- Name: material_receipts material_receipts_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipts
+    ADD CONSTRAINT material_receipts_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4996 (class 2606 OID 27229)
+-- Name: material_receipts material_receipts_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipts
+    ADD CONSTRAINT material_receipts_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4997 (class 2606 OID 27234)
+-- Name: material_receipts material_receipts_purchase_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipts
+    ADD CONSTRAINT material_receipts_purchase_order_id_fkey FOREIGN KEY (purchase_order_id) REFERENCES public.purchase_orders(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4998 (class 2606 OID 27239)
+-- Name: material_receipts material_receipts_supplier_party_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.material_receipts
+    ADD CONSTRAINT material_receipts_supplier_party_id_fkey FOREIGN KEY (supplier_party_id) REFERENCES public.parties(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4985 (class 2606 OID 27115)
+-- Name: parties parties_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.parties
+    ADD CONSTRAINT parties_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4986 (class 2606 OID 27120)
+-- Name: parties parties_deleted_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.parties
+    ADD CONSTRAINT parties_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 4894 (class 2606 OID 25998)
 -- Name: password_resets password_resets_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.password_resets
-    ADD CONSTRAINT password_resets_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT password_resets_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4744 (class 2606 OID 27006)
+-- TOC entry 4983 (class 2606 OID 27006)
 -- Name: payment_allocations payment_allocations_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.payment_allocations
-    ADD CONSTRAINT payment_allocations_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT;
+    ADD CONSTRAINT payment_allocations_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4673 (class 2606 OID 26162)
+-- TOC entry 4905 (class 2606 OID 26162)
 -- Name: payment_methods payment_methods_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.payment_methods
-    ADD CONSTRAINT payment_methods_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT payment_methods_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4690 (class 2606 OID 26399)
+-- TOC entry 4924 (class 2606 OID 26399)
 -- Name: payment_schedules payment_schedules_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.payment_schedules
-    ADD CONSTRAINT payment_schedules_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+    ADD CONSTRAINT payment_schedules_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.documents(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4654 (class 2606 OID 17488)
+-- TOC entry 4885 (class 2606 OID 17488)
 -- Name: profiles profiles_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -9601,340 +12430,394 @@ ALTER TABLE ONLY public.profiles
 
 
 --
--- TOC entry 4727 (class 2606 OID 26737)
+-- TOC entry 4965 (class 2606 OID 26737)
 -- Name: project_attachments project_attachments_expense_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_attachments
-    ADD CONSTRAINT project_attachments_expense_id_fkey FOREIGN KEY (expense_id) REFERENCES project_expenses(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_attachments_expense_id_fkey FOREIGN KEY (expense_id) REFERENCES public.project_expenses(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4728 (class 2606 OID 26732)
+-- TOC entry 4966 (class 2606 OID 26732)
 -- Name: project_attachments project_attachments_progress_update_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_attachments
-    ADD CONSTRAINT project_attachments_progress_update_id_fkey FOREIGN KEY (progress_update_id) REFERENCES project_progress_updates(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_attachments_progress_update_id_fkey FOREIGN KEY (progress_update_id) REFERENCES public.project_progress_updates(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4729 (class 2606 OID 26727)
+-- TOC entry 4967 (class 2606 OID 26727)
 -- Name: project_attachments project_attachments_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_attachments
-    ADD CONSTRAINT project_attachments_project_id_fkey FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_attachments_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4730 (class 2606 OID 26742)
+-- TOC entry 4968 (class 2606 OID 26742)
 -- Name: project_attachments project_attachments_uploaded_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_attachments
-    ADD CONSTRAINT project_attachments_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES users(id);
+    ADD CONSTRAINT project_attachments_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4724 (class 2606 OID 26710)
+-- TOC entry 4960 (class 2606 OID 26710)
 -- Name: project_client_access project_client_access_invited_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_client_access
-    ADD CONSTRAINT project_client_access_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES users(id);
+    ADD CONSTRAINT project_client_access_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4725 (class 2606 OID 26700)
+-- TOC entry 4961 (class 2606 OID 26700)
 -- Name: project_client_access project_client_access_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_client_access
-    ADD CONSTRAINT project_client_access_project_id_fkey FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_client_access_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4726 (class 2606 OID 26705)
+-- TOC entry 4962 (class 2606 OID 26705)
 -- Name: project_client_access project_client_access_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_client_access
-    ADD CONSTRAINT project_client_access_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_client_access_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4715 (class 2606 OID 26648)
+-- TOC entry 4951 (class 2606 OID 26648)
 -- Name: project_expense_payments project_expense_payments_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expense_payments
-    ADD CONSTRAINT project_expense_payments_created_by_fkey FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT project_expense_payments_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4716 (class 2606 OID 26643)
+-- TOC entry 4952 (class 2606 OID 26643)
 -- Name: project_expense_payments project_expense_payments_payment_method_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expense_payments
-    ADD CONSTRAINT project_expense_payments_payment_method_id_fkey FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_expense_payments_payment_method_id_fkey FOREIGN KEY (payment_method_id) REFERENCES public.payment_methods(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4717 (class 2606 OID 26638)
+-- TOC entry 4953 (class 2606 OID 26638)
 -- Name: project_expense_payments project_expense_payments_project_expense_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expense_payments
-    ADD CONSTRAINT project_expense_payments_project_expense_id_fkey FOREIGN KEY (project_expense_id) REFERENCES project_expenses(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_expense_payments_project_expense_id_fkey FOREIGN KEY (project_expense_id) REFERENCES public.project_expenses(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4710 (class 2606 OID 26616)
+-- TOC entry 4946 (class 2606 OID 26616)
 -- Name: project_expenses project_expenses_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expenses
-    ADD CONSTRAINT project_expenses_category_id_fkey FOREIGN KEY (category_id) REFERENCES expense_categories(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_expenses_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.expense_categories(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4711 (class 2606 OID 26621)
+-- TOC entry 4947 (class 2606 OID 26621)
 -- Name: project_expenses project_expenses_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expenses
-    ADD CONSTRAINT project_expenses_created_by_fkey FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT project_expenses_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4712 (class 2606 OID 26611)
+-- TOC entry 4948 (class 2606 OID 26611)
 -- Name: project_expenses project_expenses_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_expenses
-    ADD CONSTRAINT project_expenses_project_id_fkey FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_expenses_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4736 (class 2606 OID 26794)
+-- TOC entry 4975 (class 2606 OID 26794)
 -- Name: project_investor_contributions project_investor_contributions_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_investor_contributions
-    ADD CONSTRAINT project_investor_contributions_created_by_fkey FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT project_investor_contributions_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4733 (class 2606 OID 26773)
+-- TOC entry 4972 (class 2606 OID 26773)
 -- Name: project_investors project_investors_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_investors
-    ADD CONSTRAINT project_investors_created_by_fkey FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT project_investors_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4734 (class 2606 OID 26768)
+-- TOC entry 4973 (class 2606 OID 26768)
 -- Name: project_investors project_investors_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_investors
-    ADD CONSTRAINT project_investors_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_investors_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4703 (class 2606 OID 26586)
+-- TOC entry 4939 (class 2606 OID 26586)
 -- Name: project_progress_updates project_progress_updates_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_progress_updates
-    ADD CONSTRAINT project_progress_updates_created_by_fkey FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT project_progress_updates_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4704 (class 2606 OID 26576)
+-- TOC entry 4940 (class 2606 OID 26576)
 -- Name: project_progress_updates project_progress_updates_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_progress_updates
-    ADD CONSTRAINT project_progress_updates_project_id_fkey FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_progress_updates_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4705 (class 2606 OID 26591)
+-- TOC entry 4941 (class 2606 OID 26591)
 -- Name: project_progress_updates project_progress_updates_published_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_progress_updates
-    ADD CONSTRAINT project_progress_updates_published_by_fkey FOREIGN KEY (published_by) REFERENCES users(id);
+    ADD CONSTRAINT project_progress_updates_published_by_fkey FOREIGN KEY (published_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4706 (class 2606 OID 26581)
+-- TOC entry 4942 (class 2606 OID 26581)
 -- Name: project_progress_updates project_progress_updates_stage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_progress_updates
-    ADD CONSTRAINT project_progress_updates_stage_id_fkey FOREIGN KEY (stage_id) REFERENCES project_stages(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_progress_updates_stage_id_fkey FOREIGN KEY (stage_id) REFERENCES public.project_stages(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4721 (class 2606 OID 26680)
+-- TOC entry 4957 (class 2606 OID 26680)
 -- Name: project_receipts project_receipts_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_receipts
-    ADD CONSTRAINT project_receipts_created_by_fkey FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT project_receipts_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4722 (class 2606 OID 26675)
+-- TOC entry 4958 (class 2606 OID 26675)
 -- Name: project_receipts project_receipts_payment_method_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_receipts
-    ADD CONSTRAINT project_receipts_payment_method_id_fkey FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id) ON DELETE SET NULL;
+    ADD CONSTRAINT project_receipts_payment_method_id_fkey FOREIGN KEY (payment_method_id) REFERENCES public.payment_methods(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4723 (class 2606 OID 26670)
+-- TOC entry 4959 (class 2606 OID 26670)
 -- Name: project_receipts project_receipts_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_receipts
-    ADD CONSTRAINT project_receipts_project_id_fkey FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_receipts_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4675 (class 2606 OID 26203)
+-- TOC entry 4907 (class 2606 OID 26203)
 -- Name: project_stage_templates project_stage_templates_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_stage_templates
-    ADD CONSTRAINT project_stage_templates_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_stage_templates_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4676 (class 2606 OID 26208)
+-- TOC entry 4908 (class 2606 OID 26208)
 -- Name: project_stage_templates project_stage_templates_project_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_stage_templates
-    ADD CONSTRAINT project_stage_templates_project_type_id_fkey FOREIGN KEY (project_type_id) REFERENCES project_types(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_stage_templates_project_type_id_fkey FOREIGN KEY (project_type_id) REFERENCES public.project_types(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4701 (class 2606 OID 26557)
+-- TOC entry 4936 (class 2606 OID 26557)
 -- Name: project_stages project_stages_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_stages
-    ADD CONSTRAINT project_stages_created_by_fkey FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT project_stages_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4702 (class 2606 OID 26552)
+-- TOC entry 4937 (class 2606 OID 26552)
 -- Name: project_stages project_stages_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_stages
-    ADD CONSTRAINT project_stages_project_id_fkey FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_stages_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4670 (class 2606 OID 26105)
+-- TOC entry 4902 (class 2606 OID 26105)
 -- Name: project_types project_types_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.project_types
-    ADD CONSTRAINT project_types_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT project_types_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4698 (class 2606 OID 26508)
+-- TOC entry 5004 (class 2606 OID 27578)
+-- Name: project_units project_units_company_project_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.project_units
+    ADD CONSTRAINT project_units_company_project_fk FOREIGN KEY (company_id, project_id) REFERENCES public.projects(company_id, id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4933 (class 2606 OID 26508)
 -- Name: projects projects_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.projects
-    ADD CONSTRAINT projects_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT;
+    ADD CONSTRAINT projects_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4699 (class 2606 OID 26518)
+-- TOC entry 4934 (class 2606 OID 26518)
 -- Name: projects projects_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.projects
-    ADD CONSTRAINT projects_created_by_fkey FOREIGN KEY (created_by) REFERENCES users(id);
+    ADD CONSTRAINT projects_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
 
 
 --
--- TOC entry 4700 (class 2606 OID 26513)
+-- TOC entry 4935 (class 2606 OID 26513)
 -- Name: projects projects_project_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.projects
-    ADD CONSTRAINT projects_project_type_id_fkey FOREIGN KEY (project_type_id) REFERENCES project_types(id) ON DELETE SET NULL;
+    ADD CONSTRAINT projects_project_type_id_fkey FOREIGN KEY (project_type_id) REFERENCES public.project_types(id) ON DELETE SET NULL;
 
 
 --
--- TOC entry 4662 (class 2606 OID 25982)
+-- TOC entry 4992 (class 2606 OID 27199)
+-- Name: purchase_order_lines purchase_order_lines_purchase_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.purchase_order_lines
+    ADD CONSTRAINT purchase_order_lines_purchase_order_id_fkey FOREIGN KEY (purchase_order_id) REFERENCES public.purchase_orders(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4989 (class 2606 OID 27168)
+-- Name: purchase_orders purchase_orders_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.purchase_orders
+    ADD CONSTRAINT purchase_orders_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4990 (class 2606 OID 27173)
+-- Name: purchase_orders purchase_orders_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.purchase_orders
+    ADD CONSTRAINT purchase_orders_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4991 (class 2606 OID 27178)
+-- Name: purchase_orders purchase_orders_supplier_party_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.purchase_orders
+    ADD CONSTRAINT purchase_orders_supplier_party_id_fkey FOREIGN KEY (supplier_party_id) REFERENCES public.parties(id) ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4893 (class 2606 OID 25982)
 -- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.refresh_tokens
-    ADD CONSTRAINT refresh_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT refresh_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4695 (class 2606 OID 26485)
+-- TOC entry 4930 (class 2606 OID 26485)
 -- Name: subscription_payments subscription_payments_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.subscription_payments
-    ADD CONSTRAINT subscription_payments_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT;
+    ADD CONSTRAINT subscription_payments_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE RESTRICT;
 
 
 --
--- TOC entry 4737 (class 2606 OID 26886)
+-- TOC entry 4976 (class 2606 OID 26886)
 -- Name: suppliers suppliers_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.suppliers
-    ADD CONSTRAINT suppliers_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT suppliers_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4674 (class 2606 OID 26182)
+-- TOC entry 4906 (class 2606 OID 26182)
 -- Name: tax_rates tax_rates_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.tax_rates
-    ADD CONSTRAINT tax_rates_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT tax_rates_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4672 (class 2606 OID 26143)
+-- TOC entry 4904 (class 2606 OID 26143)
 -- Name: units_of_measure units_of_measure_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.units_of_measure
-    ADD CONSTRAINT units_of_measure_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT units_of_measure_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4661 (class 2606 OID 25966)
+-- TOC entry 4892 (class 2606 OID 25966)
 -- Name: user_profiles user_profiles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.user_profiles
-    ADD CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 4649 (class 2606 OID 17315)
+-- TOC entry 5003 (class 2606 OID 27519)
+-- Name: bucket_lifecycle_states bucket_lifecycle_states_bucket_id_fkey; Type: FK CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
+--
+
+ALTER TABLE ONLY storage.bucket_lifecycle_states
+    ADD CONSTRAINT bucket_lifecycle_states_bucket_id_fkey FOREIGN KEY (bucket_id) REFERENCES storage.buckets(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4880 (class 2606 OID 17315)
 -- Name: objects objects_bucketId_fkey; Type: FK CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -9943,7 +12826,7 @@ ALTER TABLE ONLY storage.objects
 
 
 --
--- TOC entry 4650 (class 2606 OID 17362)
+-- TOC entry 4881 (class 2606 OID 17362)
 -- Name: s3_multipart_uploads s3_multipart_uploads_bucket_id_fkey; Type: FK CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -9952,7 +12835,7 @@ ALTER TABLE ONLY storage.s3_multipart_uploads
 
 
 --
--- TOC entry 4651 (class 2606 OID 17382)
+-- TOC entry 4882 (class 2606 OID 17382)
 -- Name: s3_multipart_uploads_parts s3_multipart_uploads_parts_bucket_id_fkey; Type: FK CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -9961,7 +12844,7 @@ ALTER TABLE ONLY storage.s3_multipart_uploads_parts
 
 
 --
--- TOC entry 4652 (class 2606 OID 17377)
+-- TOC entry 4883 (class 2606 OID 17377)
 -- Name: s3_multipart_uploads_parts s3_multipart_uploads_parts_upload_id_fkey; Type: FK CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -9970,7 +12853,7 @@ ALTER TABLE ONLY storage.s3_multipart_uploads_parts
 
 
 --
--- TOC entry 4653 (class 2606 OID 17447)
+-- TOC entry 4884 (class 2606 OID 17447)
 -- Name: vector_indexes vector_indexes_bucket_id_fkey; Type: FK CONSTRAINT; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -9979,135 +12862,135 @@ ALTER TABLE ONLY storage.vector_indexes
 
 
 --
--- TOC entry 4941 (class 0 OID 16529)
--- Dependencies: 259
+-- TOC entry 5216 (class 0 OID 16529)
+-- Dependencies: 261
 -- Name: audit_log_entries; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.audit_log_entries ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4952 (class 0 OID 16889)
--- Dependencies: 272
+-- TOC entry 5227 (class 0 OID 16889)
+-- Dependencies: 274
 -- Name: flow_state; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.flow_state ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4943 (class 0 OID 16687)
--- Dependencies: 263
+-- TOC entry 5218 (class 0 OID 16687)
+-- Dependencies: 265
 -- Name: identities; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.identities ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4940 (class 0 OID 16522)
--- Dependencies: 258
+-- TOC entry 5215 (class 0 OID 16522)
+-- Dependencies: 260
 -- Name: instances; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.instances ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4947 (class 0 OID 16776)
--- Dependencies: 267
+-- TOC entry 5222 (class 0 OID 16776)
+-- Dependencies: 269
 -- Name: mfa_amr_claims; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.mfa_amr_claims ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4946 (class 0 OID 16764)
--- Dependencies: 266
+-- TOC entry 5221 (class 0 OID 16764)
+-- Dependencies: 268
 -- Name: mfa_challenges; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.mfa_challenges ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4945 (class 0 OID 16751)
--- Dependencies: 265
+-- TOC entry 5220 (class 0 OID 16751)
+-- Dependencies: 267
 -- Name: mfa_factors; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.mfa_factors ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4953 (class 0 OID 16939)
--- Dependencies: 273
+-- TOC entry 5228 (class 0 OID 16939)
+-- Dependencies: 275
 -- Name: one_time_tokens; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.one_time_tokens ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4939 (class 0 OID 16511)
--- Dependencies: 257
+-- TOC entry 5214 (class 0 OID 16511)
+-- Dependencies: 259
 -- Name: refresh_tokens; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.refresh_tokens ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4950 (class 0 OID 16818)
--- Dependencies: 270
+-- TOC entry 5225 (class 0 OID 16818)
+-- Dependencies: 272
 -- Name: saml_providers; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.saml_providers ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4951 (class 0 OID 16836)
--- Dependencies: 271
+-- TOC entry 5226 (class 0 OID 16836)
+-- Dependencies: 273
 -- Name: saml_relay_states; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.saml_relay_states ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4942 (class 0 OID 16537)
--- Dependencies: 260
+-- TOC entry 5217 (class 0 OID 16537)
+-- Dependencies: 262
 -- Name: schema_migrations; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.schema_migrations ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4944 (class 0 OID 16717)
--- Dependencies: 264
+-- TOC entry 5219 (class 0 OID 16717)
+-- Dependencies: 266
 -- Name: sessions; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.sessions ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4949 (class 0 OID 16803)
--- Dependencies: 269
+-- TOC entry 5224 (class 0 OID 16803)
+-- Dependencies: 271
 -- Name: sso_domains; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.sso_domains ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4948 (class 0 OID 16794)
--- Dependencies: 268
+-- TOC entry 5223 (class 0 OID 16794)
+-- Dependencies: 270
 -- Name: sso_providers; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.sso_providers ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4938 (class 0 OID 16499)
--- Dependencies: 255
+-- TOC entry 5213 (class 0 OID 16499)
+-- Dependencies: 257
 -- Name: users; Type: ROW SECURITY; Schema: auth; Owner: supabase_auth_admin
 --
 
 ALTER TABLE auth.users ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 5006 (class 3256 OID 17682)
+-- TOC entry 5289 (class 3256 OID 17682)
 -- Name: profiles Users manage own profile; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -10115,423 +12998,487 @@ CREATE POLICY "Users manage own profile" ON public.profiles USING ((auth.uid() =
 
 
 --
--- TOC entry 4987 (class 0 OID 26419)
--- Dependencies: 324
+-- TOC entry 5262 (class 0 OID 26419)
+-- Dependencies: 326
 -- Name: booking_receipt_details; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.booking_receipt_details ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4968 (class 0 OID 26003)
--- Dependencies: 305
+-- TOC entry 5243 (class 0 OID 26003)
+-- Dependencies: 307
 -- Name: companies; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.companies ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4989 (class 0 OID 26450)
--- Dependencies: 326
+-- TOC entry 5264 (class 0 OID 26450)
+-- Dependencies: 328
 -- Name: company_quotation_usage; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.company_quotation_usage ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4969 (class 0 OID 26023)
--- Dependencies: 306
+-- TOC entry 5244 (class 0 OID 26023)
+-- Dependencies: 308
 -- Name: company_settings; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.company_settings ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4988 (class 0 OID 26431)
--- Dependencies: 325
+-- TOC entry 5263 (class 0 OID 26431)
+-- Dependencies: 327
 -- Name: company_subscriptions; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.company_subscriptions ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4970 (class 0 OID 26043)
--- Dependencies: 307
+-- TOC entry 5245 (class 0 OID 26043)
+-- Dependencies: 309
 -- Name: company_users; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.company_users ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4971 (class 0 OID 26068)
--- Dependencies: 308
+-- TOC entry 5246 (class 0 OID 26068)
+-- Dependencies: 310
 -- Name: customers; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4984 (class 0 OID 26374)
--- Dependencies: 321
+-- TOC entry 5259 (class 0 OID 26374)
+-- Dependencies: 323
 -- Name: document_exclusions; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.document_exclusions ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4983 (class 0 OID 26361)
--- Dependencies: 320
+-- TOC entry 5258 (class 0 OID 26361)
+-- Dependencies: 322
 -- Name: document_inclusions; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.document_inclusions ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4981 (class 0 OID 26320)
--- Dependencies: 318
+-- TOC entry 5256 (class 0 OID 26320)
+-- Dependencies: 320
 -- Name: document_items; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.document_items ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4980 (class 0 OID 26305)
--- Dependencies: 317
+-- TOC entry 5255 (class 0 OID 26305)
+-- Dependencies: 319
 -- Name: document_sections; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.document_sections ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4978 (class 0 OID 26213)
--- Dependencies: 315
+-- TOC entry 5253 (class 0 OID 26213)
+-- Dependencies: 317
 -- Name: document_sequences; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.document_sequences ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4982 (class 0 OID 26346)
--- Dependencies: 319
+-- TOC entry 5257 (class 0 OID 26346)
+-- Dependencies: 321
 -- Name: document_specifications; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.document_specifications ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4986 (class 0 OID 26404)
--- Dependencies: 323
+-- TOC entry 5261 (class 0 OID 26404)
+-- Dependencies: 325
 -- Name: document_terms; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.document_terms ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4979 (class 0 OID 26233)
--- Dependencies: 316
+-- TOC entry 5254 (class 0 OID 26233)
+-- Dependencies: 318
 -- Name: documents; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4973 (class 0 OID 26110)
--- Dependencies: 310
+-- TOC entry 5248 (class 0 OID 26110)
+-- Dependencies: 312
 -- Name: expense_categories; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.expense_categories ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 5005 (class 0 OID 27021)
--- Dependencies: 342
+-- TOC entry 5280 (class 0 OID 27021)
+-- Dependencies: 344
 -- Name: investors; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.investors ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 5003 (class 0 OID 26974)
--- Dependencies: 340
+-- TOC entry 5278 (class 0 OID 26974)
+-- Dependencies: 342
 -- Name: invoice_items; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.invoice_items ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 5002 (class 0 OID 26935)
--- Dependencies: 339
+-- TOC entry 5277 (class 0 OID 26935)
+-- Dependencies: 341
 -- Name: invoices; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4967 (class 0 OID 25987)
--- Dependencies: 304
+-- TOC entry 5285 (class 0 OID 27244)
+-- Dependencies: 349
+-- Name: material_receipt_lines; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.material_receipt_lines ENABLE ROW LEVEL SECURITY;
+
+--
+-- TOC entry 5284 (class 0 OID 27209)
+-- Dependencies: 348
+-- Name: material_receipts; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.material_receipts ENABLE ROW LEVEL SECURITY;
+
+--
+-- TOC entry 5281 (class 0 OID 27097)
+-- Dependencies: 345
+-- Name: parties; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.parties ENABLE ROW LEVEL SECURITY;
+
+--
+-- TOC entry 5242 (class 0 OID 25987)
+-- Dependencies: 306
 -- Name: password_resets; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.password_resets ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 5004 (class 0 OID 26998)
--- Dependencies: 341
+-- TOC entry 5279 (class 0 OID 26998)
+-- Dependencies: 343
 -- Name: payment_allocations; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.payment_allocations ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4975 (class 0 OID 26148)
--- Dependencies: 312
+-- TOC entry 5250 (class 0 OID 26148)
+-- Dependencies: 314
 -- Name: payment_methods; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.payment_methods ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4985 (class 0 OID 26387)
--- Dependencies: 322
+-- TOC entry 5260 (class 0 OID 26387)
+-- Dependencies: 324
 -- Name: payment_schedules; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.payment_schedules ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4963 (class 0 OID 17479)
--- Dependencies: 296
+-- TOC entry 5238 (class 0 OID 17479)
+-- Dependencies: 298
 -- Name: profiles; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4998 (class 0 OID 26715)
--- Dependencies: 335
+-- TOC entry 5273 (class 0 OID 26715)
+-- Dependencies: 337
 -- Name: project_attachments; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_attachments ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4997 (class 0 OID 26685)
--- Dependencies: 334
+-- TOC entry 5272 (class 0 OID 26685)
+-- Dependencies: 336
 -- Name: project_client_access; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_client_access ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4995 (class 0 OID 26626)
--- Dependencies: 332
+-- TOC entry 5270 (class 0 OID 26626)
+-- Dependencies: 334
 -- Name: project_expense_payments; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_expense_payments ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4994 (class 0 OID 26596)
--- Dependencies: 331
+-- TOC entry 5269 (class 0 OID 26596)
+-- Dependencies: 333
 -- Name: project_expenses; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_expenses ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 5000 (class 0 OID 26783)
--- Dependencies: 337
+-- TOC entry 5275 (class 0 OID 26783)
+-- Dependencies: 339
 -- Name: project_investor_contributions; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_investor_contributions ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4999 (class 0 OID 26747)
--- Dependencies: 336
+-- TOC entry 5274 (class 0 OID 26747)
+-- Dependencies: 338
 -- Name: project_investors; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_investors ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4993 (class 0 OID 26562)
--- Dependencies: 330
+-- TOC entry 5268 (class 0 OID 26562)
+-- Dependencies: 332
 -- Name: project_progress_updates; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_progress_updates ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4996 (class 0 OID 26653)
--- Dependencies: 333
+-- TOC entry 5271 (class 0 OID 26653)
+-- Dependencies: 335
 -- Name: project_receipts; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_receipts ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4977 (class 0 OID 26187)
--- Dependencies: 314
+-- TOC entry 5252 (class 0 OID 26187)
+-- Dependencies: 316
 -- Name: project_stage_templates; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_stage_templates ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4992 (class 0 OID 26534)
--- Dependencies: 329
+-- TOC entry 5267 (class 0 OID 26534)
+-- Dependencies: 331
 -- Name: project_stages; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_stages ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4972 (class 0 OID 26091)
--- Dependencies: 309
+-- TOC entry 5247 (class 0 OID 26091)
+-- Dependencies: 311
 -- Name: project_types; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.project_types ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4991 (class 0 OID 26490)
--- Dependencies: 328
+-- TOC entry 5288 (class 0 OID 27565)
+-- Dependencies: 352
+-- Name: project_units; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.project_units ENABLE ROW LEVEL SECURITY;
+
+--
+-- TOC entry 5266 (class 0 OID 26490)
+-- Dependencies: 330
 -- Name: projects; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4966 (class 0 OID 25971)
--- Dependencies: 303
+-- TOC entry 5283 (class 0 OID 27183)
+-- Dependencies: 347
+-- Name: purchase_order_lines; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.purchase_order_lines ENABLE ROW LEVEL SECURITY;
+
+--
+-- TOC entry 5282 (class 0 OID 27147)
+-- Dependencies: 346
+-- Name: purchase_orders; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.purchase_orders ENABLE ROW LEVEL SECURITY;
+
+--
+-- TOC entry 5241 (class 0 OID 25971)
+-- Dependencies: 305
 -- Name: refresh_tokens; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.refresh_tokens ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4990 (class 0 OID 26469)
--- Dependencies: 327
+-- TOC entry 5265 (class 0 OID 26469)
+-- Dependencies: 329
 -- Name: subscription_payments; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.subscription_payments ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 5001 (class 0 OID 26875)
--- Dependencies: 338
+-- TOC entry 5276 (class 0 OID 26875)
+-- Dependencies: 340
 -- Name: suppliers; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.suppliers ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4976 (class 0 OID 26167)
--- Dependencies: 313
+-- TOC entry 5251 (class 0 OID 26167)
+-- Dependencies: 315
 -- Name: tax_rates; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.tax_rates ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4974 (class 0 OID 26129)
--- Dependencies: 311
+-- TOC entry 5249 (class 0 OID 26129)
+-- Dependencies: 313
 -- Name: units_of_measure; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.units_of_measure ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4965 (class 0 OID 25954)
--- Dependencies: 302
+-- TOC entry 5240 (class 0 OID 25954)
+-- Dependencies: 304
 -- Name: user_profiles; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4964 (class 0 OID 25937)
--- Dependencies: 301
+-- TOC entry 5239 (class 0 OID 25937)
+-- Dependencies: 303
 -- Name: users; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4954 (class 0 OID 17243)
--- Dependencies: 284
+-- TOC entry 5229 (class 0 OID 17243)
+-- Dependencies: 286
 -- Name: messages; Type: ROW SECURITY; Schema: realtime; Owner: supabase_realtime_admin
 --
 
 ALTER TABLE realtime.messages ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4956 (class 0 OID 17294)
--- Dependencies: 289
+-- TOC entry 5286 (class 0 OID 27506)
+-- Dependencies: 350
+-- Name: bucket_lifecycle_states; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
+--
+
+ALTER TABLE storage.bucket_lifecycle_states ENABLE ROW LEVEL SECURITY;
+
+--
+-- TOC entry 5231 (class 0 OID 17294)
+-- Dependencies: 291
 -- Name: buckets; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
 --
 
 ALTER TABLE storage.buckets ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4960 (class 0 OID 17414)
--- Dependencies: 293
+-- TOC entry 5235 (class 0 OID 17414)
+-- Dependencies: 295
 -- Name: buckets_analytics; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
 --
 
 ALTER TABLE storage.buckets_analytics ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4961 (class 0 OID 17427)
--- Dependencies: 294
+-- TOC entry 5236 (class 0 OID 17427)
+-- Dependencies: 296
 -- Name: buckets_vectors; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
 --
 
 ALTER TABLE storage.buckets_vectors ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4955 (class 0 OID 17286)
--- Dependencies: 288
+-- TOC entry 5287 (class 0 OID 27534)
+-- Dependencies: 351
+-- Name: lifecycle_abandoned_artifacts; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
+--
+
+ALTER TABLE storage.lifecycle_abandoned_artifacts ENABLE ROW LEVEL SECURITY;
+
+--
+-- TOC entry 5230 (class 0 OID 17286)
+-- Dependencies: 290
 -- Name: migrations; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
 --
 
 ALTER TABLE storage.migrations ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4957 (class 0 OID 17304)
--- Dependencies: 290
+-- TOC entry 5232 (class 0 OID 17304)
+-- Dependencies: 292
 -- Name: objects; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
 --
 
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4958 (class 0 OID 17353)
--- Dependencies: 291
+-- TOC entry 5233 (class 0 OID 17353)
+-- Dependencies: 293
 -- Name: s3_multipart_uploads; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
 --
 
 ALTER TABLE storage.s3_multipart_uploads ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4959 (class 0 OID 17367)
--- Dependencies: 292
+-- TOC entry 5234 (class 0 OID 17367)
+-- Dependencies: 294
 -- Name: s3_multipart_uploads_parts; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
 --
 
 ALTER TABLE storage.s3_multipart_uploads_parts ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 4962 (class 0 OID 17437)
--- Dependencies: 295
+-- TOC entry 5237 (class 0 OID 17437)
+-- Dependencies: 297
 -- Name: vector_indexes; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
 --
 
 ALTER TABLE storage.vector_indexes ENABLE ROW LEVEL SECURITY;
 
 --
--- TOC entry 5007 (class 6104 OID 16430)
+-- TOC entry 5290 (class 6104 OID 16430)
 -- Name: supabase_realtime; Type: PUBLICATION; Schema: -; Owner: postgres
 --
 
@@ -10541,8 +13488,8 @@ CREATE PUBLICATION supabase_realtime WITH (publish = 'insert, update, delete, tr
 ALTER PUBLICATION supabase_realtime OWNER TO postgres;
 
 --
--- TOC entry 5013 (class 0 OID 0)
--- Dependencies: 25
+-- TOC entry 5296 (class 0 OID 0)
+-- Dependencies: 28
 -- Name: SCHEMA auth; Type: ACL; Schema: -; Owner: supabase_admin
 --
 
@@ -10555,7 +13502,7 @@ GRANT USAGE ON SCHEMA auth TO postgres;
 
 
 --
--- TOC entry 5014 (class 0 OID 0)
+-- TOC entry 5297 (class 0 OID 0)
 -- Dependencies: 20
 -- Name: SCHEMA extensions; Type: ACL; Schema: -; Owner: postgres
 --
@@ -10567,8 +13514,8 @@ GRANT ALL ON SCHEMA extensions TO dashboard_user;
 
 
 --
--- TOC entry 5015 (class 0 OID 0)
--- Dependencies: 28
+-- TOC entry 5298 (class 0 OID 0)
+-- Dependencies: 23
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
 --
 
@@ -10579,8 +13526,8 @@ GRANT USAGE ON SCHEMA public TO service_role;
 
 
 --
--- TOC entry 5016 (class 0 OID 0)
--- Dependencies: 29
+-- TOC entry 5299 (class 0 OID 0)
+-- Dependencies: 31
 -- Name: SCHEMA realtime; Type: ACL; Schema: -; Owner: supabase_admin
 --
 
@@ -10592,8 +13539,8 @@ GRANT USAGE ON SCHEMA realtime TO authenticated;
 
 
 --
--- TOC entry 5017 (class 0 OID 0)
--- Dependencies: 26
+-- TOC entry 5300 (class 0 OID 0)
+-- Dependencies: 29
 -- Name: SCHEMA storage; Type: ACL; Schema: -; Owner: supabase_admin
 --
 
@@ -10606,8 +13553,8 @@ GRANT ALL ON SCHEMA storage TO dashboard_user;
 
 
 --
--- TOC entry 5018 (class 0 OID 0)
--- Dependencies: 22
+-- TOC entry 5301 (class 0 OID 0)
+-- Dependencies: 25
 -- Name: SCHEMA vault; Type: ACL; Schema: -; Owner: supabase_admin
 --
 
@@ -10616,8 +13563,8 @@ GRANT USAGE ON SCHEMA vault TO service_role;
 
 
 --
--- TOC entry 5024 (class 0 OID 0)
--- Dependencies: 407
+-- TOC entry 5307 (class 0 OID 0)
+-- Dependencies: 417
 -- Name: FUNCTION email(); Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -10625,8 +13572,8 @@ GRANT ALL ON FUNCTION auth.email() TO dashboard_user;
 
 
 --
--- TOC entry 5025 (class 0 OID 0)
--- Dependencies: 420
+-- TOC entry 5308 (class 0 OID 0)
+-- Dependencies: 430
 -- Name: FUNCTION jwt(); Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -10635,8 +13582,8 @@ GRANT ALL ON FUNCTION auth.jwt() TO dashboard_user;
 
 
 --
--- TOC entry 5027 (class 0 OID 0)
--- Dependencies: 406
+-- TOC entry 5310 (class 0 OID 0)
+-- Dependencies: 416
 -- Name: FUNCTION role(); Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -10644,8 +13591,8 @@ GRANT ALL ON FUNCTION auth.role() TO dashboard_user;
 
 
 --
--- TOC entry 5029 (class 0 OID 0)
--- Dependencies: 405
+-- TOC entry 5312 (class 0 OID 0)
+-- Dependencies: 415
 -- Name: FUNCTION uid(); Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -10653,8 +13600,8 @@ GRANT ALL ON FUNCTION auth.uid() TO dashboard_user;
 
 
 --
--- TOC entry 5030 (class 0 OID 0)
--- Dependencies: 401
+-- TOC entry 5313 (class 0 OID 0)
+-- Dependencies: 411
 -- Name: FUNCTION armor(bytea); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10664,8 +13611,8 @@ GRANT ALL ON FUNCTION extensions.armor(bytea) TO dashboard_user;
 
 
 --
--- TOC entry 5031 (class 0 OID 0)
--- Dependencies: 402
+-- TOC entry 5314 (class 0 OID 0)
+-- Dependencies: 412
 -- Name: FUNCTION armor(bytea, text[], text[]); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10675,8 +13622,8 @@ GRANT ALL ON FUNCTION extensions.armor(bytea, text[], text[]) TO dashboard_user;
 
 
 --
--- TOC entry 5032 (class 0 OID 0)
--- Dependencies: 373
+-- TOC entry 5315 (class 0 OID 0)
+-- Dependencies: 383
 -- Name: FUNCTION crypt(text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10686,8 +13633,8 @@ GRANT ALL ON FUNCTION extensions.crypt(text, text) TO dashboard_user;
 
 
 --
--- TOC entry 5033 (class 0 OID 0)
--- Dependencies: 403
+-- TOC entry 5316 (class 0 OID 0)
+-- Dependencies: 413
 -- Name: FUNCTION dearmor(text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10697,8 +13644,8 @@ GRANT ALL ON FUNCTION extensions.dearmor(text) TO dashboard_user;
 
 
 --
--- TOC entry 5034 (class 0 OID 0)
--- Dependencies: 377
+-- TOC entry 5317 (class 0 OID 0)
+-- Dependencies: 387
 -- Name: FUNCTION decrypt(bytea, bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10708,8 +13655,8 @@ GRANT ALL ON FUNCTION extensions.decrypt(bytea, bytea, text) TO dashboard_user;
 
 
 --
--- TOC entry 5035 (class 0 OID 0)
--- Dependencies: 379
+-- TOC entry 5318 (class 0 OID 0)
+-- Dependencies: 389
 -- Name: FUNCTION decrypt_iv(bytea, bytea, bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10719,8 +13666,8 @@ GRANT ALL ON FUNCTION extensions.decrypt_iv(bytea, bytea, bytea, text) TO dashbo
 
 
 --
--- TOC entry 5036 (class 0 OID 0)
--- Dependencies: 370
+-- TOC entry 5319 (class 0 OID 0)
+-- Dependencies: 380
 -- Name: FUNCTION digest(bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10730,8 +13677,8 @@ GRANT ALL ON FUNCTION extensions.digest(bytea, text) TO dashboard_user;
 
 
 --
--- TOC entry 5037 (class 0 OID 0)
--- Dependencies: 369
+-- TOC entry 5320 (class 0 OID 0)
+-- Dependencies: 379
 -- Name: FUNCTION digest(text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10741,8 +13688,8 @@ GRANT ALL ON FUNCTION extensions.digest(text, text) TO dashboard_user;
 
 
 --
--- TOC entry 5038 (class 0 OID 0)
--- Dependencies: 376
+-- TOC entry 5321 (class 0 OID 0)
+-- Dependencies: 386
 -- Name: FUNCTION encrypt(bytea, bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10752,8 +13699,8 @@ GRANT ALL ON FUNCTION extensions.encrypt(bytea, bytea, text) TO dashboard_user;
 
 
 --
--- TOC entry 5039 (class 0 OID 0)
--- Dependencies: 378
+-- TOC entry 5322 (class 0 OID 0)
+-- Dependencies: 388
 -- Name: FUNCTION encrypt_iv(bytea, bytea, bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10763,8 +13710,8 @@ GRANT ALL ON FUNCTION extensions.encrypt_iv(bytea, bytea, bytea, text) TO dashbo
 
 
 --
--- TOC entry 5040 (class 0 OID 0)
--- Dependencies: 380
+-- TOC entry 5323 (class 0 OID 0)
+-- Dependencies: 390
 -- Name: FUNCTION gen_random_bytes(integer); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10774,8 +13721,8 @@ GRANT ALL ON FUNCTION extensions.gen_random_bytes(integer) TO dashboard_user;
 
 
 --
--- TOC entry 5041 (class 0 OID 0)
--- Dependencies: 381
+-- TOC entry 5324 (class 0 OID 0)
+-- Dependencies: 391
 -- Name: FUNCTION gen_random_uuid(); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10785,8 +13732,8 @@ GRANT ALL ON FUNCTION extensions.gen_random_uuid() TO dashboard_user;
 
 
 --
--- TOC entry 5042 (class 0 OID 0)
--- Dependencies: 374
+-- TOC entry 5325 (class 0 OID 0)
+-- Dependencies: 384
 -- Name: FUNCTION gen_salt(text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10796,8 +13743,8 @@ GRANT ALL ON FUNCTION extensions.gen_salt(text) TO dashboard_user;
 
 
 --
--- TOC entry 5043 (class 0 OID 0)
--- Dependencies: 375
+-- TOC entry 5326 (class 0 OID 0)
+-- Dependencies: 385
 -- Name: FUNCTION gen_salt(text, integer); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10807,8 +13754,8 @@ GRANT ALL ON FUNCTION extensions.gen_salt(text, integer) TO dashboard_user;
 
 
 --
--- TOC entry 5045 (class 0 OID 0)
--- Dependencies: 408
+-- TOC entry 5328 (class 0 OID 0)
+-- Dependencies: 418
 -- Name: FUNCTION grant_pg_cron_access(); Type: ACL; Schema: extensions; Owner: supabase_admin
 --
 
@@ -10818,8 +13765,8 @@ GRANT ALL ON FUNCTION extensions.grant_pg_cron_access() TO dashboard_user;
 
 
 --
--- TOC entry 5047 (class 0 OID 0)
--- Dependencies: 412
+-- TOC entry 5330 (class 0 OID 0)
+-- Dependencies: 422
 -- Name: FUNCTION grant_pg_graphql_access(); Type: ACL; Schema: extensions; Owner: supabase_admin
 --
 
@@ -10827,8 +13774,8 @@ GRANT ALL ON FUNCTION extensions.grant_pg_graphql_access() TO postgres WITH GRAN
 
 
 --
--- TOC entry 5049 (class 0 OID 0)
--- Dependencies: 409
+-- TOC entry 5332 (class 0 OID 0)
+-- Dependencies: 419
 -- Name: FUNCTION grant_pg_net_access(); Type: ACL; Schema: extensions; Owner: supabase_admin
 --
 
@@ -10838,8 +13785,8 @@ GRANT ALL ON FUNCTION extensions.grant_pg_net_access() TO dashboard_user;
 
 
 --
--- TOC entry 5050 (class 0 OID 0)
--- Dependencies: 372
+-- TOC entry 5333 (class 0 OID 0)
+-- Dependencies: 382
 -- Name: FUNCTION hmac(bytea, bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10849,8 +13796,8 @@ GRANT ALL ON FUNCTION extensions.hmac(bytea, bytea, text) TO dashboard_user;
 
 
 --
--- TOC entry 5051 (class 0 OID 0)
--- Dependencies: 371
+-- TOC entry 5334 (class 0 OID 0)
+-- Dependencies: 381
 -- Name: FUNCTION hmac(text, text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10860,8 +13807,8 @@ GRANT ALL ON FUNCTION extensions.hmac(text, text, text) TO dashboard_user;
 
 
 --
--- TOC entry 5052 (class 0 OID 0)
--- Dependencies: 357
+-- TOC entry 5335 (class 0 OID 0)
+-- Dependencies: 367
 -- Name: FUNCTION pg_stat_statements(showtext boolean, OUT userid oid, OUT dbid oid, OUT toplevel boolean, OUT queryid bigint, OUT query text, OUT plans bigint, OUT total_plan_time double precision, OUT min_plan_time double precision, OUT max_plan_time double precision, OUT mean_plan_time double precision, OUT stddev_plan_time double precision, OUT calls bigint, OUT total_exec_time double precision, OUT min_exec_time double precision, OUT max_exec_time double precision, OUT mean_exec_time double precision, OUT stddev_exec_time double precision, OUT rows bigint, OUT shared_blks_hit bigint, OUT shared_blks_read bigint, OUT shared_blks_dirtied bigint, OUT shared_blks_written bigint, OUT local_blks_hit bigint, OUT local_blks_read bigint, OUT local_blks_dirtied bigint, OUT local_blks_written bigint, OUT temp_blks_read bigint, OUT temp_blks_written bigint, OUT shared_blk_read_time double precision, OUT shared_blk_write_time double precision, OUT local_blk_read_time double precision, OUT local_blk_write_time double precision, OUT temp_blk_read_time double precision, OUT temp_blk_write_time double precision, OUT wal_records bigint, OUT wal_fpi bigint, OUT wal_bytes numeric, OUT jit_functions bigint, OUT jit_generation_time double precision, OUT jit_inlining_count bigint, OUT jit_inlining_time double precision, OUT jit_optimization_count bigint, OUT jit_optimization_time double precision, OUT jit_emission_count bigint, OUT jit_emission_time double precision, OUT jit_deform_count bigint, OUT jit_deform_time double precision, OUT stats_since timestamp with time zone, OUT minmax_stats_since timestamp with time zone); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10871,8 +13818,8 @@ GRANT ALL ON FUNCTION extensions.pg_stat_statements(showtext boolean, OUT userid
 
 
 --
--- TOC entry 5053 (class 0 OID 0)
--- Dependencies: 356
+-- TOC entry 5336 (class 0 OID 0)
+-- Dependencies: 366
 -- Name: FUNCTION pg_stat_statements_info(OUT dealloc bigint, OUT stats_reset timestamp with time zone); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10882,8 +13829,8 @@ GRANT ALL ON FUNCTION extensions.pg_stat_statements_info(OUT dealloc bigint, OUT
 
 
 --
--- TOC entry 5054 (class 0 OID 0)
--- Dependencies: 358
+-- TOC entry 5337 (class 0 OID 0)
+-- Dependencies: 368
 -- Name: FUNCTION pg_stat_statements_reset(userid oid, dbid oid, queryid bigint, minmax_only boolean); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10893,8 +13840,8 @@ GRANT ALL ON FUNCTION extensions.pg_stat_statements_reset(userid oid, dbid oid, 
 
 
 --
--- TOC entry 5055 (class 0 OID 0)
--- Dependencies: 404
+-- TOC entry 5338 (class 0 OID 0)
+-- Dependencies: 414
 -- Name: FUNCTION pgp_armor_headers(text, OUT key text, OUT value text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10904,8 +13851,8 @@ GRANT ALL ON FUNCTION extensions.pgp_armor_headers(text, OUT key text, OUT value
 
 
 --
--- TOC entry 5056 (class 0 OID 0)
--- Dependencies: 400
+-- TOC entry 5339 (class 0 OID 0)
+-- Dependencies: 410
 -- Name: FUNCTION pgp_key_id(bytea); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10915,8 +13862,8 @@ GRANT ALL ON FUNCTION extensions.pgp_key_id(bytea) TO dashboard_user;
 
 
 --
--- TOC entry 5057 (class 0 OID 0)
--- Dependencies: 394
+-- TOC entry 5340 (class 0 OID 0)
+-- Dependencies: 404
 -- Name: FUNCTION pgp_pub_decrypt(bytea, bytea); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10926,8 +13873,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_decrypt(bytea, bytea) TO dashboard_user
 
 
 --
--- TOC entry 5058 (class 0 OID 0)
--- Dependencies: 396
+-- TOC entry 5341 (class 0 OID 0)
+-- Dependencies: 406
 -- Name: FUNCTION pgp_pub_decrypt(bytea, bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10937,8 +13884,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_decrypt(bytea, bytea, text) TO dashboar
 
 
 --
--- TOC entry 5059 (class 0 OID 0)
--- Dependencies: 398
+-- TOC entry 5342 (class 0 OID 0)
+-- Dependencies: 408
 -- Name: FUNCTION pgp_pub_decrypt(bytea, bytea, text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10948,8 +13895,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_decrypt(bytea, bytea, text, text) TO da
 
 
 --
--- TOC entry 5060 (class 0 OID 0)
--- Dependencies: 395
+-- TOC entry 5343 (class 0 OID 0)
+-- Dependencies: 405
 -- Name: FUNCTION pgp_pub_decrypt_bytea(bytea, bytea); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10959,8 +13906,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea) TO dashboar
 
 
 --
--- TOC entry 5061 (class 0 OID 0)
--- Dependencies: 397
+-- TOC entry 5344 (class 0 OID 0)
+-- Dependencies: 407
 -- Name: FUNCTION pgp_pub_decrypt_bytea(bytea, bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10970,8 +13917,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea, text) TO da
 
 
 --
--- TOC entry 5062 (class 0 OID 0)
--- Dependencies: 399
+-- TOC entry 5345 (class 0 OID 0)
+-- Dependencies: 409
 -- Name: FUNCTION pgp_pub_decrypt_bytea(bytea, bytea, text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10981,8 +13928,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea, text, text)
 
 
 --
--- TOC entry 5063 (class 0 OID 0)
--- Dependencies: 390
+-- TOC entry 5346 (class 0 OID 0)
+-- Dependencies: 400
 -- Name: FUNCTION pgp_pub_encrypt(text, bytea); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -10992,8 +13939,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_encrypt(text, bytea) TO dashboard_user;
 
 
 --
--- TOC entry 5064 (class 0 OID 0)
--- Dependencies: 392
+-- TOC entry 5347 (class 0 OID 0)
+-- Dependencies: 402
 -- Name: FUNCTION pgp_pub_encrypt(text, bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11003,8 +13950,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_encrypt(text, bytea, text) TO dashboard
 
 
 --
--- TOC entry 5065 (class 0 OID 0)
--- Dependencies: 391
+-- TOC entry 5348 (class 0 OID 0)
+-- Dependencies: 401
 -- Name: FUNCTION pgp_pub_encrypt_bytea(bytea, bytea); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11014,8 +13961,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_encrypt_bytea(bytea, bytea) TO dashboar
 
 
 --
--- TOC entry 5066 (class 0 OID 0)
--- Dependencies: 393
+-- TOC entry 5349 (class 0 OID 0)
+-- Dependencies: 403
 -- Name: FUNCTION pgp_pub_encrypt_bytea(bytea, bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11025,8 +13972,8 @@ GRANT ALL ON FUNCTION extensions.pgp_pub_encrypt_bytea(bytea, bytea, text) TO da
 
 
 --
--- TOC entry 5067 (class 0 OID 0)
--- Dependencies: 386
+-- TOC entry 5350 (class 0 OID 0)
+-- Dependencies: 396
 -- Name: FUNCTION pgp_sym_decrypt(bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11036,8 +13983,8 @@ GRANT ALL ON FUNCTION extensions.pgp_sym_decrypt(bytea, text) TO dashboard_user;
 
 
 --
--- TOC entry 5068 (class 0 OID 0)
--- Dependencies: 388
+-- TOC entry 5351 (class 0 OID 0)
+-- Dependencies: 398
 -- Name: FUNCTION pgp_sym_decrypt(bytea, text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11047,8 +13994,8 @@ GRANT ALL ON FUNCTION extensions.pgp_sym_decrypt(bytea, text, text) TO dashboard
 
 
 --
--- TOC entry 5069 (class 0 OID 0)
--- Dependencies: 387
+-- TOC entry 5352 (class 0 OID 0)
+-- Dependencies: 397
 -- Name: FUNCTION pgp_sym_decrypt_bytea(bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11058,8 +14005,8 @@ GRANT ALL ON FUNCTION extensions.pgp_sym_decrypt_bytea(bytea, text) TO dashboard
 
 
 --
--- TOC entry 5070 (class 0 OID 0)
--- Dependencies: 389
+-- TOC entry 5353 (class 0 OID 0)
+-- Dependencies: 399
 -- Name: FUNCTION pgp_sym_decrypt_bytea(bytea, text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11069,8 +14016,8 @@ GRANT ALL ON FUNCTION extensions.pgp_sym_decrypt_bytea(bytea, text, text) TO das
 
 
 --
--- TOC entry 5071 (class 0 OID 0)
--- Dependencies: 382
+-- TOC entry 5354 (class 0 OID 0)
+-- Dependencies: 392
 -- Name: FUNCTION pgp_sym_encrypt(text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11080,8 +14027,8 @@ GRANT ALL ON FUNCTION extensions.pgp_sym_encrypt(text, text) TO dashboard_user;
 
 
 --
--- TOC entry 5072 (class 0 OID 0)
--- Dependencies: 384
+-- TOC entry 5355 (class 0 OID 0)
+-- Dependencies: 394
 -- Name: FUNCTION pgp_sym_encrypt(text, text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11091,8 +14038,8 @@ GRANT ALL ON FUNCTION extensions.pgp_sym_encrypt(text, text, text) TO dashboard_
 
 
 --
--- TOC entry 5073 (class 0 OID 0)
--- Dependencies: 383
+-- TOC entry 5356 (class 0 OID 0)
+-- Dependencies: 393
 -- Name: FUNCTION pgp_sym_encrypt_bytea(bytea, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11102,8 +14049,8 @@ GRANT ALL ON FUNCTION extensions.pgp_sym_encrypt_bytea(bytea, text) TO dashboard
 
 
 --
--- TOC entry 5074 (class 0 OID 0)
--- Dependencies: 385
+-- TOC entry 5357 (class 0 OID 0)
+-- Dependencies: 395
 -- Name: FUNCTION pgp_sym_encrypt_bytea(bytea, text, text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11113,8 +14060,8 @@ GRANT ALL ON FUNCTION extensions.pgp_sym_encrypt_bytea(bytea, text, text) TO das
 
 
 --
--- TOC entry 5075 (class 0 OID 0)
--- Dependencies: 410
+-- TOC entry 5358 (class 0 OID 0)
+-- Dependencies: 420
 -- Name: FUNCTION pgrst_ddl_watch(); Type: ACL; Schema: extensions; Owner: supabase_admin
 --
 
@@ -11122,8 +14069,8 @@ GRANT ALL ON FUNCTION extensions.pgrst_ddl_watch() TO postgres WITH GRANT OPTION
 
 
 --
--- TOC entry 5076 (class 0 OID 0)
--- Dependencies: 411
+-- TOC entry 5359 (class 0 OID 0)
+-- Dependencies: 421
 -- Name: FUNCTION pgrst_drop_watch(); Type: ACL; Schema: extensions; Owner: supabase_admin
 --
 
@@ -11131,8 +14078,8 @@ GRANT ALL ON FUNCTION extensions.pgrst_drop_watch() TO postgres WITH GRANT OPTIO
 
 
 --
--- TOC entry 5078 (class 0 OID 0)
--- Dependencies: 413
+-- TOC entry 5361 (class 0 OID 0)
+-- Dependencies: 423
 -- Name: FUNCTION set_graphql_placeholder(); Type: ACL; Schema: extensions; Owner: supabase_admin
 --
 
@@ -11140,8 +14087,8 @@ GRANT ALL ON FUNCTION extensions.set_graphql_placeholder() TO postgres WITH GRAN
 
 
 --
--- TOC entry 5079 (class 0 OID 0)
--- Dependencies: 364
+-- TOC entry 5362 (class 0 OID 0)
+-- Dependencies: 374
 -- Name: FUNCTION uuid_generate_v1(); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11151,8 +14098,8 @@ GRANT ALL ON FUNCTION extensions.uuid_generate_v1() TO dashboard_user;
 
 
 --
--- TOC entry 5080 (class 0 OID 0)
--- Dependencies: 365
+-- TOC entry 5363 (class 0 OID 0)
+-- Dependencies: 375
 -- Name: FUNCTION uuid_generate_v1mc(); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11162,8 +14109,8 @@ GRANT ALL ON FUNCTION extensions.uuid_generate_v1mc() TO dashboard_user;
 
 
 --
--- TOC entry 5081 (class 0 OID 0)
--- Dependencies: 366
+-- TOC entry 5364 (class 0 OID 0)
+-- Dependencies: 376
 -- Name: FUNCTION uuid_generate_v3(namespace uuid, name text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11173,8 +14120,8 @@ GRANT ALL ON FUNCTION extensions.uuid_generate_v3(namespace uuid, name text) TO 
 
 
 --
--- TOC entry 5082 (class 0 OID 0)
--- Dependencies: 367
+-- TOC entry 5365 (class 0 OID 0)
+-- Dependencies: 377
 -- Name: FUNCTION uuid_generate_v4(); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11184,8 +14131,8 @@ GRANT ALL ON FUNCTION extensions.uuid_generate_v4() TO dashboard_user;
 
 
 --
--- TOC entry 5083 (class 0 OID 0)
--- Dependencies: 368
+-- TOC entry 5366 (class 0 OID 0)
+-- Dependencies: 378
 -- Name: FUNCTION uuid_generate_v5(namespace uuid, name text); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11195,8 +14142,8 @@ GRANT ALL ON FUNCTION extensions.uuid_generate_v5(namespace uuid, name text) TO 
 
 
 --
--- TOC entry 5084 (class 0 OID 0)
--- Dependencies: 359
+-- TOC entry 5367 (class 0 OID 0)
+-- Dependencies: 369
 -- Name: FUNCTION uuid_nil(); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11206,8 +14153,8 @@ GRANT ALL ON FUNCTION extensions.uuid_nil() TO dashboard_user;
 
 
 --
--- TOC entry 5085 (class 0 OID 0)
--- Dependencies: 360
+-- TOC entry 5368 (class 0 OID 0)
+-- Dependencies: 370
 -- Name: FUNCTION uuid_ns_dns(); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11217,8 +14164,8 @@ GRANT ALL ON FUNCTION extensions.uuid_ns_dns() TO dashboard_user;
 
 
 --
--- TOC entry 5086 (class 0 OID 0)
--- Dependencies: 362
+-- TOC entry 5369 (class 0 OID 0)
+-- Dependencies: 372
 -- Name: FUNCTION uuid_ns_oid(); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11228,8 +14175,8 @@ GRANT ALL ON FUNCTION extensions.uuid_ns_oid() TO dashboard_user;
 
 
 --
--- TOC entry 5087 (class 0 OID 0)
--- Dependencies: 361
+-- TOC entry 5370 (class 0 OID 0)
+-- Dependencies: 371
 -- Name: FUNCTION uuid_ns_url(); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11239,8 +14186,8 @@ GRANT ALL ON FUNCTION extensions.uuid_ns_url() TO dashboard_user;
 
 
 --
--- TOC entry 5088 (class 0 OID 0)
--- Dependencies: 363
+-- TOC entry 5371 (class 0 OID 0)
+-- Dependencies: 373
 -- Name: FUNCTION uuid_ns_x500(); Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11250,8 +14197,8 @@ GRANT ALL ON FUNCTION extensions.uuid_ns_x500() TO dashboard_user;
 
 
 --
--- TOC entry 5089 (class 0 OID 0)
--- Dependencies: 419
+-- TOC entry 5372 (class 0 OID 0)
+-- Dependencies: 429
 -- Name: FUNCTION graphql("operationName" text, query text, variables jsonb, extensions jsonb); Type: ACL; Schema: graphql_public; Owner: supabase_admin
 --
 
@@ -11262,8 +14209,8 @@ GRANT ALL ON FUNCTION graphql_public.graphql("operationName" text, query text, v
 
 
 --
--- TOC entry 5090 (class 0 OID 0)
--- Dependencies: 343
+-- TOC entry 5373 (class 0 OID 0)
+-- Dependencies: 353
 -- Name: FUNCTION pg_reload_conf(); Type: ACL; Schema: pg_catalog; Owner: supabase_admin
 --
 
@@ -11271,8 +14218,8 @@ GRANT ALL ON FUNCTION pg_catalog.pg_reload_conf() TO postgres WITH GRANT OPTION;
 
 
 --
--- TOC entry 5091 (class 0 OID 0)
--- Dependencies: 355
+-- TOC entry 5374 (class 0 OID 0)
+-- Dependencies: 365
 -- Name: FUNCTION get_auth(p_usename text); Type: ACL; Schema: pgbouncer; Owner: supabase_admin
 --
 
@@ -11281,173 +14228,288 @@ GRANT ALL ON FUNCTION pgbouncer.get_auth(p_usename text) TO pgbouncer;
 
 
 --
--- TOC entry 5092 (class 0 OID 0)
--- Dependencies: 461
+-- TOC entry 5375 (class 0 OID 0)
+-- Dependencies: 490
+-- Name: FUNCTION allocate_document_number(p_company_id uuid, p_document_type text); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.allocate_document_number(p_company_id uuid, p_document_type text) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.allocate_document_number(p_company_id uuid, p_document_type text) TO service_role;
+
+
+--
+-- TOC entry 5376 (class 0 OID 0)
+-- Dependencies: 494
+-- Name: FUNCTION apply_receipt_allocation(p_company_id uuid, p_receipt_id uuid, p_invoice_id uuid, p_requested_amount numeric); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.apply_receipt_allocation(p_company_id uuid, p_receipt_id uuid, p_invoice_id uuid, p_requested_amount numeric) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.apply_receipt_allocation(p_company_id uuid, p_receipt_id uuid, p_invoice_id uuid, p_requested_amount numeric) TO service_role;
+
+
+--
+-- TOC entry 5377 (class 0 OID 0)
+-- Dependencies: 493
+-- Name: FUNCTION cancel_booking_receipt_unit(p_document_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.cancel_booking_receipt_unit(p_document_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.cancel_booking_receipt_unit(p_document_id uuid) TO service_role;
+
+
+--
+-- TOC entry 5378 (class 0 OID 0)
+-- Dependencies: 492
+-- Name: FUNCTION confirm_booking_receipt_unit(p_document_id uuid, p_project_unit_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.confirm_booking_receipt_unit(p_document_id uuid, p_project_unit_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.confirm_booking_receipt_unit(p_document_id uuid, p_project_unit_id uuid) TO service_role;
+
+
+--
+-- TOC entry 5379 (class 0 OID 0)
+-- Dependencies: 484
+-- Name: FUNCTION create_project_with_stages(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.create_project_with_stages(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.create_project_with_stages(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb) TO service_role;
+
+
+--
+-- TOC entry 5380 (class 0 OID 0)
+-- Dependencies: 489
+-- Name: FUNCTION create_project_with_stages_with_business_model(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb, p_business_model text, p_projected_sales_value numeric, p_land_cost numeric, p_development_arrangement text, p_total_project_flats integer, p_landowner_party_id uuid, p_jda_agreement_reference text, p_jda_agreement_document_url text, p_jda_agreement_date date, p_builder_share_units integer, p_landowner_share_units integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.create_project_with_stages_with_business_model(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb, p_business_model text, p_projected_sales_value numeric, p_land_cost numeric, p_development_arrangement text, p_total_project_flats integer, p_landowner_party_id uuid, p_jda_agreement_reference text, p_jda_agreement_document_url text, p_jda_agreement_date date, p_builder_share_units integer, p_landowner_share_units integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.create_project_with_stages_with_business_model(p_company_id uuid, p_created_by uuid, p_customer_id uuid, p_source_document_id uuid, p_project_type_id uuid, p_project_type_snapshot text, p_project_number text, p_name text, p_description text, p_site_address text, p_contract_amount numeric, p_budget_amount numeric, p_start_date date, p_expected_end_date date, p_actual_end_date date, p_status text, p_stage_drafts jsonb, p_business_model text, p_projected_sales_value numeric, p_land_cost numeric, p_development_arrangement text, p_total_project_flats integer, p_landowner_party_id uuid, p_jda_agreement_reference text, p_jda_agreement_document_url text, p_jda_agreement_date date, p_builder_share_units integer, p_landowner_share_units integer) TO service_role;
+
+
+--
+-- TOC entry 5381 (class 0 OID 0)
+-- Dependencies: 471
 -- Name: FUNCTION current_app_user_id(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.current_app_user_id() TO anon;
-GRANT ALL ON FUNCTION public.current_app_user_id() TO authenticated;
+REVOKE ALL ON FUNCTION public.current_app_user_id() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.current_app_user_id() TO service_role;
 
 
 --
--- TOC entry 5093 (class 0 OID 0)
--- Dependencies: 447
+-- TOC entry 5382 (class 0 OID 0)
+-- Dependencies: 457
 -- Name: FUNCTION current_user_id(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.current_user_id() TO anon;
-GRANT ALL ON FUNCTION public.current_user_id() TO authenticated;
+REVOKE ALL ON FUNCTION public.current_user_id() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.current_user_id() TO service_role;
 
 
 --
--- TOC entry 5094 (class 0 OID 0)
--- Dependencies: 448
+-- TOC entry 5383 (class 0 OID 0)
+-- Dependencies: 500
+-- Name: FUNCTION enforce_invoice_allocation_balance(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.enforce_invoice_allocation_balance() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.enforce_invoice_allocation_balance() TO service_role;
+
+
+--
+-- TOC entry 5384 (class 0 OID 0)
+-- Dependencies: 496
+-- Name: FUNCTION enforce_payment_allocation_balance(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.enforce_payment_allocation_balance() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.enforce_payment_allocation_balance() TO service_role;
+
+
+--
+-- TOC entry 5385 (class 0 OID 0)
+-- Dependencies: 498
+-- Name: FUNCTION enforce_project_expense_bill_balance(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.enforce_project_expense_bill_balance() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.enforce_project_expense_bill_balance() TO service_role;
+
+
+--
+-- TOC entry 5386 (class 0 OID 0)
+-- Dependencies: 497
+-- Name: FUNCTION enforce_project_expense_payment_balance(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.enforce_project_expense_payment_balance() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.enforce_project_expense_payment_balance() TO service_role;
+
+
+--
+-- TOC entry 5387 (class 0 OID 0)
+-- Dependencies: 499
+-- Name: FUNCTION enforce_project_receipt_allocation_balance(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.enforce_project_receipt_allocation_balance() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.enforce_project_receipt_allocation_balance() TO service_role;
+
+
+--
+-- TOC entry 5388 (class 0 OID 0)
+-- Dependencies: 458
 -- Name: FUNCTION next_document_sequence(p_company_id uuid, p_document_type text); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.next_document_sequence(p_company_id uuid, p_document_type text) TO anon;
-GRANT ALL ON FUNCTION public.next_document_sequence(p_company_id uuid, p_document_type text) TO authenticated;
+REVOKE ALL ON FUNCTION public.next_document_sequence(p_company_id uuid, p_document_type text) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.next_document_sequence(p_company_id uuid, p_document_type text) TO service_role;
 
 
 --
--- TOC entry 5095 (class 0 OID 0)
--- Dependencies: 460
+-- TOC entry 5389 (class 0 OID 0)
+-- Dependencies: 491
+-- Name: FUNCTION save_quotation(p_company_id uuid, p_payload jsonb, p_expected_version integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.save_quotation(p_company_id uuid, p_payload jsonb, p_expected_version integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.save_quotation(p_company_id uuid, p_payload jsonb, p_expected_version integer) TO service_role;
+
+
+--
+-- TOC entry 5390 (class 0 OID 0)
+-- Dependencies: 495
+-- Name: FUNCTION set_material_receipt_line_purchase_order(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.set_material_receipt_line_purchase_order() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.set_material_receipt_line_purchase_order() TO service_role;
+
+
+--
+-- TOC entry 5391 (class 0 OID 0)
+-- Dependencies: 470
 -- Name: FUNCTION set_updated_at(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.set_updated_at() TO anon;
-GRANT ALL ON FUNCTION public.set_updated_at() TO authenticated;
+REVOKE ALL ON FUNCTION public.set_updated_at() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.set_updated_at() TO service_role;
 
 
 --
--- TOC entry 5096 (class 0 OID 0)
--- Dependencies: 464
+-- TOC entry 5392 (class 0 OID 0)
+-- Dependencies: 474
 -- Name: FUNCTION validate_attachment_links(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_attachment_links() TO anon;
-GRANT ALL ON FUNCTION public.validate_attachment_links() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_attachment_links() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_attachment_links() TO service_role;
 
 
 --
--- TOC entry 5097 (class 0 OID 0)
--- Dependencies: 466
+-- TOC entry 5393 (class 0 OID 0)
+-- Dependencies: 476
 -- Name: FUNCTION validate_document_customer_scope(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_document_customer_scope() TO anon;
-GRANT ALL ON FUNCTION public.validate_document_customer_scope() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_document_customer_scope() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_document_customer_scope() TO service_role;
 
 
 --
--- TOC entry 5098 (class 0 OID 0)
--- Dependencies: 472
+-- TOC entry 5394 (class 0 OID 0)
+-- Dependencies: 482
 -- Name: FUNCTION validate_document_item_unit_scope(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_document_item_unit_scope() TO anon;
-GRANT ALL ON FUNCTION public.validate_document_item_unit_scope() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_document_item_unit_scope() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_document_item_unit_scope() TO service_role;
 
 
 --
--- TOC entry 5099 (class 0 OID 0)
--- Dependencies: 465
+-- TOC entry 5395 (class 0 OID 0)
+-- Dependencies: 475
 -- Name: FUNCTION validate_document_master_scope(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_document_master_scope() TO anon;
-GRANT ALL ON FUNCTION public.validate_document_master_scope() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_document_master_scope() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_document_master_scope() TO service_role;
 
 
 --
--- TOC entry 5100 (class 0 OID 0)
--- Dependencies: 470
+-- TOC entry 5396 (class 0 OID 0)
+-- Dependencies: 480
 -- Name: FUNCTION validate_expense_master_scope(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_expense_master_scope() TO anon;
-GRANT ALL ON FUNCTION public.validate_expense_master_scope() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_expense_master_scope() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_expense_master_scope() TO service_role;
 
 
 --
--- TOC entry 5101 (class 0 OID 0)
--- Dependencies: 471
+-- TOC entry 5397 (class 0 OID 0)
+-- Dependencies: 481
 -- Name: FUNCTION validate_payment_method_scope(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_payment_method_scope() TO anon;
-GRANT ALL ON FUNCTION public.validate_payment_method_scope() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_payment_method_scope() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_payment_method_scope() TO service_role;
 
 
 --
--- TOC entry 5102 (class 0 OID 0)
--- Dependencies: 463
+-- TOC entry 5398 (class 0 OID 0)
+-- Dependencies: 473
 -- Name: FUNCTION validate_progress_stage_link(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_progress_stage_link() TO anon;
-GRANT ALL ON FUNCTION public.validate_progress_stage_link() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_progress_stage_link() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_progress_stage_link() TO service_role;
 
 
 --
--- TOC entry 5103 (class 0 OID 0)
--- Dependencies: 468
+-- TOC entry 5399 (class 0 OID 0)
+-- Dependencies: 478
 -- Name: FUNCTION validate_project_customer_scope(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_project_customer_scope() TO anon;
-GRANT ALL ON FUNCTION public.validate_project_customer_scope() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_project_customer_scope() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_project_customer_scope() TO service_role;
 
 
 --
--- TOC entry 5104 (class 0 OID 0)
--- Dependencies: 467
+-- TOC entry 5400 (class 0 OID 0)
+-- Dependencies: 477
 -- Name: FUNCTION validate_project_master_scope(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_project_master_scope() TO anon;
-GRANT ALL ON FUNCTION public.validate_project_master_scope() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_project_master_scope() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_project_master_scope() TO service_role;
 
 
 --
--- TOC entry 5105 (class 0 OID 0)
--- Dependencies: 462
+-- TOC entry 5401 (class 0 OID 0)
+-- Dependencies: 472
 -- Name: FUNCTION validate_project_source_quotation(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_project_source_quotation() TO anon;
-GRANT ALL ON FUNCTION public.validate_project_source_quotation() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_project_source_quotation() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_project_source_quotation() TO service_role;
 
 
 --
--- TOC entry 5106 (class 0 OID 0)
--- Dependencies: 469
+-- TOC entry 5402 (class 0 OID 0)
+-- Dependencies: 479
 -- Name: FUNCTION validate_stage_template_scope(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.validate_stage_template_scope() TO anon;
-GRANT ALL ON FUNCTION public.validate_stage_template_scope() TO authenticated;
+REVOKE ALL ON FUNCTION public.validate_stage_template_scope() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.validate_stage_template_scope() TO service_role;
 
 
 --
--- TOC entry 5107 (class 0 OID 0)
--- Dependencies: 421
+-- TOC entry 5403 (class 0 OID 0)
+-- Dependencies: 431
 -- Name: FUNCTION apply_rls(wal jsonb, max_record_bytes integer); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11459,8 +14521,8 @@ GRANT ALL ON FUNCTION realtime.apply_rls(wal jsonb, max_record_bytes integer) TO
 
 
 --
--- TOC entry 5108 (class 0 OID 0)
--- Dependencies: 459
+-- TOC entry 5404 (class 0 OID 0)
+-- Dependencies: 469
 -- Name: FUNCTION authorize(role_name text, topic_name text, claims text, sub text, headers text, read_extensions text[], write_extensions text[], OUT read_allowed boolean[], OUT write_allowed boolean[]); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11469,8 +14531,8 @@ GRANT ALL ON FUNCTION realtime.authorize(role_name text, topic_name text, claims
 
 
 --
--- TOC entry 5109 (class 0 OID 0)
--- Dependencies: 422
+-- TOC entry 5405 (class 0 OID 0)
+-- Dependencies: 432
 -- Name: FUNCTION broadcast_changes(topic_name text, event_name text, operation text, table_name text, table_schema text, new record, old record, level text); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11479,8 +14541,8 @@ GRANT ALL ON FUNCTION realtime.broadcast_changes(topic_name text, event_name tex
 
 
 --
--- TOC entry 5110 (class 0 OID 0)
--- Dependencies: 423
+-- TOC entry 5406 (class 0 OID 0)
+-- Dependencies: 433
 -- Name: FUNCTION build_prepared_statement_sql(prepared_statement_name text, entity regclass, columns realtime.wal_column[]); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11492,8 +14554,8 @@ GRANT ALL ON FUNCTION realtime.build_prepared_statement_sql(prepared_statement_n
 
 
 --
--- TOC entry 5111 (class 0 OID 0)
--- Dependencies: 424
+-- TOC entry 5407 (class 0 OID 0)
+-- Dependencies: 434
 -- Name: FUNCTION "cast"(val text, type_ regtype); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11505,8 +14567,8 @@ GRANT ALL ON FUNCTION realtime."cast"(val text, type_ regtype) TO service_role;
 
 
 --
--- TOC entry 5112 (class 0 OID 0)
--- Dependencies: 425
+-- TOC entry 5408 (class 0 OID 0)
+-- Dependencies: 435
 -- Name: FUNCTION check_equality_op(op realtime.equality_op, type_ regtype, val_1 text, val_2 text); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11518,8 +14580,8 @@ GRANT ALL ON FUNCTION realtime.check_equality_op(op realtime.equality_op, type_ 
 
 
 --
--- TOC entry 5113 (class 0 OID 0)
--- Dependencies: 426
+-- TOC entry 5409 (class 0 OID 0)
+-- Dependencies: 436
 -- Name: FUNCTION check_equality_op(op realtime.equality_op, type_ regtype, val_1 text, val_2 text, negate boolean); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11531,8 +14593,8 @@ GRANT ALL ON FUNCTION realtime.check_equality_op(op realtime.equality_op, type_ 
 
 
 --
--- TOC entry 5114 (class 0 OID 0)
--- Dependencies: 427
+-- TOC entry 5410 (class 0 OID 0)
+-- Dependencies: 437
 -- Name: FUNCTION is_visible_through_filters(columns realtime.wal_column[], filters realtime.user_defined_filter[]); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11544,8 +14606,8 @@ GRANT ALL ON FUNCTION realtime.is_visible_through_filters(columns realtime.wal_c
 
 
 --
--- TOC entry 5115 (class 0 OID 0)
--- Dependencies: 428
+-- TOC entry 5411 (class 0 OID 0)
+-- Dependencies: 438
 -- Name: FUNCTION list_changes(publication name, slot_name name, max_changes integer, max_record_bytes integer); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11554,8 +14616,8 @@ GRANT ALL ON FUNCTION realtime.list_changes(publication name, slot_name name, ma
 
 
 --
--- TOC entry 5116 (class 0 OID 0)
--- Dependencies: 458
+-- TOC entry 5412 (class 0 OID 0)
+-- Dependencies: 468
 -- Name: FUNCTION list_changes_sync(publication name, slot_name name, max_changes integer, max_record_bytes integer); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11564,8 +14626,8 @@ GRANT ALL ON FUNCTION realtime.list_changes_sync(publication name, slot_name nam
 
 
 --
--- TOC entry 5117 (class 0 OID 0)
--- Dependencies: 429
+-- TOC entry 5413 (class 0 OID 0)
+-- Dependencies: 439
 -- Name: FUNCTION quote_wal2json(entity regclass); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11577,8 +14639,8 @@ GRANT ALL ON FUNCTION realtime.quote_wal2json(entity regclass) TO service_role;
 
 
 --
--- TOC entry 5118 (class 0 OID 0)
--- Dependencies: 430
+-- TOC entry 5414 (class 0 OID 0)
+-- Dependencies: 440
 -- Name: FUNCTION send(payload jsonb, event text, topic text, private boolean); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11587,8 +14649,8 @@ GRANT ALL ON FUNCTION realtime.send(payload jsonb, event text, topic text, priva
 
 
 --
--- TOC entry 5119 (class 0 OID 0)
--- Dependencies: 431
+-- TOC entry 5415 (class 0 OID 0)
+-- Dependencies: 441
 -- Name: FUNCTION send_binary(payload bytea, event text, topic text, private boolean); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11597,8 +14659,8 @@ GRANT ALL ON FUNCTION realtime.send_binary(payload bytea, event text, topic text
 
 
 --
--- TOC entry 5120 (class 0 OID 0)
--- Dependencies: 457
+-- TOC entry 5416 (class 0 OID 0)
+-- Dependencies: 467
 -- Name: FUNCTION settled_changes(slot_name name, max_changes integer, VARIADIC opts text[]); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11607,8 +14669,8 @@ GRANT ALL ON FUNCTION realtime.settled_changes(slot_name name, max_changes integ
 
 
 --
--- TOC entry 5121 (class 0 OID 0)
--- Dependencies: 432
+-- TOC entry 5417 (class 0 OID 0)
+-- Dependencies: 442
 -- Name: FUNCTION subscription_check_filters(); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11620,8 +14682,8 @@ GRANT ALL ON FUNCTION realtime.subscription_check_filters() TO service_role;
 
 
 --
--- TOC entry 5122 (class 0 OID 0)
--- Dependencies: 433
+-- TOC entry 5418 (class 0 OID 0)
+-- Dependencies: 443
 -- Name: FUNCTION to_regrole(role_name text); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11633,8 +14695,8 @@ GRANT ALL ON FUNCTION realtime.to_regrole(role_name text) TO service_role;
 
 
 --
--- TOC entry 5123 (class 0 OID 0)
--- Dependencies: 434
+-- TOC entry 5419 (class 0 OID 0)
+-- Dependencies: 444
 -- Name: FUNCTION topic(); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11643,8 +14705,8 @@ GRANT ALL ON FUNCTION realtime.topic() TO dashboard_user;
 
 
 --
--- TOC entry 5124 (class 0 OID 0)
--- Dependencies: 435
+-- TOC entry 5420 (class 0 OID 0)
+-- Dependencies: 445
 -- Name: FUNCTION wal2json_escape_identifier(name text); Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -11653,8 +14715,48 @@ GRANT ALL ON FUNCTION realtime.wal2json_escape_identifier(name text) TO dashboar
 
 
 --
--- TOC entry 5125 (class 0 OID 0)
--- Dependencies: 415
+-- TOC entry 5421 (class 0 OID 0)
+-- Dependencies: 488
+-- Name: FUNCTION delete_lifecycle_objects(object_ids uuid[]); Type: ACL; Schema: storage; Owner: supabase_storage_admin
+--
+
+REVOKE ALL ON FUNCTION storage.delete_lifecycle_objects(object_ids uuid[]) FROM PUBLIC;
+GRANT ALL ON FUNCTION storage.delete_lifecycle_objects(object_ids uuid[]) TO postgres;
+GRANT ALL ON FUNCTION storage.delete_lifecycle_objects(object_ids uuid[]) TO service_role;
+
+
+--
+-- TOC entry 5422 (class 0 OID 0)
+-- Dependencies: 485
+-- Name: FUNCTION protect_active_lifecycle_states(); Type: ACL; Schema: storage; Owner: supabase_storage_admin
+--
+
+REVOKE ALL ON FUNCTION storage.protect_active_lifecycle_states() FROM PUBLIC;
+
+
+--
+-- TOC entry 5423 (class 0 OID 0)
+-- Dependencies: 486
+-- Name: FUNCTION reconcile_lifecycle_state(target_bucket_id text, policy_changed boolean); Type: ACL; Schema: storage; Owner: supabase_storage_admin
+--
+
+REVOKE ALL ON FUNCTION storage.reconcile_lifecycle_state(target_bucket_id text, policy_changed boolean) FROM PUBLIC;
+GRANT ALL ON FUNCTION storage.reconcile_lifecycle_state(target_bucket_id text, policy_changed boolean) TO postgres;
+GRANT ALL ON FUNCTION storage.reconcile_lifecycle_state(target_bucket_id text, policy_changed boolean) TO service_role;
+
+
+--
+-- TOC entry 5424 (class 0 OID 0)
+-- Dependencies: 487
+-- Name: FUNCTION wake_lifecycle_state(); Type: ACL; Schema: storage; Owner: supabase_storage_admin
+--
+
+REVOKE ALL ON FUNCTION storage.wake_lifecycle_state() FROM PUBLIC;
+
+
+--
+-- TOC entry 5425 (class 0 OID 0)
+-- Dependencies: 425
 -- Name: FUNCTION _crypto_aead_det_decrypt(message bytea, additional bytea, key_id bigint, context bytea, nonce bytea); Type: ACL; Schema: vault; Owner: supabase_admin
 --
 
@@ -11663,8 +14765,8 @@ GRANT ALL ON FUNCTION vault._crypto_aead_det_decrypt(message bytea, additional b
 
 
 --
--- TOC entry 5126 (class 0 OID 0)
--- Dependencies: 417
+-- TOC entry 5426 (class 0 OID 0)
+-- Dependencies: 427
 -- Name: FUNCTION create_secret(new_secret text, new_name text, new_description text, new_key_id uuid); Type: ACL; Schema: vault; Owner: supabase_admin
 --
 
@@ -11673,8 +14775,8 @@ GRANT ALL ON FUNCTION vault.create_secret(new_secret text, new_name text, new_de
 
 
 --
--- TOC entry 5127 (class 0 OID 0)
--- Dependencies: 418
+-- TOC entry 5427 (class 0 OID 0)
+-- Dependencies: 428
 -- Name: FUNCTION update_secret(secret_id uuid, new_secret text, new_name text, new_description text, new_key_id uuid); Type: ACL; Schema: vault; Owner: supabase_admin
 --
 
@@ -11683,8 +14785,8 @@ GRANT ALL ON FUNCTION vault.update_secret(secret_id uuid, new_secret text, new_n
 
 
 --
--- TOC entry 5129 (class 0 OID 0)
--- Dependencies: 259
+-- TOC entry 5429 (class 0 OID 0)
+-- Dependencies: 261
 -- Name: TABLE audit_log_entries; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11694,8 +14796,8 @@ GRANT SELECT ON TABLE auth.audit_log_entries TO postgres WITH GRANT OPTION;
 
 
 --
--- TOC entry 5130 (class 0 OID 0)
--- Dependencies: 278
+-- TOC entry 5430 (class 0 OID 0)
+-- Dependencies: 280
 -- Name: TABLE custom_oauth_providers; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11704,8 +14806,8 @@ GRANT ALL ON TABLE auth.custom_oauth_providers TO dashboard_user;
 
 
 --
--- TOC entry 5132 (class 0 OID 0)
--- Dependencies: 272
+-- TOC entry 5432 (class 0 OID 0)
+-- Dependencies: 274
 -- Name: TABLE flow_state; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11715,8 +14817,8 @@ GRANT ALL ON TABLE auth.flow_state TO dashboard_user;
 
 
 --
--- TOC entry 5135 (class 0 OID 0)
--- Dependencies: 263
+-- TOC entry 5435 (class 0 OID 0)
+-- Dependencies: 265
 -- Name: TABLE identities; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11726,8 +14828,8 @@ GRANT ALL ON TABLE auth.identities TO dashboard_user;
 
 
 --
--- TOC entry 5137 (class 0 OID 0)
--- Dependencies: 258
+-- TOC entry 5437 (class 0 OID 0)
+-- Dependencies: 260
 -- Name: TABLE instances; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11737,8 +14839,8 @@ GRANT SELECT ON TABLE auth.instances TO postgres WITH GRANT OPTION;
 
 
 --
--- TOC entry 5139 (class 0 OID 0)
--- Dependencies: 267
+-- TOC entry 5439 (class 0 OID 0)
+-- Dependencies: 269
 -- Name: TABLE mfa_amr_claims; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11748,8 +14850,8 @@ GRANT ALL ON TABLE auth.mfa_amr_claims TO dashboard_user;
 
 
 --
--- TOC entry 5141 (class 0 OID 0)
--- Dependencies: 266
+-- TOC entry 5441 (class 0 OID 0)
+-- Dependencies: 268
 -- Name: TABLE mfa_challenges; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11759,8 +14861,8 @@ GRANT ALL ON TABLE auth.mfa_challenges TO dashboard_user;
 
 
 --
--- TOC entry 5144 (class 0 OID 0)
--- Dependencies: 265
+-- TOC entry 5444 (class 0 OID 0)
+-- Dependencies: 267
 -- Name: TABLE mfa_factors; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11770,8 +14872,8 @@ GRANT ALL ON TABLE auth.mfa_factors TO dashboard_user;
 
 
 --
--- TOC entry 5145 (class 0 OID 0)
--- Dependencies: 299
+-- TOC entry 5445 (class 0 OID 0)
+-- Dependencies: 301
 -- Name: TABLE mfa_recovery_code_sets; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11780,8 +14882,8 @@ GRANT ALL ON TABLE auth.mfa_recovery_code_sets TO dashboard_user;
 
 
 --
--- TOC entry 5146 (class 0 OID 0)
--- Dependencies: 300
+-- TOC entry 5446 (class 0 OID 0)
+-- Dependencies: 302
 -- Name: TABLE mfa_recovery_codes; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11790,8 +14892,8 @@ GRANT ALL ON TABLE auth.mfa_recovery_codes TO dashboard_user;
 
 
 --
--- TOC entry 5147 (class 0 OID 0)
--- Dependencies: 275
+-- TOC entry 5447 (class 0 OID 0)
+-- Dependencies: 277
 -- Name: TABLE oauth_authorizations; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11800,8 +14902,8 @@ GRANT ALL ON TABLE auth.oauth_authorizations TO dashboard_user;
 
 
 --
--- TOC entry 5149 (class 0 OID 0)
--- Dependencies: 277
+-- TOC entry 5449 (class 0 OID 0)
+-- Dependencies: 279
 -- Name: TABLE oauth_client_states; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11810,8 +14912,8 @@ GRANT ALL ON TABLE auth.oauth_client_states TO dashboard_user;
 
 
 --
--- TOC entry 5150 (class 0 OID 0)
--- Dependencies: 274
+-- TOC entry 5450 (class 0 OID 0)
+-- Dependencies: 276
 -- Name: TABLE oauth_clients; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11820,8 +14922,8 @@ GRANT ALL ON TABLE auth.oauth_clients TO dashboard_user;
 
 
 --
--- TOC entry 5151 (class 0 OID 0)
--- Dependencies: 276
+-- TOC entry 5451 (class 0 OID 0)
+-- Dependencies: 278
 -- Name: TABLE oauth_consents; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11830,8 +14932,8 @@ GRANT ALL ON TABLE auth.oauth_consents TO dashboard_user;
 
 
 --
--- TOC entry 5152 (class 0 OID 0)
--- Dependencies: 273
+-- TOC entry 5452 (class 0 OID 0)
+-- Dependencies: 275
 -- Name: TABLE one_time_tokens; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11841,8 +14943,8 @@ GRANT ALL ON TABLE auth.one_time_tokens TO dashboard_user;
 
 
 --
--- TOC entry 5154 (class 0 OID 0)
--- Dependencies: 257
+-- TOC entry 5454 (class 0 OID 0)
+-- Dependencies: 259
 -- Name: TABLE refresh_tokens; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11852,8 +14954,8 @@ GRANT SELECT ON TABLE auth.refresh_tokens TO postgres WITH GRANT OPTION;
 
 
 --
--- TOC entry 5156 (class 0 OID 0)
--- Dependencies: 256
+-- TOC entry 5456 (class 0 OID 0)
+-- Dependencies: 258
 -- Name: SEQUENCE refresh_tokens_id_seq; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11862,8 +14964,8 @@ GRANT ALL ON SEQUENCE auth.refresh_tokens_id_seq TO postgres;
 
 
 --
--- TOC entry 5158 (class 0 OID 0)
--- Dependencies: 270
+-- TOC entry 5458 (class 0 OID 0)
+-- Dependencies: 272
 -- Name: TABLE saml_providers; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11873,8 +14975,8 @@ GRANT ALL ON TABLE auth.saml_providers TO dashboard_user;
 
 
 --
--- TOC entry 5160 (class 0 OID 0)
--- Dependencies: 271
+-- TOC entry 5460 (class 0 OID 0)
+-- Dependencies: 273
 -- Name: TABLE saml_relay_states; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11884,8 +14986,8 @@ GRANT ALL ON TABLE auth.saml_relay_states TO dashboard_user;
 
 
 --
--- TOC entry 5162 (class 0 OID 0)
--- Dependencies: 260
+-- TOC entry 5462 (class 0 OID 0)
+-- Dependencies: 262
 -- Name: TABLE schema_migrations; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11893,8 +14995,8 @@ GRANT SELECT ON TABLE auth.schema_migrations TO postgres WITH GRANT OPTION;
 
 
 --
--- TOC entry 5163 (class 0 OID 0)
--- Dependencies: 298
+-- TOC entry 5463 (class 0 OID 0)
+-- Dependencies: 300
 -- Name: TABLE scim_tokens; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11903,8 +15005,8 @@ GRANT ALL ON TABLE auth.scim_tokens TO dashboard_user;
 
 
 --
--- TOC entry 5164 (class 0 OID 0)
--- Dependencies: 297
+-- TOC entry 5464 (class 0 OID 0)
+-- Dependencies: 299
 -- Name: TABLE scim_users; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11913,8 +15015,8 @@ GRANT ALL ON TABLE auth.scim_users TO dashboard_user;
 
 
 --
--- TOC entry 5169 (class 0 OID 0)
--- Dependencies: 264
+-- TOC entry 5469 (class 0 OID 0)
+-- Dependencies: 266
 -- Name: TABLE sessions; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11924,8 +15026,8 @@ GRANT ALL ON TABLE auth.sessions TO dashboard_user;
 
 
 --
--- TOC entry 5171 (class 0 OID 0)
--- Dependencies: 269
+-- TOC entry 5471 (class 0 OID 0)
+-- Dependencies: 271
 -- Name: TABLE sso_domains; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11935,8 +15037,8 @@ GRANT ALL ON TABLE auth.sso_domains TO dashboard_user;
 
 
 --
--- TOC entry 5174 (class 0 OID 0)
--- Dependencies: 268
+-- TOC entry 5474 (class 0 OID 0)
+-- Dependencies: 270
 -- Name: TABLE sso_providers; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11946,8 +15048,8 @@ GRANT ALL ON TABLE auth.sso_providers TO dashboard_user;
 
 
 --
--- TOC entry 5177 (class 0 OID 0)
--- Dependencies: 255
+-- TOC entry 5477 (class 0 OID 0)
+-- Dependencies: 257
 -- Name: TABLE users; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11957,8 +15059,8 @@ GRANT SELECT ON TABLE auth.users TO postgres WITH GRANT OPTION;
 
 
 --
--- TOC entry 5178 (class 0 OID 0)
--- Dependencies: 280
+-- TOC entry 5478 (class 0 OID 0)
+-- Dependencies: 282
 -- Name: TABLE webauthn_challenges; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11967,8 +15069,8 @@ GRANT ALL ON TABLE auth.webauthn_challenges TO dashboard_user;
 
 
 --
--- TOC entry 5179 (class 0 OID 0)
--- Dependencies: 279
+-- TOC entry 5479 (class 0 OID 0)
+-- Dependencies: 281
 -- Name: TABLE webauthn_credentials; Type: ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -11977,8 +15079,8 @@ GRANT ALL ON TABLE auth.webauthn_credentials TO dashboard_user;
 
 
 --
--- TOC entry 5180 (class 0 OID 0)
--- Dependencies: 254
+-- TOC entry 5480 (class 0 OID 0)
+-- Dependencies: 256
 -- Name: TABLE pg_stat_statements; Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11988,8 +15090,8 @@ GRANT ALL ON TABLE extensions.pg_stat_statements TO dashboard_user;
 
 
 --
--- TOC entry 5181 (class 0 OID 0)
--- Dependencies: 253
+-- TOC entry 5481 (class 0 OID 0)
+-- Dependencies: 255
 -- Name: TABLE pg_stat_statements_info; Type: ACL; Schema: extensions; Owner: postgres
 --
 
@@ -11999,8 +15101,8 @@ GRANT ALL ON TABLE extensions.pg_stat_statements_info TO dashboard_user;
 
 
 --
--- TOC entry 5182 (class 0 OID 0)
--- Dependencies: 324
+-- TOC entry 5482 (class 0 OID 0)
+-- Dependencies: 326
 -- Name: TABLE booking_receipt_details; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12008,8 +15110,8 @@ GRANT ALL ON TABLE public.booking_receipt_details TO service_role;
 
 
 --
--- TOC entry 5183 (class 0 OID 0)
--- Dependencies: 305
+-- TOC entry 5483 (class 0 OID 0)
+-- Dependencies: 307
 -- Name: TABLE companies; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12017,8 +15119,8 @@ GRANT ALL ON TABLE public.companies TO service_role;
 
 
 --
--- TOC entry 5184 (class 0 OID 0)
--- Dependencies: 326
+-- TOC entry 5484 (class 0 OID 0)
+-- Dependencies: 328
 -- Name: TABLE company_quotation_usage; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12026,8 +15128,8 @@ GRANT ALL ON TABLE public.company_quotation_usage TO service_role;
 
 
 --
--- TOC entry 5185 (class 0 OID 0)
--- Dependencies: 306
+-- TOC entry 5485 (class 0 OID 0)
+-- Dependencies: 308
 -- Name: TABLE company_settings; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12035,8 +15137,8 @@ GRANT ALL ON TABLE public.company_settings TO service_role;
 
 
 --
--- TOC entry 5186 (class 0 OID 0)
--- Dependencies: 325
+-- TOC entry 5486 (class 0 OID 0)
+-- Dependencies: 327
 -- Name: TABLE company_subscriptions; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12044,8 +15146,8 @@ GRANT ALL ON TABLE public.company_subscriptions TO service_role;
 
 
 --
--- TOC entry 5187 (class 0 OID 0)
--- Dependencies: 307
+-- TOC entry 5487 (class 0 OID 0)
+-- Dependencies: 309
 -- Name: TABLE company_users; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12053,8 +15155,8 @@ GRANT ALL ON TABLE public.company_users TO service_role;
 
 
 --
--- TOC entry 5188 (class 0 OID 0)
--- Dependencies: 308
+-- TOC entry 5488 (class 0 OID 0)
+-- Dependencies: 310
 -- Name: TABLE customers; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12062,8 +15164,8 @@ GRANT ALL ON TABLE public.customers TO service_role;
 
 
 --
--- TOC entry 5189 (class 0 OID 0)
--- Dependencies: 321
+-- TOC entry 5489 (class 0 OID 0)
+-- Dependencies: 323
 -- Name: TABLE document_exclusions; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12071,8 +15173,8 @@ GRANT ALL ON TABLE public.document_exclusions TO service_role;
 
 
 --
--- TOC entry 5190 (class 0 OID 0)
--- Dependencies: 320
+-- TOC entry 5490 (class 0 OID 0)
+-- Dependencies: 322
 -- Name: TABLE document_inclusions; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12080,8 +15182,8 @@ GRANT ALL ON TABLE public.document_inclusions TO service_role;
 
 
 --
--- TOC entry 5191 (class 0 OID 0)
--- Dependencies: 318
+-- TOC entry 5491 (class 0 OID 0)
+-- Dependencies: 320
 -- Name: TABLE document_items; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12089,8 +15191,8 @@ GRANT ALL ON TABLE public.document_items TO service_role;
 
 
 --
--- TOC entry 5192 (class 0 OID 0)
--- Dependencies: 317
+-- TOC entry 5492 (class 0 OID 0)
+-- Dependencies: 319
 -- Name: TABLE document_sections; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12098,8 +15200,8 @@ GRANT ALL ON TABLE public.document_sections TO service_role;
 
 
 --
--- TOC entry 5193 (class 0 OID 0)
--- Dependencies: 315
+-- TOC entry 5493 (class 0 OID 0)
+-- Dependencies: 317
 -- Name: TABLE document_sequences; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12107,8 +15209,8 @@ GRANT ALL ON TABLE public.document_sequences TO service_role;
 
 
 --
--- TOC entry 5194 (class 0 OID 0)
--- Dependencies: 319
+-- TOC entry 5494 (class 0 OID 0)
+-- Dependencies: 321
 -- Name: TABLE document_specifications; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12116,8 +15218,8 @@ GRANT ALL ON TABLE public.document_specifications TO service_role;
 
 
 --
--- TOC entry 5195 (class 0 OID 0)
--- Dependencies: 323
+-- TOC entry 5495 (class 0 OID 0)
+-- Dependencies: 325
 -- Name: TABLE document_terms; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12125,8 +15227,8 @@ GRANT ALL ON TABLE public.document_terms TO service_role;
 
 
 --
--- TOC entry 5196 (class 0 OID 0)
--- Dependencies: 316
+-- TOC entry 5496 (class 0 OID 0)
+-- Dependencies: 318
 -- Name: TABLE documents; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12134,8 +15236,8 @@ GRANT ALL ON TABLE public.documents TO service_role;
 
 
 --
--- TOC entry 5197 (class 0 OID 0)
--- Dependencies: 310
+-- TOC entry 5497 (class 0 OID 0)
+-- Dependencies: 312
 -- Name: TABLE expense_categories; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12143,8 +15245,8 @@ GRANT ALL ON TABLE public.expense_categories TO service_role;
 
 
 --
--- TOC entry 5198 (class 0 OID 0)
--- Dependencies: 342
+-- TOC entry 5498 (class 0 OID 0)
+-- Dependencies: 344
 -- Name: TABLE investors; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12152,8 +15254,8 @@ GRANT ALL ON TABLE public.investors TO service_role;
 
 
 --
--- TOC entry 5199 (class 0 OID 0)
--- Dependencies: 340
+-- TOC entry 5499 (class 0 OID 0)
+-- Dependencies: 342
 -- Name: TABLE invoice_items; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12161,8 +15263,8 @@ GRANT ALL ON TABLE public.invoice_items TO service_role;
 
 
 --
--- TOC entry 5200 (class 0 OID 0)
--- Dependencies: 339
+-- TOC entry 5500 (class 0 OID 0)
+-- Dependencies: 341
 -- Name: TABLE invoices; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12170,8 +15272,35 @@ GRANT ALL ON TABLE public.invoices TO service_role;
 
 
 --
--- TOC entry 5201 (class 0 OID 0)
--- Dependencies: 304
+-- TOC entry 5501 (class 0 OID 0)
+-- Dependencies: 349
+-- Name: TABLE material_receipt_lines; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.material_receipt_lines TO service_role;
+
+
+--
+-- TOC entry 5502 (class 0 OID 0)
+-- Dependencies: 348
+-- Name: TABLE material_receipts; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.material_receipts TO service_role;
+
+
+--
+-- TOC entry 5503 (class 0 OID 0)
+-- Dependencies: 345
+-- Name: TABLE parties; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.parties TO service_role;
+
+
+--
+-- TOC entry 5504 (class 0 OID 0)
+-- Dependencies: 306
 -- Name: TABLE password_resets; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12179,8 +15308,8 @@ GRANT ALL ON TABLE public.password_resets TO service_role;
 
 
 --
--- TOC entry 5202 (class 0 OID 0)
--- Dependencies: 341
+-- TOC entry 5505 (class 0 OID 0)
+-- Dependencies: 343
 -- Name: TABLE payment_allocations; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12188,8 +15317,8 @@ GRANT ALL ON TABLE public.payment_allocations TO service_role;
 
 
 --
--- TOC entry 5203 (class 0 OID 0)
--- Dependencies: 312
+-- TOC entry 5506 (class 0 OID 0)
+-- Dependencies: 314
 -- Name: TABLE payment_methods; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12197,8 +15326,8 @@ GRANT ALL ON TABLE public.payment_methods TO service_role;
 
 
 --
--- TOC entry 5204 (class 0 OID 0)
--- Dependencies: 322
+-- TOC entry 5507 (class 0 OID 0)
+-- Dependencies: 324
 -- Name: TABLE payment_schedules; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12206,8 +15335,8 @@ GRANT ALL ON TABLE public.payment_schedules TO service_role;
 
 
 --
--- TOC entry 5205 (class 0 OID 0)
--- Dependencies: 296
+-- TOC entry 5508 (class 0 OID 0)
+-- Dependencies: 298
 -- Name: TABLE profiles; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12215,8 +15344,8 @@ GRANT ALL ON TABLE public.profiles TO service_role;
 
 
 --
--- TOC entry 5206 (class 0 OID 0)
--- Dependencies: 335
+-- TOC entry 5509 (class 0 OID 0)
+-- Dependencies: 337
 -- Name: TABLE project_attachments; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12224,8 +15353,8 @@ GRANT ALL ON TABLE public.project_attachments TO service_role;
 
 
 --
--- TOC entry 5207 (class 0 OID 0)
--- Dependencies: 334
+-- TOC entry 5510 (class 0 OID 0)
+-- Dependencies: 336
 -- Name: TABLE project_client_access; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12233,8 +15362,8 @@ GRANT ALL ON TABLE public.project_client_access TO service_role;
 
 
 --
--- TOC entry 5208 (class 0 OID 0)
--- Dependencies: 332
+-- TOC entry 5511 (class 0 OID 0)
+-- Dependencies: 334
 -- Name: TABLE project_expense_payments; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12242,8 +15371,8 @@ GRANT ALL ON TABLE public.project_expense_payments TO service_role;
 
 
 --
--- TOC entry 5209 (class 0 OID 0)
--- Dependencies: 331
+-- TOC entry 5512 (class 0 OID 0)
+-- Dependencies: 333
 -- Name: TABLE project_expenses; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12251,8 +15380,8 @@ GRANT ALL ON TABLE public.project_expenses TO service_role;
 
 
 --
--- TOC entry 5210 (class 0 OID 0)
--- Dependencies: 337
+-- TOC entry 5513 (class 0 OID 0)
+-- Dependencies: 339
 -- Name: TABLE project_investor_contributions; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12260,8 +15389,8 @@ GRANT ALL ON TABLE public.project_investor_contributions TO service_role;
 
 
 --
--- TOC entry 5211 (class 0 OID 0)
--- Dependencies: 336
+-- TOC entry 5514 (class 0 OID 0)
+-- Dependencies: 338
 -- Name: TABLE project_investors; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12269,8 +15398,8 @@ GRANT ALL ON TABLE public.project_investors TO service_role;
 
 
 --
--- TOC entry 5212 (class 0 OID 0)
--- Dependencies: 330
+-- TOC entry 5515 (class 0 OID 0)
+-- Dependencies: 332
 -- Name: TABLE project_progress_updates; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12278,8 +15407,8 @@ GRANT ALL ON TABLE public.project_progress_updates TO service_role;
 
 
 --
--- TOC entry 5213 (class 0 OID 0)
--- Dependencies: 333
+-- TOC entry 5516 (class 0 OID 0)
+-- Dependencies: 335
 -- Name: TABLE project_receipts; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12287,8 +15416,8 @@ GRANT ALL ON TABLE public.project_receipts TO service_role;
 
 
 --
--- TOC entry 5214 (class 0 OID 0)
--- Dependencies: 314
+-- TOC entry 5517 (class 0 OID 0)
+-- Dependencies: 316
 -- Name: TABLE project_stage_templates; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12296,8 +15425,8 @@ GRANT ALL ON TABLE public.project_stage_templates TO service_role;
 
 
 --
--- TOC entry 5215 (class 0 OID 0)
--- Dependencies: 329
+-- TOC entry 5518 (class 0 OID 0)
+-- Dependencies: 331
 -- Name: TABLE project_stages; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12305,8 +15434,8 @@ GRANT ALL ON TABLE public.project_stages TO service_role;
 
 
 --
--- TOC entry 5216 (class 0 OID 0)
--- Dependencies: 309
+-- TOC entry 5519 (class 0 OID 0)
+-- Dependencies: 311
 -- Name: TABLE project_types; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12314,8 +15443,17 @@ GRANT ALL ON TABLE public.project_types TO service_role;
 
 
 --
--- TOC entry 5217 (class 0 OID 0)
--- Dependencies: 328
+-- TOC entry 5520 (class 0 OID 0)
+-- Dependencies: 352
+-- Name: TABLE project_units; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.project_units TO service_role;
+
+
+--
+-- TOC entry 5521 (class 0 OID 0)
+-- Dependencies: 330
 -- Name: TABLE projects; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12323,8 +15461,26 @@ GRANT ALL ON TABLE public.projects TO service_role;
 
 
 --
--- TOC entry 5218 (class 0 OID 0)
--- Dependencies: 303
+-- TOC entry 5522 (class 0 OID 0)
+-- Dependencies: 347
+-- Name: TABLE purchase_order_lines; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.purchase_order_lines TO service_role;
+
+
+--
+-- TOC entry 5523 (class 0 OID 0)
+-- Dependencies: 346
+-- Name: TABLE purchase_orders; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.purchase_orders TO service_role;
+
+
+--
+-- TOC entry 5524 (class 0 OID 0)
+-- Dependencies: 305
 -- Name: TABLE refresh_tokens; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12332,8 +15488,8 @@ GRANT ALL ON TABLE public.refresh_tokens TO service_role;
 
 
 --
--- TOC entry 5219 (class 0 OID 0)
--- Dependencies: 327
+-- TOC entry 5525 (class 0 OID 0)
+-- Dependencies: 329
 -- Name: TABLE subscription_payments; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12341,8 +15497,8 @@ GRANT ALL ON TABLE public.subscription_payments TO service_role;
 
 
 --
--- TOC entry 5220 (class 0 OID 0)
--- Dependencies: 338
+-- TOC entry 5526 (class 0 OID 0)
+-- Dependencies: 340
 -- Name: TABLE suppliers; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12350,8 +15506,8 @@ GRANT ALL ON TABLE public.suppliers TO service_role;
 
 
 --
--- TOC entry 5221 (class 0 OID 0)
--- Dependencies: 313
+-- TOC entry 5527 (class 0 OID 0)
+-- Dependencies: 315
 -- Name: TABLE tax_rates; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12359,8 +15515,8 @@ GRANT ALL ON TABLE public.tax_rates TO service_role;
 
 
 --
--- TOC entry 5222 (class 0 OID 0)
--- Dependencies: 311
+-- TOC entry 5528 (class 0 OID 0)
+-- Dependencies: 313
 -- Name: TABLE units_of_measure; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12368,8 +15524,8 @@ GRANT ALL ON TABLE public.units_of_measure TO service_role;
 
 
 --
--- TOC entry 5223 (class 0 OID 0)
--- Dependencies: 302
+-- TOC entry 5529 (class 0 OID 0)
+-- Dependencies: 304
 -- Name: TABLE user_profiles; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12377,8 +15533,8 @@ GRANT ALL ON TABLE public.user_profiles TO service_role;
 
 
 --
--- TOC entry 5224 (class 0 OID 0)
--- Dependencies: 301
+-- TOC entry 5530 (class 0 OID 0)
+-- Dependencies: 303
 -- Name: TABLE users; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -12386,8 +15542,8 @@ GRANT ALL ON TABLE public.users TO service_role;
 
 
 --
--- TOC entry 5225 (class 0 OID 0)
--- Dependencies: 284
+-- TOC entry 5531 (class 0 OID 0)
+-- Dependencies: 286
 -- Name: TABLE messages; Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -12400,8 +15556,8 @@ GRANT SELECT,INSERT,UPDATE ON TABLE realtime.messages TO service_role;
 
 
 --
--- TOC entry 5226 (class 0 OID 0)
--- Dependencies: 285
+-- TOC entry 5532 (class 0 OID 0)
+-- Dependencies: 287
 -- Name: TABLE schema_migrations; Type: ACL; Schema: realtime; Owner: supabase_admin
 --
 
@@ -12410,8 +15566,8 @@ GRANT ALL ON TABLE realtime.schema_migrations TO dashboard_user;
 
 
 --
--- TOC entry 5227 (class 0 OID 0)
--- Dependencies: 286
+-- TOC entry 5533 (class 0 OID 0)
+-- Dependencies: 288
 -- Name: TABLE subscription; Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -12423,8 +15579,8 @@ GRANT SELECT ON TABLE realtime.subscription TO service_role;
 
 
 --
--- TOC entry 5228 (class 0 OID 0)
--- Dependencies: 287
+-- TOC entry 5534 (class 0 OID 0)
+-- Dependencies: 289
 -- Name: SEQUENCE subscription_id_seq; Type: ACL; Schema: realtime; Owner: supabase_realtime_admin
 --
 
@@ -12436,8 +15592,18 @@ GRANT USAGE ON SEQUENCE realtime.subscription_id_seq TO service_role;
 
 
 --
--- TOC entry 5230 (class 0 OID 0)
--- Dependencies: 289
+-- TOC entry 5535 (class 0 OID 0)
+-- Dependencies: 350
+-- Name: TABLE bucket_lifecycle_states; Type: ACL; Schema: storage; Owner: supabase_storage_admin
+--
+
+GRANT ALL ON TABLE storage.bucket_lifecycle_states TO postgres;
+GRANT ALL ON TABLE storage.bucket_lifecycle_states TO service_role;
+
+
+--
+-- TOC entry 5537 (class 0 OID 0)
+-- Dependencies: 291
 -- Name: TABLE buckets; Type: ACL; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -12450,8 +15616,8 @@ GRANT ALL ON TABLE storage.buckets TO postgres WITH GRANT OPTION;
 
 
 --
--- TOC entry 5231 (class 0 OID 0)
--- Dependencies: 293
+-- TOC entry 5538 (class 0 OID 0)
+-- Dependencies: 295
 -- Name: TABLE buckets_analytics; Type: ACL; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -12461,8 +15627,8 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE storage.buckets_analytics TO anon;
 
 
 --
--- TOC entry 5232 (class 0 OID 0)
--- Dependencies: 294
+-- TOC entry 5539 (class 0 OID 0)
+-- Dependencies: 296
 -- Name: TABLE buckets_vectors; Type: ACL; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -12472,8 +15638,18 @@ GRANT SELECT ON TABLE storage.buckets_vectors TO authenticated;
 
 
 --
--- TOC entry 5234 (class 0 OID 0)
--- Dependencies: 290
+-- TOC entry 5540 (class 0 OID 0)
+-- Dependencies: 351
+-- Name: TABLE lifecycle_abandoned_artifacts; Type: ACL; Schema: storage; Owner: supabase_storage_admin
+--
+
+GRANT ALL ON TABLE storage.lifecycle_abandoned_artifacts TO postgres;
+GRANT ALL ON TABLE storage.lifecycle_abandoned_artifacts TO service_role;
+
+
+--
+-- TOC entry 5542 (class 0 OID 0)
+-- Dependencies: 292
 -- Name: TABLE objects; Type: ACL; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -12486,8 +15662,8 @@ GRANT ALL ON TABLE storage.objects TO postgres WITH GRANT OPTION;
 
 
 --
--- TOC entry 5235 (class 0 OID 0)
--- Dependencies: 291
+-- TOC entry 5543 (class 0 OID 0)
+-- Dependencies: 293
 -- Name: TABLE s3_multipart_uploads; Type: ACL; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -12497,8 +15673,8 @@ GRANT SELECT ON TABLE storage.s3_multipart_uploads TO anon;
 
 
 --
--- TOC entry 5236 (class 0 OID 0)
--- Dependencies: 292
+-- TOC entry 5544 (class 0 OID 0)
+-- Dependencies: 294
 -- Name: TABLE s3_multipart_uploads_parts; Type: ACL; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -12508,8 +15684,8 @@ GRANT SELECT ON TABLE storage.s3_multipart_uploads_parts TO anon;
 
 
 --
--- TOC entry 5237 (class 0 OID 0)
--- Dependencies: 295
+-- TOC entry 5545 (class 0 OID 0)
+-- Dependencies: 297
 -- Name: TABLE vector_indexes; Type: ACL; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -12519,8 +15695,8 @@ GRANT SELECT ON TABLE storage.vector_indexes TO authenticated;
 
 
 --
--- TOC entry 5238 (class 0 OID 0)
--- Dependencies: 261
+-- TOC entry 5546 (class 0 OID 0)
+-- Dependencies: 263
 -- Name: TABLE secrets; Type: ACL; Schema: vault; Owner: supabase_admin
 --
 
@@ -12529,8 +15705,8 @@ GRANT SELECT,DELETE ON TABLE vault.secrets TO service_role;
 
 
 --
--- TOC entry 5239 (class 0 OID 0)
--- Dependencies: 262
+-- TOC entry 5547 (class 0 OID 0)
+-- Dependencies: 264
 -- Name: TABLE decrypted_secrets; Type: ACL; Schema: vault; Owner: supabase_admin
 --
 
@@ -12539,7 +15715,7 @@ GRANT SELECT,DELETE ON TABLE vault.decrypted_secrets TO service_role;
 
 
 --
--- TOC entry 2588 (class 826 OID 16557)
+-- TOC entry 2639 (class 826 OID 16557)
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -12548,7 +15724,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_auth_admin IN SCHEMA auth GRANT ALL O
 
 
 --
--- TOC entry 2589 (class 826 OID 16558)
+-- TOC entry 2640 (class 826 OID 16558)
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -12557,7 +15733,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_auth_admin IN SCHEMA auth GRANT ALL O
 
 
 --
--- TOC entry 2587 (class 826 OID 16556)
+-- TOC entry 2638 (class 826 OID 16556)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: auth; Owner: supabase_auth_admin
 --
 
@@ -12566,7 +15742,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_auth_admin IN SCHEMA auth GRANT ALL O
 
 
 --
--- TOC entry 2595 (class 826 OID 16636)
+-- TOC entry 2646 (class 826 OID 16636)
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: extensions; Owner: supabase_admin
 --
 
@@ -12574,7 +15750,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA extensions GRANT ALL 
 
 
 --
--- TOC entry 2594 (class 826 OID 16635)
+-- TOC entry 2645 (class 826 OID 16635)
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: extensions; Owner: supabase_admin
 --
 
@@ -12582,7 +15758,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA extensions GRANT ALL 
 
 
 --
--- TOC entry 2593 (class 826 OID 16634)
+-- TOC entry 2644 (class 826 OID 16634)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: extensions; Owner: supabase_admin
 --
 
@@ -12590,7 +15766,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA extensions GRANT ALL 
 
 
 --
--- TOC entry 2598 (class 826 OID 16591)
+-- TOC entry 2649 (class 826 OID 16591)
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: graphql; Owner: supabase_admin
 --
 
@@ -12601,7 +15777,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA graphql GRANT ALL ON 
 
 
 --
--- TOC entry 2597 (class 826 OID 16590)
+-- TOC entry 2648 (class 826 OID 16590)
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: graphql; Owner: supabase_admin
 --
 
@@ -12612,7 +15788,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA graphql GRANT ALL ON 
 
 
 --
--- TOC entry 2596 (class 826 OID 16589)
+-- TOC entry 2647 (class 826 OID 16589)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: graphql; Owner: supabase_admin
 --
 
@@ -12623,7 +15799,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA graphql GRANT ALL ON 
 
 
 --
--- TOC entry 2590 (class 826 OID 16571)
+-- TOC entry 2641 (class 826 OID 16571)
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: graphql_public; Owner: supabase_admin
 --
 
@@ -12634,7 +15810,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA graphql_public GRANT 
 
 
 --
--- TOC entry 2592 (class 826 OID 16570)
+-- TOC entry 2643 (class 826 OID 16570)
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: graphql_public; Owner: supabase_admin
 --
 
@@ -12645,7 +15821,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA graphql_public GRANT 
 
 
 --
--- TOC entry 2591 (class 826 OID 16569)
+-- TOC entry 2642 (class 826 OID 16569)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: graphql_public; Owner: supabase_admin
 --
 
@@ -12656,7 +15832,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA graphql_public GRANT 
 
 
 --
--- TOC entry 2603 (class 826 OID 16494)
+-- TOC entry 2654 (class 826 OID 16494)
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
@@ -12665,7 +15841,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENC
 
 
 --
--- TOC entry 2581 (class 826 OID 16495)
+-- TOC entry 2632 (class 826 OID 16495)
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: supabase_admin
 --
 
@@ -12676,18 +15852,16 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON S
 
 
 --
--- TOC entry 2580 (class 826 OID 16493)
+-- TOC entry 2655 (class 826 OID 16493)
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres;
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO authenticated;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
 
 
 --
--- TOC entry 2583 (class 826 OID 16497)
+-- TOC entry 2634 (class 826 OID 16497)
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: public; Owner: supabase_admin
 --
 
@@ -12698,7 +15872,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON F
 
 
 --
--- TOC entry 2602 (class 826 OID 16492)
+-- TOC entry 2653 (class 826 OID 16492)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
@@ -12707,7 +15881,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES 
 
 
 --
--- TOC entry 2582 (class 826 OID 16496)
+-- TOC entry 2633 (class 826 OID 16496)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: supabase_admin
 --
 
@@ -12718,7 +15892,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON T
 
 
 --
--- TOC entry 2599 (class 826 OID 16561)
+-- TOC entry 2650 (class 826 OID 16561)
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: realtime; Owner: supabase_admin
 --
 
@@ -12727,7 +15901,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA realtime GRANT ALL ON
 
 
 --
--- TOC entry 2600 (class 826 OID 16562)
+-- TOC entry 2651 (class 826 OID 16562)
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: realtime; Owner: supabase_admin
 --
 
@@ -12736,7 +15910,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA realtime GRANT ALL ON
 
 
 --
--- TOC entry 2601 (class 826 OID 16560)
+-- TOC entry 2652 (class 826 OID 16560)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: realtime; Owner: supabase_admin
 --
 
@@ -12746,7 +15920,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA realtime GRANT ALL ON
 
 
 --
--- TOC entry 2586 (class 826 OID 16550)
+-- TOC entry 2637 (class 826 OID 16550)
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: storage; Owner: postgres
 --
 
@@ -12757,7 +15931,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA storage GRANT ALL ON SEQUEN
 
 
 --
--- TOC entry 2585 (class 826 OID 16549)
+-- TOC entry 2636 (class 826 OID 16549)
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: storage; Owner: postgres
 --
 
@@ -12768,7 +15942,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA storage GRANT ALL ON FUNCTI
 
 
 --
--- TOC entry 2584 (class 826 OID 16548)
+-- TOC entry 2635 (class 826 OID 16548)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: storage; Owner: postgres
 --
 
@@ -12779,6057 +15953,78 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA storage GRANT ALL ON TABLES
 
 
 --
--- TOC entry 3816 (class 3466 OID 16575)
+-- TOC entry 3868 (class 3466 OID 16575)
 -- Name: issue_graphql_placeholder; Type: EVENT TRIGGER; Schema: -; Owner: supabase_admin
 --
 
 CREATE EVENT TRIGGER issue_graphql_placeholder ON sql_drop
          WHEN TAG IN ('DROP EXTENSION')
-   EXECUTE FUNCTION set_graphql_placeholder();
+   EXECUTE FUNCTION extensions.set_graphql_placeholder();
 
 
 ALTER EVENT TRIGGER issue_graphql_placeholder OWNER TO supabase_admin;
 
 --
--- TOC entry 3819 (class 3466 OID 16654)
+-- TOC entry 3871 (class 3466 OID 16654)
 -- Name: issue_pg_cron_access; Type: EVENT TRIGGER; Schema: -; Owner: supabase_admin
 --
 
 CREATE EVENT TRIGGER issue_pg_cron_access ON ddl_command_end
          WHEN TAG IN ('CREATE EXTENSION')
-   EXECUTE FUNCTION grant_pg_cron_access();
+   EXECUTE FUNCTION extensions.grant_pg_cron_access();
 
 
 ALTER EVENT TRIGGER issue_pg_cron_access OWNER TO supabase_admin;
 
 --
--- TOC entry 3821 (class 3466 OID 16666)
+-- TOC entry 3873 (class 3466 OID 16666)
 -- Name: issue_pg_graphql_access; Type: EVENT TRIGGER; Schema: -; Owner: supabase_admin
 --
 
 CREATE EVENT TRIGGER issue_pg_graphql_access ON ddl_command_end
          WHEN TAG IN ('CREATE EXTENSION')
-   EXECUTE FUNCTION grant_pg_graphql_access();
+   EXECUTE FUNCTION extensions.grant_pg_graphql_access();
 
 
 ALTER EVENT TRIGGER issue_pg_graphql_access OWNER TO supabase_admin;
 
 --
--- TOC entry 3820 (class 3466 OID 16657)
+-- TOC entry 3872 (class 3466 OID 16657)
 -- Name: issue_pg_net_access; Type: EVENT TRIGGER; Schema: -; Owner: supabase_admin
 --
 
 CREATE EVENT TRIGGER issue_pg_net_access ON ddl_command_end
          WHEN TAG IN ('CREATE EXTENSION')
-   EXECUTE FUNCTION grant_pg_net_access();
+   EXECUTE FUNCTION extensions.grant_pg_net_access();
 
 
 ALTER EVENT TRIGGER issue_pg_net_access OWNER TO supabase_admin;
 
 --
--- TOC entry 3817 (class 3466 OID 16576)
+-- TOC entry 3869 (class 3466 OID 16576)
 -- Name: pgrst_ddl_watch; Type: EVENT TRIGGER; Schema: -; Owner: supabase_admin
 --
 
 CREATE EVENT TRIGGER pgrst_ddl_watch ON ddl_command_end
-   EXECUTE FUNCTION pgrst_ddl_watch();
+   EXECUTE FUNCTION extensions.pgrst_ddl_watch();
 
 
 ALTER EVENT TRIGGER pgrst_ddl_watch OWNER TO supabase_admin;
 
 --
--- TOC entry 3818 (class 3466 OID 16577)
+-- TOC entry 3870 (class 3466 OID 16577)
 -- Name: pgrst_drop_watch; Type: EVENT TRIGGER; Schema: -; Owner: supabase_admin
 --
 
 CREATE EVENT TRIGGER pgrst_drop_watch ON sql_drop
-   EXECUTE FUNCTION pgrst_drop_watch();
+   EXECUTE FUNCTION extensions.pgrst_drop_watch();
 
 
 ALTER EVENT TRIGGER pgrst_drop_watch OWNER TO supabase_admin;
 
--- Completed on 2026-10-30 12:26:28
+-- Completed on 2026-11-20 15:14:24
 
 --
 -- PostgreSQL database dump complete
 --
-
-
--- ===== BEGIN APP MIGRATIONS SNAPSHOT =====
--- Auto-generated from server/migrations (forward migrations only).
--- Generated on 2026-11-18.
-
--- >>> 0001_schema.sql
-BEGIN;
-
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-CREATE OR REPLACE FUNCTION public.set_updated_at()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.current_app_user_id()
-RETURNS uuid
-LANGUAGE sql
-STABLE
-AS $$
-  SELECT NULLIF(current_setting('request.jwt.claims', true)::jsonb ->> 'sub', '')::uuid;
-$$;
-
-CREATE TABLE public.users (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  email text NOT NULL UNIQUE,
-  password_hash text NOT NULL,
-  role text NOT NULL DEFAULT 'user' CHECK (role IN ('user','owner','admin','staff','client','investor')),
-  is_active boolean NOT NULL DEFAULT true,
-  email_verified boolean NOT NULL DEFAULT false,
-  must_change_password boolean NOT NULL DEFAULT false,
-  last_login_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE public.user_profiles (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL UNIQUE REFERENCES public.users(id) ON DELETE CASCADE,
-  full_name text,
-  phone text,
-  company_name text,
-  avatar_url text,
-  metadata jsonb,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE public.refresh_tokens (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  token_hash text NOT NULL UNIQUE,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  expires_at timestamptz NOT NULL,
-  revoked_at timestamptz,
-  user_agent text,
-  ip_address text
-);
-
-CREATE TABLE public.password_resets (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  token_hash text NOT NULL UNIQUE,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  expires_at timestamptz NOT NULL,
-  used_at timestamptz
-);
-
-CREATE TABLE public.companies (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  owner_id uuid NOT NULL REFERENCES public.users(id),
-  name text NOT NULL,
-  logo_url text,
-  address text,
-  phone text,
-  email text,
-  website text,
-  gst_number text,
-  pan_number text,
-  primary_color text DEFAULT '#0B2857',
-  secondary_color text DEFAULT '#F4B72B',
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (id, owner_id)
-);
-
-CREATE TABLE public.company_settings (
-  company_id uuid PRIMARY KEY REFERENCES public.companies(id) ON DELETE CASCADE,
-  quotation_prefix text NOT NULL DEFAULT 'QTN',
-  booking_prefix text NOT NULL DEFAULT 'BR',
-  default_validity_days integer NOT NULL DEFAULT 30 CHECK (default_validity_days > 0),
-  authorized_person text,
-  designation text,
-  signature_url text,
-  bank_name text,
-  account_name text,
-  account_number text,
-  ifsc text,
-  branch text,
-  upi_id text,
-  default_terms text,
-  default_tax_name text,
-  default_tax_rate numeric(5,2) DEFAULT 0 CHECK (default_tax_rate >= 0 AND default_tax_rate <= 100),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE public.company_users (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  role text NOT NULL DEFAULT 'staff' CHECK (role IN ('owner','admin','staff')),
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (company_id, user_id)
-);
-
-CREATE TABLE public.customers (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  mobile text,
-  email text,
-  address text,
-  city text,
-  state text,
-  pincode text,
-  is_deleted boolean NOT NULL DEFAULT false,
-  deleted_at timestamptz,
-  deleted_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (id, company_id)
-);
-
-CREATE TABLE public.project_types (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
-  code text NOT NULL,
-  name text NOT NULL,
-  description text,
-  sort_order integer NOT NULL DEFAULT 0,
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT uq_project_types UNIQUE NULLS NOT DISTINCT (company_id, code)
-);
-
-CREATE TABLE public.expense_categories (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
-  code text NOT NULL,
-  name text NOT NULL,
-  description text,
-  sort_order integer NOT NULL DEFAULT 0,
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT uq_expense_categories UNIQUE NULLS NOT DISTINCT (company_id, code)
-);
-
-CREATE TABLE public.units_of_measure (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
-  code text NOT NULL,
-  name text NOT NULL,
-  symbol text,
-  sort_order integer NOT NULL DEFAULT 0,
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT uq_units_of_measure UNIQUE NULLS NOT DISTINCT (company_id, code)
-);
-
-CREATE TABLE public.payment_methods (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
-  code text NOT NULL,
-  name text NOT NULL,
-  sort_order integer NOT NULL DEFAULT 0,
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT uq_payment_methods UNIQUE NULLS NOT DISTINCT (company_id, code)
-);
-
-CREATE TABLE public.tax_rates (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
-  code text NOT NULL,
-  name text NOT NULL,
-  rate_percentage numeric(5,2) NOT NULL CHECK (rate_percentage >= 0 AND rate_percentage <= 100),
-  effective_from date NOT NULL,
-  effective_to date,
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CHECK (effective_to IS NULL OR effective_to >= effective_from),
-  CONSTRAINT uq_tax_rates UNIQUE NULLS NOT DISTINCT (company_id, code, effective_from)
-);
-
-CREATE TABLE public.project_stage_templates (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid REFERENCES public.companies(id) ON DELETE CASCADE,
-  project_type_id uuid REFERENCES public.project_types(id) ON DELETE CASCADE,
-  template_code text NOT NULL,
-  name text NOT NULL,
-  sequence_number integer NOT NULL CHECK (sequence_number > 0),
-  default_completion_percentage numeric(5,2) NOT NULL DEFAULT 0 CHECK (default_completion_percentage >= 0 AND default_completion_percentage <= 100),
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT uq_project_stage_templates UNIQUE NULLS NOT DISTINCT (company_id, project_type_id, template_code)
-);
-
-CREATE TABLE public.document_sequences (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-  document_type text NOT NULL CHECK (document_type IN ('Quotation','BookingReceipt')),
-  financial_year integer NOT NULL,
-  prefix text NOT NULL,
-  next_number integer NOT NULL DEFAULT 1 CHECK (next_number > 0),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (company_id, document_type, financial_year)
-);
-
-CREATE TABLE public.documents (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
-  customer_id uuid,
-  project_id uuid REFERENCES public.projects(id) ON DELETE SET NULL,
-  document_type text NOT NULL CHECK (document_type IN ('Quotation','BookingReceipt')),
-  document_number text NOT NULL,
-  status text NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft','Generated','Sent','Accepted','Rejected','Expired','Completed','Cancelled')),
-  quotation_date date,
-  valid_until date,
-  project_name text,
-  project_location text,
-  floors text,
-  project_type_id uuid REFERENCES public.project_types(id) ON DELETE SET NULL,
-  project_type text,
-  builtup_area numeric(18,2),
-  area_unit_id uuid REFERENCES public.units_of_measure(id) ON DELETE SET NULL,
-  area_unit text,
-  subtotal numeric(18,2) NOT NULL DEFAULT 0 CHECK (subtotal >= 0),
-  additional_charges numeric(18,2) NOT NULL DEFAULT 0 CHECK (additional_charges >= 0),
-  discount numeric(18,2) NOT NULL DEFAULT 0 CHECK (discount >= 0),
-  tax_rate_id uuid REFERENCES public.tax_rates(id) ON DELETE SET NULL,
-  tax_name text,
-  tax_percentage numeric(5,2) NOT NULL DEFAULT 0 CHECK (tax_percentage >= 0 AND tax_percentage <= 100),
-  tax_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
-  cgst_percentage numeric(5,2) DEFAULT 0 CHECK (cgst_percentage >= 0 AND cgst_percentage <= 100),
-  sgst_percentage numeric(5,2) DEFAULT 0 CHECK (sgst_percentage >= 0 AND sgst_percentage <= 100),
-  igst_percentage numeric(5,2) DEFAULT 0 CHECK (igst_percentage >= 0 AND igst_percentage <= 100),
-  cgst_amount numeric(18,2) DEFAULT 0 CHECK (cgst_amount >= 0),
-  sgst_amount numeric(18,2) DEFAULT 0 CHECK (sgst_amount >= 0),
-  igst_amount numeric(18,2) DEFAULT 0 CHECK (igst_amount >= 0),
-  tax_breakup jsonb,
-  grand_total numeric(18,2) NOT NULL DEFAULT 0 CHECK (grand_total >= 0),
-  notes text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  is_deleted boolean NOT NULL DEFAULT false,
-  deleted_at timestamptz,
-  deleted_by uuid REFERENCES public.users(id),
-  UNIQUE (company_id, document_number),
-  UNIQUE (id, company_id),
-  CONSTRAINT fk_documents_customer
-    FOREIGN KEY (customer_id)
-    REFERENCES public.customers(id)
-    ON DELETE SET NULL,
-  CONSTRAINT fk_documents_project_company
-    FOREIGN KEY (project_id, company_id)
-    REFERENCES public.projects(id, company_id)
-    ON DELETE SET NULL
-);
-
-CREATE TABLE public.document_sections (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
-  section_name text NOT NULL,
-  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0)
-);
-
-CREATE TABLE public.document_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  section_id uuid NOT NULL REFERENCES public.document_sections(id) ON DELETE CASCADE,
-  description text NOT NULL,
-  quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (quantity >= 0),
-  unit_id uuid REFERENCES public.units_of_measure(id) ON DELETE SET NULL,
-  unit text,
-  rate numeric(18,2) NOT NULL DEFAULT 0 CHECK (rate >= 0),
-  amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (amount >= 0),
-  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0)
-);
-
-CREATE TABLE public.document_specifications (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
-  specification_type text,
-  description text,
-  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0)
-);
-
-CREATE TABLE public.document_inclusions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
-  description text NOT NULL
-);
-
-CREATE TABLE public.document_exclusions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
-  description text NOT NULL
-);
-
-CREATE TABLE public.payment_schedules (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
-  stage_name text NOT NULL,
-  percentage numeric(5,2),
-  amount numeric(18,2),
-  due_date date,
-  status text,
-  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0),
-  CHECK (percentage IS NULL OR (percentage >= 0 AND percentage <= 100)),
-  CHECK (amount IS NULL OR amount >= 0)
-);
-
-CREATE TABLE public.document_terms (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id uuid NOT NULL REFERENCES public.documents(id) ON DELETE CASCADE,
-  description text NOT NULL,
-  display_order integer NOT NULL DEFAULT 0 CHECK (display_order >= 0)
-);
-
-CREATE TABLE public.booking_receipt_details (
-  document_id uuid PRIMARY KEY REFERENCES public.documents(id) ON DELETE CASCADE,
-  booking_id text,
-  flat_no text,
-  floor text,
-  block_tower text,
-  rate_per_sqft numeric(18,2),
-  buyer_pan_aadhar text
-);
-
-CREATE TABLE public.company_subscriptions (
-  company_id uuid PRIMARY KEY REFERENCES public.companies(id) ON DELETE CASCADE,
-  plan text NOT NULL DEFAULT 'free' CHECK (plan IN ('free','paid')),
-  billing_cycle text CHECK (billing_cycle IN ('monthly','yearly')),
-  status text NOT NULL DEFAULT 'active' CHECK (status IN ('active','cancelled','expired')),
-  current_period_end timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE public.company_quotation_usage (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-  usage_year integer NOT NULL CHECK (usage_year >= 2000),
-  usage_month integer NOT NULL CHECK (usage_month BETWEEN 1 AND 12),
-  quotation_count integer NOT NULL DEFAULT 0 CHECK (quotation_count >= 0),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (company_id, usage_year, usage_month)
-);
-
-CREATE TABLE public.subscription_payments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
-  billing_cycle text NOT NULL CHECK (billing_cycle IN ('monthly','yearly')),
-  amount_paise integer NOT NULL CHECK (amount_paise >= 0),
-  razorpay_order_id text NOT NULL UNIQUE,
-  razorpay_payment_id text,
-  status text NOT NULL DEFAULT 'created' CHECK (status IN ('created','paid','failed')),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE public.projects (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE RESTRICT,
-  customer_id uuid,
-  source_document_id uuid,
-  project_type_id uuid REFERENCES public.project_types(id) ON DELETE SET NULL,
-  project_type_snapshot text,
-  project_number text NOT NULL,
-  name text NOT NULL,
-  description text,
-  site_address text,
-  contract_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (contract_amount >= 0),
-  start_date date,
-  expected_end_date date,
-  actual_end_date date,
-  status text NOT NULL DEFAULT 'planned' CHECK (status IN ('planned','in_progress','on_hold','completed','cancelled')),
-  created_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  UNIQUE (company_id, project_number),
-  UNIQUE (id, company_id),
-  CONSTRAINT fk_projects_customer
-    FOREIGN KEY (customer_id)
-    REFERENCES public.customers(id)
-    ON DELETE SET NULL,
-  CONSTRAINT fk_projects_source_document_company
-    FOREIGN KEY (source_document_id, company_id)
-    REFERENCES public.documents(id, company_id)
-    ON DELETE RESTRICT
-);
-
-CREATE UNIQUE INDEX ux_projects_company_source_document
-  ON public.projects(company_id, source_document_id)
-  WHERE source_document_id IS NOT NULL;
-
-CREATE TABLE public.project_stages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  sequence_number integer NOT NULL DEFAULT 1 CHECK (sequence_number > 0),
-  planned_start_date date,
-  planned_end_date date,
-  actual_start_date date,
-  actual_end_date date,
-  completion_percentage numeric(5,2) NOT NULL DEFAULT 0 CHECK (completion_percentage >= 0 AND completion_percentage <= 100),
-  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','in_progress','completed','on_hold')),
-  created_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (project_id, sequence_number)
-);
-
-CREATE TABLE public.project_progress_updates (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  stage_id uuid REFERENCES public.project_stages(id) ON DELETE SET NULL,
-  title text NOT NULL,
-  description text,
-  progress_percentage numeric(5,2),
-  update_date date NOT NULL DEFAULT CURRENT_DATE,
-  visibility_status text NOT NULL DEFAULT 'draft' CHECK (visibility_status IN ('draft','published')),
-  created_by uuid REFERENCES public.users(id),
-  published_by uuid REFERENCES public.users(id),
-  published_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CHECK (progress_percentage IS NULL OR (progress_percentage >= 0 AND progress_percentage <= 100))
-);
-
-CREATE TABLE public.project_expenses (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  category_id uuid REFERENCES public.expense_categories(id) ON DELETE SET NULL,
-  category text NOT NULL,
-  description text NOT NULL,
-  supplier_name text,
-  supplier_bill_number text,
-  bill_date date,
-  due_date date,
-  bill_amount numeric(18,2) NOT NULL CHECK (bill_amount >= 0),
-  status text NOT NULL DEFAULT 'unpaid' CHECK (status IN ('unpaid','partially_paid','paid','void')),
-  visibility_status text NOT NULL DEFAULT 'internal' CHECK (visibility_status IN ('internal','published')),
-  created_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  voided_at timestamptz
-);
-
-CREATE TABLE public.project_expense_payments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_expense_id uuid NOT NULL REFERENCES public.project_expenses(id) ON DELETE CASCADE,
-  amount numeric(18,2) NOT NULL CHECK (amount > 0),
-  payment_date date NOT NULL DEFAULT CURRENT_DATE,
-  payment_method_id uuid REFERENCES public.payment_methods(id) ON DELETE SET NULL,
-  payment_method text NOT NULL CHECK (payment_method IN ('cash','upi','bank_transfer','cheque','other')),
-  reference_number text,
-  notes text,
-  created_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  voided_at timestamptz
-);
-
-CREATE TABLE public.project_receipts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  receipt_number text NOT NULL,
-  amount numeric(18,2) NOT NULL CHECK (amount > 0),
-  received_date date NOT NULL DEFAULT CURRENT_DATE,
-  payment_method_id uuid REFERENCES public.payment_methods(id) ON DELETE SET NULL,
-  payment_method text NOT NULL CHECK (payment_method IN ('cash','upi','bank_transfer','cheque','other')),
-  reference_number text,
-  notes text,
-  visibility_status text NOT NULL DEFAULT 'internal' CHECK (visibility_status IN ('internal','published')),
-  created_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  voided_at timestamptz,
-  UNIQUE (project_id, receipt_number)
-);
-
-CREATE TABLE public.project_client_access (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  email text NOT NULL,
-  user_id uuid REFERENCES public.users(id) ON DELETE SET NULL,
-  invitation_token_hash text,
-  invitation_expires_at timestamptz,
-  invitation_status text NOT NULL DEFAULT 'pending' CHECK (invitation_status IN ('pending','accepted','revoked','expired')),
-  invited_by uuid REFERENCES public.users(id),
-  invited_at timestamptz NOT NULL DEFAULT now(),
-  accepted_at timestamptz,
-  revoked_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (project_id, email)
-);
-
-CREATE TABLE public.project_attachments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  progress_update_id uuid REFERENCES public.project_progress_updates(id) ON DELETE SET NULL,
-  expense_id uuid REFERENCES public.project_expenses(id) ON DELETE SET NULL,
-  storage_path text NOT NULL,
-  original_filename text NOT NULL,
-  mime_type text,
-  file_size_bytes bigint,
-  visibility_status text NOT NULL DEFAULT 'internal' CHECK (visibility_status IN ('internal','published')),
-  uploaded_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz,
-  CHECK (file_size_bytes IS NULL OR file_size_bytes >= 0)
-);
-
-CREATE TABLE public.project_investors (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL,
-  company_id uuid NOT NULL,
-  user_id uuid REFERENCES public.users(id) ON DELETE SET NULL,
-  name text NOT NULL,
-  email text,
-  phone text,
-  investment_percentage numeric(5,2) CHECK (investment_percentage >= 0 AND investment_percentage <= 100),
-  can_view_financials boolean NOT NULL DEFAULT false,
-  can_approve_payments boolean NOT NULL DEFAULT false,
-  can_view_client_receipts boolean NOT NULL DEFAULT false,
-  is_active boolean NOT NULL DEFAULT true,
-  created_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (project_id, user_id),
-  UNIQUE (project_id, email),
-  UNIQUE (id, project_id, company_id),
-  CONSTRAINT fk_project_investors_project_company
-    FOREIGN KEY (project_id, company_id)
-    REFERENCES public.projects(id, company_id)
-    ON DELETE CASCADE
-);
-
-CREATE TABLE public.project_investor_contributions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_investor_id uuid NOT NULL,
-  project_id uuid NOT NULL,
-  company_id uuid NOT NULL,
-  amount numeric(18,2) NOT NULL CHECK (amount > 0),
-  contribution_date date NOT NULL DEFAULT CURRENT_DATE,
-  reference_number text,
-  notes text,
-  created_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT fk_investor_contribution_owner
-    FOREIGN KEY (project_investor_id, project_id, company_id)
-    REFERENCES public.project_investors(id, project_id, company_id)
-    ON DELETE CASCADE
-);
-
-CREATE OR REPLACE FUNCTION public.validate_project_source_quotation()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  src public.documents%ROWTYPE;
-BEGIN
-  IF NEW.source_document_id IS NULL THEN
-    RETURN NEW;
-  END IF;
-
-  SELECT *
-  INTO src
-  FROM public.documents
-  WHERE id = NEW.source_document_id
-    AND company_id = NEW.company_id
-    AND is_deleted = false;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'source_document_id not found in same company';
-  END IF;
-
-  IF src.document_type <> 'Quotation' THEN
-    RAISE EXCEPTION 'source_document_id must reference document_type Quotation';
-  END IF;
-
-  IF src.status <> 'Accepted' THEN
-    RAISE EXCEPTION 'Only Accepted quotation can be used for conversion';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_progress_stage_link()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  st_project uuid;
-BEGIN
-  IF NEW.stage_id IS NULL THEN
-    RETURN NEW;
-  END IF;
-
-  SELECT project_id INTO st_project
-  FROM public.project_stages
-  WHERE id = NEW.stage_id;
-
-  IF st_project IS NULL OR st_project <> NEW.project_id THEN
-    RAISE EXCEPTION 'stage_id must belong to same project_id';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_attachment_links()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  upd_project uuid;
-  exp_project uuid;
-BEGIN
-  IF NEW.progress_update_id IS NOT NULL THEN
-    SELECT project_id INTO upd_project
-    FROM public.project_progress_updates
-    WHERE id = NEW.progress_update_id;
-
-    IF upd_project IS NULL OR upd_project <> NEW.project_id THEN
-      RAISE EXCEPTION 'progress_update_id must belong to same project_id';
-    END IF;
-  END IF;
-
-  IF NEW.expense_id IS NOT NULL THEN
-    SELECT project_id INTO exp_project
-    FROM public.project_expenses
-    WHERE id = NEW.expense_id;
-
-    IF exp_project IS NULL OR exp_project <> NEW.project_id THEN
-      RAISE EXCEPTION 'expense_id must belong to same project_id';
-    END IF;
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_document_master_scope()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  ok_count integer;
-BEGIN
-  IF NEW.project_type_id IS NOT NULL THEN
-    SELECT count(*) INTO ok_count
-    FROM public.project_types
-    WHERE id = NEW.project_type_id
-      AND is_active = true
-      AND (company_id = NEW.company_id OR company_id IS NULL);
-    IF ok_count = 0 THEN
-      RAISE EXCEPTION 'project_type_id is not allowed for this company';
-    END IF;
-  END IF;
-
-  IF NEW.area_unit_id IS NOT NULL THEN
-    SELECT count(*) INTO ok_count
-    FROM public.units_of_measure
-    WHERE id = NEW.area_unit_id
-      AND is_active = true
-      AND (company_id = NEW.company_id OR company_id IS NULL);
-    IF ok_count = 0 THEN
-      RAISE EXCEPTION 'area_unit_id is not allowed for this company';
-    END IF;
-  END IF;
-
-  IF NEW.tax_rate_id IS NOT NULL THEN
-    SELECT count(*) INTO ok_count
-    FROM public.tax_rates
-    WHERE id = NEW.tax_rate_id
-      AND is_active = true
-      AND (company_id = NEW.company_id OR company_id IS NULL);
-    IF ok_count = 0 THEN
-      RAISE EXCEPTION 'tax_rate_id is not allowed for this company';
-    END IF;
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_document_customer_scope()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  c_company uuid;
-BEGIN
-  IF NEW.customer_id IS NULL THEN
-    RETURN NEW;
-  END IF;
-
-  SELECT company_id INTO c_company
-  FROM public.customers
-  WHERE id = NEW.customer_id;
-
-  IF c_company IS NULL OR c_company <> NEW.company_id THEN
-    RAISE EXCEPTION 'documents.customer_id must belong to same company_id';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_project_master_scope()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  ok_count integer;
-BEGIN
-  IF NEW.project_type_id IS NOT NULL THEN
-    SELECT count(*) INTO ok_count
-    FROM public.project_types
-    WHERE id = NEW.project_type_id
-      AND is_active = true
-      AND (company_id = NEW.company_id OR company_id IS NULL);
-    IF ok_count = 0 THEN
-      RAISE EXCEPTION 'project_type_id is not allowed for this company';
-    END IF;
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_project_customer_scope()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  c_company uuid;
-BEGIN
-  IF NEW.customer_id IS NULL THEN
-    RETURN NEW;
-  END IF;
-
-  SELECT company_id INTO c_company
-  FROM public.customers
-  WHERE id = NEW.customer_id;
-
-  IF c_company IS NULL OR c_company <> NEW.company_id THEN
-    RAISE EXCEPTION 'projects.customer_id must belong to same company_id';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_stage_template_scope()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  pt_company uuid;
-BEGIN
-  IF NEW.project_type_id IS NULL THEN
-    RETURN NEW;
-  END IF;
-
-  SELECT company_id INTO pt_company
-  FROM public.project_types
-  WHERE id = NEW.project_type_id;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'project_stage_templates.project_type_id not found';
-  END IF;
-
-  -- Global template must reference a global project type.
-  IF NEW.company_id IS NULL AND pt_company IS NOT NULL THEN
-    RAISE EXCEPTION 'global stage template cannot reference a company project type';
-  END IF;
-
-  -- Company template may reference its own type or a global type.
-  IF NEW.company_id IS NOT NULL AND pt_company IS NOT NULL AND pt_company <> NEW.company_id THEN
-    RAISE EXCEPTION 'company stage template cannot reference another company project type';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_expense_master_scope()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  p_company uuid;
-  ok_count integer;
-BEGIN
-  IF NEW.category_id IS NULL THEN
-    RETURN NEW;
-  END IF;
-
-  SELECT company_id INTO p_company
-  FROM public.projects
-  WHERE id = NEW.project_id;
-
-  SELECT count(*) INTO ok_count
-  FROM public.expense_categories
-  WHERE id = NEW.category_id
-    AND is_active = true
-    AND (company_id = p_company OR company_id IS NULL);
-
-  IF ok_count = 0 THEN
-    RAISE EXCEPTION 'category_id is not allowed for this company';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_payment_method_scope()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  p_company uuid;
-  ok_count integer;
-BEGIN
-  IF TG_TABLE_NAME = 'project_receipts' THEN
-    IF NEW.payment_method_id IS NULL THEN
-      RETURN NEW;
-    END IF;
-
-    SELECT company_id INTO p_company
-    FROM public.projects
-    WHERE id = NEW.project_id;
-  ELSE
-    IF NEW.payment_method_id IS NULL THEN
-      RETURN NEW;
-    END IF;
-
-    SELECT p.company_id INTO p_company
-    FROM public.project_expenses e
-    JOIN public.projects p ON p.id = e.project_id
-    WHERE e.id = NEW.project_expense_id;
-  END IF;
-
-  SELECT count(*) INTO ok_count
-  FROM public.payment_methods
-  WHERE id = NEW.payment_method_id
-    AND is_active = true
-    AND (company_id = p_company OR company_id IS NULL);
-
-  IF ok_count = 0 THEN
-    RAISE EXCEPTION 'payment_method_id is not allowed for this company';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.validate_document_item_unit_scope()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  d_company uuid;
-  ok_count integer;
-BEGIN
-  IF NEW.unit_id IS NULL THEN
-    RETURN NEW;
-  END IF;
-
-  SELECT d.company_id
-  INTO d_company
-  FROM public.document_sections s
-  JOIN public.documents d ON d.id = s.document_id
-  WHERE s.id = NEW.section_id;
-
-  SELECT count(*) INTO ok_count
-  FROM public.units_of_measure
-  WHERE id = NEW.unit_id
-    AND is_active = true
-    AND (company_id = d_company OR company_id IS NULL);
-
-  IF ok_count = 0 THEN
-    RAISE EXCEPTION 'unit_id is not allowed for this document company';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER trg_projects_source_validation
-  BEFORE INSERT OR UPDATE OF source_document_id, company_id
-  ON public.projects
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_project_source_quotation();
-
-CREATE TRIGGER trg_progress_stage_validation
-  BEFORE INSERT OR UPDATE OF stage_id, project_id
-  ON public.project_progress_updates
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_progress_stage_link();
-
-CREATE TRIGGER trg_attachment_link_validation
-  BEFORE INSERT OR UPDATE OF progress_update_id, expense_id, project_id
-  ON public.project_attachments
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_attachment_links();
-
-CREATE TRIGGER trg_documents_master_scope
-  BEFORE INSERT OR UPDATE OF project_type_id, area_unit_id, tax_rate_id, company_id
-  ON public.documents
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_document_master_scope();
-
-CREATE TRIGGER trg_documents_customer_scope
-  BEFORE INSERT OR UPDATE OF customer_id, company_id
-  ON public.documents
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_document_customer_scope();
-
-CREATE TRIGGER trg_projects_master_scope
-  BEFORE INSERT OR UPDATE OF project_type_id, company_id
-  ON public.projects
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_project_master_scope();
-
-CREATE TRIGGER trg_projects_customer_scope
-  BEFORE INSERT OR UPDATE OF customer_id, company_id
-  ON public.projects
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_project_customer_scope();
-
-CREATE TRIGGER trg_stage_templates_scope
-  BEFORE INSERT OR UPDATE OF company_id, project_type_id
-  ON public.project_stage_templates
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_stage_template_scope();
-
-CREATE TRIGGER trg_expenses_master_scope
-  BEFORE INSERT OR UPDATE OF category_id, project_id
-  ON public.project_expenses
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_expense_master_scope();
-
-CREATE TRIGGER trg_receipts_method_scope
-  BEFORE INSERT OR UPDATE OF payment_method_id, project_id
-  ON public.project_receipts
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_payment_method_scope();
-
-CREATE TRIGGER trg_expense_payments_method_scope
-  BEFORE INSERT OR UPDATE OF payment_method_id, project_expense_id
-  ON public.project_expense_payments
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_payment_method_scope();
-
-CREATE TRIGGER trg_document_items_unit_scope
-  BEFORE INSERT OR UPDATE OF unit_id, section_id
-  ON public.document_items
-  FOR EACH ROW
-  EXECUTE FUNCTION public.validate_document_item_unit_scope();
-
-CREATE INDEX idx_documents_company_updated ON public.documents(company_id, updated_at DESC);
-CREATE INDEX idx_documents_company_type_status ON public.documents(company_id, document_type, status);
-CREATE INDEX idx_projects_company_updated ON public.projects(company_id, updated_at DESC);
-CREATE INDEX idx_projects_company_status ON public.projects(company_id, status);
-CREATE INDEX idx_project_expenses_project_bill_date ON public.project_expenses(project_id, bill_date DESC);
-CREATE INDEX idx_project_receipts_project_received_date ON public.project_receipts(project_id, received_date DESC);
-CREATE INDEX idx_project_stages_project_sequence ON public.project_stages(project_id, sequence_number);
-CREATE INDEX idx_progress_updates_project_date ON public.project_progress_updates(project_id, update_date DESC);
-CREATE INDEX idx_investor_contrib_investor_date ON public.project_investor_contributions(project_investor_id, contribution_date DESC);
-
-CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_user_profiles_updated_at BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_companies_updated_at BEFORE UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_company_settings_updated_at BEFORE UPDATE ON public.company_settings FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_company_users_updated_at BEFORE UPDATE ON public.company_users FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_customers_updated_at BEFORE UPDATE ON public.customers FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_project_types_updated_at BEFORE UPDATE ON public.project_types FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_expense_categories_updated_at BEFORE UPDATE ON public.expense_categories FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_units_updated_at BEFORE UPDATE ON public.units_of_measure FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_payment_methods_updated_at BEFORE UPDATE ON public.payment_methods FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_tax_rates_updated_at BEFORE UPDATE ON public.tax_rates FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_stage_templates_updated_at BEFORE UPDATE ON public.project_stage_templates FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_document_sequences_updated_at BEFORE UPDATE ON public.document_sequences FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_documents_updated_at BEFORE UPDATE ON public.documents FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_projects_updated_at BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_stages_updated_at BEFORE UPDATE ON public.project_stages FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_progress_updated_at BEFORE UPDATE ON public.project_progress_updates FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_expenses_updated_at BEFORE UPDATE ON public.project_expenses FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_receipts_updated_at BEFORE UPDATE ON public.project_receipts FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_client_access_updated_at BEFORE UPDATE ON public.project_client_access FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_investors_updated_at BEFORE UPDATE ON public.project_investors FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_company_subscriptions_updated_at BEFORE UPDATE ON public.company_subscriptions FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_company_usage_updated_at BEFORE UPDATE ON public.company_quotation_usage FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE TRIGGER trg_subscription_payments_updated_at BEFORE UPDATE ON public.subscription_payments FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon;
-REVOKE ALL ON ALL TABLES IN SCHEMA public FROM authenticated;
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
-
-COMMIT;
--- <<< 0001_schema.sql
-
--- >>> 0002_seed.sql
-BEGIN;
-
-INSERT INTO public.project_types (company_id, code, name, description, sort_order, is_active)
-VALUES
-  (NULL, 'independent_house', 'Independent House Construction', 'Construction of standalone and independent residential houses.', 1, true),
-  (NULL, 'villa', 'Villa Construction', 'Construction of standalone villas and villa communities.', 2, true),
-  (NULL, 'apartment', 'Apartment Construction', 'Construction or development of apartment buildings and residential towers.', 3, true),
-  (NULL, 'commercial_building', 'Commercial Building Construction', 'Construction of offices, retail buildings and other commercial properties.', 4, true),
-  (NULL, 'industrial_warehouse', 'Industrial & Warehouse Construction', 'Construction of industrial facilities, factories and warehouse buildings.', 5, true),
-  (NULL, 'renovation', 'Renovation & Remodeling', 'Renovation, rehabilitation and remodeling of existing residential or commercial properties.', 6, true),
-  (NULL, 'building_extension', 'Building Extension & Additional Floor', 'Building extensions, alterations and construction of additional floors.', 7, true),
-  (NULL, 'interior_fitout', 'Interior Fit-out & Works', 'Interior fit-out, finishing and interior construction works.', 8, true),
-  (NULL, 'structural_works', 'Structural Construction Works', 'Structural construction works including RCC, steel and structural building elements.', 9, true),
-  (NULL, 'civil_infrastructure', 'Civil Infrastructure Works', 'Civil engineering and infrastructure works for residential, commercial and public facilities.', 10, true),
-  (NULL, 'road_drainage', 'Road & Drainage Works', 'Road construction, drainage systems, culverts and related infrastructure works.', 11, true),
-  (NULL, 'other', 'Other / Custom Project', 'A project that does not fit the predefined project categories and requires custom planning.', 12, true)
-ON CONFLICT ON CONSTRAINT uq_project_types
-DO UPDATE SET
-  name = EXCLUDED.name,
-  description = EXCLUDED.description,
-  sort_order = EXCLUDED.sort_order,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-INSERT INTO public.expense_categories (company_id, code, name, description, sort_order, is_active)
-VALUES
-  (NULL, 'materials', 'Materials', 'Construction materials', 1, true),
-  (NULL, 'labour', 'Labour', 'Labour charges', 2, true),
-  (NULL, 'equipment', 'Equipment', 'Equipment and machinery', 3, true),
-  (NULL, 'transport', 'Transport', 'Transport and logistics', 4, true),
-  (NULL, 'misc', 'Miscellaneous', 'Other expenses', 5, true)
-ON CONFLICT ON CONSTRAINT uq_expense_categories
-DO UPDATE SET
-  name = EXCLUDED.name,
-  description = EXCLUDED.description,
-  sort_order = EXCLUDED.sort_order,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-INSERT INTO public.units_of_measure (company_id, code, name, symbol, sort_order, is_active)
-VALUES
-  (NULL, 'sqft', 'Sq.ft', 'Sq.ft', 1, true),
-  (NULL, 'sqm', 'Sq.m', 'Sq.m', 2, true),
-  (NULL, 'nos', 'Nos', 'Nos', 3, true),
-  (NULL, 'kg', 'Kg', 'Kg', 4, true),
-  (NULL, 'cft', 'Cft', 'Cft', 5, true),
-  (NULL, 'rft', 'Rft', 'Rft', 6, true),
-  (NULL, 'bag', 'Bag', 'Bag', 7, true),
-  (NULL, 'litre', 'Litre', 'Litre', 8, true),
-  (NULL, 'lumpsum', 'LS / Lump Sum', 'LS', 9, true),
-  (NULL, 'job', 'Job', 'Job', 10, true)
-ON CONFLICT ON CONSTRAINT uq_units_of_measure
-DO UPDATE SET
-  name = EXCLUDED.name,
-  symbol = EXCLUDED.symbol,
-  sort_order = EXCLUDED.sort_order,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-INSERT INTO public.payment_methods (company_id, code, name, sort_order, is_active)
-VALUES
-  (NULL, 'cash', 'Cash', 1, true),
-  (NULL, 'upi', 'UPI', 2, true),
-  (NULL, 'bank_transfer', 'Bank Transfer', 3, true),
-  (NULL, 'cheque', 'Cheque', 4, true),
-  (NULL, 'other', 'Other', 5, true)
-ON CONFLICT ON CONSTRAINT uq_payment_methods
-DO UPDATE SET
-  name = EXCLUDED.name,
-  sort_order = EXCLUDED.sort_order,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-INSERT INTO public.tax_rates (company_id, code, name, rate_percentage, effective_from, effective_to, is_active)
-VALUES
-  (NULL, 'gst_0', 'GST 0%', 0.00, DATE '2024-01-01', NULL, true),
-  (NULL, 'gst_5', 'GST 5%', 5.00, DATE '2024-01-01', NULL, true),
-  (NULL, 'gst_12', 'GST 12%', 12.00, DATE '2024-01-01', NULL, true),
-  (NULL, 'gst_18', 'GST 18%', 18.00, DATE '2024-01-01', NULL, true),
-  (NULL, 'gst_28', 'GST 28%', 28.00, DATE '2024-01-01', NULL, true)
-ON CONFLICT ON CONSTRAINT uq_tax_rates
-DO UPDATE SET
-  name = EXCLUDED.name,
-  rate_percentage = EXCLUDED.rate_percentage,
-  effective_to = EXCLUDED.effective_to,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-INSERT INTO public.project_stage_templates (company_id, project_type_id, template_code, name, sequence_number, default_completion_percentage, is_active)
-SELECT
-  NULL,
-  pt.id,
-  t.template_code,
-  t.name,
-  t.sequence_number,
-  t.default_completion_percentage,
-  true
-FROM public.project_types pt
-JOIN (
-  VALUES
-    ('independent_house', 'site_setup', 'Site Setup', 1, 5.00),
-    ('independent_house', 'foundation', 'Foundation', 2, 20.00),
-    ('independent_house', 'structure', 'RCC / Structure', 3, 45.00),
-    ('independent_house', 'masonry', 'Masonry', 4, 60.00),
-    ('independent_house', 'plastering', 'Plastering', 5, 70.00),
-    ('independent_house', 'flooring', 'Flooring', 6, 80.00),
-    ('independent_house', 'electrical_plumbing', 'Electrical & Plumbing', 7, 90.00),
-    ('independent_house', 'painting', 'Painting', 8, 96.00),
-    ('independent_house', 'handover', 'Handover', 9, 100.00)
-) AS t(project_code, template_code, name, sequence_number, default_completion_percentage)
-  ON pt.company_id IS NULL AND pt.code = t.project_code
-ON CONFLICT ON CONSTRAINT uq_project_stage_templates
-DO UPDATE SET
-  name = EXCLUDED.name,
-  sequence_number = EXCLUDED.sequence_number,
-  default_completion_percentage = EXCLUDED.default_completion_percentage,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-COMMIT;
--- <<< 0002_seed.sql
-
--- >>> 0005_membership_precheck.sql
-BEGIN;
-SET TRANSACTION READ ONLY;
-
--- 1) Companies with missing or invalid owner_id
-SELECT
-    c.id AS company_id,
-    c.owner_id,
-    CASE
-        WHEN c.owner_id IS NULL THEN 'owner_id_is_null'
-        WHEN u.id IS NULL THEN 'owner_id_not_found_in_users'
-        ELSE 'ok'
-    END AS owner_integrity_status
-FROM public.companies c
-LEFT JOIN public.users u
-    ON u.id = c.owner_id
-WHERE c.owner_id IS NULL
-   OR u.id IS NULL
-ORDER BY c.id;
-
--- 2) Owners linked to another company
-SELECT
-    c.id AS owned_company_id,
-    c.owner_id AS owner_user_id,
-    cu.company_id AS linked_company_id,
-    cu.role AS linked_role,
-    cu.is_active AS linked_is_active
-FROM public.companies c
-JOIN public.company_users cu
-    ON cu.user_id = c.owner_id
-   AND cu.company_id <> c.id
-ORDER BY c.id, cu.company_id;
-
--- 3) Owner membership exists but role is not owner
-SELECT
-    c.id AS company_id,
-    c.owner_id AS owner_user_id,
-    cu.role AS existing_role,
-    cu.is_active AS existing_is_active
-FROM public.companies c
-JOIN public.company_users cu
-    ON cu.company_id = c.id
-   AND cu.user_id = c.owner_id
-WHERE cu.role <> 'owner'
-ORDER BY c.id;
-
--- 4) Owner membership exists but inactive
-SELECT
-    c.id AS company_id,
-    c.owner_id AS owner_user_id,
-    cu.role AS existing_role,
-    cu.is_active AS existing_is_active
-FROM public.companies c
-JOIN public.company_users cu
-    ON cu.company_id = c.id
-   AND cu.user_id = c.owner_id
-WHERE cu.is_active = false
-ORDER BY c.id;
-
--- 5) Users linked to multiple companies
-SELECT
-    cu.user_id,
-    COUNT(DISTINCT cu.company_id) AS company_count,
-    ARRAY_AGG(DISTINCT cu.company_id ORDER BY cu.company_id) AS company_ids
-FROM public.company_users cu
-GROUP BY cu.user_id
-HAVING COUNT(DISTINCT cu.company_id) > 1
-ORDER BY company_count DESC, cu.user_id;
-
--- 6) Duplicate rows per (company_id, user_id)
-SELECT
-    cu.company_id,
-    cu.user_id,
-    COUNT(*) AS row_count
-FROM public.company_users cu
-GROUP BY cu.company_id, cu.user_id
-HAVING COUNT(*) > 1
-ORDER BY cu.company_id, cu.user_id;
-
--- 7) Duplicate rows per user_id (would block unique user_id index)
-SELECT
-    cu.user_id,
-    COUNT(*) AS membership_rows,
-    ARRAY_AGG(cu.company_id ORDER BY cu.company_id) AS company_ids
-FROM public.company_users cu
-GROUP BY cu.user_id
-HAVING COUNT(*) > 1
-ORDER BY membership_rows DESC, cu.user_id;
-
--- 8) Additional verification: every company has exactly one active owner membership
-SELECT
-    c.id AS company_id,
-    COUNT(*) FILTER (WHERE cu.role = 'owner' AND cu.is_active = true) AS active_owner_count
-FROM public.companies c
-LEFT JOIN public.company_users cu
-    ON cu.company_id = c.id
-GROUP BY c.id
-HAVING COUNT(*) FILTER (WHERE cu.role = 'owner' AND cu.is_active = true) <> 1
-ORDER BY c.id;
-
--- 9) Additional verification: companies.owner_id must match the owner membership user_id
-SELECT
-    c.id AS company_id,
-    c.owner_id AS companies_owner_id,
-    cu.user_id AS owner_membership_user_id,
-    cu.role,
-    cu.is_active
-FROM public.companies c
-LEFT JOIN public.company_users cu
-    ON cu.company_id = c.id
-   AND cu.role = 'owner'
-   AND cu.is_active = true
-WHERE cu.user_id IS DISTINCT FROM c.owner_id
-ORDER BY c.id;
-
--- 10) Additional verification: no company has multiple owner memberships
-SELECT
-    cu.company_id,
-    COUNT(*) AS owner_membership_count,
-    ARRAY_AGG(cu.user_id ORDER BY cu.user_id) AS owner_user_ids
-FROM public.company_users cu
-WHERE cu.role = 'owner'
-GROUP BY cu.company_id
-HAVING COUNT(*) > 1
-ORDER BY cu.company_id;
-
--- 11) Additional verification: no inactive owner memberships remain unresolved
-SELECT
-    cu.company_id,
-    cu.user_id,
-    cu.role,
-    cu.is_active
-FROM public.company_users cu
-WHERE cu.role = 'owner'
-  AND cu.is_active = false
-ORDER BY cu.company_id, cu.user_id;
-
--- 12) Index inspection including validity and readiness
-SELECT
-    ns.nspname AS schema_name,
-    tbl.relname AS table_name,
-    idx.relname AS index_name,
-    ind.indisunique AS is_unique,
-    ind.indisvalid AS is_valid,
-    ind.indisready AS is_ready,
-    ind.indislive AS is_live,
-    pg_get_expr(ind.indpred, ind.indrelid) AS predicate,
-    pg_get_indexdef(idx.oid) AS index_def
-FROM pg_index ind
-JOIN pg_class idx
-    ON idx.oid = ind.indexrelid
-JOIN pg_class tbl
-    ON tbl.oid = ind.indrelid
-JOIN pg_namespace ns
-    ON ns.oid = tbl.relnamespace
-WHERE ns.nspname = 'public'
-  AND tbl.relname = 'company_users'
-ORDER BY idx.relname;
-
-COMMIT;
--- <<< 0005_membership_precheck.sql
-
--- >>> 0006_owner_membership_backfill.sql
-BEGIN;
-
--- Concurrency protection approach:
--- Lock company_users and companies for write stability inside this transaction,
--- so conflict detection and insert set remain stable until commit.
--- This blocks concurrent membership writes during the backfill window.
-LOCK TABLE public.company_users IN SHARE ROW EXCLUSIVE MODE;
-LOCK TABLE public.companies IN SHARE ROW EXCLUSIVE MODE;
-
-CREATE TEMP TABLE membership_backfill_conflicts (
-    conflict_type text NOT NULL,
-    company_id uuid,
-    owner_user_id uuid,
-    details text
-) ON COMMIT DROP;
-
--- A) Missing or invalid owner_id
-INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
-SELECT
-    'missing_or_invalid_owner_id',
-    c.id,
-    c.owner_id,
-    CASE
-        WHEN c.owner_id IS NULL THEN 'owner_id is NULL'
-        ELSE 'owner_id does not exist in users'
-    END
-FROM public.companies c
-LEFT JOIN public.users u
-    ON u.id = c.owner_id
-WHERE c.owner_id IS NULL
-   OR u.id IS NULL;
-
--- B) Owner linked to another company
-INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
-SELECT DISTINCT
-    'owner_linked_to_other_company',
-    c.id,
-    c.owner_id,
-    'owner has membership in company ' || cu.company_id::text || ' with role ' || COALESCE(cu.role, 'null')
-FROM public.companies c
-JOIN public.company_users cu
-    ON cu.user_id = c.owner_id
-   AND cu.company_id <> c.id;
-
--- C) Owner has own-company membership but non-owner role (report only)
-INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
-SELECT
-    'owner_membership_role_conflict',
-    c.id,
-    c.owner_id,
-    'existing role is ' || COALESCE(cu.role, 'null')
-FROM public.companies c
-JOIN public.company_users cu
-    ON cu.company_id = c.id
-   AND cu.user_id = c.owner_id
-WHERE cu.role <> 'owner';
-
--- D) Owner has own-company membership but inactive status (report only)
-INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
-SELECT
-    'owner_membership_inactive_conflict',
-    c.id,
-    c.owner_id,
-    'existing owner membership is inactive'
-FROM public.companies c
-JOIN public.company_users cu
-    ON cu.company_id = c.id
-   AND cu.user_id = c.owner_id
-WHERE cu.role = 'owner'
-  AND cu.is_active = false;
-
--- E) Users linked to multiple companies
-INSERT INTO membership_backfill_conflicts (conflict_type, company_id, owner_user_id, details)
-SELECT
-    'user_linked_to_multiple_companies',
-    NULL,
-    multi.user_id,
-    'user is linked to ' || multi.company_count::text || ' companies'
-FROM (
-    SELECT
-        cu.user_id,
-        COUNT(DISTINCT cu.company_id) AS company_count
-    FROM public.company_users cu
-    GROUP BY cu.user_id
-    HAVING COUNT(DISTINCT cu.company_id) > 1
-) multi;
-
--- Report all conflicts for manual resolution
-SELECT
-    conflict_type,
-    company_id,
-    owner_user_id,
-    details
-FROM membership_backfill_conflicts
-ORDER BY conflict_type, company_id, owner_user_id, details;
-
--- Stop on any conflict.
-DO $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM membership_backfill_conflicts) THEN
-        RAISE EXCEPTION
-            'Owner-membership backfill halted: conflicts detected. Resolve manually, then rerun.';
-    END IF;
-END
-$$;
-
--- Safe idempotent insert: only missing owner memberships.
-INSERT INTO public.company_users (company_id, user_id, role, is_active)
-SELECT
-    c.id AS company_id,
-    c.owner_id AS user_id,
-    'owner' AS role,
-    true AS is_active
-FROM public.companies c
-JOIN public.users u
-    ON u.id = c.owner_id
-LEFT JOIN public.company_users cu
-    ON cu.company_id = c.id
-   AND cu.user_id = c.owner_id
-WHERE cu.id IS NULL
-ON CONFLICT (company_id, user_id) DO NOTHING;
-
--- Post-backfill verification snapshot
-SELECT
-    c.id AS company_id,
-    c.owner_id,
-    COUNT(*) FILTER (WHERE cu.role = 'owner' AND cu.is_active = true) AS active_owner_count
-FROM public.companies c
-LEFT JOIN public.company_users cu
-    ON cu.company_id = c.id
-GROUP BY c.id, c.owner_id
-ORDER BY c.id;
-
-COMMIT;
--- <<< 0006_owner_membership_backfill.sql
-
--- >>> 0007_company_users_unique_index.sql
-BEGIN;
-
--- Concurrency protection for duplicate check and index creation in one transaction.
-LOCK TABLE public.company_users IN SHARE ROW EXCLUSIVE MODE;
-
--- 1) Block if duplicates remain.
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM public.company_users cu
-        GROUP BY cu.user_id
-        HAVING COUNT(*) > 1
-    ) THEN
-        RAISE EXCEPTION
-            'Cannot enforce unique company_users(user_id): duplicate memberships remain.';
-    END IF;
-END
-$$;
-
--- 2) Validate existing index state/definition before deciding action.
-DO $$
-DECLARE
-    v_named_exists boolean;
-    v_named_exact boolean;
-    v_named_valid_ready boolean;
-    v_equivalent_exists boolean;
-    v_equivalent_valid_ready boolean;
-BEGIN
-    SELECT EXISTS (
-        SELECT 1
-        FROM pg_class idx
-        JOIN pg_namespace ns ON ns.oid = idx.relnamespace
-        WHERE ns.nspname = 'public'
-          AND idx.relname = 'uq_company_users_user_id'
-    ) INTO v_named_exists;
-
-    SELECT EXISTS (
-        SELECT 1
-        FROM pg_index ind
-        JOIN pg_class idx ON idx.oid = ind.indexrelid
-        JOIN pg_class tbl ON tbl.oid = ind.indrelid
-        JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
-        WHERE ns.nspname = 'public'
-          AND tbl.relname = 'company_users'
-          AND idx.relname = 'uq_company_users_user_id'
-          AND ind.indisunique = true
-          AND ind.indpred IS NULL
-          AND ind.indnkeyatts = 1
-          AND EXISTS (
-              SELECT 1
-              FROM unnest(ind.indkey::int2[]) WITH ORDINALITY k(attnum, ord)
-              JOIN pg_attribute a
-                ON a.attrelid = ind.indrelid
-               AND a.attnum = k.attnum
-              WHERE ord = 1
-                AND a.attname = 'user_id'
-          )
-    ) INTO v_named_exact;
-
-    SELECT EXISTS (
-        SELECT 1
-        FROM pg_index ind
-        JOIN pg_class idx ON idx.oid = ind.indexrelid
-        JOIN pg_class tbl ON tbl.oid = ind.indrelid
-        JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
-        WHERE ns.nspname = 'public'
-          AND tbl.relname = 'company_users'
-          AND idx.relname = 'uq_company_users_user_id'
-          AND ind.indisvalid = true
-          AND ind.indisready = true
-    ) INTO v_named_valid_ready;
-
-    SELECT EXISTS (
-        SELECT 1
-        FROM pg_index ind
-        JOIN pg_class idx ON idx.oid = ind.indexrelid
-        JOIN pg_class tbl ON tbl.oid = ind.indrelid
-        JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
-        WHERE ns.nspname = 'public'
-          AND tbl.relname = 'company_users'
-          AND ind.indisunique = true
-          AND ind.indpred IS NULL
-          AND ind.indnkeyatts = 1
-          AND ind.indisvalid = true
-          AND ind.indisready = true
-          AND EXISTS (
-              SELECT 1
-              FROM unnest(ind.indkey::int2[]) WITH ORDINALITY k(attnum, ord)
-              JOIN pg_attribute a
-                ON a.attrelid = ind.indrelid
-               AND a.attnum = k.attnum
-              WHERE ord = 1
-                AND a.attname = 'user_id'
-          )
-    ) INTO v_equivalent_valid_ready;
-
-    SELECT EXISTS (
-        SELECT 1
-        FROM pg_index ind
-        JOIN pg_class idx ON idx.oid = ind.indexrelid
-        JOIN pg_class tbl ON tbl.oid = ind.indrelid
-        JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
-        WHERE ns.nspname = 'public'
-          AND tbl.relname = 'company_users'
-          AND ind.indisunique = true
-          AND ind.indpred IS NULL
-          AND ind.indnkeyatts = 1
-          AND EXISTS (
-              SELECT 1
-              FROM unnest(ind.indkey::int2[]) WITH ORDINALITY k(attnum, ord)
-              JOIN pg_attribute a
-                ON a.attrelid = ind.indrelid
-               AND a.attnum = k.attnum
-              WHERE ord = 1
-                AND a.attname = 'user_id'
-          )
-    ) INTO v_equivalent_exists;
-
-    IF v_named_exists THEN
-        IF NOT v_named_exact THEN
-            RAISE EXCEPTION
-                'Index uq_company_users_user_id exists but definition differs. Manual review required.';
-        ELSIF NOT v_named_valid_ready THEN
-            RAISE EXCEPTION
-                'Index uq_company_users_user_id exists but is not valid/ready. Manual remediation required.';
-        END IF;
-    ELSE
-        IF v_equivalent_exists AND NOT v_equivalent_valid_ready THEN
-            RAISE EXCEPTION
-                'Equivalent unique index on user_id exists but is not valid/ready. Manual remediation required.';
-        ELSIF v_equivalent_valid_ready THEN
-            RAISE NOTICE
-                'Equivalent valid/ready unique index on company_users(user_id) already exists. No new index created.';
-        ELSE
-            CREATE UNIQUE INDEX uq_company_users_user_id
-                ON public.company_users (user_id);
-        END IF;
-    END IF;
-END
-$$;
-
--- 3) Final verification output
-SELECT
-    idx.relname AS index_name,
-    ind.indisunique AS is_unique,
-    ind.indisvalid AS is_valid,
-    ind.indisready AS is_ready,
-    pg_get_expr(ind.indpred, ind.indrelid) AS predicate,
-    pg_get_indexdef(idx.oid) AS index_def
-FROM pg_index ind
-JOIN pg_class idx
-    ON idx.oid = ind.indexrelid
-JOIN pg_class tbl
-    ON tbl.oid = ind.indrelid
-JOIN pg_namespace ns
-    ON ns.oid = tbl.relnamespace
-WHERE ns.nspname = 'public'
-  AND tbl.relname = 'company_users'
-ORDER BY idx.relname;
-
-COMMIT;
--- <<< 0007_company_users_unique_index.sql
-
--- >>> 0008_shared_parties.sql
-BEGIN;
-
-CREATE TABLE public.parties (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  entity_type text NOT NULL DEFAULT 'person' CHECK (entity_type IN ('person', 'business')),
-  contact_person_name text,
-  is_customer boolean NOT NULL DEFAULT false,
-  is_supplier boolean NOT NULL DEFAULT false,
-  is_investor boolean NOT NULL DEFAULT false,
-  email text,
-  mobile text,
-  address text,
-  city text,
-  state text,
-  pincode text,
-  gstin text,
-  gst_registration_type text,
-  gst_state_code text,
-  notes text,
-  is_active boolean NOT NULL DEFAULT true,
-  is_deleted boolean NOT NULL DEFAULT false,
-  deleted_at timestamptz,
-  deleted_by uuid REFERENCES public.users(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT parties_has_role CHECK (
-    is_customer OR is_supplier OR is_investor
-  )
-);
-
-CREATE INDEX idx_parties_company_active_updated
-  ON public.parties (company_id, is_active, updated_at DESC);
-
-CREATE INDEX idx_parties_company_role_lookup
-  ON public.parties (company_id, is_customer, is_supplier, is_investor);
-
-CREATE INDEX idx_parties_company_search
-  ON public.parties (company_id, name, email, mobile, gstin);
-
-INSERT INTO public.parties (
-  id, company_id, name, entity_type, contact_person_name,
-  is_customer, is_supplier, is_investor,
-  email, mobile, address, city, state, pincode,
-  gstin, gst_registration_type, gst_state_code, notes,
-  is_active, is_deleted, deleted_at, deleted_by,
-  created_at, updated_at
-)
-SELECT
-  c.id, c.company_id, c.name, 'person', NULL,
-  true, false, false,
-  c.email, c.mobile, c.address, c.city, c.state, c.pincode,
-  c.gstin, c.gst_registration_type, c.gst_state_code, NULL,
-  true, c.is_deleted, c.deleted_at, c.deleted_by,
-  c.created_at, c.updated_at
-FROM public.customers c
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.parties (
-  id, company_id, name, entity_type, contact_person_name,
-  is_customer, is_supplier, is_investor,
-  email, mobile, address, city, state, pincode,
-  gstin, gst_registration_type, gst_state_code, notes,
-  is_active, is_deleted, deleted_at, deleted_by,
-  created_at, updated_at
-)
-SELECT
-  i.id, i.company_id, i.name, 'person', NULL,
-  false, false, true,
-  i.email, i.phone, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL,
-  true, false, NULL, NULL,
-  now(), now()
-FROM public.investors i
-WHERE NOT EXISTS (
-  SELECT 1 FROM public.parties p WHERE p.id = i.id
-)
-ON CONFLICT (id) DO NOTHING;
-
-CREATE TRIGGER set_parties_updated_at
-BEFORE UPDATE ON public.parties
-FOR EACH ROW
-EXECUTE FUNCTION public.set_updated_at();
-
-COMMIT;
--- <<< 0008_shared_parties.sql
-
--- >>> 0009_project_investor_party_id.sql
-BEGIN;
-
-ALTER TABLE public.project_investors
-  ADD COLUMN IF NOT EXISTS party_id uuid
-  REFERENCES public.parties(id) ON DELETE SET NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_project_investors_project_party_unique
-  ON public.project_investors (project_id, party_id)
-  WHERE party_id IS NOT NULL;
-
-COMMIT;
--- <<< 0009_project_investor_party_id.sql
-
--- >>> 0010_customer_document_party_id.sql
-BEGIN;
-
-ALTER TABLE public.customers
-  ADD COLUMN IF NOT EXISTS party_id uuid
-  REFERENCES public.parties(id) ON DELETE SET NULL;
-
-ALTER TABLE public.documents
-  ADD COLUMN IF NOT EXISTS party_id uuid
-  REFERENCES public.parties(id) ON DELETE SET NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_company_party_unique
-  ON public.customers (company_id, party_id)
-  WHERE party_id IS NOT NULL;
-
-COMMIT;
--- <<< 0010_customer_document_party_id.sql
-
--- >>> 0011_project_budget_amount.sql
-ALTER TABLE public.projects
-ADD COLUMN IF NOT EXISTS budget_amount numeric(18,2) CHECK (budget_amount IS NULL OR budget_amount >= 0);
--- <<< 0011_project_budget_amount.sql
-
--- >>> 0012_purchase_orders.sql
-BEGIN;
-
-CREATE TABLE public.purchase_orders (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  supplier_party_id uuid NOT NULL REFERENCES public.parties(id) ON DELETE RESTRICT,
-  po_number text NOT NULL,
-  order_date date NOT NULL DEFAULT CURRENT_DATE,
-  expected_delivery_date date,
-  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'approved', 'cancelled', 'closed')),
-  subtotal numeric(18,2) NOT NULL DEFAULT 0 CHECK (subtotal >= 0),
-  tax_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
-  total_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (total_amount >= 0),
-  notes text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (company_id, po_number)
-);
-
-CREATE TABLE public.purchase_order_lines (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  purchase_order_id uuid NOT NULL REFERENCES public.purchase_orders(id) ON DELETE CASCADE,
-  description text NOT NULL,
-  quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (quantity >= 0),
-  unit text,
-  rate numeric(18,2) NOT NULL DEFAULT 0 CHECK (rate >= 0),
-  line_amount numeric(18,2) NOT NULL DEFAULT 0 CHECK (line_amount >= 0),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE INDEX idx_purchase_orders_company_project
-  ON public.purchase_orders (company_id, project_id, created_at DESC);
-
-CREATE INDEX idx_purchase_orders_supplier
-  ON public.purchase_orders (supplier_party_id, status);
-
-CREATE INDEX idx_purchase_order_lines_order
-  ON public.purchase_order_lines (purchase_order_id, created_at);
-
-CREATE TRIGGER set_purchase_orders_updated_at
-BEFORE UPDATE ON public.purchase_orders
-FOR EACH ROW
-EXECUTE FUNCTION public.set_updated_at();
-
-CREATE TRIGGER set_purchase_order_lines_updated_at
-BEFORE UPDATE ON public.purchase_order_lines
-FOR EACH ROW
-EXECUTE FUNCTION public.set_updated_at();
-
-COMMIT;
--- <<< 0012_purchase_orders.sql
-
--- >>> 0013_material_receipts.sql
-BEGIN;
-
-CREATE TABLE public.material_receipts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
-  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  purchase_order_id uuid NOT NULL REFERENCES public.purchase_orders(id) ON DELETE RESTRICT,
-  supplier_party_id uuid NOT NULL REFERENCES public.parties(id) ON DELETE RESTRICT,
-  receipt_number text NOT NULL,
-  receipt_date date NOT NULL DEFAULT CURRENT_DATE,
-  delivery_reference_number text,
-  notes text,
-  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'accepted', 'rejected')),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (company_id, receipt_number)
-);
-
-CREATE TABLE public.material_receipt_lines (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  material_receipt_id uuid NOT NULL REFERENCES public.material_receipts(id) ON DELETE CASCADE,
-  purchase_order_line_id uuid NOT NULL REFERENCES public.purchase_order_lines(id) ON DELETE RESTRICT,
-  ordered_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (ordered_quantity >= 0),
-  previously_received_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (previously_received_quantity >= 0),
-  quantity_received numeric(18,4) NOT NULL DEFAULT 0 CHECK (quantity_received >= 0),
-  accepted_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (accepted_quantity >= 0),
-  rejected_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (rejected_quantity >= 0),
-  remaining_quantity numeric(18,4) NOT NULL DEFAULT 0 CHECK (remaining_quantity >= 0),
-  notes text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE INDEX idx_material_receipts_project_po
-  ON public.material_receipts (company_id, project_id, purchase_order_id, receipt_date DESC);
-
-CREATE INDEX idx_material_receipts_supplier
-  ON public.material_receipts (supplier_party_id, status);
-
-CREATE INDEX idx_material_receipt_lines_receipt
-  ON public.material_receipt_lines (material_receipt_id, purchase_order_line_id);
-
-CREATE INDEX idx_material_receipt_lines_po_line
-  ON public.material_receipt_lines (purchase_order_line_id, created_at DESC);
-
-CREATE TRIGGER set_material_receipts_updated_at
-BEFORE UPDATE ON public.material_receipts
-FOR EACH ROW
-EXECUTE FUNCTION public.set_updated_at();
-
-CREATE TRIGGER set_material_receipt_lines_updated_at
-BEFORE UPDATE ON public.material_receipt_lines
-FOR EACH ROW
-EXECUTE FUNCTION public.set_updated_at();
-
-COMMIT;
--- <<< 0013_material_receipts.sql
-
--- >>> 0014_company_scope_financial_columns.sql
-BEGIN;
-
-ALTER TABLE public.project_expenses
-  ADD COLUMN IF NOT EXISTS company_id uuid,
-  ADD COLUMN IF NOT EXISTS supplier_id uuid,
-  ADD COLUMN IF NOT EXISTS party_id uuid;
-
-UPDATE public.project_expenses pe
-SET company_id = p.company_id
-FROM public.projects p
-WHERE pe.project_id = p.id
-  AND pe.company_id IS NULL;
-
-ALTER TABLE public.project_expenses
-  ALTER COLUMN company_id SET NOT NULL;
-
-ALTER TABLE public.project_expense_payments
-  ADD COLUMN IF NOT EXISTS company_id uuid;
-
-UPDATE public.project_expense_payments pep
-SET company_id = pe.company_id
-FROM public.project_expenses pe
-WHERE pep.project_expense_id = pe.id
-  AND pep.company_id IS NULL;
-
-ALTER TABLE public.project_expense_payments
-  ALTER COLUMN company_id SET NOT NULL;
-
-ALTER TABLE public.project_receipts
-  ADD COLUMN IF NOT EXISTS company_id uuid,
-  ADD COLUMN IF NOT EXISTS customer_id uuid;
-
-UPDATE public.project_receipts pr
-SET company_id = p.company_id
-FROM public.projects p
-WHERE pr.project_id = p.id
-  AND pr.company_id IS NULL;
-
-ALTER TABLE public.project_receipts
-  ALTER COLUMN company_id SET NOT NULL;
-
-COMMIT;
--- <<< 0014_company_scope_financial_columns.sql
-
--- >>> 0015_create_project_with_stages_rpc.sql
-BEGIN;
-
-CREATE OR REPLACE FUNCTION public.create_project_with_stages(
-  p_company_id uuid,
-  p_created_by uuid,
-  p_customer_id uuid,
-  p_source_document_id uuid,
-  p_project_type_id uuid,
-  p_project_type_snapshot text,
-  p_project_number text,
-  p_name text,
-  p_description text,
-  p_site_address text,
-  p_contract_amount numeric,
-  p_budget_amount numeric,
-  p_start_date date,
-  p_expected_end_date date,
-  p_actual_end_date date,
-  p_status text,
-  p_stage_drafts jsonb DEFAULT NULL
-)
-RETURNS uuid
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_project_id uuid;
-  v_has_stage_drafts boolean := false;
-  v_project_type_code text := NULL;
-BEGIN
-  INSERT INTO public.projects (
-    company_id,
-    customer_id,
-    source_document_id,
-    project_type_id,
-    project_type_snapshot,
-    project_number,
-    name,
-    description,
-    site_address,
-    contract_amount,
-    budget_amount,
-    start_date,
-    expected_end_date,
-    actual_end_date,
-    status,
-    created_by
-  ) VALUES (
-    p_company_id,
-    p_customer_id,
-    p_source_document_id,
-    p_project_type_id,
-    p_project_type_snapshot,
-    p_project_number,
-    p_name,
-    p_description,
-    p_site_address,
-    COALESCE(p_contract_amount, 0),
-    p_budget_amount,
-    p_start_date,
-    p_expected_end_date,
-    p_actual_end_date,
-    COALESCE(p_status, 'planned'),
-    p_created_by
-  )
-  RETURNING id INTO v_project_id;
-
-  v_has_stage_drafts := p_stage_drafts IS NOT NULL
-    AND jsonb_typeof(p_stage_drafts) = 'array'
-    AND jsonb_array_length(p_stage_drafts) > 0;
-
-  IF p_project_type_id IS NOT NULL THEN
-    SELECT code INTO v_project_type_code
-    FROM public.project_types
-    WHERE id = p_project_type_id;
-  END IF;
-
-  IF v_has_stage_drafts THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      planned_start_date,
-      planned_end_date,
-      completion_percentage,
-      status,
-      created_by
-    )
-    SELECT
-      v_project_id,
-      COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), 'New stage') AS name,
-      row_number() OVER (
-        ORDER BY
-          COALESCE(
-            CASE
-              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
-                THEN (draft.stage_row ->> 'sequenceNumber')::integer
-              ELSE NULL
-            END,
-            draft.stage_ord
-          ),
-          draft.stage_ord
-      ) AS sequence_number,
-      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
-      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
-      0,
-      'pending',
-      p_created_by
-    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
-    WHERE COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), '') <> ''
-    ON CONFLICT (project_id, sequence_number) DO NOTHING;
-  ELSIF p_project_type_id IS NOT NULL AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      completion_percentage,
-      status,
-      created_by
-    )
-    WITH resolved_templates AS (
-      SELECT DISTINCT ON (lower(coalesce(template_code, '')))
-        template_code,
-        name,
-        sequence_number,
-        company_id,
-        updated_at,
-        id
-      FROM public.project_stage_templates
-      WHERE project_type_id = p_project_type_id
-        AND is_active = true
-        AND (company_id = p_company_id OR company_id IS NULL)
-      ORDER BY
-        lower(coalesce(template_code, '')),
-        (company_id = p_company_id) DESC,
-        updated_at DESC,
-        id DESC
-    ),
-    ordered_templates AS (
-      SELECT
-        name,
-        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
-      FROM resolved_templates
-    )
-    SELECT
-      v_project_id,
-      ordered_templates.name,
-      ordered_templates.sequence_number,
-      0,
-      'pending',
-      p_created_by
-    FROM ordered_templates
-    ON CONFLICT (project_id, sequence_number) DO NOTHING;
-  END IF;
-
-  RETURN v_project_id;
-END;
-$$;
-
-COMMIT;
--- <<< 0015_create_project_with_stages_rpc.sql
-
--- >>> 0016_business_model_foundation.sql
-BEGIN;
-
-ALTER TABLE public.projects
-  ADD COLUMN IF NOT EXISTS business_model text CHECK (business_model IS NULL OR business_model IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply')),
-  ADD COLUMN IF NOT EXISTS projected_sales_value numeric(18,2) CHECK (projected_sales_value IS NULL OR projected_sales_value >= 0),
-  ADD COLUMN IF NOT EXISTS land_cost numeric(18,2) CHECK (land_cost IS NULL OR land_cost >= 0);
-
-ALTER TABLE public.company_settings
-  ADD COLUMN IF NOT EXISTS enabled_business_models text[] NOT NULL DEFAULT ARRAY['contract_construction', 'property_development', 'civil_works_contract', 'material_supply'];
-
-UPDATE public.company_settings
-SET enabled_business_models = ARRAY['contract_construction', 'property_development', 'civil_works_contract', 'material_supply']
-WHERE enabled_business_models IS NULL;
-
-CREATE INDEX IF NOT EXISTS idx_projects_business_model
-  ON public.projects(company_id, business_model)
-  WHERE business_model IS NOT NULL;
-
-CREATE OR REPLACE FUNCTION public.create_project_with_stages(
-  p_company_id uuid,
-  p_created_by uuid,
-  p_customer_id uuid,
-  p_source_document_id uuid,
-  p_project_type_id uuid,
-  p_project_type_snapshot text,
-  p_project_number text,
-  p_name text,
-  p_description text,
-  p_site_address text,
-  p_contract_amount numeric,
-  p_budget_amount numeric,
-  p_start_date date,
-  p_expected_end_date date,
-  p_actual_end_date date,
-  p_status text,
-  p_stage_drafts jsonb DEFAULT NULL
-)
-RETURNS uuid
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_project_id uuid;
-  v_has_stage_drafts boolean := false;
-  v_project_type_code text := NULL;
-BEGIN
-  INSERT INTO public.projects (
-    company_id,
-    customer_id,
-    source_document_id,
-    project_type_id,
-    project_type_snapshot,
-    project_number,
-    name,
-    description,
-    site_address,
-    contract_amount,
-    budget_amount,
-    start_date,
-    expected_end_date,
-    actual_end_date,
-    status,
-    created_by
-  ) VALUES (
-    p_company_id,
-    p_customer_id,
-    p_source_document_id,
-    p_project_type_id,
-    p_project_type_snapshot,
-    p_project_number,
-    p_name,
-    p_description,
-    p_site_address,
-    COALESCE(p_contract_amount, 0),
-    p_budget_amount,
-    p_start_date,
-    p_expected_end_date,
-    p_actual_end_date,
-    COALESCE(p_status, 'planned'),
-    p_created_by
-  )
-  RETURNING id INTO v_project_id;
-
-  v_has_stage_drafts := p_stage_drafts IS NOT NULL
-    AND jsonb_typeof(p_stage_drafts) = 'array'
-    AND jsonb_array_length(p_stage_drafts) > 0;
-
-  IF p_project_type_id IS NOT NULL THEN
-    SELECT code INTO v_project_type_code
-    FROM public.project_types
-    WHERE id = p_project_type_id;
-  END IF;
-
-  IF v_has_stage_drafts THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      planned_start_date,
-      planned_end_date,
-      completion_percentage,
-      status,
-      created_by
-    )
-    SELECT
-      v_project_id,
-      COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), 'New stage') AS name,
-      row_number() OVER (
-        ORDER BY
-          COALESCE(
-            CASE
-              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
-                THEN (draft.stage_row ->> 'sequenceNumber')::integer
-              ELSE NULL
-            END,
-            draft.stage_ord
-          ),
-          draft.stage_ord
-      ) AS sequence_number,
-      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
-      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
-      0,
-      'pending',
-      p_created_by
-    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
-    WHERE COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), '') <> ''
-    ON CONFLICT (project_id, sequence_number) DO NOTHING;
-  ELSIF p_project_type_id IS NOT NULL AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      completion_percentage,
-      status,
-      created_by
-    )
-    WITH resolved_templates AS (
-      SELECT DISTINCT ON (lower(coalesce(template_code, '')))
-        template_code,
-        name,
-        sequence_number,
-        company_id,
-        updated_at,
-        id
-      FROM public.project_stage_templates
-      WHERE project_type_id = p_project_type_id
-        AND is_active = true
-        AND (company_id = p_company_id OR company_id IS NULL)
-      ORDER BY
-        lower(coalesce(template_code, '')),
-        (company_id = p_company_id) DESC,
-        updated_at DESC,
-        id DESC
-    ),
-    ordered_templates AS (
-      SELECT
-        name,
-        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
-      FROM resolved_templates
-    )
-    SELECT
-      v_project_id,
-      ordered_templates.name,
-      ordered_templates.sequence_number,
-      0,
-      'pending',
-      p_created_by
-    FROM ordered_templates
-    ON CONFLICT (project_id, sequence_number) DO NOTHING;
-  END IF;
-
-  RETURN v_project_id;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.create_project_with_stages_with_business_model(
-  p_company_id uuid,
-  p_created_by uuid,
-  p_customer_id uuid,
-  p_source_document_id uuid,
-  p_project_type_id uuid,
-  p_project_type_snapshot text,
-  p_project_number text,
-  p_name text,
-  p_description text,
-  p_site_address text,
-  p_contract_amount numeric,
-  p_budget_amount numeric,
-  p_start_date date,
-  p_expected_end_date date,
-  p_actual_end_date date,
-  p_status text,
-  p_stage_drafts jsonb DEFAULT NULL,
-  p_business_model text DEFAULT NULL,
-  p_projected_sales_value numeric DEFAULT NULL,
-  p_land_cost numeric DEFAULT NULL
-)
-RETURNS uuid
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_project_id uuid;
-  v_has_stage_drafts boolean := false;
-  v_project_type_code text := NULL;
-  v_enabled_models text[];
-  v_model_text text;
-BEGIN
-  IF p_business_model IS NULL OR NULLIF(trim(p_business_model), '') IS NULL THEN
-    RAISE EXCEPTION 'business_model is required for project creation and must be one of: contract_construction, property_development, civil_works_contract, material_supply.'
-    USING HINT = 'Provide a non-blank business_model value for this project.';
-  END IF;
-
-  v_model_text := lower(trim(p_business_model));
-  IF v_model_text NOT IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply') THEN
-    RAISE EXCEPTION 'Invalid business_model value: %. Allowed values are contract_construction, property_development, civil_works_contract, material_supply.', p_business_model
-    USING HINT = 'Provide a supported business_model value for this project.';
-  END IF;
-
-  SELECT enabled_business_models INTO v_enabled_models
-  FROM public.company_settings
-  WHERE company_id = p_company_id;
-
-  IF v_enabled_models IS NULL OR NOT (v_model_text = ANY (v_enabled_models)) THEN
-    RAISE EXCEPTION 'Business model % is not enabled for company %.', v_model_text, p_company_id
-    USING HINT = 'Update company_settings.enabled_business_models to include this business model before creating the project.';
-  END IF;
-
-  INSERT INTO public.projects (
-    company_id,
-    customer_id,
-    source_document_id,
-    project_type_id,
-    project_type_snapshot,
-    business_model,
-    projected_sales_value,
-    land_cost,
-    project_number,
-    name,
-    description,
-    site_address,
-    contract_amount,
-    budget_amount,
-    start_date,
-    expected_end_date,
-    actual_end_date,
-    status,
-    created_by
-  ) VALUES (
-    p_company_id,
-    p_customer_id,
-    p_source_document_id,
-    p_project_type_id,
-    p_project_type_snapshot,
-    CASE
-      WHEN v_model_text IS NOT NULL THEN v_model_text
-      ELSE NULL
-    END,
-    p_projected_sales_value,
-    p_land_cost,
-    p_project_number,
-    p_name,
-    p_description,
-    p_site_address,
-    COALESCE(p_contract_amount, 0),
-    p_budget_amount,
-    p_start_date,
-    p_expected_end_date,
-    p_actual_end_date,
-    COALESCE(p_status, 'planned'),
-    p_created_by
-  )
-  RETURNING id INTO v_project_id;
-
-  v_has_stage_drafts := p_stage_drafts IS NOT NULL
-    AND jsonb_typeof(p_stage_drafts) = 'array'
-    AND jsonb_array_length(p_stage_drafts) > 0;
-
-  IF p_project_type_id IS NOT NULL THEN
-    SELECT code INTO v_project_type_code
-    FROM public.project_types
-    WHERE id = p_project_type_id;
-  END IF;
-
-  IF v_has_stage_drafts THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      planned_start_date,
-      planned_end_date,
-      completion_percentage,
-      status,
-      created_by
-    )
-    SELECT
-      v_project_id,
-      COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), 'New stage') AS name,
-      row_number() OVER (
-        ORDER BY
-          COALESCE(
-            CASE
-              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
-                THEN (draft.stage_row ->> 'sequenceNumber')::integer
-              ELSE NULL
-            END,
-            draft.stage_ord
-          ),
-          draft.stage_ord
-      ) AS sequence_number,
-      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
-      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
-      0,
-      'pending',
-      p_created_by
-    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
-    WHERE COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), '') <> ''
-    ON CONFLICT (project_id, sequence_number) DO NOTHING;
-  ELSIF p_project_type_id IS NOT NULL AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      completion_percentage,
-      status,
-      created_by
-    )
-    WITH resolved_templates AS (
-      SELECT DISTINCT ON (lower(coalesce(template_code, '')))
-        template_code,
-        name,
-        sequence_number,
-        company_id,
-        updated_at,
-        id
-      FROM public.project_stage_templates
-      WHERE project_type_id = p_project_type_id
-        AND is_active = true
-        AND (company_id = p_company_id OR company_id IS NULL)
-      ORDER BY
-        lower(coalesce(template_code, '')),
-        (company_id = p_company_id) DESC,
-        updated_at DESC,
-        id DESC
-    ),
-    ordered_templates AS (
-      SELECT
-        name,
-        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
-      FROM resolved_templates
-    )
-    SELECT
-      v_project_id,
-      ordered_templates.name,
-      ordered_templates.sequence_number,
-      0,
-      'pending',
-      p_created_by
-    FROM ordered_templates
-    ON CONFLICT (project_id, sequence_number) DO NOTHING;
-  END IF;
-
-  RETURN v_project_id;
-END;
-$$;
-
-COMMIT;
--- <<< 0016_business_model_foundation.sql
-
--- >>> 0017_joint_development_support.sql
-BEGIN;
-
-ALTER TABLE public.projects
-  ADD COLUMN IF NOT EXISTS development_arrangement text,
-  ADD COLUMN IF NOT EXISTS total_project_flats integer,
-  ADD COLUMN IF NOT EXISTS landowner_party_id uuid,
-  ADD COLUMN IF NOT EXISTS jda_agreement_reference text,
-  ADD COLUMN IF NOT EXISTS jda_agreement_document_url text,
-  ADD COLUMN IF NOT EXISTS jda_agreement_date date,
-  ADD COLUMN IF NOT EXISTS builder_share_units integer,
-  ADD COLUMN IF NOT EXISTS landowner_share_units integer;
-
-ALTER TABLE public.projects
-  DROP CONSTRAINT IF EXISTS projects_development_arrangement_chk;
-
-ALTER TABLE public.projects
-  ADD CONSTRAINT projects_development_arrangement_chk
-  CHECK (
-    development_arrangement IS NULL
-    OR development_arrangement IN ('self', 'joint_development')
-  ) NOT VALID;
-
-ALTER TABLE public.projects
-  ADD CONSTRAINT projects_total_project_flats_positive_chk
-    CHECK (total_project_flats IS NULL OR total_project_flats > 0) NOT VALID;
-
-ALTER TABLE public.projects
-  ADD CONSTRAINT projects_builder_share_units_non_negative_chk
-    CHECK (builder_share_units IS NULL OR builder_share_units >= 0) NOT VALID;
-
-ALTER TABLE public.projects
-  ADD CONSTRAINT projects_landowner_share_units_non_negative_chk
-    CHECK (landowner_share_units IS NULL OR landowner_share_units >= 0) NOT VALID;
-
-CREATE OR REPLACE FUNCTION public.create_project_with_stages_with_business_model(
-  p_company_id uuid,
-  p_created_by uuid,
-  p_customer_id uuid,
-  p_source_document_id uuid,
-  p_project_type_id uuid,
-  p_project_type_snapshot text,
-  p_project_number text,
-  p_name text,
-  p_description text,
-  p_site_address text,
-  p_contract_amount numeric,
-  p_budget_amount numeric,
-  p_start_date date,
-  p_expected_end_date date,
-  p_actual_end_date date,
-  p_status text,
-  p_stage_drafts jsonb DEFAULT NULL,
-  p_business_model text DEFAULT NULL,
-  p_projected_sales_value numeric DEFAULT NULL,
-  p_land_cost numeric DEFAULT NULL,
-  p_development_arrangement text DEFAULT NULL,
-  p_total_project_flats integer DEFAULT NULL,
-  p_landowner_party_id uuid DEFAULT NULL,
-  p_jda_agreement_reference text DEFAULT NULL,
-  p_jda_agreement_document_url text DEFAULT NULL,
-  p_jda_agreement_date date DEFAULT NULL,
-  p_builder_share_units integer DEFAULT NULL,
-  p_landowner_share_units integer DEFAULT NULL
-)
-RETURNS uuid
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_project_id uuid;
-  v_has_stage_drafts boolean := false;
-  v_project_type_code text := NULL;
-  v_enabled_models text[];
-  v_model_text text;
-  v_arrangement_text text;
-BEGIN
-  IF p_business_model IS NULL OR NULLIF(trim(p_business_model), '') IS NULL THEN
-    RAISE EXCEPTION 'business_model is required for project creation and must be one of: contract_construction, property_development, civil_works_contract, material_supply.'
-    USING HINT = 'Provide a non-blank business_model value for this project.';
-  END IF;
-
-  v_model_text := lower(trim(p_business_model));
-  IF v_model_text NOT IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply') THEN
-    RAISE EXCEPTION 'Invalid business_model value: %. Allowed values are contract_construction, property_development, civil_works_contract, material_supply.', p_business_model
-    USING HINT = 'Provide a supported business_model value for this project.';
-  END IF;
-
-  IF p_development_arrangement IS NOT NULL AND NULLIF(trim(p_development_arrangement), '') IS NOT NULL THEN
-    v_arrangement_text := lower(trim(p_development_arrangement));
-    IF v_arrangement_text NOT IN ('self', 'joint_development') THEN
-      RAISE EXCEPTION 'Invalid development_arrangement value: %. Allowed values are self or joint_development.', p_development_arrangement
-      USING HINT = 'Provide a supported development arrangement for property development projects.';
-    END IF;
-  END IF;
-
-  IF v_model_text <> 'property_development' AND (
-    p_development_arrangement IS NOT NULL
-    OR p_landowner_party_id IS NOT NULL
-    OR p_jda_agreement_reference IS NOT NULL
-    OR p_jda_agreement_document_url IS NOT NULL
-    OR p_jda_agreement_date IS NOT NULL
-    OR p_total_project_flats IS NOT NULL
-    OR p_builder_share_units IS NOT NULL
-    OR p_landowner_share_units IS NOT NULL
-  ) THEN
-    RAISE EXCEPTION 'Development arrangement and JDA fields are permitted only when business_model = property_development.';
-  END IF;
-
-  IF v_model_text = 'property_development' AND v_arrangement_text IS NULL THEN
-    RAISE EXCEPTION 'Property development projects require an explicit development arrangement: self or joint_development.'
-    USING HINT = 'Set development_arrangement when creating a property development project.';
-  END IF;
-
-  IF v_arrangement_text = 'self' THEN
-    IF p_landowner_party_id IS NOT NULL
-       OR p_jda_agreement_reference IS NOT NULL
-       OR p_jda_agreement_document_url IS NOT NULL
-       OR p_jda_agreement_date IS NOT NULL
-       OR p_total_project_flats IS NOT NULL
-       OR p_builder_share_units IS NOT NULL
-       OR p_landowner_share_units IS NOT NULL THEN
-      RAISE EXCEPTION 'Self development must not contain landowner, JDA or flat-sharing fields.'
-      USING HINT = 'Leave landowner and JDA fields empty for self development.';
-    END IF;
-  END IF;
-
-  IF v_arrangement_text = 'joint_development' THEN
-    IF p_landowner_party_id IS NULL THEN
-      RAISE EXCEPTION 'Joint development requires landowner_party_id.'
-      USING HINT = 'Provide a landowner party for joint development projects.';
-    END IF;
-
-    IF p_total_project_flats IS NULL OR p_total_project_flats <= 0 OR p_total_project_flats <> floor(p_total_project_flats::numeric) THEN
-      RAISE EXCEPTION 'Joint development requires total_project_flats as a positive whole number.'
-      USING HINT = 'Set total_project_flats to a whole number greater than zero.';
-    END IF;
-
-    IF p_builder_share_units IS NULL OR p_landowner_share_units IS NULL THEN
-      RAISE EXCEPTION 'Joint development requires builder_share_units and landowner_share_units.'
-      USING HINT = 'Provide both share counts.';
-    END IF;
-
-    IF p_builder_share_units < 0 OR p_landowner_share_units < 0 THEN
-      RAISE EXCEPTION 'Builder and landowner share flats must be non-negative.'
-      USING HINT = 'All share counts must be zero or greater.';
-    END IF;
-
-    IF p_builder_share_units + p_landowner_share_units <> p_total_project_flats THEN
-      RAISE EXCEPTION 'Builder and landowner share flats must add up to the total project flats.'
-      USING HINT = 'Use builder_share_units + landowner_share_units = total_project_flats.';
-    END IF;
-  END IF;
-
-  SELECT enabled_business_models INTO v_enabled_models
-  FROM public.company_settings
-  WHERE company_id = p_company_id;
-
-  IF v_enabled_models IS NULL OR NOT (v_model_text = ANY (v_enabled_models)) THEN
-    RAISE EXCEPTION 'Business model % is not enabled for company %.', v_model_text, p_company_id
-    USING HINT = 'Update company_settings.enabled_business_models to include this business model before creating the project.';
-  END IF;
-
-  INSERT INTO public.projects (
-    company_id,
-    customer_id,
-    source_document_id,
-    project_type_id,
-    project_type_snapshot,
-    business_model,
-    projected_sales_value,
-    land_cost,
-    development_arrangement,
-    total_project_flats,
-    landowner_party_id,
-    jda_agreement_reference,
-    jda_agreement_document_url,
-    jda_agreement_date,
-    builder_share_units,
-    landowner_share_units,
-    project_number,
-    name,
-    description,
-    site_address,
-    contract_amount,
-    budget_amount,
-    start_date,
-    expected_end_date,
-    actual_end_date,
-    status,
-    created_by
-  ) VALUES (
-    p_company_id,
-    p_customer_id,
-    p_source_document_id,
-    p_project_type_id,
-    p_project_type_snapshot,
-    v_model_text,
-    p_projected_sales_value,
-    p_land_cost,
-    CASE WHEN v_model_text = 'property_development' THEN v_arrangement_text ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' THEN p_total_project_flats ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_party_id ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_reference ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_document_url ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_date ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_builder_share_units ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_share_units ELSE NULL END,
-    p_project_number,
-    p_name,
-    p_description,
-    p_site_address,
-    COALESCE(p_contract_amount, 0),
-    p_budget_amount,
-    p_start_date,
-    p_expected_end_date,
-    p_actual_end_date,
-    COALESCE(p_status, 'planned'),
-    p_created_by
-  )
-  RETURNING id INTO v_project_id;
-
-  v_has_stage_drafts := p_stage_drafts IS NOT NULL
-    AND jsonb_typeof(p_stage_drafts) = 'array'
-    AND jsonb_array_length(p_stage_drafts) > 0;
-
-  IF p_project_type_id IS NOT NULL THEN
-    SELECT code INTO v_project_type_code
-    FROM public.project_types
-    WHERE id = p_project_type_id;
-  END IF;
-
-  IF v_has_stage_drafts THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      planned_start_date,
-      planned_end_date,
-      completion_percentage,
-      status,
-      created_by
-    )
-    SELECT
-      v_project_id,
-      COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), 'New stage') AS name,
-      row_number() OVER (
-        ORDER BY
-          COALESCE(
-            CASE
-              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
-                THEN (draft.stage_row ->> 'sequenceNumber')::integer
-              ELSE NULL
-            END,
-            draft.stage_ord
-          ),
-          draft.stage_ord
-      ) AS sequence_number,
-      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
-      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
-      0,
-      'pending',
-      p_created_by
-    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
-    WHERE COALESCE(NULLIF(trim(draft.stage_row ->> 'name'), ''), '') <> ''
-    ON CONFLICT (project_id, sequence_number) DO NOTHING;
-  ELSIF p_project_type_id IS NOT NULL AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      completion_percentage,
-      status,
-      created_by
-    )
-    WITH resolved_templates AS (
-      SELECT DISTINCT ON (lower(coalesce(template_code, '')))
-        template_code,
-        name,
-        sequence_number,
-        company_id,
-        updated_at,
-        id
-      FROM public.project_stage_templates
-      WHERE project_type_id = p_project_type_id
-        AND is_active = true
-        AND (company_id = p_company_id OR company_id IS NULL)
-      ORDER BY
-        lower(coalesce(template_code, '')),
-        (company_id = p_company_id) DESC,
-        updated_at DESC,
-        id DESC
-    ),
-    ordered_templates AS (
-      SELECT
-        name,
-        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
-      FROM resolved_templates
-    )
-    SELECT
-      v_project_id,
-      ordered_templates.name,
-      ordered_templates.sequence_number,
-      0,
-      'pending',
-      p_created_by
-    FROM ordered_templates
-    ON CONFLICT (project_id, sequence_number) DO NOTHING;
-  END IF;
-
-  RETURN v_project_id;
-END;
-$$;
-
-GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
-  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
-  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
-  text, integer, uuid, text, text, date, integer, integer
-) TO authenticated;
-
-GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
-  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
-  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
-  text, integer, uuid, text, text, date, integer, integer
-) TO service_role;
-
-COMMIT;
--- <<< 0017_joint_development_support.sql
-
--- >>> 0018_project_units.sql
-BEGIN;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_company_id_id
-  ON public.projects (company_id, id);
-
-CREATE TABLE IF NOT EXISTS public.project_units (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL,
-  project_id uuid NOT NULL,
-  flat_no text NOT NULL,
-  floor integer,
-  block_tower text,
-  share_type text NOT NULL CHECK (share_type IN ('builder', 'landowner')),
-  status text NOT NULL DEFAULT 'available' CHECK (
-    status IN ('available', 'allocated', 'booked')
-    AND (
-      (share_type = 'builder' AND status IN ('available', 'allocated', 'booked'))
-      OR (share_type = 'landowner' AND status IN ('allocated', 'booked'))
-    )
-  ),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT project_units_company_project_fk
-    FOREIGN KEY (company_id, project_id)
-    REFERENCES public.projects(company_id, id)
-    ON DELETE RESTRICT
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_project_units_project_flat_no_case_insensitive
-  ON public.project_units (project_id, lower(trim(flat_no)));
-
-CREATE INDEX IF NOT EXISTS idx_project_units_company_project
-  ON public.project_units (company_id, project_id, flat_no);
-
-CREATE INDEX IF NOT EXISTS idx_project_units_project_share
-  ON public.project_units (project_id, share_type, status);
-
-CREATE TRIGGER set_project_units_updated_at
-BEFORE UPDATE ON public.project_units
-FOR EACH ROW
-EXECUTE FUNCTION public.set_updated_at();
-
-COMMIT;
--- <<< 0018_project_units.sql
-
--- >>> 0019_generic_party_contact_support.sql
-BEGIN;
-
--- Allow neutral general-contact records while keeping the existing role flags
--- and company-scoped party model intact for customer/supplier/investor flows.
-ALTER TABLE public.parties
-  DROP CONSTRAINT IF EXISTS parties_has_role;
-
-ALTER TABLE public.parties
-  ADD CONSTRAINT parties_has_role CHECK (true);
-
-COMMIT;
--- <<< 0019_generic_party_contact_support.sql
-
--- >>> 0020_project_expense_type.sql
-BEGIN;
-
-ALTER TABLE public.project_expenses
-  ADD COLUMN IF NOT EXISTS expense_type text;
-
-DO $$
-DECLARE
-  has_supplier_id boolean;
-  has_party_id boolean;
-  supplier_condition text;
-BEGIN
-  SELECT EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = 'project_expenses'
-      AND column_name = 'supplier_id'
-  ) INTO has_supplier_id;
-
-  SELECT EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = 'project_expenses'
-      AND column_name = 'party_id'
-  ) INTO has_party_id;
-
-  supplier_condition :=
-    '(supplier_name IS NOT NULL AND btrim(supplier_name) <> '''')'
-    || ' OR (supplier_bill_number IS NOT NULL AND btrim(supplier_bill_number) <> '''')'
-    || ' OR due_date IS NOT NULL';
-
-  IF has_supplier_id THEN
-    supplier_condition := supplier_condition || ' OR supplier_id IS NOT NULL';
-  END IF;
-
-  IF has_party_id THEN
-    supplier_condition := supplier_condition || ' OR party_id IS NOT NULL';
-  END IF;
-
-  EXECUTE format(
-    'UPDATE public.project_expenses
-     SET expense_type = CASE
-       WHEN %s THEN ''supplier_bill''
-       ELSE ''direct''
-     END
-     WHERE expense_type IS NULL',
-    supplier_condition
-  );
-END $$;
-
-ALTER TABLE public.project_expenses
-  ALTER COLUMN expense_type SET DEFAULT 'direct';
-
-UPDATE public.project_expenses
-SET expense_type = 'direct'
-WHERE expense_type IS NULL;
-
-ALTER TABLE public.project_expenses
-  ALTER COLUMN expense_type SET NOT NULL;
-
-ALTER TABLE public.project_expenses
-  DROP CONSTRAINT IF EXISTS project_expenses_expense_type_check;
-
-ALTER TABLE public.project_expenses
-  ADD CONSTRAINT project_expenses_expense_type_check
-  CHECK (expense_type IN ('direct', 'supplier_bill'));
-
-CREATE INDEX IF NOT EXISTS idx_project_expenses_company_expense_type
-  ON public.project_expenses (company_id, expense_type);
-
-CREATE INDEX IF NOT EXISTS idx_project_expenses_project_expense_type
-  ON public.project_expenses (project_id, expense_type);
-
-COMMIT;
--- <<< 0020_project_expense_type.sql
-
--- >>> 0021_booking_receipts_project_link.sql
-ALTER TABLE public.documents
-  ADD COLUMN IF NOT EXISTS project_id uuid;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'fk_documents_project_company'
-      AND conrelid = 'public.documents'::regclass
-  ) THEN
-    ALTER TABLE public.documents
-      ADD CONSTRAINT fk_documents_project_company
-      FOREIGN KEY (project_id, company_id)
-      REFERENCES public.projects(id, company_id)
-      ON DELETE SET NULL;
-  END IF;
-END $$;
--- <<< 0021_booking_receipts_project_link.sql
-
--- >>> 0022_quotation_save_and_pdf_support.sql
--- 0022_quotation_save_and_pdf_support.sql
---
--- What this migration does
---   1. Persists data the quotation PDF needs but the database was silently dropping:
---        discount type (a 10% discount used to reload as Rs.10), the questionnaire,
---        payment-stage notes, individual additional-charge lines, internal notes,
---        validity text, and the order of inclusions/exclusions.
---   2. Adds documents.row_type-style support for text-only BOQ rows
---        (document_items.row_type = 'item' | 'note') so engineer's notes are no longer
---        stored as "Qty 0 / Rs.0" line items.
---   3. Adds documents.brand_snapshot: the company's logo/colors/address/bank details frozen
---        when a quotation leaves Draft, so a later rebrand never changes a quotation
---        that was already issued.
---   4. Adds documents.version for optimistic concurrency (two autosaves can no longer
---        silently overwrite each other).
---   5. Adds allocate_document_number() and save_quotation(): the whole save — number
---        allocation, totals, document row and every child table — runs in ONE
---        transaction. A failure rolls everything back (no half-saved BOQ, no burned
---        document number). Totals are recomputed here; client-sent totals are ignored.
---
--- Safe to re-run (IF NOT EXISTS / CREATE OR REPLACE throughout). Rollback: 0022_rollback.sql.
-
-BEGIN;
-
--- ─── 1. documents ────────────────────────────────────────────────────────────────
-
-ALTER TABLE public.documents
-  ADD COLUMN IF NOT EXISTS version                 integer      NOT NULL DEFAULT 1,
-  ADD COLUMN IF NOT EXISTS discount_type           text         NOT NULL DEFAULT 'None',
-  ADD COLUMN IF NOT EXISTS discount_amount         numeric(18,2) NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS additional_charge_items jsonb        NOT NULL DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS questionnaire           jsonb,
-  ADD COLUMN IF NOT EXISTS internal_notes          text,
-  ADD COLUMN IF NOT EXISTS validity                text,
-  ADD COLUMN IF NOT EXISTS brand_snapshot          jsonb;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_discount_type_check') THEN
-    ALTER TABLE public.documents
-      ADD CONSTRAINT documents_discount_type_check
-      CHECK (discount_type IN ('None', 'Percentage', 'Fixed Amount'));
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_discount_amount_check') THEN
-    ALTER TABLE public.documents
-      ADD CONSTRAINT documents_discount_amount_check CHECK (discount_amount >= 0);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'documents_version_check') THEN
-    ALTER TABLE public.documents ADD CONSTRAINT documents_version_check CHECK (version >= 1);
-  END IF;
-END $$;
-
--- Backfill the discount type for existing quotations. Until now only the raw value was
--- stored, so "10" could mean 10% or Rs.10. grand_total was computed from the true
--- interpretation, so pick whichever one reproduces it; fall back to Fixed Amount (which
--- is what the app assumed on reload).
-WITH calc AS (
-  SELECT d.id,
-         d.discount,
-         (d.subtotal + d.additional_charges)                                         AS base,
-         (1 + d.tax_percentage / 100)                                                AS tax_mult,
-         d.grand_total
-  FROM public.documents d
-  WHERE d.document_type = 'Quotation' AND d.discount > 0 AND d.discount_type = 'None'
-), decided AS (
-  SELECT id, discount, base,
-         CASE
-           WHEN abs(grand_total - round((base - base * discount / 100) * tax_mult, 2)) < 0.02
-            AND abs(grand_total - round((base - discount) * tax_mult, 2)) >= 0.02
-           THEN 'Percentage'
-           ELSE 'Fixed Amount'
-         END AS dtype
-  FROM calc
-)
-UPDATE public.documents d
-SET discount_type   = x.dtype,
-    discount_amount = CASE x.dtype
-                        WHEN 'Percentage' THEN round(x.base * x.discount / 100, 2)
-                        ELSE x.discount
-                      END
-FROM decided x
-WHERE d.id = x.id;
-
--- Non-quotation documents (booking receipts): a stored discount is a plain amount.
-UPDATE public.documents
-SET discount_type = 'Fixed Amount', discount_amount = discount
-WHERE document_type <> 'Quotation' AND discount > 0 AND discount_type = 'None';
-
--- Existing quotations: keep what the app showed before (additional charges as one line).
-UPDATE public.documents
-SET additional_charge_items = jsonb_build_array(
-      jsonb_build_object('id', 'additional-1', 'description', 'Additional charges', 'amount', additional_charges))
-WHERE additional_charges > 0 AND additional_charge_items = '[]'::jsonb;
-
--- ─── 2. child tables ─────────────────────────────────────────────────────────────
-
-ALTER TABLE public.document_items
-  ADD COLUMN IF NOT EXISTS row_type text NOT NULL DEFAULT 'item';
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_items_row_type_check') THEN
-    ALTER TABLE public.document_items
-      ADD CONSTRAINT document_items_row_type_check CHECK (row_type IN ('item', 'note'));
-  END IF;
-END $$;
-
--- A row with no quantity and no rate adds nothing to any total: it is a text note.
-UPDATE public.document_items
-SET row_type = 'note'
-WHERE row_type = 'item' AND quantity = 0 AND rate = 0;
-
-ALTER TABLE public.payment_schedules ADD COLUMN IF NOT EXISTS notes text;
-
-ALTER TABLE public.document_inclusions ADD COLUMN IF NOT EXISTS display_order integer NOT NULL DEFAULT 0;
-ALTER TABLE public.document_exclusions ADD COLUMN IF NOT EXISTS display_order integer NOT NULL DEFAULT 0;
-
--- Best-effort order for existing rows: physical (insertion) order within each document.
-WITH ranked AS (
-  SELECT id, row_number() OVER (PARTITION BY document_id ORDER BY ctid) - 1 AS rn
-  FROM public.document_inclusions
-)
-UPDATE public.document_inclusions t SET display_order = r.rn FROM ranked r WHERE t.id = r.id AND t.display_order = 0;
-
-WITH ranked AS (
-  SELECT id, row_number() OVER (PARTITION BY document_id ORDER BY ctid) - 1 AS rn
-  FROM public.document_exclusions
-)
-UPDATE public.document_exclusions t SET display_order = r.rn FROM ranked r WHERE t.id = r.id AND t.display_order = 0;
-
--- ─── 3. document numbering (atomic, inside the caller's transaction) ─────────────
-
-CREATE OR REPLACE FUNCTION public.allocate_document_number(p_company_id uuid, p_document_type text)
-RETURNS text
-LANGUAGE plpgsql
-SET search_path = public
-AS $$
-DECLARE
-  v_local  timestamp := (now() AT TIME ZONE 'Asia/Kolkata');
-  v_fy     integer;
-  v_prefix text;
-  v_used   text;
-  v_next   integer;
-BEGIN
-  IF p_document_type NOT IN ('Quotation', 'BookingReceipt') THEN
-    RAISE EXCEPTION 'Unsupported document type %', p_document_type USING ERRCODE = '22023';
-  END IF;
-
-  -- Indian financial year (Apr-Mar), stored as its starting calendar year.
-  v_fy := CASE WHEN extract(month FROM v_local) >= 4
-               THEN extract(year FROM v_local)::integer
-               ELSE extract(year FROM v_local)::integer - 1 END;
-
-  SELECT CASE WHEN p_document_type = 'BookingReceipt'
-              THEN COALESCE(NULLIF(s.booking_prefix, ''), 'BR')
-              ELSE COALESCE(NULLIF(s.quotation_prefix, ''), 'QTN') END
-    INTO v_prefix
-  FROM public.company_settings s WHERE s.company_id = p_company_id;
-
-  v_prefix := COALESCE(v_prefix, CASE WHEN p_document_type = 'BookingReceipt' THEN 'BR' ELSE 'QTN' END);
-
-  -- First use of a (company, type, year) takes number 1 and leaves next_number = 2;
-  -- afterwards every call atomically bumps it. A rolled-back caller gives the number back.
-  INSERT INTO public.document_sequences AS ds (company_id, document_type, financial_year, prefix, next_number)
-  VALUES (p_company_id, p_document_type, v_fy, v_prefix, 2)
-  ON CONFLICT (company_id, document_type, financial_year)
-  DO UPDATE SET next_number = ds.next_number + 1, updated_at = now()
-  RETURNING ds.prefix, ds.next_number - 1 INTO v_used, v_next;
-
-  RETURN v_used || '/' || v_fy::text || '/' || lpad(v_next::text, 3, '0');
-END;
-$$;
-
--- ─── 4. save_quotation: one transaction for the whole save ───────────────────────
---
--- p_payload (snake_case, built by server/src/quotationPayload.ts):
---   id, customer_id, party_id, status, quotation_date, valid_until,
---   project_type_id, project_name, project_type, project_location, area_unit_id,
---   builtup_area, area_unit, floors, tax_rate_id, tax_name, tax_applicable, tax_percentage,
---   discount_type, discount_value, additional_charge_items[{id,description,amount}],
---   notes, internal_notes, validity, questionnaire{},
---   sections[{id,section_name,display_order,items[{id,description,quantity,unit_id,unit,
---             rate,display_order,row_type}]}],
---   specifications[{id,specification_type,description,display_order}],
---   inclusions[text], exclusions[text],
---   payment_schedule[{id,stage_name,percentage,amount,due_date,status,notes,display_order}],
---   terms[{id,description,display_order}]
---
--- Errors (SQLSTATE): 42501 other company's document · 40001 version conflict ·
---   P0409 deleted document · 22023 invalid input (bad discount, >100% payments, ...)
-
-CREATE OR REPLACE FUNCTION public.save_quotation(
-  p_company_id       uuid,
-  p_payload          jsonb,
-  p_expected_version integer DEFAULT NULL
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SET search_path = public
-AS $$
-DECLARE
-  v_id        uuid := NULLIF(p_payload->>'id', '')::uuid;
-  v_existing  public.documents%ROWTYPE;
-  v_is_new    boolean;
-  v_number    text;
-  v_status    text := COALESCE(NULLIF(p_payload->>'status', ''), 'Draft');
-
-  v_sub       numeric(18,2);
-  v_add       numeric(18,2);
-  v_base      numeric(18,2);
-  v_dtype     text := COALESCE(NULLIF(p_payload->>'discount_type', ''), 'None');
-  v_dval      numeric(18,2) := COALESCE(NULLIF(p_payload->>'discount_value', '')::numeric, 0);
-  v_damt      numeric(18,2);
-  v_tax_on    boolean := COALESCE((p_payload->>'tax_applicable')::boolean, false);
-  v_tax_rate  numeric(5,2) := COALESCE(NULLIF(p_payload->>'tax_percentage', '')::numeric, 0);
-  v_taxable   numeric(18,2);
-  v_tax       numeric(18,2);
-  v_grand     numeric(18,2);
-  v_pay_pct   numeric;
-
-  v_brand     jsonb;
-  v_version   integer;
-  v_section   jsonb;
-  v_sec_id    uuid;
-  v_sec_ord   integer;
-  v_new_id    uuid;
-BEGIN
-  IF v_id IS NULL THEN
-    RAISE EXCEPTION 'Quotation id is required.' USING ERRCODE = '22023';
-  END IF;
-
-  -- Serialise concurrent saves of the same quotation.
-  SELECT * INTO v_existing FROM public.documents WHERE id = v_id FOR UPDATE;
-  v_is_new := NOT FOUND;
-
-  IF NOT v_is_new THEN
-    IF v_existing.company_id <> p_company_id THEN
-      RAISE EXCEPTION 'This document belongs to a different company.' USING ERRCODE = '42501';
-    END IF;
-    IF v_existing.document_type <> 'Quotation' THEN
-      RAISE EXCEPTION 'This document is not a quotation.' USING ERRCODE = '22023';
-    END IF;
-    IF v_existing.is_deleted THEN
-      RAISE EXCEPTION 'This quotation has been deleted and can no longer be modified.' USING ERRCODE = 'P0409';
-    END IF;
-    IF p_expected_version IS NOT NULL AND v_existing.version <> p_expected_version THEN
-      RAISE EXCEPTION 'This quotation was changed elsewhere. Reload it before saving.'
-        USING ERRCODE = '40001', DETAIL = format('current_version=%s', v_existing.version);
-    END IF;
-    v_number := v_existing.document_number;
-  ELSE
-    v_number := public.allocate_document_number(p_company_id, 'Quotation');
-  END IF;
-
-  -- ── Totals: always recomputed here; whatever the client sent is ignored ──────────
-  SELECT COALESCE(SUM(round(COALESCE(NULLIF(i->>'quantity', '')::numeric, 0)
-                          * COALESCE(NULLIF(i->>'rate', '')::numeric, 0), 2)), 0)
-    INTO v_sub
-  FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) s,
-       jsonb_array_elements(COALESCE(s->'items', '[]'::jsonb)) i
-  WHERE COALESCE(i->>'row_type', 'item') = 'item';
-
-  SELECT COALESCE(SUM(round(COALESCE(NULLIF(c->>'amount', '')::numeric, 0), 2)), 0)
-    INTO v_add
-  FROM jsonb_array_elements(COALESCE(p_payload->'additional_charge_items', '[]'::jsonb)) c;
-
-  IF v_dtype NOT IN ('None', 'Percentage', 'Fixed Amount') THEN
-    RAISE EXCEPTION 'Invalid discount type: %', v_dtype USING ERRCODE = '22023';
-  END IF;
-  IF v_dval < 0 OR (v_dtype = 'Percentage' AND v_dval > 100) THEN
-    RAISE EXCEPTION 'Invalid discount value.' USING ERRCODE = '22023';
-  END IF;
-
-  v_base := v_sub + v_add;
-  v_damt := CASE v_dtype
-              WHEN 'Percentage'   THEN round(v_base * v_dval / 100, 2)
-              WHEN 'Fixed Amount' THEN round(v_dval, 2)
-              ELSE 0 END;
-  IF v_dtype = 'None' THEN v_dval := 0; END IF;
-  IF v_damt > v_base THEN
-    RAISE EXCEPTION 'Discount amount cannot exceed subtotal.' USING ERRCODE = '22023';
-  END IF;
-
-  v_taxable := v_base - v_damt;
-  IF NOT v_tax_on THEN v_tax_rate := 0; END IF;
-  v_tax   := CASE WHEN v_tax_rate > 0 THEN round(v_taxable * v_tax_rate / 100, 2) ELSE 0 END;
-  v_grand := v_taxable + v_tax;
-
-  SELECT COALESCE(SUM(NULLIF(p->>'percentage', '')::numeric), 0)
-    INTO v_pay_pct
-  FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) p;
-  IF v_pay_pct > 100.0001 THEN
-    RAISE EXCEPTION 'Payment schedule adds up to more than 100%%.' USING ERRCODE = '22023';
-  END IF;
-
-  -- ── Brand snapshot: frozen when the quotation leaves Draft ───────────────────────
-  IF v_status = 'Draft' THEN
-    v_brand := NULL;                                   -- editing again: re-snapshot on next issue
-  ELSIF NOT v_is_new AND v_existing.brand_snapshot IS NOT NULL THEN
-    v_brand := v_existing.brand_snapshot;              -- already issued: never changes
-  ELSE
-    SELECT jsonb_strip_nulls(jsonb_build_object(
-             'companyName', c.name,         'logoUrl', c.logo_url,
-             'primaryColor', c.primary_color, 'secondaryColor', c.secondary_color,
-             'address', c.address,          'mobile', c.phone,
-             'email', c.email,              'website', c.website,
-             'gstin', c.gst_number,         'pan', c.pan_number,
-             'bankName', s.bank_name,       'accountName', s.account_name,
-             'accountNumber', s.account_number, 'ifsc', s.ifsc,
-             'branch', s.branch,            'upiId', s.upi_id,
-             'authorizedPersonName', s.authorized_person, 'designation', s.designation,
-             'signatureImage', s.signature_url,
-             'snapshotAt', to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')))
-      INTO v_brand
-    FROM public.companies c
-    LEFT JOIN public.company_settings s ON s.company_id = c.id
-    WHERE c.id = p_company_id;
-  END IF;
-
-  -- ── Document row ─────────────────────────────────────────────────────────────────
-  INSERT INTO public.documents AS d (
-    id, company_id, customer_id, party_id, document_type, document_number, status,
-    quotation_date, valid_until, project_type_id, project_name, project_type, project_location,
-    area_unit_id, builtup_area, area_unit, floors,
-    subtotal, additional_charges, discount, discount_type, discount_amount,
-    tax_rate_id, tax_name, tax_percentage, tax_amount, grand_total,
-    notes, internal_notes, validity, questionnaire, additional_charge_items, brand_snapshot,
-    version, created_at, updated_at
-  ) VALUES (
-    v_id, p_company_id, NULLIF(p_payload->>'customer_id', '')::uuid, NULLIF(p_payload->>'party_id', '')::uuid,
-    'Quotation', v_number, v_status,
-    NULLIF(p_payload->>'quotation_date', '')::date, NULLIF(p_payload->>'valid_until', '')::date,
-    NULLIF(p_payload->>'project_type_id', '')::uuid,
-    COALESCE(p_payload->>'project_name', ''), COALESCE(p_payload->>'project_type', ''),
-    COALESCE(p_payload->>'project_location', ''),
-    NULLIF(p_payload->>'area_unit_id', '')::uuid, NULLIF(p_payload->>'builtup_area', '')::numeric,
-    COALESCE(p_payload->>'area_unit', ''), COALESCE(p_payload->>'floors', ''),
-    v_sub, v_add, v_dval, v_dtype, v_damt,
-    NULLIF(p_payload->>'tax_rate_id', '')::uuid, NULLIF(p_payload->>'tax_name', ''), v_tax_rate, v_tax, v_grand,
-    COALESCE(p_payload->>'notes', ''), COALESCE(p_payload->>'internal_notes', ''),
-    NULLIF(p_payload->>'validity', ''),
-    CASE WHEN jsonb_typeof(p_payload->'questionnaire') = 'object' THEN p_payload->'questionnaire' END,
-    COALESCE(p_payload->'additional_charge_items', '[]'::jsonb), v_brand,
-    1, now(), now()
-  )
-  ON CONFLICT (id) DO UPDATE SET
-    customer_id = EXCLUDED.customer_id, party_id = EXCLUDED.party_id, status = EXCLUDED.status,
-    quotation_date = EXCLUDED.quotation_date, valid_until = EXCLUDED.valid_until,
-    project_type_id = EXCLUDED.project_type_id, project_name = EXCLUDED.project_name,
-    project_type = EXCLUDED.project_type, project_location = EXCLUDED.project_location,
-    area_unit_id = EXCLUDED.area_unit_id, builtup_area = EXCLUDED.builtup_area,
-    area_unit = EXCLUDED.area_unit, floors = EXCLUDED.floors,
-    subtotal = EXCLUDED.subtotal, additional_charges = EXCLUDED.additional_charges,
-    discount = EXCLUDED.discount, discount_type = EXCLUDED.discount_type,
-    discount_amount = EXCLUDED.discount_amount,
-    tax_rate_id = EXCLUDED.tax_rate_id, tax_name = EXCLUDED.tax_name,
-    tax_percentage = EXCLUDED.tax_percentage, tax_amount = EXCLUDED.tax_amount,
-    grand_total = EXCLUDED.grand_total, notes = EXCLUDED.notes,
-    internal_notes = EXCLUDED.internal_notes, validity = EXCLUDED.validity,
-    questionnaire = EXCLUDED.questionnaire, additional_charge_items = EXCLUDED.additional_charge_items,
-    brand_snapshot = EXCLUDED.brand_snapshot,
-    version = d.version + 1, updated_at = now()
-  RETURNING d.version INTO v_version;
-
-  -- ── Children: replace the full set ───────────────────────────────────────────────
-  DELETE FROM public.document_sections       WHERE document_id = v_id;   -- cascades to document_items
-  DELETE FROM public.document_terms          WHERE document_id = v_id;
-  DELETE FROM public.document_specifications WHERE document_id = v_id;
-  DELETE FROM public.document_inclusions     WHERE document_id = v_id;
-  DELETE FROM public.document_exclusions     WHERE document_id = v_id;
-  DELETE FROM public.payment_schedules       WHERE document_id = v_id;
-
-  v_sec_ord := 0;
-  FOR v_section IN SELECT value FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) LOOP
-    -- A client-supplied id that already exists (a cloned quotation reusing ids) gets a fresh one.
-    v_new_id := NULLIF(v_section->>'id', '')::uuid;
-    IF v_new_id IS NULL OR EXISTS (SELECT 1 FROM public.document_sections WHERE id = v_new_id) THEN
-      v_new_id := gen_random_uuid();
-    END IF;
-
-    INSERT INTO public.document_sections (id, document_id, section_name, display_order)
-    VALUES (
-      v_new_id,
-      v_id,
-      v_section->>'section_name',
-      COALESCE(NULLIF(v_section->>'display_order', '')::integer, v_sec_ord)
-    )
-    RETURNING id INTO v_sec_id;
-
-    INSERT INTO public.document_items (id, section_id, description, quantity, unit_id, unit, rate, amount, display_order, row_type)
-    SELECT CASE WHEN NULLIF(t.i->>'id', '') IS NOT NULL
-                 AND NOT EXISTS (SELECT 1 FROM public.document_items x WHERE x.id = (t.i->>'id')::uuid)
-                THEN (t.i->>'id')::uuid ELSE gen_random_uuid() END,
-           v_sec_id,
-           t.i->>'description',
-           t.qty,
-           NULLIF(t.i->>'unit_id', '')::uuid,
-           NULLIF(t.i->>'unit', ''),
-           t.rate,
-           CASE WHEN t.rtype = 'item' THEN round(t.qty * t.rate, 2) ELSE 0 END,
-           COALESCE(NULLIF(t.i->>'display_order', '')::integer, (t.ord - 1)::integer),
-           t.rtype
-    FROM (
-      SELECT i, ord,
-             COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) AS qty,
-             COALESCE(NULLIF(i->>'rate', '')::numeric, 0)     AS rate,
-             CASE
-               WHEN i->>'row_type' IN ('item', 'note') THEN i->>'row_type'
-               WHEN COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) = 0
-                AND COALESCE(NULLIF(i->>'rate', '')::numeric, 0) = 0 THEN 'note'
-               ELSE 'item'
-             END AS rtype
-      FROM jsonb_array_elements(COALESCE(v_section->'items', '[]'::jsonb)) WITH ORDINALITY AS e(i, ord)
-    ) t;
-
-    v_sec_ord := v_sec_ord + 1;
-  END LOOP;
-
-  INSERT INTO public.document_specifications (id, document_id, specification_type, description, display_order)
-  SELECT CASE WHEN NULLIF(e.s->>'id', '') IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM public.document_specifications x WHERE x.id = (e.s->>'id')::uuid)
-             THEN (e.s->>'id')::uuid ELSE gen_random_uuid() END, v_id,
-         e.s->>'specification_type', e.s->>'description',
-         COALESCE(NULLIF(e.s->>'display_order', '')::integer, (e.ord - 1)::integer)
-  FROM jsonb_array_elements(COALESCE(p_payload->'specifications', '[]'::jsonb)) WITH ORDINALITY AS e(s, ord);
-
-  INSERT INTO public.document_inclusions (document_id, description, display_order)
-  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
-  FROM jsonb_array_elements_text(COALESCE(p_payload->'inclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
-  WHERE btrim(e.txt) <> '';
-
-  INSERT INTO public.document_exclusions (document_id, description, display_order)
-  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
-  FROM jsonb_array_elements_text(COALESCE(p_payload->'exclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
-  WHERE btrim(e.txt) <> '';
-
-  INSERT INTO public.payment_schedules (id, document_id, stage_name, percentage, amount, due_date, status, notes, display_order)
-  SELECT CASE WHEN NULLIF(e.p->>'id', '') IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM public.payment_schedules x WHERE x.id = (e.p->>'id')::uuid)
-             THEN (e.p->>'id')::uuid ELSE gen_random_uuid() END, v_id,
-         e.p->>'stage_name',
-         NULLIF(e.p->>'percentage', '')::numeric,
-         CASE WHEN NULLIF(e.p->>'percentage', '') IS NOT NULL
-              THEN round(v_grand * (e.p->>'percentage')::numeric / 100, 2)
-              ELSE NULLIF(e.p->>'amount', '')::numeric END,
-         NULLIF(e.p->>'due_date', '')::date,
-         NULLIF(e.p->>'status', ''),
-         NULLIF(e.p->>'notes', ''),
-         COALESCE(NULLIF(e.p->>'display_order', '')::integer, (e.ord - 1)::integer)
-  FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) WITH ORDINALITY AS e(p, ord);
-
-  INSERT INTO public.document_terms (id, document_id, description, display_order)
-  SELECT CASE WHEN NULLIF(e.t->>'id', '') IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM public.document_terms x WHERE x.id = (e.t->>'id')::uuid)
-             THEN (e.t->>'id')::uuid ELSE gen_random_uuid() END, v_id,
-         e.t->>'description',
-         COALESCE(NULLIF(e.t->>'display_order', '')::integer, (e.ord - 1)::integer)
-  FROM jsonb_array_elements(COALESCE(p_payload->'terms', '[]'::jsonb)) WITH ORDINALITY AS e(t, ord);
-
-  RETURN jsonb_build_object(
-    'id', v_id,
-    'document_number', v_number,
-    'version', v_version,
-    'is_new', v_is_new,
-    'subtotal', v_sub,
-    'additional_charges', v_add,
-    'discount_amount', v_damt,
-    'taxable_amount', v_taxable,
-    'tax_amount', v_tax,
-    'grand_total', v_grand
-  );
-END;
-$$;
-
--- Only the backend (service role) may call these. Supabase grants EXECUTE on new functions
--- to anon/authenticated by default, so revoke explicitly.
-REVOKE ALL ON FUNCTION public.allocate_document_number(uuid, text)         FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.save_quotation(uuid, jsonb, integer)         FROM PUBLIC, anon, authenticated;
-GRANT  EXECUTE ON FUNCTION public.allocate_document_number(uuid, text)     TO service_role;
-GRANT  EXECUTE ON FUNCTION public.save_quotation(uuid, jsonb, integer)     TO service_role;
-
-COMMIT;
--- <<< 0022_quotation_save_and_pdf_support.sql
-
--- >>> 0023_payment_schedule_rounding.sql
--- 0023_payment_schedule_rounding.sql
---
--- Fixes a rounding edge case in save_quotation (0022): each percentage-based payment
--- stage's amount was computed independently as round(grand_total * pct / 100, 2). For a
--- grand total of Rs.2,27,508.75 split 50/50, that gives Rs.1,13,754.38 + Rs.1,13,754.38
--- = Rs.2,27,508.76 — one paisa more than the actual total, because each half rounds up
--- independently. The fix: round every percentage-based stage normally EXCEPT the last
--- one (by display order), which gets "whatever's left" — total_pct% of grand_total minus
--- the sum of the other stages' rounded amounts — so percentage-based stages always sum
--- to exactly round(total_pct * grand_total / 100, 2), never off by a paisa. A stage
--- given an explicit amount (not a percentage) is untouched either way.
---
--- This REPLACES save_quotation's payment_schedules insert only; every other part of the
--- function (totals, sections, brand snapshot, version check, ...) is identical to 0022.
--- Safe to re-run. Rollback: 0023_rollback.sql (restores the exact 0022 behavior).
-
-BEGIN;
-
-CREATE OR REPLACE FUNCTION public.save_quotation(
-  p_company_id       uuid,
-  p_payload          jsonb,
-  p_expected_version integer DEFAULT NULL
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SET search_path = public
-AS $$
-DECLARE
-  v_id        uuid := NULLIF(p_payload->>'id', '')::uuid;
-  v_existing  public.documents%ROWTYPE;
-  v_is_new    boolean;
-  v_number    text;
-  v_status    text := COALESCE(NULLIF(p_payload->>'status', ''), 'Draft');
-
-  v_sub       numeric(18,2);
-  v_add       numeric(18,2);
-  v_base      numeric(18,2);
-  v_dtype     text := COALESCE(NULLIF(p_payload->>'discount_type', ''), 'None');
-  v_dval      numeric(18,2) := COALESCE(NULLIF(p_payload->>'discount_value', '')::numeric, 0);
-  v_damt      numeric(18,2);
-  v_tax_on    boolean := COALESCE((p_payload->>'tax_applicable')::boolean, false);
-  v_tax_rate  numeric(5,2) := COALESCE(NULLIF(p_payload->>'tax_percentage', '')::numeric, 0);
-  v_taxable   numeric(18,2);
-  v_tax       numeric(18,2);
-  v_grand     numeric(18,2);
-  v_pay_pct   numeric;
-
-  v_brand     jsonb;
-  v_version   integer;
-  v_section   jsonb;
-  v_sec_id    uuid;
-  v_sec_ord   integer;
-  v_new_id    uuid;
-BEGIN
-  IF v_id IS NULL THEN
-    RAISE EXCEPTION 'Quotation id is required.' USING ERRCODE = '22023';
-  END IF;
-
-  SELECT * INTO v_existing FROM public.documents WHERE id = v_id FOR UPDATE;
-  v_is_new := NOT FOUND;
-
-  IF NOT v_is_new THEN
-    IF v_existing.company_id <> p_company_id THEN
-      RAISE EXCEPTION 'This document belongs to a different company.' USING ERRCODE = '42501';
-    END IF;
-    IF v_existing.document_type <> 'Quotation' THEN
-      RAISE EXCEPTION 'This document is not a quotation.' USING ERRCODE = '22023';
-    END IF;
-    IF v_existing.is_deleted THEN
-      RAISE EXCEPTION 'This quotation has been deleted and can no longer be modified.' USING ERRCODE = 'P0409';
-    END IF;
-    IF p_expected_version IS NOT NULL AND v_existing.version <> p_expected_version THEN
-      RAISE EXCEPTION 'This quotation was changed elsewhere. Reload it before saving.'
-        USING ERRCODE = '40001', DETAIL = format('current_version=%s', v_existing.version);
-    END IF;
-    v_number := v_existing.document_number;
-  ELSE
-    v_number := public.allocate_document_number(p_company_id, 'Quotation');
-  END IF;
-
-  SELECT COALESCE(SUM(round(COALESCE(NULLIF(i->>'quantity', '')::numeric, 0)
-                          * COALESCE(NULLIF(i->>'rate', '')::numeric, 0), 2)), 0)
-    INTO v_sub
-  FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) s,
-       jsonb_array_elements(COALESCE(s->'items', '[]'::jsonb)) i
-  WHERE COALESCE(i->>'row_type', 'item') = 'item';
-
-  SELECT COALESCE(SUM(round(COALESCE(NULLIF(c->>'amount', '')::numeric, 0), 2)), 0)
-    INTO v_add
-  FROM jsonb_array_elements(COALESCE(p_payload->'additional_charge_items', '[]'::jsonb)) c;
-
-  IF v_dtype NOT IN ('None', 'Percentage', 'Fixed Amount') THEN
-    RAISE EXCEPTION 'Invalid discount type: %', v_dtype USING ERRCODE = '22023';
-  END IF;
-  IF v_dval < 0 OR (v_dtype = 'Percentage' AND v_dval > 100) THEN
-    RAISE EXCEPTION 'Invalid discount value.' USING ERRCODE = '22023';
-  END IF;
-
-  v_base := v_sub + v_add;
-  v_damt := CASE v_dtype
-              WHEN 'Percentage'   THEN round(v_base * v_dval / 100, 2)
-              WHEN 'Fixed Amount' THEN round(v_dval, 2)
-              ELSE 0 END;
-  IF v_dtype = 'None' THEN v_dval := 0; END IF;
-  IF v_damt > v_base THEN
-    RAISE EXCEPTION 'Discount amount cannot exceed subtotal.' USING ERRCODE = '22023';
-  END IF;
-
-  v_taxable := v_base - v_damt;
-  IF NOT v_tax_on THEN v_tax_rate := 0; END IF;
-  v_tax   := CASE WHEN v_tax_rate > 0 THEN round(v_taxable * v_tax_rate / 100, 2) ELSE 0 END;
-  v_grand := v_taxable + v_tax;
-
-  SELECT COALESCE(SUM(NULLIF(p->>'percentage', '')::numeric), 0)
-    INTO v_pay_pct
-  FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) p;
-  IF v_pay_pct > 100.0001 THEN
-    RAISE EXCEPTION 'Payment schedule adds up to more than 100%%.' USING ERRCODE = '22023';
-  END IF;
-
-  IF v_status = 'Draft' THEN
-    v_brand := NULL;
-  ELSIF NOT v_is_new AND v_existing.brand_snapshot IS NOT NULL THEN
-    v_brand := v_existing.brand_snapshot;
-  ELSE
-    SELECT jsonb_strip_nulls(jsonb_build_object(
-             'companyName', c.name,         'logoUrl', c.logo_url,
-             'primaryColor', c.primary_color, 'secondaryColor', c.secondary_color,
-             'address', c.address,          'mobile', c.phone,
-             'email', c.email,              'website', c.website,
-             'gstin', c.gst_number,         'pan', c.pan_number,
-             'bankName', s.bank_name,       'accountName', s.account_name,
-             'accountNumber', s.account_number, 'ifsc', s.ifsc,
-             'branch', s.branch,            'upiId', s.upi_id,
-             'authorizedPersonName', s.authorized_person, 'designation', s.designation,
-             'signatureImage', s.signature_url,
-             'snapshotAt', to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')))
-      INTO v_brand
-    FROM public.companies c
-    LEFT JOIN public.company_settings s ON s.company_id = c.id
-    WHERE c.id = p_company_id;
-  END IF;
-
-  INSERT INTO public.documents AS d (
-    id, company_id, customer_id, party_id, document_type, document_number, status,
-    quotation_date, valid_until, project_type_id, project_name, project_type, project_location,
-    area_unit_id, builtup_area, area_unit, floors,
-    subtotal, additional_charges, discount, discount_type, discount_amount,
-    tax_rate_id, tax_name, tax_percentage, tax_amount, grand_total,
-    notes, internal_notes, validity, questionnaire, additional_charge_items, brand_snapshot,
-    version, created_at, updated_at
-  ) VALUES (
-    v_id, p_company_id, NULLIF(p_payload->>'customer_id', '')::uuid, NULLIF(p_payload->>'party_id', '')::uuid,
-    'Quotation', v_number, v_status,
-    NULLIF(p_payload->>'quotation_date', '')::date, NULLIF(p_payload->>'valid_until', '')::date,
-    NULLIF(p_payload->>'project_type_id', '')::uuid,
-    COALESCE(p_payload->>'project_name', ''), COALESCE(p_payload->>'project_type', ''),
-    COALESCE(p_payload->>'project_location', ''),
-    NULLIF(p_payload->>'area_unit_id', '')::uuid, NULLIF(p_payload->>'builtup_area', '')::numeric,
-    COALESCE(p_payload->>'area_unit', ''), COALESCE(p_payload->>'floors', ''),
-    v_sub, v_add, v_dval, v_dtype, v_damt,
-    NULLIF(p_payload->>'tax_rate_id', '')::uuid, NULLIF(p_payload->>'tax_name', ''), v_tax_rate, v_tax, v_grand,
-    COALESCE(p_payload->>'notes', ''), COALESCE(p_payload->>'internal_notes', ''),
-    NULLIF(p_payload->>'validity', ''),
-    CASE WHEN jsonb_typeof(p_payload->'questionnaire') = 'object' THEN p_payload->'questionnaire' END,
-    COALESCE(p_payload->'additional_charge_items', '[]'::jsonb), v_brand,
-    1, now(), now()
-  )
-  ON CONFLICT (id) DO UPDATE SET
-    customer_id = EXCLUDED.customer_id, party_id = EXCLUDED.party_id, status = EXCLUDED.status,
-    quotation_date = EXCLUDED.quotation_date, valid_until = EXCLUDED.valid_until,
-    project_type_id = EXCLUDED.project_type_id, project_name = EXCLUDED.project_name,
-    project_type = EXCLUDED.project_type, project_location = EXCLUDED.project_location,
-    area_unit_id = EXCLUDED.area_unit_id, builtup_area = EXCLUDED.builtup_area,
-    area_unit = EXCLUDED.area_unit, floors = EXCLUDED.floors,
-    subtotal = EXCLUDED.subtotal, additional_charges = EXCLUDED.additional_charges,
-    discount = EXCLUDED.discount, discount_type = EXCLUDED.discount_type,
-    discount_amount = EXCLUDED.discount_amount,
-    tax_rate_id = EXCLUDED.tax_rate_id, tax_name = EXCLUDED.tax_name,
-    tax_percentage = EXCLUDED.tax_percentage, tax_amount = EXCLUDED.tax_amount,
-    grand_total = EXCLUDED.grand_total, notes = EXCLUDED.notes,
-    internal_notes = EXCLUDED.internal_notes, validity = EXCLUDED.validity,
-    questionnaire = EXCLUDED.questionnaire, additional_charge_items = EXCLUDED.additional_charge_items,
-    brand_snapshot = EXCLUDED.brand_snapshot,
-    version = d.version + 1, updated_at = now()
-  RETURNING d.version INTO v_version;
-
-  DELETE FROM public.document_sections       WHERE document_id = v_id;
-  DELETE FROM public.document_terms          WHERE document_id = v_id;
-  DELETE FROM public.document_specifications WHERE document_id = v_id;
-  DELETE FROM public.document_inclusions     WHERE document_id = v_id;
-  DELETE FROM public.document_exclusions     WHERE document_id = v_id;
-  DELETE FROM public.payment_schedules       WHERE document_id = v_id;
-
-  v_sec_ord := 0;
-  FOR v_section IN SELECT value FROM jsonb_array_elements(COALESCE(p_payload->'sections', '[]'::jsonb)) LOOP
-    v_new_id := NULLIF(v_section->>'id', '')::uuid;
-    IF v_new_id IS NULL OR EXISTS (SELECT 1 FROM public.document_sections WHERE id = v_new_id) THEN
-      v_new_id := gen_random_uuid();
-    END IF;
-
-    INSERT INTO public.document_sections (id, document_id, section_name, display_order)
-    VALUES (
-      v_new_id,
-      v_id,
-      v_section->>'section_name',
-      COALESCE(NULLIF(v_section->>'display_order', '')::integer, v_sec_ord)
-    )
-    RETURNING id INTO v_sec_id;
-
-    INSERT INTO public.document_items (id, section_id, description, quantity, unit_id, unit, rate, amount, display_order, row_type)
-    SELECT CASE WHEN NULLIF(t.i->>'id', '') IS NOT NULL
-                 AND NOT EXISTS (SELECT 1 FROM public.document_items x WHERE x.id = (t.i->>'id')::uuid)
-                THEN (t.i->>'id')::uuid ELSE gen_random_uuid() END,
-           v_sec_id,
-           t.i->>'description',
-           t.qty,
-           NULLIF(t.i->>'unit_id', '')::uuid,
-           NULLIF(t.i->>'unit', ''),
-           t.rate,
-           CASE WHEN t.rtype = 'item' THEN round(t.qty * t.rate, 2) ELSE 0 END,
-           COALESCE(NULLIF(t.i->>'display_order', '')::integer, (t.ord - 1)::integer),
-           t.rtype
-    FROM (
-      SELECT i, ord,
-             COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) AS qty,
-             COALESCE(NULLIF(i->>'rate', '')::numeric, 0)     AS rate,
-             CASE
-               WHEN i->>'row_type' IN ('item', 'note') THEN i->>'row_type'
-               WHEN COALESCE(NULLIF(i->>'quantity', '')::numeric, 0) = 0
-                AND COALESCE(NULLIF(i->>'rate', '')::numeric, 0) = 0 THEN 'note'
-               ELSE 'item'
-             END AS rtype
-      FROM jsonb_array_elements(COALESCE(v_section->'items', '[]'::jsonb)) WITH ORDINALITY AS e(i, ord)
-    ) t;
-
-    v_sec_ord := v_sec_ord + 1;
-  END LOOP;
-
-  INSERT INTO public.document_specifications (id, document_id, specification_type, description, display_order)
-  SELECT CASE WHEN NULLIF(e.s->>'id', '') IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM public.document_specifications x WHERE x.id = (e.s->>'id')::uuid)
-             THEN (e.s->>'id')::uuid ELSE gen_random_uuid() END, v_id,
-         e.s->>'specification_type', e.s->>'description',
-         COALESCE(NULLIF(e.s->>'display_order', '')::integer, (e.ord - 1)::integer)
-  FROM jsonb_array_elements(COALESCE(p_payload->'specifications', '[]'::jsonb)) WITH ORDINALITY AS e(s, ord);
-
-  INSERT INTO public.document_inclusions (document_id, description, display_order)
-  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
-  FROM jsonb_array_elements_text(COALESCE(p_payload->'inclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
-  WHERE btrim(e.txt) <> '';
-
-  INSERT INTO public.document_exclusions (document_id, description, display_order)
-  SELECT v_id, btrim(e.txt), (e.ord - 1)::integer
-  FROM jsonb_array_elements_text(COALESCE(p_payload->'exclusions', '[]'::jsonb)) WITH ORDINALITY AS e(txt, ord)
-  WHERE btrim(e.txt) <> '';
-
-  -- Payment schedule: every percentage-based stage is rounded normally EXCEPT the last
-  -- one (by display order among percentage-based stages), which absorbs whatever
-  -- rounding residue is left so the set always sums to exactly
-  -- round(total_pct * grand_total / 100, 2) — never off by a paisa from independent
-  -- per-row rounding. A stage given an explicit amount (no percentage) passes through
-  -- untouched; it isn't part of this reconciliation.
-  WITH schedule AS (
-    SELECT e.p, e.ord, NULLIF(e.p->>'percentage', '')::numeric AS pct
-    FROM jsonb_array_elements(COALESCE(p_payload->'payment_schedule', '[]'::jsonb)) WITH ORDINALITY AS e(p, ord)
-  ), pct_rows AS (
-    SELECT ord, pct, round(v_grand * pct / 100, 2) AS naive_amount,
-           row_number() OVER (ORDER BY ord DESC) AS rn_from_end
-    FROM schedule WHERE pct IS NOT NULL
-  ), pct_totals AS (
-    SELECT COALESCE(SUM(pct), 0) AS total_pct,
-           COALESCE(SUM(naive_amount) FILTER (WHERE rn_from_end <> 1), 0) AS sum_of_others
-    FROM pct_rows
-  )
-  INSERT INTO public.payment_schedules (id, document_id, stage_name, percentage, amount, due_date, status, notes, display_order)
-  SELECT CASE WHEN NULLIF(s.p->>'id', '') IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM public.payment_schedules x WHERE x.id = (s.p->>'id')::uuid)
-             THEN (s.p->>'id')::uuid ELSE gen_random_uuid() END,
-         v_id,
-         s.p->>'stage_name',
-         s.pct,
-         CASE
-           WHEN s.pct IS NULL THEN NULLIF(s.p->>'amount', '')::numeric
-           WHEN pr.rn_from_end = 1 THEN round(v_grand * t.total_pct / 100, 2) - t.sum_of_others
-           ELSE pr.naive_amount
-         END,
-         NULLIF(s.p->>'due_date', '')::date,
-         NULLIF(s.p->>'status', ''),
-         NULLIF(s.p->>'notes', ''),
-         COALESCE(NULLIF(s.p->>'display_order', '')::integer, (s.ord - 1)::integer)
-  FROM schedule s
-  LEFT JOIN pct_rows pr ON pr.ord = s.ord
-  CROSS JOIN pct_totals t
-  ORDER BY s.ord;
-
-  INSERT INTO public.document_terms (id, document_id, description, display_order)
-  SELECT CASE WHEN NULLIF(e.t->>'id', '') IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM public.document_terms x WHERE x.id = (e.t->>'id')::uuid)
-             THEN (e.t->>'id')::uuid ELSE gen_random_uuid() END, v_id,
-         e.t->>'description',
-         COALESCE(NULLIF(e.t->>'display_order', '')::integer, (e.ord - 1)::integer)
-  FROM jsonb_array_elements(COALESCE(p_payload->'terms', '[]'::jsonb)) WITH ORDINALITY AS e(t, ord);
-
-  RETURN jsonb_build_object(
-    'id', v_id,
-    'document_number', v_number,
-    'version', v_version,
-    'is_new', v_is_new,
-    'subtotal', v_sub,
-    'additional_charges', v_add,
-    'discount_amount', v_damt,
-    'taxable_amount', v_taxable,
-    'tax_amount', v_tax,
-    'grand_total', v_grand
-  );
-END;
-$$;
-
-REVOKE ALL ON FUNCTION public.save_quotation(uuid, jsonb, integer)         FROM PUBLIC, anon, authenticated;
-GRANT  EXECUTE ON FUNCTION public.save_quotation(uuid, jsonb, integer)     TO service_role;
-
-COMMIT;
--- <<< 0023_payment_schedule_rounding.sql
-
--- >>> 0024_normalize_existing_emails.sql
--- 0024_normalize_existing_emails.sql
---
--- Companion to the application-layer fix in server/src/auth.ts (findUserByEmail /
--- createUser now normalize to lower(trim(email)) before every lookup and insert).
--- This migration lowercases EXISTING rows to match, so a user who signed up as
--- "Jane@X.com" before this fix can still log in with "jane@x.com" afterwards.
---
--- Safe to re-run (WHERE clause only touches rows that still need it). If two existing
--- accounts already differ only by case (e.g. "a@x.com" and "A@x.com" both exist as
--- separate rows — only possible from before this fix), lowercasing either would collide
--- with the other, so those rows are deliberately left untouched and reported via a
--- NOTICE for manual review instead of failing the whole migration.
-BEGIN;
-
-DO $$
-DECLARE
-  v_collisions integer;
-BEGIN
-  SELECT count(*) INTO v_collisions
-  FROM public.users u
-  WHERE u.email <> lower(trim(u.email))
-    AND EXISTS (
-      SELECT 1 FROM public.users u2
-      WHERE u2.id <> u.id AND lower(trim(u2.email)) = lower(trim(u.email))
-    );
-  IF v_collisions > 0 THEN
-    RAISE NOTICE 'Skipped % row(s) whose lowercased email collides with another existing account — review these manually (e.g. merge or rename one).', v_collisions;
-  END IF;
-END $$;
-
-UPDATE public.users u
-SET email = lower(trim(u.email))
-WHERE u.email <> lower(trim(u.email))
-  AND NOT EXISTS (
-    SELECT 1 FROM public.users u2
-    WHERE u2.id <> u.id AND lower(trim(u2.email)) = lower(trim(u.email))
-  );
-
-COMMIT;
--- <<< 0024_normalize_existing_emails.sql
-
--- >>> 0025_booking_receipt_unit_locking.sql
-BEGIN;
-
-ALTER TABLE public.booking_receipt_details
-  ADD COLUMN IF NOT EXISTS project_unit_id uuid,
-  ADD COLUMN IF NOT EXISTS booking_status text,
-  ADD COLUMN IF NOT EXISTS prior_unit_status text;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'fk_booking_receipt_details_project_unit'
-      AND conrelid = 'public.booking_receipt_details'::regclass
-  ) THEN
-    ALTER TABLE public.booking_receipt_details
-      ADD CONSTRAINT fk_booking_receipt_details_project_unit
-      FOREIGN KEY (project_unit_id)
-      REFERENCES public.project_units(id)
-      ON DELETE RESTRICT;
-  END IF;
-END $$;
-
-ALTER TABLE public.booking_receipt_details
-  ADD CONSTRAINT chk_booking_receipt_details_booking_status
-  CHECK (
-    booking_status IS NULL OR booking_status IN ('Draft', 'Confirmed', 'Cancelled', 'Completed')
-  );
-
-ALTER TABLE public.booking_receipt_details
-  ADD CONSTRAINT chk_booking_receipt_details_prior_unit_status
-  CHECK (
-    prior_unit_status IS NULL OR prior_unit_status IN ('available', 'allocated', 'booked')
-  );
-
--- Backfill only where the historical state is explicit and safe to infer.
--- We intentionally do not reference documents.is_deleted in the unique index below,
--- because soft delete lives on the parent document row and the correct enforcement is
--- transactional app-side validation plus the active-booking partial unique index.
-UPDATE public.booking_receipt_details brd
-SET booking_status = CASE
-  WHEN d.status = 'Cancelled' THEN 'Cancelled'
-  WHEN d.status = 'Completed' THEN 'Completed'
-  WHEN d.status IN ('Accepted', 'Generated', 'Sent') THEN 'Confirmed'
-  WHEN d.is_deleted = true THEN 'Cancelled'
-  ELSE 'Draft'
-END
-FROM public.documents d
-WHERE brd.document_id = d.id
-  AND brd.booking_status IS NULL
-  AND d.status IS NOT NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS ux_active_booking_per_unit
-  ON public.booking_receipt_details (project_unit_id)
-  WHERE project_unit_id IS NOT NULL
-    AND booking_status IN ('Confirmed', 'Completed');
-
-CREATE OR REPLACE FUNCTION public.confirm_booking_receipt_unit(
-  p_document_id uuid,
-  p_project_unit_id uuid
-)
-RETURNS void
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_document record;
-  v_unit record;
-  v_active_booking_count integer;
-BEGIN
-  SELECT d.id, d.company_id, d.project_id, d.is_deleted, d.status
-    INTO v_document
-  FROM public.documents d
-  WHERE d.id = p_document_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Booking document not found.';
-  END IF;
-
-  IF v_document.is_deleted THEN
-    RAISE EXCEPTION 'This receipt has been deleted and can no longer be modified.';
-  END IF;
-
-  SELECT pu.id, pu.company_id, pu.project_id, pu.status
-    INTO v_unit
-  FROM public.project_units pu
-  WHERE pu.id = p_project_unit_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Selected project unit was not found.';
-  END IF;
-
-  IF v_unit.company_id <> v_document.company_id THEN
-    RAISE EXCEPTION 'Selected unit does not belong to this company.';
-  END IF;
-
-  IF v_unit.project_id <> v_document.project_id THEN
-    RAISE EXCEPTION 'Selected unit does not belong to this project.';
-  END IF;
-
-  IF v_unit.status NOT IN ('available', 'allocated') THEN
-    RAISE EXCEPTION 'This unit is not available for booking.';
-  END IF;
-
-  SELECT count(*)
-    INTO v_active_booking_count
-  FROM public.booking_receipt_details brd
-  JOIN public.documents d ON d.id = brd.document_id
-  WHERE brd.project_unit_id = p_project_unit_id
-    AND brd.booking_status IN ('Confirmed', 'Completed')
-    AND brd.document_id <> p_document_id
-    AND d.is_deleted = false;
-
-  IF v_active_booking_count > 0 THEN
-    RAISE EXCEPTION 'This unit already has an active booking.';
-  END IF;
-
-  UPDATE public.booking_receipt_details
-  SET project_unit_id = p_project_unit_id,
-      booking_status = 'Confirmed',
-      prior_unit_status = v_unit.status
-  WHERE document_id = p_document_id;
-
-  UPDATE public.project_units
-  SET status = 'booked',
-      updated_at = now()
-  WHERE id = p_project_unit_id;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION public.cancel_booking_receipt_unit(
-  p_document_id uuid
-)
-RETURNS void
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_booking record;
-  v_unit record;
-BEGIN
-  SELECT brd.document_id, brd.project_unit_id, brd.booking_status, brd.prior_unit_status, d.company_id, d.project_id, d.is_deleted
-    INTO v_booking
-  FROM public.booking_receipt_details brd
-  JOIN public.documents d ON d.id = brd.document_id
-  WHERE brd.document_id = p_document_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Booking document not found.';
-  END IF;
-
-  IF v_booking.is_deleted THEN
-    RAISE EXCEPTION 'This receipt has been deleted and can no longer be modified.';
-  END IF;
-
-  IF v_booking.project_unit_id IS NULL THEN
-    UPDATE public.booking_receipt_details
-    SET booking_status = 'Cancelled'
-    WHERE document_id = p_document_id;
-    RETURN;
-  END IF;
-
-  SELECT pu.status, pu.company_id, pu.project_id
-    INTO v_unit
-  FROM public.project_units pu
-  WHERE pu.id = v_booking.project_unit_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Unit linked to this booking no longer exists.';
-  END IF;
-
-  UPDATE public.booking_receipt_details
-  SET booking_status = 'Cancelled'
-  WHERE document_id = p_document_id;
-
-  IF v_unit.status = 'booked' THEN
-    UPDATE public.project_units
-    SET status = COALESCE(v_booking.prior_unit_status, 'available'),
-        updated_at = now()
-    WHERE id = v_booking.project_unit_id;
-  END IF;
-END;
-$$;
-
-COMMIT;
--- <<< 0025_booking_receipt_unit_locking.sql
-
--- >>> 0026_atomic_receipt_allocation.sql
-CREATE OR REPLACE FUNCTION public.apply_receipt_allocation(
-  p_company_id uuid,
-  p_receipt_id uuid,
-  p_invoice_id uuid,
-  p_requested_amount numeric
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_receipt record;
-  v_invoice record;
-  v_receipt_total_allocated numeric;
-  v_invoice_total_allocated numeric;
-  v_receipt_remaining numeric;
-  v_invoice_outstanding numeric;
-  v_allocated_amount numeric;
-  v_allocation record;
-BEGIN
-  SELECT *
-  INTO v_receipt
-  FROM public.project_receipts
-  WHERE id = p_receipt_id AND company_id = p_company_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Receipt not found.';
-  END IF;
-
-  SELECT *
-  INTO v_invoice
-  FROM public.invoices
-  WHERE id = p_invoice_id AND company_id = p_company_id
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Invoice not found.';
-  END IF;
-
-  IF v_invoice.status = 'Cancelled' THEN
-    RAISE EXCEPTION 'Cancelled invoices cannot receive payment allocations.';
-  END IF;
-
-  IF v_invoice.status <> 'Issued' THEN
-    RAISE EXCEPTION 'Only issued invoices can receive payment allocations.';
-  END IF;
-
-  SELECT COALESCE(SUM(allocated_amount), 0)
-  INTO v_receipt_total_allocated
-  FROM public.payment_allocations
-  WHERE receipt_id = p_receipt_id;
-
-  SELECT COALESCE(SUM(allocated_amount), 0)
-  INTO v_invoice_total_allocated
-  FROM public.payment_allocations
-  WHERE invoice_id = p_invoice_id;
-
-  v_receipt_remaining := GREATEST(v_receipt.amount - v_receipt_total_allocated, 0::numeric);
-  v_invoice_outstanding := GREATEST(v_invoice.grand_total - v_invoice_total_allocated, 0::numeric);
-
-  IF p_requested_amount IS NULL OR p_requested_amount <= 0 THEN
-    RAISE EXCEPTION 'Allocation amount must be greater than zero.';
-  END IF;
-
-  IF v_receipt_remaining <= 0 THEN
-    RAISE EXCEPTION 'This receipt has no remaining balance to allocate.';
-  END IF;
-
-  IF v_invoice_outstanding <= 0 THEN
-    RAISE EXCEPTION 'This invoice is already fully paid.';
-  END IF;
-
-  v_allocated_amount := LEAST(p_requested_amount, v_receipt_remaining, v_invoice_outstanding);
-
-  IF v_allocated_amount <= 0 THEN
-    RAISE EXCEPTION 'Requested amount exceeds the remaining receipt balance or invoice outstanding amount.';
-  END IF;
-
-  INSERT INTO public.payment_allocations (company_id, invoice_id, receipt_id, allocated_amount)
-  VALUES (p_company_id, p_invoice_id, p_receipt_id, v_allocated_amount)
-  RETURNING * INTO v_allocation;
-
-  RETURN jsonb_build_object(
-    'allocation', jsonb_build_object(
-      'id', v_allocation.id,
-      'companyId', v_allocation.company_id,
-      'invoiceId', v_allocation.invoice_id,
-      'receiptId', v_allocation.receipt_id,
-      'allocatedAmount', v_allocation.allocated_amount,
-      'createdAt', v_allocation.created_at
-    ),
-    'receiptRemaining', v_receipt_remaining,
-    'invoiceOutstanding', v_invoice_outstanding,
-    'allocatedAmount', v_allocated_amount
-  );
-END;
-$$;
--- <<< 0026_atomic_receipt_allocation.sql
-
--- >>> 0026_update_project_and_business_type_definitions.sql
-BEGIN;
-
--- Preserve existing project-type IDs and foreign-key references.
--- Existing codes are renamed in place so historical projects keep their project_type_id.
-UPDATE public.project_types
-SET code = 'independent_house',
-    name = 'Independent House Construction',
-    description = 'Construction of standalone and independent residential houses.',
-    sort_order = 1,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'individual_house';
-
-UPDATE public.project_types
-SET name = 'Villa Construction',
-    description = 'Construction of standalone villas and villa communities.',
-    sort_order = 2,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'villa';
-
-UPDATE public.project_types
-SET code = 'apartment',
-    name = 'Apartment Construction',
-    description = 'Construction or development of apartment buildings and residential towers.',
-    sort_order = 3,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'apartment_building';
-
-UPDATE public.project_types
-SET name = 'Commercial Building Construction',
-    description = 'Construction of offices, retail buildings and other commercial properties.',
-    sort_order = 4,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'commercial_building';
-
-UPDATE public.project_types
-SET name = 'Industrial & Warehouse Construction',
-    description = 'Construction of industrial facilities, factories and warehouse buildings.',
-    sort_order = 5,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'industrial_warehouse';
-
-INSERT INTO public.project_types (company_id, code, name, description, sort_order, is_active)
-VALUES (NULL, 'industrial_warehouse', 'Industrial & Warehouse Construction', 'Construction of industrial facilities, factories and warehouse buildings.', 5, true)
-ON CONFLICT ON CONSTRAINT uq_project_types
-DO UPDATE SET
-  name = EXCLUDED.name,
-  description = EXCLUDED.description,
-  sort_order = EXCLUDED.sort_order,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-UPDATE public.project_types
-SET name = 'Renovation & Remodeling',
-    description = 'Renovation, rehabilitation and remodeling of existing residential or commercial properties.',
-    sort_order = 6,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'renovation';
-
-UPDATE public.project_types
-SET code = 'building_extension',
-    name = 'Building Extension & Additional Floor',
-    description = 'Building extensions, alterations and construction of additional floors.',
-    sort_order = 7,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'extension';
-
-UPDATE public.project_types
-SET code = 'interior_fitout',
-    name = 'Interior Fit-out & Works',
-    description = 'Interior fit-out, finishing and interior construction works.',
-    sort_order = 8,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'interior';
-
-UPDATE public.project_types
-SET name = 'Structural Construction Works',
-    description = 'Structural construction works including RCC, steel and structural building elements.',
-    sort_order = 9,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'structural_works';
-
-INSERT INTO public.project_types (company_id, code, name, description, sort_order, is_active)
-VALUES (NULL, 'structural_works', 'Structural Construction Works', 'Structural construction works including RCC, steel and structural building elements.', 9, true)
-ON CONFLICT ON CONSTRAINT uq_project_types
-DO UPDATE SET
-  name = EXCLUDED.name,
-  description = EXCLUDED.description,
-  sort_order = EXCLUDED.sort_order,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-UPDATE public.project_types
-SET code = 'civil_infrastructure',
-    name = 'Civil Infrastructure Works',
-    description = 'Civil engineering and infrastructure works for residential, commercial and public facilities.',
-    sort_order = 10,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'civil_only';
-
-UPDATE public.project_types
-SET name = 'Civil Infrastructure Works',
-    description = 'Civil engineering and infrastructure works for residential, commercial and public facilities.',
-    sort_order = 10,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'civil_infrastructure';
-
-INSERT INTO public.project_types (company_id, code, name, description, sort_order, is_active)
-VALUES (NULL, 'road_drainage', 'Road & Drainage Works', 'Road construction, drainage systems, culverts and related infrastructure works.', 11, true)
-ON CONFLICT ON CONSTRAINT uq_project_types
-DO UPDATE SET
-  name = EXCLUDED.name,
-  description = EXCLUDED.description,
-  sort_order = EXCLUDED.sort_order,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-UPDATE public.project_types
-SET name = 'Other / Custom Project',
-    description = 'A project that does not fit the predefined project categories and requires custom planning.',
-    sort_order = 12,
-    is_active = true,
-    updated_at = now()
-WHERE company_id IS NULL AND code = 'other';
-
-COMMIT;
--- <<< 0026_update_project_and_business_type_definitions.sql
-
--- >>> 0027_invoice_discount_columns.sql
-BEGIN;
-
-ALTER TABLE public.invoices
-  ADD COLUMN IF NOT EXISTS discount_amount numeric(18,2) NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS discount_percentage numeric(5,2) NOT NULL DEFAULT 0;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'invoices_discount_amount_check'
-  ) THEN
-    ALTER TABLE public.invoices
-      ADD CONSTRAINT invoices_discount_amount_check CHECK (discount_amount >= 0);
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'invoices_discount_percentage_check'
-  ) THEN
-    ALTER TABLE public.invoices
-      ADD CONSTRAINT invoices_discount_percentage_check CHECK (discount_percentage >= 0 AND discount_percentage <= 100);
-  END IF;
-END $$;
-
-COMMIT;
--- <<< 0027_invoice_discount_columns.sql
-
--- >>> 0028_project_types_canonical_cleanup.sql
-BEGIN;
-
--- Canonicalize legacy/duplicate global project type codes without deleting history.
--- This migration preserves existing IDs for canonical rows, remaps FK references,
--- migrates stage templates, and deactivates deprecated duplicate rows.
-
-WITH canonical AS (
-  SELECT code, id
-  FROM public.project_types
-  WHERE company_id IS NULL
-    AND code IN (
-      'independent_house',
-      'apartment',
-      'building_extension',
-      'interior_fitout',
-      'civil_infrastructure',
-      'road_drainage',
-      'industrial_warehouse'
-    )
-), legacy_map AS (
-  SELECT legacy.id AS legacy_id, legacy.code AS legacy_code, canonical.id AS canonical_id, canonical.code AS canonical_code
-  FROM public.project_types legacy
-  JOIN canonical
-    ON canonical.code = CASE lower(legacy.code)
-      WHEN 'individual_house' THEN 'independent_house'
-      WHEN 'apartment_building' THEN 'apartment'
-      WHEN 'extension' THEN 'building_extension'
-      WHEN 'interior' THEN 'interior_fitout'
-      WHEN 'civil_only' THEN 'civil_infrastructure'
-      WHEN 'road' THEN 'road_drainage'
-      WHEN 'drainage' THEN 'road_drainage'
-      WHEN 'industrial' THEN 'industrial_warehouse'
-      ELSE NULL
-    END
-  WHERE legacy.company_id IS NULL
-)
-UPDATE public.projects p
-SET project_type_id = m.canonical_id,
-    project_type_snapshot = COALESCE(pt.name, p.project_type_snapshot),
-    updated_at = now()
-FROM legacy_map m
-LEFT JOIN public.project_types pt ON pt.id = m.canonical_id
-WHERE p.project_type_id = m.legacy_id;
-
-WITH canonical AS (
-  SELECT code, id
-  FROM public.project_types
-  WHERE company_id IS NULL
-    AND code IN (
-      'independent_house',
-      'apartment',
-      'building_extension',
-      'interior_fitout',
-      'civil_infrastructure',
-      'road_drainage',
-      'industrial_warehouse'
-    )
-), legacy_map AS (
-  SELECT legacy.id AS legacy_id, canonical.id AS canonical_id
-  FROM public.project_types legacy
-  JOIN canonical
-    ON canonical.code = CASE lower(legacy.code)
-      WHEN 'individual_house' THEN 'independent_house'
-      WHEN 'apartment_building' THEN 'apartment'
-      WHEN 'extension' THEN 'building_extension'
-      WHEN 'interior' THEN 'interior_fitout'
-      WHEN 'civil_only' THEN 'civil_infrastructure'
-      WHEN 'road' THEN 'road_drainage'
-      WHEN 'drainage' THEN 'road_drainage'
-      WHEN 'industrial' THEN 'industrial_warehouse'
-      ELSE NULL
-    END
-  WHERE legacy.company_id IS NULL
-)
-UPDATE public.documents d
-SET project_type_id = m.canonical_id,
-    project_type = COALESCE(pt.name, d.project_type),
-    updated_at = now()
-FROM legacy_map m
-LEFT JOIN public.project_types pt ON pt.id = m.canonical_id
-WHERE d.project_type_id = m.legacy_id;
-
-WITH canonical AS (
-  SELECT code, id
-  FROM public.project_types
-  WHERE company_id IS NULL
-    AND code IN (
-      'independent_house',
-      'apartment',
-      'building_extension',
-      'interior_fitout',
-      'civil_infrastructure',
-      'road_drainage',
-      'industrial_warehouse'
-    )
-), legacy_map AS (
-  SELECT legacy.id AS legacy_id, canonical.id AS canonical_id
-  FROM public.project_types legacy
-  JOIN canonical
-    ON canonical.code = CASE lower(legacy.code)
-      WHEN 'individual_house' THEN 'independent_house'
-      WHEN 'apartment_building' THEN 'apartment'
-      WHEN 'extension' THEN 'building_extension'
-      WHEN 'interior' THEN 'interior_fitout'
-      WHEN 'civil_only' THEN 'civil_infrastructure'
-      WHEN 'road' THEN 'road_drainage'
-      WHEN 'drainage' THEN 'road_drainage'
-      WHEN 'industrial' THEN 'industrial_warehouse'
-      ELSE NULL
-    END
-  WHERE legacy.company_id IS NULL
-) , staged_templates AS (
-  SELECT
-    pst.company_id,
-    m.canonical_id AS project_type_id,
-    pst.template_code,
-    pst.name,
-    pst.sequence_number,
-    pst.default_completion_percentage,
-    pst.is_active,
-    pst.created_at,
-    pst.updated_at,
-    pst.id
-  FROM public.project_stage_templates pst
-  JOIN legacy_map m ON m.legacy_id = pst.project_type_id
-), deduped_templates AS (
-  SELECT DISTINCT ON (
-    company_id,
-    project_type_id,
-    lower(coalesce(template_code, ''))
-  )
-    company_id,
-    project_type_id,
-    template_code,
-    name,
-    sequence_number,
-    default_completion_percentage,
-    is_active,
-    created_at
-  FROM staged_templates
-  ORDER BY
-    company_id,
-    project_type_id,
-    lower(coalesce(template_code, '')),
-    updated_at DESC,
-    id DESC
-)
-INSERT INTO public.project_stage_templates (
-  company_id,
-  project_type_id,
-  template_code,
-  name,
-  sequence_number,
-  default_completion_percentage,
-  is_active,
-  created_at,
-  updated_at
-)
-SELECT
-  d.company_id,
-  d.project_type_id,
-  d.template_code,
-  d.name,
-  d.sequence_number,
-  d.default_completion_percentage,
-  d.is_active,
-  d.created_at,
-  now()
-FROM deduped_templates d
-ON CONFLICT ON CONSTRAINT uq_project_stage_templates
-DO UPDATE SET
-  name = EXCLUDED.name,
-  sequence_number = EXCLUDED.sequence_number,
-  default_completion_percentage = EXCLUDED.default_completion_percentage,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
-WITH canonical AS (
-  SELECT code, id
-  FROM public.project_types
-  WHERE company_id IS NULL
-    AND code IN (
-      'independent_house',
-      'apartment',
-      'building_extension',
-      'interior_fitout',
-      'civil_infrastructure',
-      'road_drainage',
-      'industrial_warehouse'
-    )
-), legacy_map AS (
-  SELECT legacy.id AS legacy_id
-  FROM public.project_types legacy
-  JOIN canonical
-    ON canonical.code = CASE lower(legacy.code)
-      WHEN 'individual_house' THEN 'independent_house'
-      WHEN 'apartment_building' THEN 'apartment'
-      WHEN 'extension' THEN 'building_extension'
-      WHEN 'interior' THEN 'interior_fitout'
-      WHEN 'civil_only' THEN 'civil_infrastructure'
-      WHEN 'road' THEN 'road_drainage'
-      WHEN 'drainage' THEN 'road_drainage'
-      WHEN 'industrial' THEN 'industrial_warehouse'
-      ELSE NULL
-    END
-  WHERE legacy.company_id IS NULL
-)
-DELETE FROM public.project_stage_templates pst
-USING legacy_map m
-WHERE pst.project_type_id = m.legacy_id;
-
-UPDATE public.project_types
-SET is_active = false,
-    updated_at = now()
-WHERE company_id IS NULL
-  AND lower(code) IN (
-    'individual_house',
-    'apartment_building',
-    'extension',
-    'interior',
-    'civil_only',
-    'road',
-    'drainage',
-    'industrial'
-  );
-
-COMMIT;
--- <<< 0028_project_types_canonical_cleanup.sql
-
--- >>> 0029_project_execution_stage_management.sql
-BEGIN;
-
-ALTER TABLE public.project_stages
-  DROP CONSTRAINT IF EXISTS project_stages_status_check;
-
-ALTER TABLE public.project_stages
-  ADD CONSTRAINT project_stages_status_check
-  CHECK (status IN ('pending', 'in_progress', 'completed', 'on_hold', 'skipped'));
-
-CREATE OR REPLACE FUNCTION public.create_project_with_stages_with_business_model(
-  p_company_id uuid,
-  p_created_by uuid,
-  p_customer_id uuid,
-  p_source_document_id uuid,
-  p_project_type_id uuid,
-  p_project_type_snapshot text,
-  p_project_number text,
-  p_name text,
-  p_description text,
-  p_site_address text,
-  p_contract_amount numeric,
-  p_budget_amount numeric,
-  p_start_date date,
-  p_expected_end_date date,
-  p_actual_end_date date,
-  p_status text,
-  p_stage_drafts jsonb DEFAULT NULL,
-  p_business_model text DEFAULT NULL,
-  p_projected_sales_value numeric DEFAULT NULL,
-  p_land_cost numeric DEFAULT NULL,
-  p_development_arrangement text DEFAULT NULL,
-  p_total_project_flats integer DEFAULT NULL,
-  p_landowner_party_id uuid DEFAULT NULL,
-  p_jda_agreement_reference text DEFAULT NULL,
-  p_jda_agreement_document_url text DEFAULT NULL,
-  p_jda_agreement_date date DEFAULT NULL,
-  p_builder_share_units integer DEFAULT NULL,
-  p_landowner_share_units integer DEFAULT NULL
-)
-RETURNS uuid
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_project_id uuid;
-  v_stage_drafts_supplied boolean := false;
-  v_has_stage_drafts boolean := false;
-  v_project_type_code text := NULL;
-  v_enabled_models text[];
-  v_model_text text;
-  v_arrangement_text text;
-BEGIN
-  IF p_business_model IS NULL OR NULLIF(trim(p_business_model), '') IS NULL THEN
-    RAISE EXCEPTION 'business_model is required for project creation and must be one of: contract_construction, property_development, civil_works_contract, material_supply.'
-    USING HINT = 'Provide a non-blank business_model value for this project.';
-  END IF;
-
-  v_model_text := lower(trim(p_business_model));
-  IF v_model_text NOT IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply') THEN
-    RAISE EXCEPTION 'Invalid business_model value: %. Allowed values are contract_construction, property_development, civil_works_contract, material_supply.', p_business_model
-    USING HINT = 'Provide a supported business_model value for this project.';
-  END IF;
-
-  IF p_development_arrangement IS NOT NULL AND NULLIF(trim(p_development_arrangement), '') IS NOT NULL THEN
-    v_arrangement_text := lower(trim(p_development_arrangement));
-    IF v_arrangement_text NOT IN ('self', 'joint_development') THEN
-      RAISE EXCEPTION 'Invalid development_arrangement value: %. Allowed values are self or joint_development.', p_development_arrangement
-      USING HINT = 'Provide a supported development arrangement for property development projects.';
-    END IF;
-  END IF;
-
-  IF v_model_text <> 'property_development' AND (
-    p_development_arrangement IS NOT NULL
-    OR p_landowner_party_id IS NOT NULL
-    OR p_jda_agreement_reference IS NOT NULL
-    OR p_jda_agreement_document_url IS NOT NULL
-    OR p_jda_agreement_date IS NOT NULL
-    OR p_total_project_flats IS NOT NULL
-    OR p_builder_share_units IS NOT NULL
-    OR p_landowner_share_units IS NOT NULL
-  ) THEN
-    RAISE EXCEPTION 'Development arrangement and JDA fields are permitted only when business_model = property_development.';
-  END IF;
-
-  IF v_model_text = 'property_development' AND v_arrangement_text IS NULL THEN
-    RAISE EXCEPTION 'Property development projects require an explicit development arrangement: self or joint_development.'
-    USING HINT = 'Set development_arrangement when creating a property development project.';
-  END IF;
-
-  IF v_arrangement_text = 'self' THEN
-    IF p_landowner_party_id IS NOT NULL
-       OR p_jda_agreement_reference IS NOT NULL
-       OR p_jda_agreement_document_url IS NOT NULL
-       OR p_jda_agreement_date IS NOT NULL
-       OR p_total_project_flats IS NOT NULL
-       OR p_builder_share_units IS NOT NULL
-       OR p_landowner_share_units IS NOT NULL THEN
-      RAISE EXCEPTION 'Self development must not contain landowner, JDA or flat-sharing fields.'
-      USING HINT = 'Leave landowner and JDA fields empty for self development.';
-    END IF;
-  END IF;
-
-  IF v_arrangement_text = 'joint_development' THEN
-    IF p_landowner_party_id IS NULL THEN
-      RAISE EXCEPTION 'Joint development requires landowner_party_id.'
-      USING HINT = 'Provide a landowner party for joint development projects.';
-    END IF;
-
-    IF p_total_project_flats IS NULL OR p_total_project_flats <= 0 OR p_total_project_flats <> floor(p_total_project_flats::numeric) THEN
-      RAISE EXCEPTION 'Joint development requires total_project_flats as a positive whole number.'
-      USING HINT = 'Set total_project_flats to a whole number greater than zero.';
-    END IF;
-
-    IF p_builder_share_units IS NULL OR p_landowner_share_units IS NULL THEN
-      RAISE EXCEPTION 'Joint development requires builder_share_units and landowner_share_units.'
-      USING HINT = 'Provide both share counts.';
-    END IF;
-
-    IF p_builder_share_units < 0 OR p_landowner_share_units < 0 THEN
-      RAISE EXCEPTION 'Builder and landowner share flats must be non-negative.'
-      USING HINT = 'All share counts must be zero or greater.';
-    END IF;
-
-    IF p_builder_share_units + p_landowner_share_units <> p_total_project_flats THEN
-      RAISE EXCEPTION 'Builder and landowner share flats must add up to the total project flats.'
-      USING HINT = 'Use builder_share_units + landowner_share_units = total_project_flats.';
-    END IF;
-  END IF;
-
-  IF p_stage_drafts IS NOT NULL AND jsonb_typeof(p_stage_drafts) <> 'array' THEN
-    RAISE EXCEPTION 'stage_drafts must be a JSON array when provided.'
-    USING HINT = 'Provide stage_drafts as an array of stage objects.';
-  END IF;
-
-  SELECT enabled_business_models INTO v_enabled_models
-  FROM public.company_settings
-  WHERE company_id = p_company_id;
-
-  IF v_enabled_models IS NULL OR NOT (v_model_text = ANY (v_enabled_models)) THEN
-    RAISE EXCEPTION 'Business model % is not enabled for company %.', v_model_text, p_company_id
-    USING HINT = 'Update company_settings.enabled_business_models to include this business model before creating the project.';
-  END IF;
-
-  INSERT INTO public.projects (
-    company_id,
-    customer_id,
-    source_document_id,
-    project_type_id,
-    project_type_snapshot,
-    business_model,
-    projected_sales_value,
-    land_cost,
-    development_arrangement,
-    total_project_flats,
-    landowner_party_id,
-    jda_agreement_reference,
-    jda_agreement_document_url,
-    jda_agreement_date,
-    builder_share_units,
-    landowner_share_units,
-    project_number,
-    name,
-    description,
-    site_address,
-    contract_amount,
-    budget_amount,
-    start_date,
-    expected_end_date,
-    actual_end_date,
-    status,
-    created_by
-  ) VALUES (
-    p_company_id,
-    p_customer_id,
-    p_source_document_id,
-    p_project_type_id,
-    p_project_type_snapshot,
-    v_model_text,
-    p_projected_sales_value,
-    p_land_cost,
-    CASE WHEN v_model_text = 'property_development' THEN v_arrangement_text ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' THEN p_total_project_flats ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_party_id ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_reference ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_document_url ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_date ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_builder_share_units ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_share_units ELSE NULL END,
-    p_project_number,
-    p_name,
-    p_description,
-    p_site_address,
-    COALESCE(p_contract_amount, 0),
-    p_budget_amount,
-    p_start_date,
-    p_expected_end_date,
-    p_actual_end_date,
-    COALESCE(p_status, 'planned'),
-    p_created_by
-  )
-  RETURNING id INTO v_project_id;
-
-  v_stage_drafts_supplied := p_stage_drafts IS NOT NULL
-    AND jsonb_typeof(p_stage_drafts) = 'array';
-
-  v_has_stage_drafts := v_stage_drafts_supplied
-    AND jsonb_array_length(p_stage_drafts) > 0;
-
-  IF v_has_stage_drafts THEN
-    IF EXISTS (
-      SELECT 1
-      FROM jsonb_array_elements(p_stage_drafts) AS draft(stage_row)
-      WHERE jsonb_typeof(draft.stage_row) <> 'object'
-         OR NULLIF(trim(draft.stage_row ->> 'name'), '') IS NULL
-    ) THEN
-      RAISE EXCEPTION 'Each custom stage must be an object with a non-blank name.'
-      USING HINT = 'Provide stage entries like {"name":"Foundation", "sequenceNumber":1}.';
-    END IF;
-  END IF;
-
-  IF p_project_type_id IS NOT NULL THEN
-    SELECT code INTO v_project_type_code
-    FROM public.project_types
-    WHERE id = p_project_type_id;
-  END IF;
-
-  IF v_has_stage_drafts THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      planned_start_date,
-      planned_end_date,
-      completion_percentage,
-      status,
-      created_by
-    )
-    SELECT
-      v_project_id,
-      NULLIF(trim(draft.stage_row ->> 'name'), '') AS name,
-      row_number() OVER (
-        ORDER BY
-          COALESCE(
-            CASE
-              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
-                THEN (draft.stage_row ->> 'sequenceNumber')::integer
-              ELSE NULL
-            END,
-            draft.stage_ord
-          ),
-          draft.stage_ord
-      ) AS sequence_number,
-      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
-      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
-      0,
-      'pending',
-      p_created_by
-    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
-    ;
-  ELSIF NOT v_stage_drafts_supplied
-    AND v_model_text <> 'material_supply'
-    AND p_project_type_id IS NOT NULL
-    AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      completion_percentage,
-      status,
-      created_by
-    )
-    WITH resolved_templates AS (
-      SELECT DISTINCT ON (
-        COALESCE(
-          NULLIF(lower(trim(template_code)), ''),
-          '__null__' || id::text
-        )
-      )
-        template_code,
-        name,
-        sequence_number,
-        company_id,
-        updated_at,
-        id
-      FROM public.project_stage_templates
-      WHERE project_type_id = p_project_type_id
-        AND is_active = true
-        AND (company_id = p_company_id OR company_id IS NULL)
-      ORDER BY
-        COALESCE(
-          NULLIF(lower(trim(template_code)), ''),
-          '__null__' || id::text
-        ),
-        (company_id = p_company_id) DESC,
-        updated_at DESC,
-        id DESC
-    ),
-    ordered_templates AS (
-      SELECT
-        name,
-        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
-      FROM resolved_templates
-    )
-    SELECT
-      v_project_id,
-      ordered_templates.name,
-      ordered_templates.sequence_number,
-      0,
-      'pending',
-      p_created_by
-    FROM ordered_templates
-    ;
-  END IF;
-
-  RETURN v_project_id;
-END;
-$$;
-
-GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
-  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
-  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
-  text, integer, uuid, text, text, date, integer, integer
-) TO authenticated;
-
-GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
-  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
-  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
-  text, integer, uuid, text, text, date, integer, integer
-) TO service_role;
-
-COMMIT;
--- <<< 0029_project_execution_stage_management.sql
-
--- >>> 0030_project_stage_templates_business_model.sql
-BEGIN;
-
--- 1) Add business_model column and constraint
-ALTER TABLE public.project_stage_templates
-  ADD COLUMN IF NOT EXISTS business_model text;
-
-ALTER TABLE public.project_stage_templates
-  DROP CONSTRAINT IF EXISTS project_stage_templates_business_model_chk;
-
-ALTER TABLE public.project_stage_templates
-  ADD CONSTRAINT project_stage_templates_business_model_chk
-  CHECK (
-    business_model IN (
-      'contract_construction',
-      'property_development',
-      'civil_works_contract',
-      'material_supply'
-    )
-  );
-
--- 2) Map existing templates using explicit policy (agreed)
-WITH explicit_policy(project_type_code, business_model) AS (
-  VALUES
-    ('independent_house', 'contract_construction'),
-    ('apartment', 'contract_construction'),
-    ('building_extension', 'contract_construction'),
-    ('commercial_building', 'contract_construction'),
-    ('industrial_warehouse', 'contract_construction'),
-    ('interior_fitout', 'contract_construction'),
-    ('renovation', 'contract_construction'),
-    ('civil_infrastructure', 'civil_works_contract'),
-    ('road_drainage', 'civil_works_contract')
-)
-UPDATE public.project_stage_templates pst
-SET
-  business_model = pol.business_model,
-  updated_at = now()
-FROM public.project_types pt
-JOIN explicit_policy pol
-  ON pol.project_type_code = lower(pt.code)
-WHERE pst.project_type_id = pt.id
-  AND pst.business_model IS DISTINCT FROM pol.business_model;
-
--- 3) Validation: fail if any template is unmapped or has unknown project type code
-DO $$
-DECLARE
-  v_unmapped bigint;
-BEGIN
-  SELECT count(*)
-  INTO v_unmapped
-  FROM public.project_stage_templates pst
-  JOIN public.project_types pt ON pt.id = pst.project_type_id
-  LEFT JOIN (
-    VALUES
-      ('independent_house'),
-      ('apartment'),
-      ('building_extension'),
-      ('commercial_building'),
-      ('industrial_warehouse'),
-      ('interior_fitout'),
-      ('renovation'),
-      ('civil_infrastructure'),
-      ('road_drainage')
-  ) AS pol(project_type_code)
-    ON pol.project_type_code = lower(pt.code)
-  WHERE pol.project_type_code IS NULL
-     OR pst.business_model IS NULL;
-
-  IF v_unmapped > 0 THEN
-    RAISE EXCEPTION
-      'Unmapped or unknown template rows detected: % row(s).',
-      v_unmapped
-      USING HINT = 'Review project_type codes and policy mapping before running 0030.';
-  END IF;
-END $$;
-
--- 4) Enforce NOT NULL
-ALTER TABLE public.project_stage_templates
-  ALTER COLUMN business_model SET NOT NULL;
-
--- 5) New uniqueness by business_model dimension
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1
-    FROM public.project_stage_templates
-    GROUP BY company_id, project_type_id, business_model, template_code
-    HAVING count(*) > 1
-  ) THEN
-    RAISE EXCEPTION
-      'Duplicate rows violate new unique key (company_id, project_type_id, business_model, template_code).';
-  END IF;
-END $$;
-
-ALTER TABLE public.project_stage_templates
-  DROP CONSTRAINT IF EXISTS uq_project_stage_templates;
-
-ALTER TABLE public.project_stage_templates
-  ADD CONSTRAINT uq_project_stage_templates
-  UNIQUE NULLS NOT DISTINCT (company_id, project_type_id, business_model, template_code);
-
--- 6) RPC update: preserve full 28-parameter body and validations,
---    change only template-resolution logic to include business_model match.
-CREATE OR REPLACE FUNCTION public.create_project_with_stages_with_business_model(
-  p_company_id uuid,
-  p_created_by uuid,
-  p_customer_id uuid,
-  p_source_document_id uuid,
-  p_project_type_id uuid,
-  p_project_type_snapshot text,
-  p_project_number text,
-  p_name text,
-  p_description text,
-  p_site_address text,
-  p_contract_amount numeric,
-  p_budget_amount numeric,
-  p_start_date date,
-  p_expected_end_date date,
-  p_actual_end_date date,
-  p_status text,
-  p_stage_drafts jsonb DEFAULT NULL,
-  p_business_model text DEFAULT NULL,
-  p_projected_sales_value numeric DEFAULT NULL,
-  p_land_cost numeric DEFAULT NULL,
-  p_development_arrangement text DEFAULT NULL,
-  p_total_project_flats integer DEFAULT NULL,
-  p_landowner_party_id uuid DEFAULT NULL,
-  p_jda_agreement_reference text DEFAULT NULL,
-  p_jda_agreement_document_url text DEFAULT NULL,
-  p_jda_agreement_date date DEFAULT NULL,
-  p_builder_share_units integer DEFAULT NULL,
-  p_landowner_share_units integer DEFAULT NULL
-)
-RETURNS uuid
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_project_id uuid;
-  v_stage_drafts_supplied boolean := false;
-  v_has_stage_drafts boolean := false;
-  v_project_type_code text := NULL;
-  v_enabled_models text[];
-  v_model_text text;
-  v_arrangement_text text;
-BEGIN
-  IF p_business_model IS NULL OR NULLIF(trim(p_business_model), '') IS NULL THEN
-    RAISE EXCEPTION 'business_model is required for project creation and must be one of: contract_construction, property_development, civil_works_contract, material_supply.'
-    USING HINT = 'Provide a non-blank business_model value for this project.';
-  END IF;
-
-  v_model_text := lower(trim(p_business_model));
-  IF v_model_text NOT IN ('contract_construction', 'property_development', 'civil_works_contract', 'material_supply') THEN
-    RAISE EXCEPTION 'Invalid business_model value: %. Allowed values are contract_construction, property_development, civil_works_contract, material_supply.', p_business_model
-    USING HINT = 'Provide a supported business_model value for this project.';
-  END IF;
-
-  IF p_development_arrangement IS NOT NULL AND NULLIF(trim(p_development_arrangement), '') IS NOT NULL THEN
-    v_arrangement_text := lower(trim(p_development_arrangement));
-    IF v_arrangement_text NOT IN ('self', 'joint_development') THEN
-      RAISE EXCEPTION 'Invalid development_arrangement value: %. Allowed values are self or joint_development.', p_development_arrangement
-      USING HINT = 'Provide a supported development arrangement for property development projects.';
-    END IF;
-  END IF;
-
-  IF v_model_text <> 'property_development' AND (
-    p_development_arrangement IS NOT NULL
-    OR p_landowner_party_id IS NOT NULL
-    OR p_jda_agreement_reference IS NOT NULL
-    OR p_jda_agreement_document_url IS NOT NULL
-    OR p_jda_agreement_date IS NOT NULL
-    OR p_total_project_flats IS NOT NULL
-    OR p_builder_share_units IS NOT NULL
-    OR p_landowner_share_units IS NOT NULL
-  ) THEN
-    RAISE EXCEPTION 'Development arrangement and JDA fields are permitted only when business_model = property_development.';
-  END IF;
-
-  IF v_model_text = 'property_development' AND v_arrangement_text IS NULL THEN
-    RAISE EXCEPTION 'Property development projects require an explicit development arrangement: self or joint_development.'
-    USING HINT = 'Set development_arrangement when creating a property development project.';
-  END IF;
-
-  IF v_arrangement_text = 'self' THEN
-    IF p_landowner_party_id IS NOT NULL
-       OR p_jda_agreement_reference IS NOT NULL
-       OR p_jda_agreement_document_url IS NOT NULL
-       OR p_jda_agreement_date IS NOT NULL
-       OR p_total_project_flats IS NOT NULL
-       OR p_builder_share_units IS NOT NULL
-       OR p_landowner_share_units IS NOT NULL THEN
-      RAISE EXCEPTION 'Self development must not contain landowner, JDA or flat-sharing fields.'
-      USING HINT = 'Leave landowner and JDA fields empty for self development.';
-    END IF;
-  END IF;
-
-  IF v_arrangement_text = 'joint_development' THEN
-    IF p_landowner_party_id IS NULL THEN
-      RAISE EXCEPTION 'Joint development requires landowner_party_id.'
-      USING HINT = 'Provide a landowner party for joint development projects.';
-    END IF;
-
-    IF p_total_project_flats IS NULL OR p_total_project_flats <= 0 OR p_total_project_flats <> floor(p_total_project_flats::numeric) THEN
-      RAISE EXCEPTION 'Joint development requires total_project_flats as a positive whole number.'
-      USING HINT = 'Set total_project_flats to a whole number greater than zero.';
-    END IF;
-
-    IF p_builder_share_units IS NULL OR p_landowner_share_units IS NULL THEN
-      RAISE EXCEPTION 'Joint development requires builder_share_units and landowner_share_units.'
-      USING HINT = 'Provide both share counts.';
-    END IF;
-
-    IF p_builder_share_units < 0 OR p_landowner_share_units < 0 THEN
-      RAISE EXCEPTION 'Builder and landowner share flats must be non-negative.'
-      USING HINT = 'All share counts must be zero or greater.';
-    END IF;
-
-    IF p_builder_share_units + p_landowner_share_units <> p_total_project_flats THEN
-      RAISE EXCEPTION 'Builder and landowner share flats must add up to the total project flats.'
-      USING HINT = 'Use builder_share_units + landowner_share_units = total_project_flats.';
-    END IF;
-  END IF;
-
-  IF p_stage_drafts IS NOT NULL AND jsonb_typeof(p_stage_drafts) <> 'array' THEN
-    RAISE EXCEPTION 'stage_drafts must be a JSON array when provided.'
-    USING HINT = 'Provide stage_drafts as an array of stage objects.';
-  END IF;
-
-  SELECT enabled_business_models INTO v_enabled_models
-  FROM public.company_settings
-  WHERE company_id = p_company_id;
-
-  IF v_enabled_models IS NULL OR NOT (v_model_text = ANY (v_enabled_models)) THEN
-    RAISE EXCEPTION 'Business model % is not enabled for company %.', v_model_text, p_company_id
-    USING HINT = 'Update company_settings.enabled_business_models to include this business model before creating the project.';
-  END IF;
-
-  INSERT INTO public.projects (
-    company_id,
-    customer_id,
-    source_document_id,
-    project_type_id,
-    project_type_snapshot,
-    business_model,
-    projected_sales_value,
-    land_cost,
-    development_arrangement,
-    total_project_flats,
-    landowner_party_id,
-    jda_agreement_reference,
-    jda_agreement_document_url,
-    jda_agreement_date,
-    builder_share_units,
-    landowner_share_units,
-    project_number,
-    name,
-    description,
-    site_address,
-    contract_amount,
-    budget_amount,
-    start_date,
-    expected_end_date,
-    actual_end_date,
-    status,
-    created_by
-  ) VALUES (
-    p_company_id,
-    p_customer_id,
-    p_source_document_id,
-    p_project_type_id,
-    p_project_type_snapshot,
-    v_model_text,
-    p_projected_sales_value,
-    p_land_cost,
-    CASE WHEN v_model_text = 'property_development' THEN v_arrangement_text ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' THEN p_total_project_flats ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_party_id ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_reference ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_document_url ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_jda_agreement_date ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_builder_share_units ELSE NULL END,
-    CASE WHEN v_model_text = 'property_development' AND v_arrangement_text = 'joint_development' THEN p_landowner_share_units ELSE NULL END,
-    p_project_number,
-    p_name,
-    p_description,
-    p_site_address,
-    COALESCE(p_contract_amount, 0),
-    p_budget_amount,
-    p_start_date,
-    p_expected_end_date,
-    p_actual_end_date,
-    COALESCE(p_status, 'planned'),
-    p_created_by
-  )
-  RETURNING id INTO v_project_id;
-
-  v_stage_drafts_supplied := p_stage_drafts IS NOT NULL
-    AND jsonb_typeof(p_stage_drafts) = 'array';
-
-  v_has_stage_drafts := v_stage_drafts_supplied
-    AND jsonb_array_length(p_stage_drafts) > 0;
-
-  IF v_has_stage_drafts THEN
-    IF EXISTS (
-      SELECT 1
-      FROM jsonb_array_elements(p_stage_drafts) AS draft(stage_row)
-      WHERE jsonb_typeof(draft.stage_row) <> 'object'
-         OR NULLIF(trim(draft.stage_row ->> 'name'), '') IS NULL
-    ) THEN
-      RAISE EXCEPTION 'Each custom stage must be an object with a non-blank name.'
-      USING HINT = 'Provide stage entries like {"name":"Foundation", "sequenceNumber":1}.';
-    END IF;
-  END IF;
-
-  IF p_project_type_id IS NOT NULL THEN
-    SELECT code INTO v_project_type_code
-    FROM public.project_types
-    WHERE id = p_project_type_id;
-  END IF;
-
-  IF v_has_stage_drafts THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      planned_start_date,
-      planned_end_date,
-      completion_percentage,
-      status,
-      created_by
-    )
-    SELECT
-      v_project_id,
-      NULLIF(trim(draft.stage_row ->> 'name'), '') AS name,
-      row_number() OVER (
-        ORDER BY
-          COALESCE(
-            CASE
-              WHEN COALESCE(draft.stage_row ->> 'sequenceNumber', '') ~ '^[0-9]+$'
-                THEN (draft.stage_row ->> 'sequenceNumber')::integer
-              ELSE NULL
-            END,
-            draft.stage_ord
-          ),
-          draft.stage_ord
-      ) AS sequence_number,
-      NULLIF(draft.stage_row ->> 'plannedStartDate', '')::date,
-      NULLIF(draft.stage_row ->> 'plannedEndDate', '')::date,
-      0,
-      'pending',
-      p_created_by
-    FROM jsonb_array_elements(p_stage_drafts) WITH ORDINALITY AS draft(stage_row, stage_ord)
-    ;
-  ELSIF NOT v_stage_drafts_supplied
-    AND p_project_type_id IS NOT NULL
-    AND lower(coalesce(v_project_type_code, '')) <> 'other' THEN
-    INSERT INTO public.project_stages (
-      project_id,
-      name,
-      sequence_number,
-      completion_percentage,
-      status,
-      created_by
-    )
-    WITH resolved_templates AS (
-      SELECT DISTINCT ON (
-        COALESCE(
-          NULLIF(lower(trim(template_code)), ''),
-          '__null__' || id::text
-        )
-      )
-        template_code,
-        name,
-        sequence_number,
-        company_id,
-        updated_at,
-        id
-      FROM public.project_stage_templates
-      WHERE project_type_id = p_project_type_id
-        AND business_model = v_model_text
-        AND is_active = true
-        AND (company_id = p_company_id OR company_id IS NULL)
-      ORDER BY
-        COALESCE(
-          NULLIF(lower(trim(template_code)), ''),
-          '__null__' || id::text
-        ),
-        (company_id = p_company_id) DESC,
-        updated_at DESC,
-        id DESC
-    ),
-    ordered_templates AS (
-      SELECT
-        name,
-        row_number() OVER (ORDER BY sequence_number ASC, lower(name) ASC) AS sequence_number
-      FROM resolved_templates
-    )
-    SELECT
-      v_project_id,
-      ordered_templates.name,
-      ordered_templates.sequence_number,
-      0,
-      'pending',
-      p_created_by
-    FROM ordered_templates
-    ;
-  END IF;
-
-  RETURN v_project_id;
-END;
-$$;
-
-GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
-  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
-  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
-  text, integer, uuid, text, text, date, integer, integer
-) TO authenticated;
-
-GRANT EXECUTE ON FUNCTION public.create_project_with_stages_with_business_model(
-  uuid, uuid, uuid, uuid, uuid, text, text, text, text, text,
-  numeric, numeric, date, date, date, text, jsonb, text, numeric, numeric,
-  text, integer, uuid, text, text, date, integer, integer
-) TO service_role;
-
-COMMIT;
--- <<< 0030_project_stage_templates_business_model.sql
-
--- >>> 0031_stage_template_master_data_sync.sql
-BEGIN;
-
--- Authoritative stage definitions for migration 0031.
--- Rules:
--- 1) Match by (project_type_id, business_model, template_code).
--- 2) Update exact code matches where name/sequence/defaults differ.
--- 3) Insert missing stages.
--- 4) Keep company-specific templates untouched (company_id IS NOT NULL).
--- 5) Do not deactivate anything unless explicitly listed in explicit_deactivate.
--- 6) Abort if ambiguous template-code mapping is detected.
-
-DO $$
-DECLARE
-  v_missing_non_optional text[];
-  v_missing_material_supply boolean;
-  v_ambiguous_count bigint;
-BEGIN
-  WITH authoritative_raw(project_code, business_model, sequence_number, stage_name) AS (
-VALUES
-    ('independent_house', 'contract_construction', 1, 'Client Requirements & Project Planning'),
-    ('independent_house', 'contract_construction', 2, 'Architectural Design & Drawings'),
-    ('independent_house', 'contract_construction', 3, 'Estimation, Quotation & Agreement'),
-    ('independent_house', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('independent_house', 'contract_construction', 5, 'Foundation & Plinth Construction'),
-    ('independent_house', 'contract_construction', 6, 'Structural Construction'),
-    ('independent_house', 'contract_construction', 7, 'Brickwork & Masonry'),
-    ('independent_house', 'contract_construction', 8, 'Plastering & Waterproofing'),
-    ('independent_house', 'contract_construction', 9, 'Electrical & Plumbing Works'),
-    ('independent_house', 'contract_construction', 10, 'Flooring, Doors & Windows'),
-    ('independent_house', 'contract_construction', 11, 'Painting & Final Finishing'),
-    ('independent_house', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
-    ('villa', 'contract_construction', 1, 'Client Requirements & Project Planning'),
-    ('villa', 'contract_construction', 2, 'Architectural Design & 3D Elevation'),
-    ('villa', 'contract_construction', 3, 'Structural & Engineering Design'),
-    ('villa', 'contract_construction', 4, 'Estimation, Quotation & Agreement'),
-    ('villa', 'contract_construction', 5, 'Approvals & Site Mobilization'),
-    ('villa', 'contract_construction', 6, 'Foundation & Plinth Construction'),
-    ('villa', 'contract_construction', 7, 'Structural Construction'),
-    ('villa', 'contract_construction', 8, 'Masonry, Plastering & Waterproofing'),
-    ('villa', 'contract_construction', 9, 'Electrical, Plumbing & HVAC Works'),
-    ('villa', 'contract_construction', 10, 'Flooring, Doors, Windows & Joinery'),
-    ('villa', 'contract_construction', 11, 'Interior, Exterior & Landscape Finishing'),
-    ('villa', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
-    ('apartment', 'contract_construction', 1, 'Client Requirements & Project Planning'),
-    ('apartment', 'contract_construction', 2, 'Architectural Design & Engineering'),
-    ('apartment', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
-    ('apartment', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('apartment', 'contract_construction', 5, 'Foundation & Basement Construction'),
-    ('apartment', 'contract_construction', 6, 'Structural Construction'),
-    ('apartment', 'contract_construction', 7, 'Masonry & Internal Plastering'),
-    ('apartment', 'contract_construction', 8, 'Electrical, Plumbing & Fire Systems'),
-    ('apartment', 'contract_construction', 9, 'Flooring, Doors & Windows'),
-    ('apartment', 'contract_construction', 10, 'Painting & Internal Finishing'),
-    ('apartment', 'contract_construction', 11, 'Lifts, Common Areas & External Works'),
-    ('apartment', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
-    ('commercial_building', 'contract_construction', 1, 'Client Requirements & Space Planning'),
-    ('commercial_building', 'contract_construction', 2, 'Architectural & Engineering Design'),
-    ('commercial_building', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
-    ('commercial_building', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('commercial_building', 'contract_construction', 5, 'Foundation & Basement Construction'),
-    ('commercial_building', 'contract_construction', 6, 'Structural Construction'),
-    ('commercial_building', 'contract_construction', 7, 'Masonry & Building Envelope'),
-    ('commercial_building', 'contract_construction', 8, 'Electrical, Plumbing, HVAC & Fire Systems'),
-    ('commercial_building', 'contract_construction', 9, 'Flooring, Ceilings & Interior Works'),
-    ('commercial_building', 'contract_construction', 10, 'Elevation & External Finishing'),
-    ('commercial_building', 'contract_construction', 11, 'Testing, Commissioning & Inspection'),
-    ('commercial_building', 'contract_construction', 12, 'Client Handover'),
-    ('renovation', 'contract_construction', 1, 'Existing Site Inspection & Assessment'),
-    ('renovation', 'contract_construction', 2, 'Client Requirements & Scope Finalization'),
-    ('renovation', 'contract_construction', 3, 'Design, Drawings & Estimation'),
-    ('renovation', 'contract_construction', 4, 'Agreement & Site Preparation'),
-    ('renovation', 'contract_construction', 5, 'Demolition & Dismantling'),
-    ('renovation', 'contract_construction', 6, 'Structural Repairs & Modifications'),
-    ('renovation', 'contract_construction', 7, 'Masonry & Plastering'),
-    ('renovation', 'contract_construction', 8, 'Electrical & Plumbing Modifications'),
-    ('renovation', 'contract_construction', 9, 'Flooring, Doors & Windows'),
-    ('renovation', 'contract_construction', 10, 'Painting & Finishing'),
-    ('renovation', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
-    ('renovation', 'contract_construction', 12, 'Client Handover'),
-    ('building_extension', 'contract_construction', 1, 'Existing Building Assessment'),
-    ('building_extension', 'contract_construction', 2, 'Extension Planning & Design'),
-    ('building_extension', 'contract_construction', 3, 'Structural Feasibility & Engineering'),
-    ('building_extension', 'contract_construction', 4, 'Estimation, Agreement & Approvals'),
-    ('building_extension', 'contract_construction', 5, 'Site Preparation & Protection'),
-    ('building_extension', 'contract_construction', 6, 'Foundation & Structural Modifications'),
-    ('building_extension', 'contract_construction', 7, 'New Structural Construction'),
-    ('building_extension', 'contract_construction', 8, 'Masonry & Plastering'),
-    ('building_extension', 'contract_construction', 9, 'Electrical & Plumbing Extensions'),
-    ('building_extension', 'contract_construction', 10, 'Flooring & Finishing'),
-    ('building_extension', 'contract_construction', 11, 'Integration & Quality Inspection'),
-    ('building_extension', 'contract_construction', 12, 'Client Handover'),
-    ('industrial_warehouse', 'contract_construction', 1, 'Client Requirements & Industrial Planning'),
-    ('industrial_warehouse', 'contract_construction', 2, 'Architectural & Structural Design'),
-    ('industrial_warehouse', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
-    ('industrial_warehouse', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('industrial_warehouse', 'contract_construction', 5, 'Site Development & Earthwork'),
-    ('industrial_warehouse', 'contract_construction', 6, 'Foundation & Industrial Flooring'),
-    ('industrial_warehouse', 'contract_construction', 7, 'Structural Steel / RCC Construction'),
-    ('industrial_warehouse', 'contract_construction', 8, 'Roofing & Cladding'),
-    ('industrial_warehouse', 'contract_construction', 9, 'Electrical, Plumbing & Fire Systems'),
-    ('industrial_warehouse', 'contract_construction', 10, 'Flooring, Drainage & External Development'),
-    ('industrial_warehouse', 'contract_construction', 11, 'Testing, Inspection & Commissioning'),
-    ('industrial_warehouse', 'contract_construction', 12, 'Client Handover'),
-    ('interior_fitout', 'contract_construction', 1, 'Site Survey & Client Requirements'),
-    ('interior_fitout', 'contract_construction', 2, 'Space Planning & Interior Design'),
-    ('interior_fitout', 'contract_construction', 3, 'Material Selection & BOQ'),
-    ('interior_fitout', 'contract_construction', 4, 'Quotation, Agreement & Mobilization'),
-    ('interior_fitout', 'contract_construction', 5, 'Dismantling & Site Preparation'),
-    ('interior_fitout', 'contract_construction', 6, 'Civil & Partition Works'),
-    ('interior_fitout', 'contract_construction', 7, 'Electrical, Plumbing & HVAC Works'),
-    ('interior_fitout', 'contract_construction', 8, 'Ceiling & Flooring Works'),
-    ('interior_fitout', 'contract_construction', 9, 'Carpentry & Custom Furniture'),
-    ('interior_fitout', 'contract_construction', 10, 'Painting, Fixtures & Finishing'),
-    ('interior_fitout', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
-    ('interior_fitout', 'contract_construction', 12, 'Client Handover'),
-    ('apartment', 'property_development', 1, 'Land Due Diligence & Title Verification'),
-    ('apartment', 'property_development', 2, 'Land Acquisition & Development Agreement'),
-    ('apartment', 'property_development', 3, 'Feasibility & Project Planning'),
-    ('apartment', 'property_development', 4, 'Architectural & Engineering Design'),
-    ('apartment', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
-    ('apartment', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
-    ('apartment', 'property_development', 7, 'Site Mobilization & Preparation'),
-    ('apartment', 'property_development', 8, 'Foundation & Basement Construction'),
-    ('apartment', 'property_development', 9, 'Structural Construction'),
-    ('apartment', 'property_development', 10, 'MEP & Internal Infrastructure'),
-    ('apartment', 'property_development', 11, 'Finishing & Common Area Development'),
-    ('apartment', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
-    ('apartment', 'property_development', 13, 'Sales, Registration & Customer Handover'),
-    ('villa', 'property_development', 1, 'Land Due Diligence & Title Verification'),
-    ('villa', 'property_development', 2, 'Land Acquisition & Development Agreement'),
-    ('villa', 'property_development', 3, 'Feasibility & Villa Planning'),
-    ('villa', 'property_development', 4, 'Architectural & Engineering Design'),
-    ('villa', 'property_development', 5, 'Approvals & Statutory Clearances'),
-    ('villa', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
-    ('villa', 'property_development', 7, 'Site Development & Infrastructure'),
-    ('villa', 'property_development', 8, 'Villa Foundation & Structural Construction'),
-    ('villa', 'property_development', 9, 'Masonry, Roofing & Waterproofing'),
-    ('villa', 'property_development', 10, 'MEP & Interior Finishing'),
-    ('villa', 'property_development', 11, 'Landscaping & Common Amenities'),
-    ('villa', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
-    ('villa', 'property_development', 13, 'Sales, Registration & Customer Handover'),
-    ('commercial_building', 'property_development', 1, 'Land Due Diligence & Title Verification'),
-    ('commercial_building', 'property_development', 2, 'Land Acquisition & Development Agreement'),
-    ('commercial_building', 'property_development', 3, 'Market Feasibility & Project Planning'),
-    ('commercial_building', 'property_development', 4, 'Architectural & Engineering Design'),
-    ('commercial_building', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
-    ('commercial_building', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
-    ('commercial_building', 'property_development', 7, 'Site Mobilization & Preparation'),
-    ('commercial_building', 'property_development', 8, 'Foundation & Basement Construction'),
-    ('commercial_building', 'property_development', 9, 'Structural Construction'),
-    ('commercial_building', 'property_development', 10, 'MEP, Fire Systems & Building Services'),
-    ('commercial_building', 'property_development', 11, 'Interior, External & Common Area Finishing'),
-    ('commercial_building', 'property_development', 12, 'Testing, Occupancy Approval & Completion'),
-    ('commercial_building', 'property_development', 13, 'Leasing / Sales, Registration & Handover'),
-    ('civil_infrastructure', 'civil_works_contract', 1, 'Tender & Work Order'),
-    ('civil_infrastructure', 'civil_works_contract', 2, 'Site Survey & Technical Planning'),
-    ('civil_infrastructure', 'civil_works_contract', 3, 'BOQ, Estimation & Project Scheduling'),
-    ('civil_infrastructure', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
-    ('civil_infrastructure', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
-    ('civil_infrastructure', 'civil_works_contract', 6, 'Foundation & Main Civil Works'),
-    ('civil_infrastructure', 'civil_works_contract', 7, 'Structural & Infrastructure Construction'),
-    ('civil_infrastructure', 'civil_works_contract', 8, 'Ancillary Works & Finishing'),
-    ('civil_infrastructure', 'civil_works_contract', 9, 'Quality Testing & Inspection'),
-    ('civil_infrastructure', 'civil_works_contract', 10, 'Measurements & RA Billing'),
-    ('civil_infrastructure', 'civil_works_contract', 11, 'Final Inspection & Defect Rectification'),
-    ('civil_infrastructure', 'civil_works_contract', 12, 'Project Completion & Handover'),
-    ('road_drainage', 'civil_works_contract', 1, 'Tender & Work Order'),
-    ('road_drainage', 'civil_works_contract', 2, 'Survey, Alignment & Setting Out'),
-    ('road_drainage', 'civil_works_contract', 3, 'BOQ & Project Planning'),
-    ('road_drainage', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
-    ('road_drainage', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
-    ('road_drainage', 'civil_works_contract', 6, 'Subgrade Preparation & Compaction'),
-    ('road_drainage', 'civil_works_contract', 7, 'Drainage, Culverts & Pipe Laying'),
-    ('road_drainage', 'civil_works_contract', 8, 'Base Course & Road Construction'),
-    ('road_drainage', 'civil_works_contract', 9, 'Chambers, Kerbs & Ancillary Works'),
-    ('road_drainage', 'civil_works_contract', 10, 'Road Surface & Finishing'),
-    ('road_drainage', 'civil_works_contract', 11, 'Quality Testing & Final Inspection'),
-    ('road_drainage', 'civil_works_contract', 12, 'Measurements & Project Handover'),
-    ('structural_works', 'civil_works_contract', 1, 'Tender / Client Requirements & Work Order'),
-    ('structural_works', 'civil_works_contract', 2, 'Structural Survey & Assessment'),
-    ('structural_works', 'civil_works_contract', 3, 'Structural Design & Engineering'),
-    ('structural_works', 'civil_works_contract', 4, 'BOQ, Estimation & Planning'),
-    ('structural_works', 'civil_works_contract', 5, 'Approvals & Site Mobilization'),
-    ('structural_works', 'civil_works_contract', 6, 'Foundation & Substructure Works'),
-    ('structural_works', 'civil_works_contract', 7, 'RCC / Steel Structural Works'),
-    ('structural_works', 'civil_works_contract', 8, 'Fabrication & Erection (where applicable)'),
-    ('structural_works', 'civil_works_contract', 9, 'Structural Finishing & Protection'),
-    ('structural_works', 'civil_works_contract', 10, 'Load Testing / Quality Testing (where applicable)'),
-    ('structural_works', 'civil_works_contract', 11, 'Structural Inspection & Rectification'),
-    ('structural_works', 'civil_works_contract', 12, 'Completion & Handover'),
-    ('material_supply', 'material_supply', 1, 'Customer Enquiry & Requirement'),
-    ('material_supply', 'material_supply', 2, 'Quotation & Order Confirmation'),
-    ('material_supply', 'material_supply', 3, 'Material Procurement / Stock Allocation'),
-    ('material_supply', 'material_supply', 4, 'Quality & Quantity Verification'),
-    ('material_supply', 'material_supply', 5, 'Dispatch & Transportation'),
-    ('material_supply', 'material_supply', 6, 'Site Delivery & Acknowledgement')
-  ), required_types AS (
-    SELECT DISTINCT lower(project_code) AS project_code
-    FROM authoritative_raw
-  ), active_global_types AS (
-    SELECT lower(code) AS code
-    FROM public.project_types
-    WHERE company_id IS NULL
-      AND is_active = true
-  ), missing_types AS (
-    SELECT rt.project_code
-    FROM required_types rt
-    LEFT JOIN active_global_types agt
-      ON agt.code = rt.project_code
-    WHERE agt.code IS NULL
-  )
-  SELECT array_agg(project_code ORDER BY project_code)
-  INTO v_missing_non_optional
-  FROM missing_types
-  WHERE project_code <> 'material_supply';
-
-  IF coalesce(array_length(v_missing_non_optional, 1), 0) > 0 THEN
-    RAISE EXCEPTION
-      '0031 aborted: missing active global project_type code(s): %',
-      array_to_string(v_missing_non_optional, ', ')
-      USING HINT = 'Create/activate these project_types before running 0031.';
-  END IF;
-
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.project_types
-    WHERE company_id IS NULL
-      AND is_active = true
-      AND lower(code) = 'material_supply'
-  ) INTO v_missing_material_supply;
-
-  IF NOT v_missing_material_supply THEN
-    RAISE NOTICE 'material_supply project_type is not active/present; optional workflow stages will be skipped.';
-  END IF;
-
-  WITH authoritative_raw(project_code, business_model, sequence_number, stage_name) AS (
-VALUES
-    ('independent_house', 'contract_construction', 1, 'Client Requirements & Project Planning'),
-    ('independent_house', 'contract_construction', 2, 'Architectural Design & Drawings'),
-    ('independent_house', 'contract_construction', 3, 'Estimation, Quotation & Agreement'),
-    ('independent_house', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('independent_house', 'contract_construction', 5, 'Foundation & Plinth Construction'),
-    ('independent_house', 'contract_construction', 6, 'Structural Construction'),
-    ('independent_house', 'contract_construction', 7, 'Brickwork & Masonry'),
-    ('independent_house', 'contract_construction', 8, 'Plastering & Waterproofing'),
-    ('independent_house', 'contract_construction', 9, 'Electrical & Plumbing Works'),
-    ('independent_house', 'contract_construction', 10, 'Flooring, Doors & Windows'),
-    ('independent_house', 'contract_construction', 11, 'Painting & Final Finishing'),
-    ('independent_house', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
-    ('villa', 'contract_construction', 1, 'Client Requirements & Project Planning'),
-    ('villa', 'contract_construction', 2, 'Architectural Design & 3D Elevation'),
-    ('villa', 'contract_construction', 3, 'Structural & Engineering Design'),
-    ('villa', 'contract_construction', 4, 'Estimation, Quotation & Agreement'),
-    ('villa', 'contract_construction', 5, 'Approvals & Site Mobilization'),
-    ('villa', 'contract_construction', 6, 'Foundation & Plinth Construction'),
-    ('villa', 'contract_construction', 7, 'Structural Construction'),
-    ('villa', 'contract_construction', 8, 'Masonry, Plastering & Waterproofing'),
-    ('villa', 'contract_construction', 9, 'Electrical, Plumbing & HVAC Works'),
-    ('villa', 'contract_construction', 10, 'Flooring, Doors, Windows & Joinery'),
-    ('villa', 'contract_construction', 11, 'Interior, Exterior & Landscape Finishing'),
-    ('villa', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
-    ('apartment', 'contract_construction', 1, 'Client Requirements & Project Planning'),
-    ('apartment', 'contract_construction', 2, 'Architectural Design & Engineering'),
-    ('apartment', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
-    ('apartment', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('apartment', 'contract_construction', 5, 'Foundation & Basement Construction'),
-    ('apartment', 'contract_construction', 6, 'Structural Construction'),
-    ('apartment', 'contract_construction', 7, 'Masonry & Internal Plastering'),
-    ('apartment', 'contract_construction', 8, 'Electrical, Plumbing & Fire Systems'),
-    ('apartment', 'contract_construction', 9, 'Flooring, Doors & Windows'),
-    ('apartment', 'contract_construction', 10, 'Painting & Internal Finishing'),
-    ('apartment', 'contract_construction', 11, 'Lifts, Common Areas & External Works'),
-    ('apartment', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
-    ('commercial_building', 'contract_construction', 1, 'Client Requirements & Space Planning'),
-    ('commercial_building', 'contract_construction', 2, 'Architectural & Engineering Design'),
-    ('commercial_building', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
-    ('commercial_building', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('commercial_building', 'contract_construction', 5, 'Foundation & Basement Construction'),
-    ('commercial_building', 'contract_construction', 6, 'Structural Construction'),
-    ('commercial_building', 'contract_construction', 7, 'Masonry & Building Envelope'),
-    ('commercial_building', 'contract_construction', 8, 'Electrical, Plumbing, HVAC & Fire Systems'),
-    ('commercial_building', 'contract_construction', 9, 'Flooring, Ceilings & Interior Works'),
-    ('commercial_building', 'contract_construction', 10, 'Elevation & External Finishing'),
-    ('commercial_building', 'contract_construction', 11, 'Testing, Commissioning & Inspection'),
-    ('commercial_building', 'contract_construction', 12, 'Client Handover'),
-    ('renovation', 'contract_construction', 1, 'Existing Site Inspection & Assessment'),
-    ('renovation', 'contract_construction', 2, 'Client Requirements & Scope Finalization'),
-    ('renovation', 'contract_construction', 3, 'Design, Drawings & Estimation'),
-    ('renovation', 'contract_construction', 4, 'Agreement & Site Preparation'),
-    ('renovation', 'contract_construction', 5, 'Demolition & Dismantling'),
-    ('renovation', 'contract_construction', 6, 'Structural Repairs & Modifications'),
-    ('renovation', 'contract_construction', 7, 'Masonry & Plastering'),
-    ('renovation', 'contract_construction', 8, 'Electrical & Plumbing Modifications'),
-    ('renovation', 'contract_construction', 9, 'Flooring, Doors & Windows'),
-    ('renovation', 'contract_construction', 10, 'Painting & Finishing'),
-    ('renovation', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
-    ('renovation', 'contract_construction', 12, 'Client Handover'),
-    ('building_extension', 'contract_construction', 1, 'Existing Building Assessment'),
-    ('building_extension', 'contract_construction', 2, 'Extension Planning & Design'),
-    ('building_extension', 'contract_construction', 3, 'Structural Feasibility & Engineering'),
-    ('building_extension', 'contract_construction', 4, 'Estimation, Agreement & Approvals'),
-    ('building_extension', 'contract_construction', 5, 'Site Preparation & Protection'),
-    ('building_extension', 'contract_construction', 6, 'Foundation & Structural Modifications'),
-    ('building_extension', 'contract_construction', 7, 'New Structural Construction'),
-    ('building_extension', 'contract_construction', 8, 'Masonry & Plastering'),
-    ('building_extension', 'contract_construction', 9, 'Electrical & Plumbing Extensions'),
-    ('building_extension', 'contract_construction', 10, 'Flooring & Finishing'),
-    ('building_extension', 'contract_construction', 11, 'Integration & Quality Inspection'),
-    ('building_extension', 'contract_construction', 12, 'Client Handover'),
-    ('industrial_warehouse', 'contract_construction', 1, 'Client Requirements & Industrial Planning'),
-    ('industrial_warehouse', 'contract_construction', 2, 'Architectural & Structural Design'),
-    ('industrial_warehouse', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
-    ('industrial_warehouse', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('industrial_warehouse', 'contract_construction', 5, 'Site Development & Earthwork'),
-    ('industrial_warehouse', 'contract_construction', 6, 'Foundation & Industrial Flooring'),
-    ('industrial_warehouse', 'contract_construction', 7, 'Structural Steel / RCC Construction'),
-    ('industrial_warehouse', 'contract_construction', 8, 'Roofing & Cladding'),
-    ('industrial_warehouse', 'contract_construction', 9, 'Electrical, Plumbing & Fire Systems'),
-    ('industrial_warehouse', 'contract_construction', 10, 'Flooring, Drainage & External Development'),
-    ('industrial_warehouse', 'contract_construction', 11, 'Testing, Inspection & Commissioning'),
-    ('industrial_warehouse', 'contract_construction', 12, 'Client Handover'),
-    ('interior_fitout', 'contract_construction', 1, 'Site Survey & Client Requirements'),
-    ('interior_fitout', 'contract_construction', 2, 'Space Planning & Interior Design'),
-    ('interior_fitout', 'contract_construction', 3, 'Material Selection & BOQ'),
-    ('interior_fitout', 'contract_construction', 4, 'Quotation, Agreement & Mobilization'),
-    ('interior_fitout', 'contract_construction', 5, 'Dismantling & Site Preparation'),
-    ('interior_fitout', 'contract_construction', 6, 'Civil & Partition Works'),
-    ('interior_fitout', 'contract_construction', 7, 'Electrical, Plumbing & HVAC Works'),
-    ('interior_fitout', 'contract_construction', 8, 'Ceiling & Flooring Works'),
-    ('interior_fitout', 'contract_construction', 9, 'Carpentry & Custom Furniture'),
-    ('interior_fitout', 'contract_construction', 10, 'Painting, Fixtures & Finishing'),
-    ('interior_fitout', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
-    ('interior_fitout', 'contract_construction', 12, 'Client Handover'),
-    ('apartment', 'property_development', 1, 'Land Due Diligence & Title Verification'),
-    ('apartment', 'property_development', 2, 'Land Acquisition & Development Agreement'),
-    ('apartment', 'property_development', 3, 'Feasibility & Project Planning'),
-    ('apartment', 'property_development', 4, 'Architectural & Engineering Design'),
-    ('apartment', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
-    ('apartment', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
-    ('apartment', 'property_development', 7, 'Site Mobilization & Preparation'),
-    ('apartment', 'property_development', 8, 'Foundation & Basement Construction'),
-    ('apartment', 'property_development', 9, 'Structural Construction'),
-    ('apartment', 'property_development', 10, 'MEP & Internal Infrastructure'),
-    ('apartment', 'property_development', 11, 'Finishing & Common Area Development'),
-    ('apartment', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
-    ('apartment', 'property_development', 13, 'Sales, Registration & Customer Handover'),
-    ('villa', 'property_development', 1, 'Land Due Diligence & Title Verification'),
-    ('villa', 'property_development', 2, 'Land Acquisition & Development Agreement'),
-    ('villa', 'property_development', 3, 'Feasibility & Villa Planning'),
-    ('villa', 'property_development', 4, 'Architectural & Engineering Design'),
-    ('villa', 'property_development', 5, 'Approvals & Statutory Clearances'),
-    ('villa', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
-    ('villa', 'property_development', 7, 'Site Development & Infrastructure'),
-    ('villa', 'property_development', 8, 'Villa Foundation & Structural Construction'),
-    ('villa', 'property_development', 9, 'Masonry, Roofing & Waterproofing'),
-    ('villa', 'property_development', 10, 'MEP & Interior Finishing'),
-    ('villa', 'property_development', 11, 'Landscaping & Common Amenities'),
-    ('villa', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
-    ('villa', 'property_development', 13, 'Sales, Registration & Customer Handover'),
-    ('commercial_building', 'property_development', 1, 'Land Due Diligence & Title Verification'),
-    ('commercial_building', 'property_development', 2, 'Land Acquisition & Development Agreement'),
-    ('commercial_building', 'property_development', 3, 'Market Feasibility & Project Planning'),
-    ('commercial_building', 'property_development', 4, 'Architectural & Engineering Design'),
-    ('commercial_building', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
-    ('commercial_building', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
-    ('commercial_building', 'property_development', 7, 'Site Mobilization & Preparation'),
-    ('commercial_building', 'property_development', 8, 'Foundation & Basement Construction'),
-    ('commercial_building', 'property_development', 9, 'Structural Construction'),
-    ('commercial_building', 'property_development', 10, 'MEP, Fire Systems & Building Services'),
-    ('commercial_building', 'property_development', 11, 'Interior, External & Common Area Finishing'),
-    ('commercial_building', 'property_development', 12, 'Testing, Occupancy Approval & Completion'),
-    ('commercial_building', 'property_development', 13, 'Leasing / Sales, Registration & Handover'),
-    ('civil_infrastructure', 'civil_works_contract', 1, 'Tender & Work Order'),
-    ('civil_infrastructure', 'civil_works_contract', 2, 'Site Survey & Technical Planning'),
-    ('civil_infrastructure', 'civil_works_contract', 3, 'BOQ, Estimation & Project Scheduling'),
-    ('civil_infrastructure', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
-    ('civil_infrastructure', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
-    ('civil_infrastructure', 'civil_works_contract', 6, 'Foundation & Main Civil Works'),
-    ('civil_infrastructure', 'civil_works_contract', 7, 'Structural & Infrastructure Construction'),
-    ('civil_infrastructure', 'civil_works_contract', 8, 'Ancillary Works & Finishing'),
-    ('civil_infrastructure', 'civil_works_contract', 9, 'Quality Testing & Inspection'),
-    ('civil_infrastructure', 'civil_works_contract', 10, 'Measurements & RA Billing'),
-    ('civil_infrastructure', 'civil_works_contract', 11, 'Final Inspection & Defect Rectification'),
-    ('civil_infrastructure', 'civil_works_contract', 12, 'Project Completion & Handover'),
-    ('road_drainage', 'civil_works_contract', 1, 'Tender & Work Order'),
-    ('road_drainage', 'civil_works_contract', 2, 'Survey, Alignment & Setting Out'),
-    ('road_drainage', 'civil_works_contract', 3, 'BOQ & Project Planning'),
-    ('road_drainage', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
-    ('road_drainage', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
-    ('road_drainage', 'civil_works_contract', 6, 'Subgrade Preparation & Compaction'),
-    ('road_drainage', 'civil_works_contract', 7, 'Drainage, Culverts & Pipe Laying'),
-    ('road_drainage', 'civil_works_contract', 8, 'Base Course & Road Construction'),
-    ('road_drainage', 'civil_works_contract', 9, 'Chambers, Kerbs & Ancillary Works'),
-    ('road_drainage', 'civil_works_contract', 10, 'Road Surface & Finishing'),
-    ('road_drainage', 'civil_works_contract', 11, 'Quality Testing & Final Inspection'),
-    ('road_drainage', 'civil_works_contract', 12, 'Measurements & Project Handover'),
-    ('structural_works', 'civil_works_contract', 1, 'Tender / Client Requirements & Work Order'),
-    ('structural_works', 'civil_works_contract', 2, 'Structural Survey & Assessment'),
-    ('structural_works', 'civil_works_contract', 3, 'Structural Design & Engineering'),
-    ('structural_works', 'civil_works_contract', 4, 'BOQ, Estimation & Planning'),
-    ('structural_works', 'civil_works_contract', 5, 'Approvals & Site Mobilization'),
-    ('structural_works', 'civil_works_contract', 6, 'Foundation & Substructure Works'),
-    ('structural_works', 'civil_works_contract', 7, 'RCC / Steel Structural Works'),
-    ('structural_works', 'civil_works_contract', 8, 'Fabrication & Erection (where applicable)'),
-    ('structural_works', 'civil_works_contract', 9, 'Structural Finishing & Protection'),
-    ('structural_works', 'civil_works_contract', 10, 'Load Testing / Quality Testing (where applicable)'),
-    ('structural_works', 'civil_works_contract', 11, 'Structural Inspection & Rectification'),
-    ('structural_works', 'civil_works_contract', 12, 'Completion & Handover'),
-    ('material_supply', 'material_supply', 1, 'Customer Enquiry & Requirement'),
-    ('material_supply', 'material_supply', 2, 'Quotation & Order Confirmation'),
-    ('material_supply', 'material_supply', 3, 'Material Procurement / Stock Allocation'),
-    ('material_supply', 'material_supply', 4, 'Quality & Quantity Verification'),
-    ('material_supply', 'material_supply', 5, 'Dispatch & Transportation'),
-    ('material_supply', 'material_supply', 6, 'Site Delivery & Acknowledgement')
-  ), authoritative_defs AS (
-    SELECT
-      lower(project_code) AS project_code,
-      business_model,
-      sequence_number,
-      stage_name,
-      regexp_replace(
-        trim(both '_' from regexp_replace(
-          regexp_replace(
-            regexp_replace(lower(stage_name), '&', 'and', 'g'),
-            '\(.*?\)',
-            ' ',
-            'g'
-          ),
-          '[^a-z0-9]+',
-          '_',
-          'g'
-        )),
-        '_+',
-        '_',
-        'g'
-      ) AS template_code
-    FROM authoritative_raw
-  ), resolved_defs AS (
-    SELECT
-      pt.id AS project_type_id,
-      d.business_model,
-      d.template_code,
-      d.stage_name,
-      d.sequence_number
-    FROM authoritative_defs d
-    JOIN public.project_types pt
-      ON pt.company_id IS NULL
-     AND pt.is_active = true
-     AND lower(pt.code) = d.project_code
-  ), existing_targeted AS (
-    SELECT
-      pst.project_type_id,
-      pst.business_model,
-      pst.template_code,
-      pst.sequence_number,
-      pst.name
-    FROM public.project_stage_templates pst
-    JOIN resolved_defs d
-      ON d.project_type_id = pst.project_type_id
-     AND d.business_model = pst.business_model
-    WHERE pst.company_id IS NULL
-  )
-  SELECT count(*)
-  INTO v_ambiguous_count
-  FROM existing_targeted e
-  LEFT JOIN resolved_defs d
-    ON d.project_type_id = e.project_type_id
-   AND d.business_model = e.business_model
-   AND lower(d.template_code) = lower(e.template_code)
-  WHERE d.template_code IS NULL;
-
-  IF v_ambiguous_count > 0 THEN
-    RAISE EXCEPTION
-      '0031 aborted: % existing template rows cannot be mapped by exact template_code. Resolve ambiguities before applying.',
-      v_ambiguous_count
-      USING HINT = 'Use out/stage-templates-0031-reconciliation-report.md and explicitly map/deactivate rows.';
-  END IF;
-END $$;
-
-WITH authoritative_raw(project_code, business_model, sequence_number, stage_name) AS (
-VALUES
-    ('independent_house', 'contract_construction', 1, 'Client Requirements & Project Planning'),
-    ('independent_house', 'contract_construction', 2, 'Architectural Design & Drawings'),
-    ('independent_house', 'contract_construction', 3, 'Estimation, Quotation & Agreement'),
-    ('independent_house', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('independent_house', 'contract_construction', 5, 'Foundation & Plinth Construction'),
-    ('independent_house', 'contract_construction', 6, 'Structural Construction'),
-    ('independent_house', 'contract_construction', 7, 'Brickwork & Masonry'),
-    ('independent_house', 'contract_construction', 8, 'Plastering & Waterproofing'),
-    ('independent_house', 'contract_construction', 9, 'Electrical & Plumbing Works'),
-    ('independent_house', 'contract_construction', 10, 'Flooring, Doors & Windows'),
-    ('independent_house', 'contract_construction', 11, 'Painting & Final Finishing'),
-    ('independent_house', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
-    ('villa', 'contract_construction', 1, 'Client Requirements & Project Planning'),
-    ('villa', 'contract_construction', 2, 'Architectural Design & 3D Elevation'),
-    ('villa', 'contract_construction', 3, 'Structural & Engineering Design'),
-    ('villa', 'contract_construction', 4, 'Estimation, Quotation & Agreement'),
-    ('villa', 'contract_construction', 5, 'Approvals & Site Mobilization'),
-    ('villa', 'contract_construction', 6, 'Foundation & Plinth Construction'),
-    ('villa', 'contract_construction', 7, 'Structural Construction'),
-    ('villa', 'contract_construction', 8, 'Masonry, Plastering & Waterproofing'),
-    ('villa', 'contract_construction', 9, 'Electrical, Plumbing & HVAC Works'),
-    ('villa', 'contract_construction', 10, 'Flooring, Doors, Windows & Joinery'),
-    ('villa', 'contract_construction', 11, 'Interior, Exterior & Landscape Finishing'),
-    ('villa', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
-    ('apartment', 'contract_construction', 1, 'Client Requirements & Project Planning'),
-    ('apartment', 'contract_construction', 2, 'Architectural Design & Engineering'),
-    ('apartment', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
-    ('apartment', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('apartment', 'contract_construction', 5, 'Foundation & Basement Construction'),
-    ('apartment', 'contract_construction', 6, 'Structural Construction'),
-    ('apartment', 'contract_construction', 7, 'Masonry & Internal Plastering'),
-    ('apartment', 'contract_construction', 8, 'Electrical, Plumbing & Fire Systems'),
-    ('apartment', 'contract_construction', 9, 'Flooring, Doors & Windows'),
-    ('apartment', 'contract_construction', 10, 'Painting & Internal Finishing'),
-    ('apartment', 'contract_construction', 11, 'Lifts, Common Areas & External Works'),
-    ('apartment', 'contract_construction', 12, 'Quality Inspection & Client Handover'),
-    ('commercial_building', 'contract_construction', 1, 'Client Requirements & Space Planning'),
-    ('commercial_building', 'contract_construction', 2, 'Architectural & Engineering Design'),
-    ('commercial_building', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
-    ('commercial_building', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('commercial_building', 'contract_construction', 5, 'Foundation & Basement Construction'),
-    ('commercial_building', 'contract_construction', 6, 'Structural Construction'),
-    ('commercial_building', 'contract_construction', 7, 'Masonry & Building Envelope'),
-    ('commercial_building', 'contract_construction', 8, 'Electrical, Plumbing, HVAC & Fire Systems'),
-    ('commercial_building', 'contract_construction', 9, 'Flooring, Ceilings & Interior Works'),
-    ('commercial_building', 'contract_construction', 10, 'Elevation & External Finishing'),
-    ('commercial_building', 'contract_construction', 11, 'Testing, Commissioning & Inspection'),
-    ('commercial_building', 'contract_construction', 12, 'Client Handover'),
-    ('renovation', 'contract_construction', 1, 'Existing Site Inspection & Assessment'),
-    ('renovation', 'contract_construction', 2, 'Client Requirements & Scope Finalization'),
-    ('renovation', 'contract_construction', 3, 'Design, Drawings & Estimation'),
-    ('renovation', 'contract_construction', 4, 'Agreement & Site Preparation'),
-    ('renovation', 'contract_construction', 5, 'Demolition & Dismantling'),
-    ('renovation', 'contract_construction', 6, 'Structural Repairs & Modifications'),
-    ('renovation', 'contract_construction', 7, 'Masonry & Plastering'),
-    ('renovation', 'contract_construction', 8, 'Electrical & Plumbing Modifications'),
-    ('renovation', 'contract_construction', 9, 'Flooring, Doors & Windows'),
-    ('renovation', 'contract_construction', 10, 'Painting & Finishing'),
-    ('renovation', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
-    ('renovation', 'contract_construction', 12, 'Client Handover'),
-    ('building_extension', 'contract_construction', 1, 'Existing Building Assessment'),
-    ('building_extension', 'contract_construction', 2, 'Extension Planning & Design'),
-    ('building_extension', 'contract_construction', 3, 'Structural Feasibility & Engineering'),
-    ('building_extension', 'contract_construction', 4, 'Estimation, Agreement & Approvals'),
-    ('building_extension', 'contract_construction', 5, 'Site Preparation & Protection'),
-    ('building_extension', 'contract_construction', 6, 'Foundation & Structural Modifications'),
-    ('building_extension', 'contract_construction', 7, 'New Structural Construction'),
-    ('building_extension', 'contract_construction', 8, 'Masonry & Plastering'),
-    ('building_extension', 'contract_construction', 9, 'Electrical & Plumbing Extensions'),
-    ('building_extension', 'contract_construction', 10, 'Flooring & Finishing'),
-    ('building_extension', 'contract_construction', 11, 'Integration & Quality Inspection'),
-    ('building_extension', 'contract_construction', 12, 'Client Handover'),
-    ('industrial_warehouse', 'contract_construction', 1, 'Client Requirements & Industrial Planning'),
-    ('industrial_warehouse', 'contract_construction', 2, 'Architectural & Structural Design'),
-    ('industrial_warehouse', 'contract_construction', 3, 'Estimation, BOQ & Agreement'),
-    ('industrial_warehouse', 'contract_construction', 4, 'Approvals & Site Mobilization'),
-    ('industrial_warehouse', 'contract_construction', 5, 'Site Development & Earthwork'),
-    ('industrial_warehouse', 'contract_construction', 6, 'Foundation & Industrial Flooring'),
-    ('industrial_warehouse', 'contract_construction', 7, 'Structural Steel / RCC Construction'),
-    ('industrial_warehouse', 'contract_construction', 8, 'Roofing & Cladding'),
-    ('industrial_warehouse', 'contract_construction', 9, 'Electrical, Plumbing & Fire Systems'),
-    ('industrial_warehouse', 'contract_construction', 10, 'Flooring, Drainage & External Development'),
-    ('industrial_warehouse', 'contract_construction', 11, 'Testing, Inspection & Commissioning'),
-    ('industrial_warehouse', 'contract_construction', 12, 'Client Handover'),
-    ('interior_fitout', 'contract_construction', 1, 'Site Survey & Client Requirements'),
-    ('interior_fitout', 'contract_construction', 2, 'Space Planning & Interior Design'),
-    ('interior_fitout', 'contract_construction', 3, 'Material Selection & BOQ'),
-    ('interior_fitout', 'contract_construction', 4, 'Quotation, Agreement & Mobilization'),
-    ('interior_fitout', 'contract_construction', 5, 'Dismantling & Site Preparation'),
-    ('interior_fitout', 'contract_construction', 6, 'Civil & Partition Works'),
-    ('interior_fitout', 'contract_construction', 7, 'Electrical, Plumbing & HVAC Works'),
-    ('interior_fitout', 'contract_construction', 8, 'Ceiling & Flooring Works'),
-    ('interior_fitout', 'contract_construction', 9, 'Carpentry & Custom Furniture'),
-    ('interior_fitout', 'contract_construction', 10, 'Painting, Fixtures & Finishing'),
-    ('interior_fitout', 'contract_construction', 11, 'Final Inspection & Snag Rectification'),
-    ('interior_fitout', 'contract_construction', 12, 'Client Handover'),
-    ('apartment', 'property_development', 1, 'Land Due Diligence & Title Verification'),
-    ('apartment', 'property_development', 2, 'Land Acquisition & Development Agreement'),
-    ('apartment', 'property_development', 3, 'Feasibility & Project Planning'),
-    ('apartment', 'property_development', 4, 'Architectural & Engineering Design'),
-    ('apartment', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
-    ('apartment', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
-    ('apartment', 'property_development', 7, 'Site Mobilization & Preparation'),
-    ('apartment', 'property_development', 8, 'Foundation & Basement Construction'),
-    ('apartment', 'property_development', 9, 'Structural Construction'),
-    ('apartment', 'property_development', 10, 'MEP & Internal Infrastructure'),
-    ('apartment', 'property_development', 11, 'Finishing & Common Area Development'),
-    ('apartment', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
-    ('apartment', 'property_development', 13, 'Sales, Registration & Customer Handover'),
-    ('villa', 'property_development', 1, 'Land Due Diligence & Title Verification'),
-    ('villa', 'property_development', 2, 'Land Acquisition & Development Agreement'),
-    ('villa', 'property_development', 3, 'Feasibility & Villa Planning'),
-    ('villa', 'property_development', 4, 'Architectural & Engineering Design'),
-    ('villa', 'property_development', 5, 'Approvals & Statutory Clearances'),
-    ('villa', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
-    ('villa', 'property_development', 7, 'Site Development & Infrastructure'),
-    ('villa', 'property_development', 8, 'Villa Foundation & Structural Construction'),
-    ('villa', 'property_development', 9, 'Masonry, Roofing & Waterproofing'),
-    ('villa', 'property_development', 10, 'MEP & Interior Finishing'),
-    ('villa', 'property_development', 11, 'Landscaping & Common Amenities'),
-    ('villa', 'property_development', 12, 'Quality Inspection & Occupancy Approval'),
-    ('villa', 'property_development', 13, 'Sales, Registration & Customer Handover'),
-    ('commercial_building', 'property_development', 1, 'Land Due Diligence & Title Verification'),
-    ('commercial_building', 'property_development', 2, 'Land Acquisition & Development Agreement'),
-    ('commercial_building', 'property_development', 3, 'Market Feasibility & Project Planning'),
-    ('commercial_building', 'property_development', 4, 'Architectural & Engineering Design'),
-    ('commercial_building', 'property_development', 5, 'Building Approvals & Statutory Clearances'),
-    ('commercial_building', 'property_development', 6, 'RERA Registration & Project Launch (if applicable)'),
-    ('commercial_building', 'property_development', 7, 'Site Mobilization & Preparation'),
-    ('commercial_building', 'property_development', 8, 'Foundation & Basement Construction'),
-    ('commercial_building', 'property_development', 9, 'Structural Construction'),
-    ('commercial_building', 'property_development', 10, 'MEP, Fire Systems & Building Services'),
-    ('commercial_building', 'property_development', 11, 'Interior, External & Common Area Finishing'),
-    ('commercial_building', 'property_development', 12, 'Testing, Occupancy Approval & Completion'),
-    ('commercial_building', 'property_development', 13, 'Leasing / Sales, Registration & Handover'),
-    ('civil_infrastructure', 'civil_works_contract', 1, 'Tender & Work Order'),
-    ('civil_infrastructure', 'civil_works_contract', 2, 'Site Survey & Technical Planning'),
-    ('civil_infrastructure', 'civil_works_contract', 3, 'BOQ, Estimation & Project Scheduling'),
-    ('civil_infrastructure', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
-    ('civil_infrastructure', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
-    ('civil_infrastructure', 'civil_works_contract', 6, 'Foundation & Main Civil Works'),
-    ('civil_infrastructure', 'civil_works_contract', 7, 'Structural & Infrastructure Construction'),
-    ('civil_infrastructure', 'civil_works_contract', 8, 'Ancillary Works & Finishing'),
-    ('civil_infrastructure', 'civil_works_contract', 9, 'Quality Testing & Inspection'),
-    ('civil_infrastructure', 'civil_works_contract', 10, 'Measurements & RA Billing'),
-    ('civil_infrastructure', 'civil_works_contract', 11, 'Final Inspection & Defect Rectification'),
-    ('civil_infrastructure', 'civil_works_contract', 12, 'Project Completion & Handover'),
-    ('road_drainage', 'civil_works_contract', 1, 'Tender & Work Order'),
-    ('road_drainage', 'civil_works_contract', 2, 'Survey, Alignment & Setting Out'),
-    ('road_drainage', 'civil_works_contract', 3, 'BOQ & Project Planning'),
-    ('road_drainage', 'civil_works_contract', 4, 'Approvals & Site Mobilization'),
-    ('road_drainage', 'civil_works_contract', 5, 'Site Clearing & Earthwork'),
-    ('road_drainage', 'civil_works_contract', 6, 'Subgrade Preparation & Compaction'),
-    ('road_drainage', 'civil_works_contract', 7, 'Drainage, Culverts & Pipe Laying'),
-    ('road_drainage', 'civil_works_contract', 8, 'Base Course & Road Construction'),
-    ('road_drainage', 'civil_works_contract', 9, 'Chambers, Kerbs & Ancillary Works'),
-    ('road_drainage', 'civil_works_contract', 10, 'Road Surface & Finishing'),
-    ('road_drainage', 'civil_works_contract', 11, 'Quality Testing & Final Inspection'),
-    ('road_drainage', 'civil_works_contract', 12, 'Measurements & Project Handover'),
-    ('structural_works', 'civil_works_contract', 1, 'Tender / Client Requirements & Work Order'),
-    ('structural_works', 'civil_works_contract', 2, 'Structural Survey & Assessment'),
-    ('structural_works', 'civil_works_contract', 3, 'Structural Design & Engineering'),
-    ('structural_works', 'civil_works_contract', 4, 'BOQ, Estimation & Planning'),
-    ('structural_works', 'civil_works_contract', 5, 'Approvals & Site Mobilization'),
-    ('structural_works', 'civil_works_contract', 6, 'Foundation & Substructure Works'),
-    ('structural_works', 'civil_works_contract', 7, 'RCC / Steel Structural Works'),
-    ('structural_works', 'civil_works_contract', 8, 'Fabrication & Erection (where applicable)'),
-    ('structural_works', 'civil_works_contract', 9, 'Structural Finishing & Protection'),
-    ('structural_works', 'civil_works_contract', 10, 'Load Testing / Quality Testing (where applicable)'),
-    ('structural_works', 'civil_works_contract', 11, 'Structural Inspection & Rectification'),
-    ('structural_works', 'civil_works_contract', 12, 'Completion & Handover'),
-    ('material_supply', 'material_supply', 1, 'Customer Enquiry & Requirement'),
-    ('material_supply', 'material_supply', 2, 'Quotation & Order Confirmation'),
-    ('material_supply', 'material_supply', 3, 'Material Procurement / Stock Allocation'),
-    ('material_supply', 'material_supply', 4, 'Quality & Quantity Verification'),
-    ('material_supply', 'material_supply', 5, 'Dispatch & Transportation'),
-    ('material_supply', 'material_supply', 6, 'Site Delivery & Acknowledgement')
-), authoritative_defs AS (
-  SELECT
-    lower(project_code) AS project_code,
-    business_model,
-    sequence_number,
-    stage_name,
-    regexp_replace(
-      trim(both '_' from regexp_replace(
-        regexp_replace(
-          regexp_replace(lower(stage_name), '&', 'and', 'g'),
-          '\(.*?\)',
-          ' ',
-          'g'
-        ),
-        '[^a-z0-9]+',
-        '_',
-        'g'
-      )),
-      '_+',
-      '_',
-      'g'
-    ) AS template_code
-  FROM authoritative_raw
-), resolved_defs AS (
-  SELECT
-    NULL::uuid AS company_id,
-    pt.id AS project_type_id,
-    d.business_model,
-    d.template_code,
-    d.stage_name AS name,
-    d.sequence_number,
-    0::numeric AS default_completion_percentage,
-    true AS is_active
-  FROM authoritative_defs d
-  JOIN public.project_types pt
-    ON pt.company_id IS NULL
-   AND pt.is_active = true
-   AND lower(pt.code) = d.project_code
-)
-INSERT INTO public.project_stage_templates (
-  company_id,
-  project_type_id,
-  business_model,
-  template_code,
-  name,
-  sequence_number,
-  default_completion_percentage,
-  is_active
-)
-SELECT
-  r.company_id,
-  r.project_type_id,
-  r.business_model,
-  r.template_code,
-  r.name,
-  r.sequence_number,
-  r.default_completion_percentage,
-  r.is_active
-FROM resolved_defs r
-ON CONFLICT ON CONSTRAINT uq_project_stage_templates
-DO UPDATE SET
-  name = EXCLUDED.name,
-  sequence_number = EXCLUDED.sequence_number,
-  default_completion_percentage = EXCLUDED.default_completion_percentage,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
-
--- Explicit deactivations only (none currently authorized).
-WITH explicit_deactivate(project_code, business_model, template_code) AS (
-  SELECT NULL::text, NULL::text, NULL::text
-  WHERE false
-)
-UPDATE public.project_stage_templates pst
-SET
-  is_active = false,
-  updated_at = now()
-FROM explicit_deactivate d
-JOIN public.project_types pt
-  ON pt.company_id IS NULL
- AND pt.is_active = true
- AND lower(pt.code) = lower(d.project_code)
-WHERE pst.company_id IS NULL
-  AND pst.project_type_id = pt.id
-  AND pst.business_model = d.business_model
-  AND lower(pst.template_code) = lower(d.template_code)
-  AND pst.is_active = true;
-
-COMMIT;
--- <<< 0031_stage_template_master_data_sync.sql
-
--- ===== END APP MIGRATIONS SNAPSHOT =====
 

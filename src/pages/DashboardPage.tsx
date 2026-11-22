@@ -9,25 +9,33 @@ import {
     getCollectionsReport,
     getCompanyReceipts,
     getDashboardReport,
-    getDefaultersReport,
+    getDashboardV2,
     getExpensesReport,
     getMonthlyFinancialReport,
-    getProjectFinancials,
     type CollectionReportRow,
     type CompanyReceiptRow,
+    type DashboardProjectSummary,
     type DashboardReport,
-    type DefaulterReportRow,
     type ExpenseReportRow,
     type MonthlyFinancialEntry,
+    type PendingSupplierPayment,
+    type ProjectProgressSummary,
 } from '@/services/report.service';
 import {
+    AlertTriangle,
     BarChart3,
+    Building2,
     CalendarClock,
     ChevronRight,
+    ClipboardList,
     FolderKanban,
+    HardHat,
     IndianRupee,
     Plus,
+    ReceiptText,
     RefreshCcw,
+    TrendingDown,
+    TrendingUp,
     Wallet,
     WalletCards
 } from 'lucide-react';
@@ -39,14 +47,23 @@ const formatStatus = (status: string) => {
     return label.charAt(0).toUpperCase() + label.slice(1);
 };
 
-// One icon per KPI card (instead of the same rupee icon on all six).
 const kpiIcons: Record<string, ReactNode> = {
     'Active Projects': <FolderKanban className="h-5 w-5 text-[var(--primary)]" />,
-    'Total Billed': <IndianRupee className="h-5 w-5 text-[var(--primary)]" />,
-    'Collected': <Wallet className="h-5 w-5 text-[var(--primary)]" />,
-    'Outstanding': <CalendarClock className="h-5 w-5 text-[var(--primary)]" />,
-    'Actual Expenses': <WalletCards className="h-5 w-5 text-[var(--primary)]" />,
+    'Total Project Value': <IndianRupee className="h-5 w-5 text-[var(--primary)]" />,
+    'Total Invoiced': <IndianRupee className="h-5 w-5 text-[var(--primary)]" />,
+    'Amount Collected': <Wallet className="h-5 w-5 text-[var(--primary)]" />,
+    'Amount Due': <CalendarClock className="h-5 w-5 text-[var(--primary)]" />,
+    'Total Expenses': <WalletCards className="h-5 w-5 text-[var(--primary)]" />,
     'Net Cash Flow': <BarChart3 className="h-5 w-5 text-[var(--primary)]" />,
+};
+
+const kpiIconTones: Record<string, string> = {
+    'Active Projects': 'bg-[var(--primary-soft)] text-[var(--primary)]',
+    'Total Invoiced': 'bg-[color-mix(in_oklab,var(--chart-1)_16%,white)] text-[var(--primary)]',
+    'Amount Collected': 'bg-[color-mix(in_oklab,var(--success)_14%,white)] text-[var(--success)]',
+    'Amount Due': 'bg-[color-mix(in_oklab,var(--warning)_16%,white)] text-[var(--warning-fg)]',
+    'Total Expenses': 'bg-[color-mix(in_oklab,var(--chart-3)_15%,white)] text-[var(--danger-fg)]',
+    'Net Cash Flow': 'bg-[color-mix(in_oklab,var(--primary)_12%,white)] text-[var(--primary)]',
 };
 
 type DashboardTransaction = {
@@ -65,6 +82,15 @@ type DashboardTransaction = {
 
 type ProjectDashboardFilter = 'all' | 'active' | 'planned' | 'completed';
 
+type SnapshotMetricTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+
+type SnapshotMetric = {
+    label: string;
+    value: string;
+    tone: SnapshotMetricTone;
+    icon: ReactNode;
+};
+
 function dateValue(value?: string | null): number {
     if (!value) return 0;
     const parsed = new Date(value).getTime();
@@ -76,7 +102,6 @@ function inDateWindow(value: string | null | undefined, from?: string, to?: stri
     if (!value) return false;
     const time = dateValue(value);
     if (!time) return false;
-
     if (from) {
         const fromTime = dateValue(from);
         if (fromTime && time < fromTime) return false;
@@ -94,21 +119,10 @@ function inDateWindow(value: string | null | undefined, from?: string, to?: stri
 export default function DashboardPage() {
     const navigate = useNavigate();
     const [dashboard, setDashboard] = useState<DashboardReport | null>(null);
+    const [projectProgress, setProjectProgress] = useState<ProjectProgressSummary[]>([]);
+    const [pendingSupplierPayments, setPendingSupplierPayments] = useState<PendingSupplierPayment[]>([]);
     const [projects, setProjects] = useState<ProjectRecord[]>([]);
-    const [projectMetrics, setProjectMetrics] = useState<Record<string, {
-        contractValue: number;
-        projectBudget: number;
-        actualCost: number;
-        customerCollections: number;
-        investorContributions: number;
-        expectedProjectMargin: number | null;
-        cashBasedProfitLoss: number;
-        budgetRemaining: number;
-        budgetUtilization: number;
-        netCashFlow: number;
-    }>>({});
     const [monthlySeries, setMonthlySeries] = useState<MonthlyFinancialEntry[]>([]);
-    const [defaulters, setDefaulters] = useState<DefaulterReportRow[]>([]);
     const [loadingDashboard, setLoadingDashboard] = useState(true);
     const [loadingTransactions, setLoadingTransactions] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -116,6 +130,8 @@ export default function DashboardPage() {
     const [syncedAt, setSyncedAt] = useState<string | null>(null);
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
+    const [appliedFrom, setAppliedFrom] = useState('');
+    const [appliedTo, setAppliedTo] = useState('');
     const [expenseRows, setExpenseRows] = useState<ExpenseReportRow[]>([]);
     const [collectionRows, setCollectionRows] = useState<CollectionReportRow[]>([]);
     const [companyOnlyReceipts, setCompanyOnlyReceipts] = useState<CompanyReceiptRow[]>([]);
@@ -130,6 +146,9 @@ export default function DashboardPage() {
     }>>([]);
     const [projectFilter, setProjectFilter] = useState<ProjectDashboardFilter>('all');
 
+    // Global project selector for filtering KPIs and financial sections
+    const [selectedProjectId, setSelectedProjectId] = useState<string | 'all'>('all');
+
     const projectById = useMemo(
         () => new Map(projects.map((project) => [project.id, project])),
         [projects],
@@ -141,48 +160,59 @@ export default function DashboardPage() {
         return formatINR(value);
     };
 
-    const getProjectValueMeta = (project: ProjectRecord) => {
-        const modelConfig = BUSINESS_MODEL_FORM_CONFIG[project.businessModel ?? 'contract_construction'];
-        const contractValue = Number(project.contractAmount ?? 0);
-        const projectedSales = Number(project.projectedSalesValue ?? 0);
-        const valueForDisplay = project.businessModel === 'property_development' && projectedSales > 0 && contractValue === 0
+    const getProjectValueMeta = (project: ProjectRecord | DashboardProjectSummary) => {
+        const isProjectRecord = 'contractAmount' in project;
+        if (isProjectRecord) {
+            const rec = project as ProjectRecord;
+            const modelConfig = BUSINESS_MODEL_FORM_CONFIG[rec.businessModel ?? 'contract_construction'];
+            const contractValue = Number(rec.contractAmount ?? 0);
+            const projectedSales = Number(rec.projectedSalesValue ?? 0);
+            const valueForDisplay = rec.businessModel === 'property_development' && projectedSales > 0 && contractValue === 0
+                ? projectedSales
+                : contractValue;
+            return { label: rec.businessModel ? modelConfig.contractValueLabel : 'Project value', value: valueForDisplay };
+        }
+        const sum = project as DashboardProjectSummary;
+        const modelKey = (sum.businessModel ?? 'contract_construction') as keyof typeof BUSINESS_MODEL_FORM_CONFIG;
+        const modelConfig = BUSINESS_MODEL_FORM_CONFIG[modelKey in BUSINESS_MODEL_FORM_CONFIG ? modelKey : 'contract_construction'];
+        const contractValue = Number(sum.contractValue ?? 0);
+        const projectedSales = Number(sum.projectedSalesValue ?? 0);
+        const valueForDisplay = sum.businessModel === 'property_development' && projectedSales > 0 && contractValue === 0
             ? projectedSales
             : contractValue;
-
-        return {
-            label: project.businessModel ? modelConfig.contractValueLabel : 'Project value',
-            value: valueForDisplay,
-            display: formatCurrencyValue(valueForDisplay),
-        };
+        return { label: sum.businessModel ? modelConfig.contractValueLabel : 'Project value', value: valueForDisplay };
     };
 
-    const loadDashboard = async () => {
+    const loadDashboard = async (projectId: string | 'all' = selectedProjectId) => {
         setLoadingDashboard(true);
         setError(null);
+        const scopedProjectId = projectId === 'all' ? undefined : projectId;
         try {
-            const [dashboardData, projectRows, monthlyData, defaulterRows] = await Promise.all([
-                getDashboardReport(),
+            const [dashboardReport, dashboardV2, projectRows, monthlyData] = await Promise.all([
+                getDashboardReport(scopedProjectId),
+                getDashboardV2(),
                 listProjects(),
-                getMonthlyFinancialReport(),
-                getDefaultersReport(),
+                getMonthlyFinancialReport(scopedProjectId),
             ]);
 
-            if (!dashboardData) {
+            if (!dashboardReport) {
                 setError('Unable to load dashboard totals right now.');
             }
 
-            setDashboard(dashboardData);
+            setDashboard(dashboardReport);
+            setProjectProgress(dashboardV2?.projectProgress ?? []);
+            setPendingSupplierPayments(dashboardV2?.pendingSupplierPayments ?? []);
             setProjects(projectRows);
             setMonthlySeries(monthlyData?.monthly ?? []);
-            setDefaulters(defaulterRows);
             setSyncedAt(new Date().toISOString());
         } catch (err) {
             console.error(err);
             setError('Unable to load dashboard totals right now.');
             setDashboard(null);
+            setProjectProgress([]);
+            setPendingSupplierPayments([]);
             setProjects([]);
             setMonthlySeries([]);
-            setDefaulters([]);
         } finally {
             setLoadingDashboard(false);
         }
@@ -201,10 +231,12 @@ export default function DashboardPage() {
             return;
         }
 
+        const projectIdFilter = selectedProjectId === 'all' ? undefined : selectedProjectId;
+
         try {
             const [expenseReport, collectionReport, companyReceipts] = await Promise.all([
-                getExpensesReport({ from: fromValue || undefined, to: toValue || undefined }),
-                getCollectionsReport({ from: fromValue || undefined, to: toValue || undefined }),
+                getExpensesReport({ from: fromValue || undefined, to: toValue || undefined, projectId: projectIdFilter }),
+                getCollectionsReport({ from: fromValue || undefined, to: toValue || undefined, projectId: projectIdFilter }),
                 getCompanyReceipts({ projectId: null }),
             ]);
 
@@ -227,38 +259,16 @@ export default function DashboardPage() {
     };
 
     useEffect(() => {
-        void Promise.all([loadDashboard(), loadTransactions({ from: '', to: '' })]);
-    }, []);
+        void Promise.all([loadDashboard(selectedProjectId), loadTransactions({ from, to })]);
+    }, [selectedProjectId]);
 
     const projectSummaryMap = useMemo(() => {
-        const map = new Map<string, { projectId: string; outstanding: number; collected: number; expenses: number; billed: number; netCashFlow: number; projectName: string; contractValue: number }>();
-        const rows = dashboard?.projectSummaries ?? [];
-        for (const row of rows) {
-            map.set(row.projectId, {
-                projectId: row.projectId,
-                outstanding: Number(row.outstanding ?? 0),
-                collected: Number(row.collected ?? 0),
-                expenses: Number(row.expenses ?? 0),
-                billed: Number(row.billed ?? 0),
-                netCashFlow: Number(row.netCashFlow ?? 0),
-                projectName: row.projectName,
-                contractValue: Number(row.contractValue ?? 0),
-            });
+        const map = new Map<string, DashboardProjectSummary>();
+        for (const row of dashboard?.projectSummaries ?? []) {
+            map.set(row.projectId, row);
         }
         return map;
     }, [dashboard]);
-
-    const topProjects = useMemo(() => {
-        const rows = dashboard?.projectSummaries ?? [];
-        return [...rows]
-            .sort((a, b) => Number(b.outstanding ?? 0) - Number(a.outstanding ?? 0))
-            .slice(0, 6);
-    }, [dashboard]);
-
-    const defaulterCustomerIds = useMemo(
-        () => new Set(defaulters.filter((row) => Number(row.dueInvoices ?? 0) > 0).map((row) => row.customerId)),
-        [defaulters],
-    );
 
     const monthlyChartData = useMemo(() => {
         const monthKeys = Array.from({ length: 6 }, (_, index) => {
@@ -282,11 +292,6 @@ export default function DashboardPage() {
         });
     }, [monthlySeries]);
 
-    const topDefaulters = useMemo(
-        () => [...defaulters].sort((a, b) => Number(b.outstanding ?? 0) - Number(a.outstanding ?? 0)).slice(0, 4),
-        [defaulters],
-    );
-
     const recentTransactions = useMemo<DashboardTransaction[]>(() => {
         const collectionTransactions = collectionRows.map((row) => {
             const project = row.project_id ? projectById.get(row.project_id) : null;
@@ -305,7 +310,7 @@ export default function DashboardPage() {
             };
         });
 
-        const companyCollectionTransactions = companyOnlyReceipts.map((row) => ({
+        const companyCollectionTransactions = selectedProjectId === 'all' ? companyOnlyReceipts.map((row) => ({
             id: `company-collection-${row.id}`,
             kind: 'collection' as const,
             amount: Number(row.amount ?? 0),
@@ -317,7 +322,7 @@ export default function DashboardPage() {
             projectName: 'Company-level',
             counterparty: row.customer?.name || 'Client collection',
             isCompanyLevel: true,
-        }));
+        })) : [];
 
         const expenseTransactions = expenseRows.map((row) => {
             const project = row.project_id ? projectById.get(row.project_id) : null;
@@ -337,37 +342,44 @@ export default function DashboardPage() {
             };
         });
 
-        const investmentTransactions = investorContributionRows.map((row) => ({
-            id: `investment-${row.id}`,
-            kind: 'investment' as const,
-            amount: Number(row.amount ?? 0),
-            occurredOn: row.contributionDate ?? null,
-            reference: row.referenceNumber ?? 'Investor contribution',
-            statusLabel: 'Received',
-            statusTone: 'success' as const,
-            projectId: row.projectId ?? null,
-            projectName: row.projectName ?? 'Investor funding',
-            counterparty: row.investorName || 'Investor',
-            isCompanyLevel: false,
-        }));
+        const investmentTransactions = investorContributionRows
+            .filter((row) => (selectedProjectId === 'all' || row.projectId === selectedProjectId) && inDateWindow(row.contributionDate, from, to))
+            .map((row) => ({
+                id: `investment-${row.id}`,
+                kind: 'investment' as const,
+                amount: Number(row.amount ?? 0),
+                occurredOn: row.contributionDate ?? null,
+                reference: row.referenceNumber ?? 'Investor contribution',
+                statusLabel: 'Received',
+                statusTone: 'success' as const,
+                projectId: row.projectId ?? null,
+                projectName: row.projectName ?? 'Investor funding',
+                counterparty: row.investorName || 'Investor',
+                isCompanyLevel: false,
+            }));
 
         return [...collectionTransactions, ...companyCollectionTransactions, ...expenseTransactions, ...investmentTransactions]
             .sort((a, b) => dateValue(b.occurredOn) - dateValue(a.occurredOn))
             .slice(0, 10);
-    }, [collectionRows, companyOnlyReceipts, expenseRows, investorContributionRows, projectById]);
+    }, [collectionRows, companyOnlyReceipts, expenseRows, investorContributionRows, projectById, selectedProjectId, from, to]);
+
+    const isDateRangeValid = !from || !to || dateValue(from) <= dateValue(to);
+    const hasDateRangeChanged = from !== appliedFrom || to !== appliedTo;
 
     const handleApplyFilters = () => {
-        void loadTransactions();
+        if (!isDateRangeValid || !hasDateRangeChanged) return;
+        setAppliedFrom(from);
+        setAppliedTo(to);
+        void loadTransactions({ from, to });
     };
 
     const handleResetFilters = () => {
         setFrom('');
         setTo('');
+        setAppliedFrom('');
+        setAppliedTo('');
         void loadTransactions({ from: '', to: '' });
     };
-
-    const money = (value: number | undefined) => (loadingDashboard ? null : dashboard ? formatINR(value ?? 0) : '—');
-    const count = (value: number | undefined) => (loadingDashboard ? null : dashboard ? String(value ?? 0) : '—');
 
     const openCreateProject = () => navigate('/projects', { state: { openCreate: true } });
 
@@ -410,165 +422,285 @@ export default function DashboardPage() {
         return () => { cancelled = true; };
     }, [projects]);
 
-    useEffect(() => {
-        let cancelled = false;
+    // Filtered project summaries based on global project selector
+    const filteredSummaries = useMemo(() => {
+        if (selectedProjectId === 'all') return dashboard?.projectSummaries ?? [];
+        return (dashboard?.projectSummaries ?? []).filter((s) => s.projectId === selectedProjectId);
+    }, [dashboard, selectedProjectId]);
 
-        const loadProjectMetrics = async () => {
-            if (projects.length === 0) {
-                setProjectMetrics({});
-                return;
-            }
+    const isAllProjectsView = selectedProjectId === 'all';
+    const selectedProjectSummary = isAllProjectsView ? null : (filteredSummaries[0] ?? null);
 
-            const metrics = await Promise.all(
-                projects.map(async (project) => {
-                    const summary = await getProjectFinancials(project.id);
-                    const base = {
-                        contractValue: Number(project.contractAmount ?? 0),
-                        projectBudget: Number(project.budgetAmount ?? 0),
-                        actualCost: 0,
-                        customerCollections: 0,
-                        investorContributions: 0,
-                        expectedProjectMargin: project.budgetAmount ? Number(project.contractAmount ?? 0) - Number(project.budgetAmount ?? 0) : null,
-                        cashBasedProfitLoss: 0,
-                        budgetRemaining: Number(project.budgetAmount ?? 0),
-                        budgetUtilization: 0,
-                        netCashFlow: 0,
-                    };
-
-                    const next = summary ?? base;
-                    return [project.id, {
-                        contractValue: Number(next.contractValue ?? project.contractAmount ?? 0),
-                        projectBudget: Number(next.projectBudget ?? project.budgetAmount ?? 0),
-                        actualCost: Number(next.actualCost ?? 0),
-                        customerCollections: Number(next.customerCollections ?? 0),
-                        investorContributions: Number(next.investorContributions ?? 0),
-                        expectedProjectMargin: next.expectedProjectMargin == null ? (project.budgetAmount ? Number(project.contractAmount ?? 0) - Number(project.budgetAmount ?? 0) : null) : Number(next.expectedProjectMargin),
-                        cashBasedProfitLoss: Number(next.cashBasedProfitLoss ?? 0),
-                        budgetRemaining: Number(next.budgetRemaining ?? (project.budgetAmount ?? 0)),
-                        budgetUtilization: Number(next.budgetUtilization ?? 0),
-                        netCashFlow: Number(next.netCashFlow ?? 0),
-                    }] as const;
-                }),
-            );
-
-            if (!cancelled) {
-                setProjectMetrics(Object.fromEntries(metrics));
-            }
+    // Aggregated KPI values based on filtered summaries (or global dashboard totals for "all")
+    const kpiValues = useMemo(() => {
+        if (!dashboard) return null;
+        if (selectedProjectId === 'all') {
+            return {
+                activeProjects: projects.filter((p) => p.status === 'in_progress').length,
+                totalBilled: dashboard.totalBilled,
+                totalCollected: dashboard.totalCollected,
+                totalOutstanding: dashboard.totalOutstanding,
+                totalExpenses: dashboard.totalExpenses,
+                netCashFlow: dashboard.netCashFlow,
+            };
+        }
+        const s = filteredSummaries[0];
+        if (!s) return { activeProjects: 0, totalBilled: 0, totalCollected: 0, totalOutstanding: 0, totalExpenses: 0, netCashFlow: 0 };
+        return {
+            activeProjects: s.status === 'in_progress' ? 1 : 0,
+            totalBilled: s.billed,
+            totalCollected: s.collected,
+            totalOutstanding: s.outstanding,
+            totalExpenses: s.expenses,
+            netCashFlow: s.netCashFlow,
         };
-
-        void loadProjectMetrics();
-        return () => { cancelled = true; };
-    }, [projects]);
+    }, [dashboard, selectedProjectId, filteredSummaries, projects]);
 
     const kpiCards = useMemo(() => {
-        if (!dashboard) {
-            return [
-                { label: 'Active Projects', value: 'N/A', sub: 'Projects currently in progress', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Projects with an in-progress status.' },
-                { label: 'Total Billed', value: 'N/A', sub: 'Actual valid invoices issued', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Sum of non-voided invoice totals after excluding cancelled invoices.' },
-                { label: 'Collected', value: 'N/A', sub: 'Actual customer payments received', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Customer receipts only; excludes investor contributions and voided receipts.' },
-                { label: 'Outstanding', value: 'N/A', sub: 'Unpaid customer balances after allocations', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Open invoice value after valid payment allocations, excluding cancelled invoices.' },
-                { label: 'Actual Expenses', value: 'N/A', sub: 'Recorded project expenses', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Expense bills excluding voided entries; does not include unpaid supplier bills as cash outflows.' },
-                { label: 'Net Cash Flow', value: 'N/A', sub: 'Collections minus actual expenses', accent: 'bg-[var(--primary-soft)] text-[var(--primary)]', tooltip: 'Actual customer cash received minus actual expense cash paid; investor funding is tracked separately.' },
-            ];
-        }
-
-        // Count in-progress projects from the project list so this card agrees with the
-        // "Active" filter and the Planned count in the snapshot. Fall back to the report value.
-        const inProgressCount = projects.filter((project) => project.status === 'in_progress').length;
-        const activeProjectsValue = projects.length > 0
-            ? String(inProgressCount)
-            : dashboard.activeProjects == null ? 'N/A' : String(dashboard.activeProjects);
-
+        const kv = kpiValues;
         return [
             {
                 label: 'Active Projects',
-                value: activeProjectsValue,
-                sub: 'Projects currently in progress',
-                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
-                tooltip: 'Projects with an in-progress status. Planned projects are counted separately in the snapshot.',
+                value: loadingDashboard ? null : kv ? (selectedProjectId === 'all' ? String(kv.activeProjects) : (kv.activeProjects > 0 ? 'Active' : 'Not active')) : 'N/A',
+                sub: 'Projects where work is going on',
+                tooltip: 'Projects currently in progress.',
             },
             {
-                label: 'Total Billed',
-                value: formatCurrencyValue(dashboard.totalBilled),
-                sub: 'Actual valid invoices issued',
-                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
-                tooltip: 'Sum of all non-cancelled invoice totals; excludes voided records and projected values.',
+                label: 'Total Invoiced',
+                value: loadingDashboard ? null : kv ? formatCurrencyValue(kv.totalBilled) : 'N/A',
+                sub: 'Total bill amount sent to customers',
+                tooltip: 'Sum of all customer bills. Cancelled bills are not counted.',
             },
             {
-                label: 'Collected',
-                value: formatCurrencyValue(dashboard.totalCollected),
-                sub: 'Actual customer payments received',
-                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
-                tooltip: 'Customer collections only; investor contributions are kept separate and are not included here.',
+                label: 'Amount Collected',
+                value: loadingDashboard ? null : kv ? formatCurrencyValue(kv.totalCollected) : 'N/A',
+                sub: 'Money received from customers',
+                tooltip: 'Payments received from customers. Investor money is shown separately.',
             },
             {
-                label: 'Outstanding',
-                value: formatCurrencyValue(dashboard.totalOutstanding),
-                sub: 'Unpaid invoice balances after allocations',
-                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
-                tooltip: 'Open invoice balance after valid payment allocations; excludes cancelled invoices and projected values.',
+                label: 'Amount Due',
+                value: loadingDashboard ? null : kv ? formatCurrencyValue(kv.totalOutstanding) : 'N/A',
+                sub: 'Customer payment still pending',
+                tooltip: 'Bill amount still not paid by customers. Cancelled bills are not counted.',
             },
             {
-                label: 'Actual Expenses',
-                value: formatCurrencyValue(dashboard.totalExpenses),
-                sub: 'Recorded project expenses',
-                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
-                tooltip: 'Expense bills excluding voided entries. Unpaid supplier bills are not treated as cash outflows here.',
+                label: 'Total Expenses',
+                value: loadingDashboard ? null : kv ? formatCurrencyValue(kv.totalExpenses) : 'N/A',
+                sub: 'Total money spent so far',
+                tooltip: 'All valid expense bills added till now. Cancelled entries are not counted.',
             },
             {
                 label: 'Net Cash Flow',
-                value: formatCurrencyValue(dashboard.netCashFlow),
-                sub: 'Collections minus actual expenses',
-                accent: 'bg-[var(--primary-soft)] text-[var(--primary)]',
-                tooltip: 'Actual cash received from customers minus actual cash paid for approved expense bills.',
+                value: loadingDashboard ? null : kv ? formatCurrencyValue(kv.netCashFlow) : 'N/A',
+                sub: 'Money in minus money out',
+                tooltip: 'Customer collections minus expense payments till now. Cancelled entries are not counted.',
             },
         ];
-    }, [dashboard, projects]);
+    }, [kpiValues, loadingDashboard, selectedProjectId]);
 
-    const projectFinancialRows = useMemo(() => projects.map((project) => {
-        const summary = projectMetrics[project.id] ?? {
-            contractValue: Number(project.contractAmount ?? 0),
-            projectBudget: Number(project.budgetAmount ?? 0),
-            actualCost: 0,
-            customerCollections: 0,
-            investorContributions: 0,
-            expectedProjectMargin: 0,
-            cashBasedProfitLoss: 0,
-            budgetRemaining: Number(project.budgetAmount ?? 0),
-            budgetUtilization: 0,
-            netCashFlow: 0,
-        };
+    // ── Project Financial Summary rows (all projects, using dashboard summaries) ──
+    type ProjectFinancialRow = DashboardProjectSummary & { projectValueLabel: string; displayValue: number };
+    const projectFinancialRows = useMemo<ProjectFinancialRow[]>(() => {
+        return (dashboard?.projectSummaries ?? []).map((summary) => {
+            const projectRecord = projectById.get(summary.projectId);
+            let displayValue = summary.contractValue;
+            let projectValueLabel = 'Project value';
+            if (summary.businessModel) {
+                const modelKey = summary.businessModel as keyof typeof BUSINESS_MODEL_FORM_CONFIG;
+                const modelConfig = BUSINESS_MODEL_FORM_CONFIG[modelKey in BUSINESS_MODEL_FORM_CONFIG ? modelKey : 'contract_construction'];
+                projectValueLabel = modelConfig.contractValueLabel ?? 'Project value';
+                if (summary.businessModel === 'property_development' && summary.projectedSalesValue > 0 && summary.contractValue === 0) {
+                    displayValue = summary.projectedSalesValue;
+                }
+            } else if (projectRecord) {
+                const meta = getProjectValueMeta(projectRecord);
+                displayValue = meta.value;
+                projectValueLabel = meta.label;
+            }
+            return { ...summary, displayValue, projectValueLabel };
+        });
+    }, [dashboard, projectById]);
 
-        const projectSummary = projectSummaryMap.get(project.id);
-        const projectValue = getProjectValueMeta(project);
-        const actualExpenses = Number(projectSummary?.expenses ?? summary.actualCost ?? 0);
-        const customerCollections = Number(projectSummary?.collected ?? summary.customerCollections ?? 0);
-        const customerOutstanding = Number(projectSummary?.outstanding ?? 0);
+    const visibleFinancialRows = useMemo(() => {
+        if (selectedProjectId === 'all') return projectFinancialRows;
+        return projectFinancialRows.filter((r) => r.projectId === selectedProjectId);
+    }, [projectFinancialRows, selectedProjectId]);
 
-        return {
-            id: project.id,
-            name: project.name,
-            type: project.projectTypeSnapshot || 'General',
-            status: project.status,
-            businessModel: project.businessModel,
-            projectValueLabel: projectValue.label,
-            projectValue: projectValue.value,
-            projectBudget: Number(summary.projectBudget ?? project.budgetAmount ?? 0),
-            actualExpenses,
-            customerCollections,
-            customerOutstanding,
-            netCashFlow: Number(projectSummary?.netCashFlow ?? summary.netCashFlow ?? 0),
-            budgetRemaining: Number(summary.budgetRemaining ?? (project.budgetAmount ?? 0)),
-            startDate: project.startDate,
-            expectedEndDate: project.expectedEndDate,
-            updatedAt: project.updatedAt,
-            createdAt: project.createdAt,
-        };
-    }), [defaulterCustomerIds, getProjectValueMeta, projectMetrics, projectSummaryMap, projects]);
+    const projectColumns: Column<ProjectFinancialRow>[] = [
+        {
+            key: 'project',
+            header: 'Project',
+            width: 'w-[26%]',
+            sortValue: (p) => p.projectName,
+            cell: (p) => (
+                <CellStack
+                    title={<span className="block truncate" title={p.projectName} aria-label={p.projectName}>{p.projectName}</span>}
+                    subtitle={p.projectValueLabel}
+                />
+            ),
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            width: 'w-[10%]',
+            sortValue: (p) => formatStatus(p.status),
+            cell: (p) => (
+                <StatusPill
+                    label={formatStatus(p.status)}
+                    tone={p.status === 'completed' ? 'success' : p.status === 'on_hold' || p.status === 'cancelled' ? 'warning' : 'info'}
+                />
+            ),
+        },
+        {
+            key: 'value',
+            header: 'Value',
+            align: 'right',
+            width: 'w-[11%]',
+            sortValue: (p) => p.displayValue,
+            cell: (p) => <span className="whitespace-nowrap tabular-nums text-[var(--text)]">{formatCurrencyValue(p.displayValue)}</span>,
+        },
+        {
+            key: 'budget',
+            header: 'Budget',
+            align: 'right',
+            width: 'w-[11%]',
+            sortValue: (p) => p.projectBudget,
+            cell: (p) => <span className="whitespace-nowrap tabular-nums text-[var(--text)]">{p.projectBudget > 0 ? formatCurrencyValue(p.projectBudget) : <span className="text-[var(--text-muted)]">—</span>}</span>,
+        },
+        {
+            key: 'expenses',
+            header: 'Expenses',
+            align: 'right',
+            width: 'w-[11%]',
+            sortValue: (p) => p.expenses,
+            cell: (p) => <span className="whitespace-nowrap tabular-nums text-[var(--text)]">{formatCurrencyValue(p.expenses)}</span>,
+        },
+        {
+            key: 'collected',
+            header: 'Collected',
+            align: 'right',
+            width: 'w-[11%]',
+            sortValue: (p) => p.collected,
+            cell: (p) => <span className="whitespace-nowrap tabular-nums text-[var(--text)]">{formatCurrencyValue(p.collected)}</span>,
+        },
+        {
+            key: 'outstanding',
+            header: 'Due',
+            align: 'right',
+            width: 'w-[11%]',
+            sortValue: (p) => p.outstanding,
+            cell: (p) => <span className="whitespace-nowrap tabular-nums text-[var(--text)]">{formatCurrencyValue(p.outstanding)}</span>,
+        },
+        {
+            key: 'budgetUtil',
+            header: 'Budget Used',
+            align: 'right',
+            width: 'w-[9%]',
+            sortValue: (p) => p.budgetUtilization ?? -1,
+            cell: (p) => {
+                if (p.budgetUtilization == null) return <span className="text-[var(--text-muted)]">—</span>;
+                const pct = p.budgetUtilization;
+                const tone = pct > 100 ? 'text-[var(--danger-fg)]' : pct > 80 ? 'text-[var(--warning-fg)]' : 'text-[var(--success)]';
+                return <span className={`tabular-nums font-semibold ${tone}`}>{pct.toFixed(1)}%</span>;
+            },
+        },
+    ];
+
+    // ── Project Progress Overview ──
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const visibleProgress = useMemo(() => {
+        const rows = selectedProjectId === 'all'
+            ? projectProgress
+            : projectProgress.filter((r) => r.projectId === selectedProjectId);
+        return rows.filter((r) => r.status !== 'cancelled');
+    }, [projectProgress, selectedProjectId]);
+
+    const visiblePendingSupplierPayments = useMemo(() => {
+        return selectedProjectId === 'all'
+            ? pendingSupplierPayments
+            : pendingSupplierPayments.filter((row) => row.projectId === selectedProjectId);
+    }, [pendingSupplierPayments, selectedProjectId]);
+
+    // ── Management Attention alerts ──
+    const managementAlerts = useMemo(() => {
+        if (!dashboard) return [];
+        const alerts: Array<{ key: string; icon: ReactNode; label: string; value: string; tone: 'warning' | 'danger' | 'info'; navigate: () => void }> = [];
+        const scopedSummaries = selectedProjectId === 'all'
+            ? (dashboard?.projectSummaries ?? [])
+            : (dashboard?.projectSummaries ?? []).filter((s) => s.projectId === selectedProjectId);
+        const scopedProgress = selectedProjectId === 'all'
+            ? projectProgress
+            : projectProgress.filter((p) => p.projectId === selectedProjectId);
+        // 1. Projects exceeding available budget
+        const overBudgetProjects = scopedSummaries.filter((s) => s.projectBudget > 0 && s.expenses > s.projectBudget);
+        if (overBudgetProjects.length > 0) {
+            const label = overBudgetProjects.length === 1
+                ? `${overBudgetProjects[0].projectName} has exceeded its budget`
+                : `${overBudgetProjects.length} projects have exceeded their budget`;
+            alerts.push({
+                key: 'over-budget',
+                icon: <TrendingUp className="h-4 w-4" />,
+                label,
+                value: '',
+                tone: 'warning',
+                navigate: () => overBudgetProjects.length === 1 ? navigate(`/projects/${overBudgetProjects[0].projectId}`) : navigate('/projects'),
+            });
+        }
+
+        // 2. Projects past expected completion date
+        const overdueProjects = scopedSummaries.filter((s) => {
+            if (!s.expectedEndDate || s.status === 'completed' || s.status === 'cancelled') return false;
+            const end = new Date(s.expectedEndDate);
+            return !Number.isNaN(end.getTime()) && end < today;
+        });
+        if (overdueProjects.length > 0) {
+            const label = overdueProjects.length === 1
+                ? `${overdueProjects[0].projectName} is past expected completion date`
+                : `${overdueProjects.length} projects are past their expected completion date`;
+            alerts.push({
+                key: 'overdue-completion',
+                icon: <AlertTriangle className="h-4 w-4" />,
+                label,
+                value: '',
+                tone: 'warning',
+                navigate: () => overdueProjects.length === 1 ? navigate(`/projects/${overdueProjects[0].projectId}`) : navigate('/projects'),
+            });
+        }
+
+        // 3. In-progress projects without progress updates in the last 30 days
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const staleProgressProjects = scopedProgress.filter((p) => {
+            if (p.status !== 'in_progress') return false;
+            if (!p.latestProgressDate) return true; // no updates at all
+            const lastUpdate = new Date(p.latestProgressDate);
+            return !Number.isNaN(lastUpdate.getTime()) && lastUpdate < thirtyDaysAgo;
+        });
+        if (staleProgressProjects.length > 0) {
+            alerts.push({
+                key: 'stale-progress',
+                icon: <TrendingDown className="h-4 w-4" />,
+                label: `${staleProgressProjects.length} active project${staleProgressProjects.length !== 1 ? 's' : ''} with no construction progress update in 30 days`,
+                value: '',
+                tone: 'info',
+                navigate: () => navigate('/projects'),
+            });
+        }
+
+        return alerts;
+    }, [dashboard, projectProgress, navigate, selectedProjectId]);
 
     const maxMonthlyValue = monthlyChartData.length > 0
         ? monthlyChartData.reduce((max, entry) => Math.max(max, entry.billed, entry.collected, entry.expenses), 0)
         : 0;
+
+    const monthlyAxisTicks = useMemo(() => {
+        if (maxMonthlyValue <= 0) return [0];
+        const mid = maxMonthlyValue / 2;
+        return [maxMonthlyValue, mid, 0];
+    }, [maxMonthlyValue]);
 
     const chartMonthLabel = (monthValue: string) => {
         if (!monthValue) return '—';
@@ -584,7 +716,78 @@ export default function DashboardPage() {
         { label: 'Completed', value: 'completed' },
     ];
 
-    const visibleProjects = useMemo(() => {
+    const selectedProjectRecord = isAllProjectsView ? null : projectById.get(selectedProjectId) ?? null;
+    const selectedProjectValueMeta = selectedProjectSummary
+        ? getProjectValueMeta(selectedProjectSummary)
+        : selectedProjectRecord
+            ? getProjectValueMeta(selectedProjectRecord)
+            : null;
+
+    const needsAttentionCount = dashboard
+        ? (selectedProjectId === 'all'
+            ? Number(dashboard.projectsAtRisk ?? 0)
+            : (managementAlerts.length > 0 ? 1 : 0))
+        : null;
+
+    const amountDueNumber = dashboard ? Number(kpiValues?.totalOutstanding ?? 0) : null;
+    const supplierDueNumber = dashboard
+        ? visiblePendingSupplierPayments.reduce((sum, row) => sum + Number(row.outstanding ?? 0), 0)
+        : null;
+
+    const projectHealthSnapshot: SnapshotMetric[] = [
+        {
+            label: 'Total Projects',
+            value: dashboard
+                ? (selectedProjectId === 'all' ? String(dashboard.projectsCount ?? projects.length) : '1')
+                : 'N/A',
+            tone: 'info',
+            icon: <FolderKanban className="h-4 w-4 text-[var(--primary)]" />,
+        },
+        {
+            label: 'Completed',
+            value: dashboard
+                ? (selectedProjectId === 'all'
+                    ? String(projects.filter((p) => p.status === 'completed').length)
+                    : String(selectedProjectRecord?.status === 'completed' ? 1 : 0))
+                : 'N/A',
+            tone: 'success',
+            icon: <CalendarClock className="h-4 w-4 text-[var(--success)]" />,
+        },
+        {
+            label: 'Planned',
+            value: dashboard
+                ? (selectedProjectId === 'all'
+                    ? String(projects.filter((p) => p.status === 'planned').length)
+                    : String(selectedProjectRecord?.status === 'planned' ? 1 : 0))
+                : 'N/A',
+            tone: 'neutral',
+            icon: <CalendarClock className="h-4 w-4 text-[var(--primary)]" />,
+        },
+        {
+            label: 'Needs Attention',
+            value: needsAttentionCount == null ? 'N/A' : String(needsAttentionCount),
+            tone: needsAttentionCount != null && needsAttentionCount > 0 ? 'warning' : 'success',
+            icon: <WalletCards className="h-4 w-4 text-[var(--warning-fg)]" />,
+        },
+    ];
+
+    const cashPositionSnapshot: SnapshotMetric[] = [
+        {
+            label: 'Amount Due',
+            value: amountDueNumber == null ? 'N/A' : formatCurrencyValue(amountDueNumber),
+            tone: amountDueNumber != null && amountDueNumber > 0 ? 'warning' : 'success',
+            icon: <Wallet className="h-4 w-4 text-[var(--warning-fg)]" />,
+        },
+        {
+            label: 'Supplier Payments Due',
+            value: supplierDueNumber == null ? 'N/A' : formatCurrencyValue(supplierDueNumber),
+            tone: supplierDueNumber != null && supplierDueNumber > 0 ? 'danger' : 'success',
+            icon: <WalletCards className="h-4 w-4 text-[var(--danger-fg)]" />,
+        },
+    ];
+
+    // Projects list sidebar: filter + sort by risk
+    const visibleProjectsSidebar = useMemo(() => {
         const filtered = projects.filter((project) => {
             if (projectFilter === 'all') return true;
             if (projectFilter === 'active') return project.status === 'in_progress';
@@ -592,114 +795,60 @@ export default function DashboardPage() {
             return project.status === 'completed';
         });
 
-        return [...filtered]
-            .map((project) => {
-                const summary = projectMetrics[project.id] ?? {
-                    contractValue: Number(project.contractAmount ?? 0),
-                    projectBudget: Number(project.budgetAmount ?? 0),
-                    actualCost: 0,
-                    customerCollections: 0,
-                    investorContributions: 0,
-                    expectedProjectMargin: 0,
-                    cashBasedProfitLoss: 0,
-                    budgetRemaining: Number(project.budgetAmount ?? 0),
-                    budgetUtilization: 0,
-                    netCashFlow: 0,
-                };
-                const projectSummary = projectSummaryMap.get(project.id);
-                const projectValue = getProjectValueMeta(project);
-                const customerCollections = Number(projectSummary?.collected ?? summary.customerCollections ?? 0);
-                const customerOutstanding = Number(projectSummary?.outstanding ?? 0);
-                const budgetValue = Number(summary.projectBudget ?? project.budgetAmount ?? 0);
-                const actualCost = Number(projectSummary?.expenses ?? summary.actualCost ?? 0);
-                const isOverdue = Boolean(project.customerId && defaulterCustomerIds.has(project.customerId) && customerOutstanding > 0);
-                const isOverBudget = budgetValue > 0 && actualCost > budgetValue;
-                const recentUpdate = project.updatedAt ? new Date(project.updatedAt).getTime() : 0;
-                const createdAt = project.createdAt ? new Date(project.createdAt).getTime() : 0;
-
-                return {
-                    ...project,
-                    projectValue,
-                    customerCollections,
-                    customerOutstanding,
-                    budgetValue,
-                    actualCost,
-                    isOverdue,
-                    priority: isOverdue ? 0 : isOverBudget ? 1 : recentUpdate > 0 ? 2 : 3,
-                    recency: recentUpdate || createdAt || 0,
-                };
-            })
+        return filtered.map((project) => {
+            const summary = projectSummaryMap.get(project.id);
+            const customerOutstanding = Number(summary?.outstanding ?? 0);
+            const actualCost = Number(summary?.expenses ?? 0);
+            const projectBudget = Number(summary?.projectBudget ?? project.budgetAmount ?? 0);
+            const isOverBudget = projectBudget > 0 && actualCost > projectBudget;
+            const hasOverdueExpected = summary?.expectedEndDate && project.status !== 'completed' && project.status !== 'cancelled'
+                ? new Date(summary.expectedEndDate) < today
+                : false;
+            const recency = project.updatedAt ? new Date(project.updatedAt).getTime() : (project.createdAt ? new Date(project.createdAt).getTime() : 0);
+            return {
+                ...project,
+                customerOutstanding,
+                actualCost,
+                projectBudget,
+                isOverBudget,
+                hasOverdueExpected,
+                priority: customerOutstanding > 0 ? 0 : isOverBudget ? 1 : hasOverdueExpected ? 2 : 3,
+                recency,
+            };
+        })
             .sort((a, b) => {
                 const priorityDiff = a.priority - b.priority;
                 if (priorityDiff !== 0) return priorityDiff;
-                return (b.recency || 0) - (a.recency || 0);
+                return b.recency - a.recency;
             })
             .slice(0, 5);
-    }, [defaulterCustomerIds, getProjectValueMeta, projectFilter, projectMetrics, projectSummaryMap, projects]);
-
-    const overdueCustomerCount = defaulters.filter((row) => Number(row.dueInvoices ?? 0) > 0).length;
-
-    const operationalSnapshot = [
-        { label: 'Total Projects', value: dashboard ? String(dashboard.projectsCount ?? projects.length) : 'N/A' },
-        { label: 'Completed Projects', value: dashboard ? String(projects.filter((p) => p.status === 'completed').length) : 'N/A' },
-        { label: 'Planned Projects', value: dashboard ? String(projects.filter((p) => p.status === 'planned').length) : 'N/A' },
-        { label: 'Projects At Risk', value: dashboard ? String(overdueCustomerCount) : 'N/A' },
-        { label: 'Supplier Outstanding', value: dashboard && dashboard.supplierOutstanding !== null && dashboard.supplierOutstanding !== undefined ? formatCurrencyValue(dashboard.supplierOutstanding) : 'N/A' },
-    ];
-
-
-    type ProjectFinancialRow = (typeof projectFinancialRows)[number];
-    const moneyCell = (value: number | null | undefined) => <span className="tabular-nums text-[var(--text)]">{formatCurrencyValue(value)}</span>;
-    const projectColumns: Column<ProjectFinancialRow>[] = [
-        {
-            key: 'project',
-            header: 'Project',
-            sortValue: (p) => p.name,
-            cell: (p) => <CellStack title={p.name} subtitle={p.type || 'Project'} />,
-        },
-        {
-            key: 'status',
-            header: 'Status',
-            sortValue: (p) => formatStatus(p.status),
-            cell: (p) => (
-                <StatusPill
-                    label={formatStatus(p.status)}
-                    tone={p.status === 'completed' ? 'success' : p.status === 'on_hold' || p.status === 'cancelled' ? 'warning' : 'info'}
-                />
-            ),
-        },
-        { key: 'value', header: 'Value', align: 'right', sortValue: (p) => p.projectValue, cell: (p) => moneyCell(p.projectValue) },
-        { key: 'budget', header: 'Budget', align: 'right', sortValue: (p) => p.projectBudget, cell: (p) => moneyCell(p.projectBudget) },
-        { key: 'expenses', header: 'Expenses', align: 'right', sortValue: (p) => p.actualExpenses, cell: (p) => moneyCell(p.actualExpenses) },
-        { key: 'collected', header: 'Collected', align: 'right', sortValue: (p) => p.customerCollections, cell: (p) => moneyCell(p.customerCollections) },
-        { key: 'outstanding', header: 'Outstanding', align: 'right', sortValue: (p) => p.customerOutstanding, cell: (p) => moneyCell(p.customerOutstanding) },
-    ];
+    }, [projects, projectFilter, projectSummaryMap]);
 
     return (
-        <div className="space-y-5 lg:space-y-7">
+        <div className="space-y-3.5 print:space-y-2 lg:space-y-4">
             <PageHeader
                 compact
                 title="Dashboard"
                 description={
-                    <>
-                        Live summary from project, billing, expense, and receipt ledgers.
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-sm">
+                        <span>Live summary of projects, billing, expenses and collections.</span>
                         {(loadingDashboard || loadingTransactions) && <span className="ml-2"><InlineLoader label="Refreshing…" /></span>}
                         {syncedAt && !loadingDashboard && (
-                            <span className="ml-1.5 whitespace-nowrap text-xs text-[var(--text-muted)]">Last synced {formatDate(syncedAt)}</span>
+                            <span className="whitespace-nowrap text-xs font-medium text-[var(--text-muted)]">Last synced {formatDate(syncedAt)}</span>
                         )}
-                    </>
+                    </div>
                 }
                 actions={
                     <>
-                        <AppButton variant="secondary" onClick={() => void Promise.all([loadDashboard(), loadTransactions()])} loading={loadingDashboard || loadingTransactions} loadingText="Refreshing…">
+                        <AppButton className="h-9 px-3" variant="secondary" onClick={() => void Promise.all([loadDashboard(selectedProjectId), loadTransactions({ from, to })])} loading={loadingDashboard || loadingTransactions} loadingText="Refreshing…">
                             <RefreshCcw className="h-4 w-4" />
                             Refresh
                         </AppButton>
-                        <AppButton variant="secondary" onClick={() => navigate('/reports')}>
+                        <AppButton className="h-9 px-3" variant="secondary" onClick={() => navigate('/reports')}>
                             <BarChart3 className="h-4 w-4" />
                             Open reports
                         </AppButton>
-                        <AppButton onClick={openCreateProject}>
+                        <AppButton className="h-9 px-3" onClick={openCreateProject}>
                             <Plus className="h-4 w-4" />
                             New project
                         </AppButton>
@@ -711,96 +860,329 @@ export default function DashboardPage() {
                 <div role="alert" className="rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-fg)]">{error}</div>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+            {/* ── A. Global Filters ── */}
+            <PremiumCard className="px-3.5 py-3 print:break-inside-avoid sm:px-4">
+                <div className="flex flex-wrap items-end gap-2.5">
+                    <div className="flex min-w-[220px] flex-1 flex-col gap-1 lg:max-w-[340px]">
+                        <label htmlFor="project-selector" className="text-xs font-medium text-[var(--text-muted)]">Project</label>
+                        <select
+                            id="project-selector"
+                            value={selectedProjectId}
+                            onChange={(e) => setSelectedProjectId(e.target.value)}
+                            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                        >
+                            <option value="all">All Projects</option>
+                            {projects.map((p) => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex min-w-[144px] flex-col gap-1">
+                        <label htmlFor="from-date" className="text-xs font-medium text-[var(--text-muted)]">From</label>
+                        <input
+                            id="from-date"
+                            type="date"
+                            value={from}
+                            onChange={(e) => setFrom(e.target.value)}
+                            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                        />
+                    </div>
+                    <div className="flex min-w-[144px] flex-col gap-1">
+                        <label htmlFor="to-date" className="text-xs font-medium text-[var(--text-muted)]">To</label>
+                        <input
+                            id="to-date"
+                            type="date"
+                            value={to}
+                            onChange={(e) => setTo(e.target.value)}
+                            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <AppButton
+                            className="h-9 min-w-[88px]"
+                            variant="secondary"
+                            onClick={handleApplyFilters}
+                            loading={loadingTransactions}
+                            disabled={!isDateRangeValid || !hasDateRangeChanged || loadingTransactions}
+                        >
+                            <CalendarClock className="h-4 w-4" aria-hidden="true" />
+                            Apply
+                        </AppButton>
+                    </div>
+                </div>
+                <p className="mt-1.5 text-[10px] text-[var(--text-muted)]">
+                    Date filter applies only to recent transactions. KPI cards and project summary show overall totals.
+                    {(from || to) && (
+                        <button type="button" onClick={handleResetFilters} className="ml-2 font-medium text-[var(--primary)] hover:underline">
+                            Reset dates
+                        </button>
+                    )}
+                </p>
+            </PremiumCard>
+
+            {/* ── B. KPI Cards ── */}
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
                 {kpiCards.map((card) => (
                     <div key={card.label} title={card.tooltip}>
                         <StatCardButton
                             label={card.label}
-                            value={card.value}
+                            value={card.value ?? '…'}
                             sub={card.sub}
                             icon={kpiIcons[card.label] ?? <IndianRupee className="h-5 w-5 text-[var(--primary)]" />}
-                            iconTone={card.accent}
+                            iconTone={kpiIconTones[card.label] ?? 'bg-[var(--primary-soft)] text-[var(--primary)]'}
+                            className="h-full [&>div]:min-h-[148px] [&>div]:rounded-xl [&>div]:border-[var(--border)] [&>div]:p-2.5 [&>div]:shadow-sm [&>div>p:first-child]:text-[11px] [&>div>p:first-child]:tracking-[0.01em] [&>div>div:nth-child(2)>p]:text-xl [&>div>div:nth-child(2)>p]:leading-tight [&>div>p:last-child]:min-h-[2rem]"
                             onClick={() => navigate('/reports')}
                         />
                     </div>
                 ))}
             </div>
 
-            <div className="grid gap-5 xl:grid-cols-[1.5fr_0.9fr]">
-                <PremiumCard className="self-start overflow-hidden">
-                    <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
+            {/* ── C. Project Financial Summary ── */}
+            <div className="grid grid-cols-1 gap-4">
+                <PremiumCard className="self-start overflow-hidden print:break-inside-avoid">
+                    <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
                         <div>
-                            <h2 className="text-base font-semibold text-[var(--text)]">Project financial summary</h2>
-                            <p className="mt-1 text-xs text-[var(--text-muted)]">Business-model-specific value and actual cash movement by project.</p>
+                            <h2 className="flex items-center gap-2 text-base font-semibold text-[var(--text)]">
+                                <FolderKanban className="h-4 w-4 text-[var(--primary)]" aria-hidden="true" />
+                                {isAllProjectsView ? 'Project-wise Summary' : 'Selected Project Overview'}
+                            </h2>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">
+                                {isAllProjectsView
+                                    ? 'Project value, expenses and collections across all projects.'
+                                    : 'Financial and project summary for the selected project.'}
+                            </p>
                         </div>
                     </div>
-
-                    <DataTable
-                        bare
-                        dense
-                        mobileLayout="scroll"
-                        caption="Project financial summary"
-                        columns={projectColumns}
-                        rows={projectFinancialRows}
-                        rowKey={(project) => project.id}
-                        onRowClick={(project) => navigate(`/projects/${project.id}`)}
-                        empty={{ title: 'No project summary yet', description: 'Project values, expenses and collections will appear here once you add projects.' }}
-                    />
+                    {isAllProjectsView ? (
+                        <DataTable
+                            bare
+                            dense
+                            mobileLayout="cards"
+                            className="project-summary-table"
+                            caption="Project-wise Summary"
+                            columns={projectColumns}
+                            rows={visibleFinancialRows}
+                            rowKey={(p) => p.projectId}
+                            onRowClick={(p) => navigate(`/projects/${p.projectId}`)}
+                            empty={{ title: 'No projects added yet', description: 'Project value, expenses and collections will appear here once you add projects.' }}
+                        />
+                    ) : selectedProjectSummary ? (
+                        <div className="grid gap-2 p-4 sm:grid-cols-2">
+                            <SnapshotRow
+                                icon={<FolderKanban className="h-4 w-4 text-[var(--primary)]" />}
+                                label="Project"
+                                value={selectedProjectSummary.projectName}
+                            />
+                            <SnapshotRow
+                                icon={<CalendarClock className="h-4 w-4 text-[var(--primary)]" />}
+                                label="Status"
+                                value={formatStatus(selectedProjectSummary.status)}
+                            />
+                            <SnapshotRow
+                                icon={<IndianRupee className="h-4 w-4 text-[var(--primary)]" />}
+                                label={selectedProjectValueMeta?.label ?? 'Project value'}
+                                value={formatCurrencyValue(selectedProjectValueMeta?.value ?? selectedProjectSummary.contractValue)}
+                            />
+                            <SnapshotRow
+                                icon={<IndianRupee className="h-4 w-4 text-[var(--primary)]" />}
+                                label="Budget"
+                                value={selectedProjectSummary.projectBudget > 0 ? formatCurrencyValue(selectedProjectSummary.projectBudget) : '—'}
+                            />
+                            <SnapshotRow
+                                icon={<Wallet className="h-4 w-4 text-[var(--success)]" />}
+                                label="Amount Collected"
+                                value={formatCurrencyValue(selectedProjectSummary.collected)}
+                            />
+                            <SnapshotRow
+                                icon={<WalletCards className="h-4 w-4 text-[var(--warning-fg)]" />}
+                                label="Amount Due"
+                                value={formatCurrencyValue(selectedProjectSummary.outstanding)}
+                            />
+                            <SnapshotRow
+                                icon={<WalletCards className="h-4 w-4 text-[var(--danger-fg)]" />}
+                                label="Total Expenses"
+                                value={formatCurrencyValue(selectedProjectSummary.expenses)}
+                            />
+                            <SnapshotRow
+                                icon={<BarChart3 className="h-4 w-4 text-[var(--primary)]" />}
+                                label="Net Cash Flow"
+                                value={formatCurrencyValue(selectedProjectSummary.netCashFlow)}
+                            />
+                        </div>
+                    ) : (
+                        <div className="p-5">
+                            <EmptyState
+                                icon={<FolderKanban className="h-6 w-6" />}
+                                title="Project summary unavailable"
+                                description="This project does not have enough data to render an overview yet."
+                            />
+                        </div>
+                    )}
                 </PremiumCard>
 
-                <div className="space-y-5">
-                    <PremiumCard className="min-w-0 self-start p-5">
-                        <h2 className="text-base font-semibold text-[var(--text)]">Operational snapshot</h2>
-                        <div className="mt-4 space-y-2.5">
-                            {operationalSnapshot.map((item) => (
-                                <SnapshotRow
-                                    key={item.label}
-                                    icon={
-                                        item.label === 'Total Projects' ? <FolderKanban className="h-4 w-4 text-[var(--primary)]" /> :
-                                            item.label === 'Completed Projects' ? <CalendarClock className="h-4 w-4 text-[var(--success)]" /> :
-                                                item.label === 'Planned Projects' ? <CalendarClock className="h-4 w-4 text-[var(--primary)]" /> :
-                                                    item.label === 'Projects At Risk' ? <WalletCards className="h-4 w-4 text-[var(--warning-fg)]" /> :
-                                                        <Wallet className="h-4 w-4 text-[var(--warning-fg)]" />
-                                    }
-                                    label={item.label}
-                                    value={item.value}
-                                />
-                            ))}
-                        </div>
-                    </PremiumCard>
+                <div className="grid gap-4 sm:grid-cols-1 xl:grid-cols-1">
+                    <PremiumCard className="min-w-0 self-start p-4 print:break-inside-avoid">
+                        <h2 className="flex items-center gap-2 text-base font-semibold text-[var(--text)]">
+                            <ClipboardList className="h-4 w-4 text-[var(--primary)]" aria-hidden="true" />
+                            Project snapshot
+                        </h2>
+                        <p className="mt-1 text-xs text-[var(--text-muted)]">Quick view of project health, money status and next action.</p>
 
-                    <PremiumCard className="min-w-0 self-start p-5">
-                        <div className="flex items-center justify-between gap-3">
-                            <h2 className="text-base font-semibold text-[var(--text)]">At-risk accounts</h2>
-                            {topDefaulters.length > 0 && <StatusPill label={`${topDefaulters.length} flagged`} tone="warning" />}
-                        </div>
-                        {topDefaulters.length === 0 ? (
-                            <div className="mt-4 rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-soft)] p-4 text-sm text-[var(--text-muted)]">
-                                No overdue customer balances are currently showing in the live reports.
+                        <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <div className="mb-2 flex items-center justify-between">
+                                <h3 className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-muted)]">Project Health</h3>
+                                <StatusPill label={needsAttentionCount != null && needsAttentionCount > 0 ? 'Watchlist' : 'Stable'} tone={needsAttentionCount != null && needsAttentionCount > 0 ? 'warning' : 'success'} />
                             </div>
-                        ) : (
-                            <div className="mt-4 space-y-3">
-                                {topDefaulters.map((row) => (
-                                    <div key={row.customerId} className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <p className="truncate text-sm font-semibold text-[var(--text)]">{row.customerName}</p>
-                                            <StatusPill label={`${row.dueInvoices} due`} tone="warning" />
-                                        </div>
-                                        <p className="mt-2 text-xs text-[var(--text-muted)]">Outstanding {formatCurrencyValue(Number(row.outstanding ?? 0))} • {row.invoices} invoice(s)</p>
-                                    </div>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                {projectHealthSnapshot.map((item) => (
+                                    <SnapshotMetricCard key={item.label} item={item} />
                                 ))}
                             </div>
-                        )}
+                        </div>
+
+                        <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+                            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-muted)]">Cash Position</h3>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                {cashPositionSnapshot.map((item) => (
+                                    <SnapshotMetricCard key={item.label} item={item} />
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <p className="text-sm text-[var(--text-secondary)]">
+                                    {needsAttentionCount != null && needsAttentionCount > 0
+                                        ? `${needsAttentionCount} item${needsAttentionCount !== 1 ? 's' : ''} need follow-up action.`
+                                        : 'All tracked items look healthy right now.'}
+                                </p>
+                                <AppButton variant="secondary" className="h-8 px-3" onClick={() => navigate('/projects')}>
+                                    Review projects
+                                </AppButton>
+                            </div>
+                        </div>
                     </PremiumCard>
                 </div>
             </div>
 
-            <div className="grid gap-5 xl:grid-cols-[1.3fr_0.9fr]">
-                <PremiumCard className="overflow-hidden">
-                    <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
+            {/* ── D. Monthly Financial Performance ── */}
+            <div className="grid gap-4 xl:grid-cols-2">
+                {/* ── E. Project Progress Overview ── */}
+                <PremiumCard className="min-w-0 overflow-hidden print:break-inside-avoid">
+                    <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
                         <div>
-                            <h2 className="text-base font-semibold text-[var(--text)]">Monthly financial performance</h2>
-                            <p className="mt-1 text-xs text-[var(--text-muted)]">Latest six months of billed, collected and expense activity.</p>
+                            <h2 className="flex items-center gap-2 text-base font-semibold text-[var(--text)]">
+                                <HardHat className="h-4 w-4 text-[var(--primary)]" aria-hidden="true" />
+                                Construction Progress
+                            </h2>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">Current construction stage and work completed by project.</p>
+                        </div>
+                        <button type="button" onClick={() => navigate('/projects')} className="shrink-0 rounded-md text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                            View all
+                        </button>
+                    </div>
+
+                    {loadingDashboard ? (
+                        <div className="divide-y divide-[var(--border)]" aria-busy="true">
+                            {[0, 1, 2].map((i) => (
+                                <div key={i} className="flex items-center justify-between gap-4 px-4 py-3">
+                                    <div className="space-y-2">
+                                        <SkeletonRow className="h-4 w-40" />
+                                        <SkeletonRow className="h-3 w-28" />
+                                    </div>
+                                    <SkeletonRow className="h-4 w-16" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : visibleProgress.length === 0 ? (
+                        <div className="p-5">
+                            <EmptyState
+                                icon={<FolderKanban className="h-6 w-6" />}
+                                title="No progress recorded yet"
+                                description="Add construction stages and progress updates to track work completion."
+                            />
+                        </div>
+                    ) : (
+                        <ol className="divide-y divide-[var(--border)]">
+                            {visibleProgress.slice(0, 6).map((prog) => {
+                                const isOverdue = prog.expectedEndDate && prog.status !== 'completed'
+                                    ? new Date(prog.expectedEndDate) < today
+                                    : false;
+                                const hasNoRecentUpdate = prog.status === 'in_progress' && (
+                                    !prog.latestProgressDate || new Date(prog.latestProgressDate) < new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+                                );
+                                const progressPercent = typeof prog.progressPercent === 'number'
+                                    ? Math.max(0, Math.min(100, prog.progressPercent))
+                                    : null;
+                                const progressTone = progressPercent == null
+                                    ? 'text-[var(--text-muted)]'
+                                    : progressPercent >= 80
+                                        ? 'text-[var(--success)]'
+                                        : progressPercent >= 40
+                                            ? 'text-[var(--primary)]'
+                                            : 'text-[var(--warning-fg)]';
+                                return (
+                                    <li key={prog.projectId}>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate(`/projects/${prog.projectId}`)}
+                                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--surface-soft)] focus-visible:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]"
+                                        >
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <p className="truncate text-sm font-semibold text-[var(--text)]">{prog.projectName}</p>
+                                                    {isOverdue && <StatusPill label="Delayed" tone="warning" />}
+                                                    {hasNoRecentUpdate && <StatusPill label="No update" tone="neutral" />}
+                                                </div>
+                                                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                                    <StatusPill
+                                                        label={prog.currentStageName ? `Current stage: ${prog.currentStageName}` : 'Current stage: Not set'}
+                                                        tone="info"
+                                                    />
+                                                    {prog.expectedEndDate && (
+                                                        <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[11px] text-[var(--text-muted)]">
+                                                            Expected completion {formatDate(prog.expectedEndDate)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0 text-right">
+                                                {progressPercent != null ? (
+                                                    <div className="flex min-w-[110px] flex-col items-end gap-1">
+                                                        <span className={`text-base font-bold tabular-nums ${progressTone}`}>{progressPercent}%</span>
+                                                        <div className="h-1.5 w-24 overflow-hidden rounded-full bg-[var(--surface-muted)]" aria-hidden="true">
+                                                            <div
+                                                                className={`h-full rounded-full ${progressPercent >= 80 ? 'bg-[var(--success)]' : progressPercent >= 40 ? 'bg-[var(--primary)]' : 'bg-[var(--warning-fg)]'}`}
+                                                                style={{ width: `${progressPercent}%` }}
+                                                            />
+                                                        </div>
+                                                        <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">progress</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-[var(--text-muted)]">—</span>
+                                                )}
+                                            </div>
+                                            <ChevronRight className="hidden h-4 w-4 shrink-0 text-[var(--text-subtle)] sm:block" aria-hidden="true" />
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                    )}
+                </PremiumCard>
+
+                <PremiumCard className="overflow-hidden print:break-inside-avoid">
+                    <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
+                        <div>
+                            <h2 className="flex items-center gap-2 text-base font-semibold text-[var(--text)]">
+                                <BarChart3 className="h-4 w-4 text-[var(--primary)]" aria-hidden="true" />
+                                Monthly Income & Expenses
+                            </h2>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">
+                                {isAllProjectsView
+                                    ? 'Last 6 months — invoiced, collected and expenses (all projects combined).'
+                                    : 'Last 6 months — invoiced, collected and expenses for the selected project.'}
+                            </p>
                         </div>
                         <button type="button" onClick={() => navigate('/reports')} className="shrink-0 rounded-md text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
                             View report
@@ -818,136 +1200,257 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     ) : monthlyChartData.length === 0 ? (
-                        <div className="p-5 text-sm text-[var(--text-muted)]">No monthly financial data is available yet.</div>
+                        <div className="p-5 text-sm text-[var(--text-muted)]">No monthly data recorded yet.</div>
                     ) : (
                         <div className="p-5">
                             <div className="mb-4 flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--chart-1)]" />Billed</span>
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--chart-2)]" />Collected</span>
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--chart-3)]" />Expenses</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--chart-1)]" />Total Invoiced</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--chart-2)]" />Amount Collected</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--chart-3)]" />Total Expenses</span>
                             </div>
                             {maxMonthlyValue === 0 && (
-                                <p className="mb-3 text-xs text-[var(--text-muted)]">No billing, collections or expenses recorded in the last six months.</p>
+                                <p className="mb-3 text-xs text-[var(--text-muted)]">No invoices, collections or expenses recorded in the last six months.</p>
                             )}
-                            <div className="flex h-48 items-end gap-3">
-                                {monthlyChartData.map((entry) => {
-                                    const billedHeight = maxMonthlyValue > 0 ? (entry.billed / maxMonthlyValue) * 100 : 0;
-                                    const collectedHeight = maxMonthlyValue > 0 ? (entry.collected / maxMonthlyValue) * 100 : 0;
-                                    const expenseHeight = maxMonthlyValue > 0 ? (entry.expenses / maxMonthlyValue) * 100 : 0;
-                                    return (
-                                        <div key={`${entry.month}-chart`} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                                            <div className="flex h-36 w-full items-end justify-center gap-1 border-b border-[var(--border)]" aria-label={`${chartMonthLabel(entry.month)} billed ${formatINR(entry.billed)}, collected ${formatINR(entry.collected)}, expenses ${formatINR(entry.expenses)}`}>
-                                                <span className="block w-1/3 rounded-t-md bg-[var(--chart-1)] opacity-85" style={{ height: `${billedHeight}%` }} title={`Billed ${formatINR(entry.billed)}`} />
-                                                <span className="block w-1/3 rounded-t-md bg-[var(--chart-2)] opacity-85" style={{ height: `${collectedHeight}%` }} title={`Collected ${formatINR(entry.collected)}`} />
-                                                <span className="block w-1/3 rounded-t-md bg-[var(--chart-3)] opacity-85" style={{ height: `${expenseHeight}%` }} title={`Expenses ${formatINR(entry.expenses)}`} />
+                            <div className="flex gap-3">
+                                <div className="hidden h-48 w-16 shrink-0 flex-col justify-between pb-6 pt-1 text-right text-[10px] tabular-nums text-[var(--text-muted)] sm:flex">
+                                    {monthlyAxisTicks.map((tick, index) => (
+                                        <span key={`tick-${index}`}>{formatINR(tick)}</span>
+                                    ))}
+                                </div>
+                                <div className="relative flex h-48 flex-1 items-end gap-3">
+                                    <span className="pointer-events-none absolute inset-x-0 top-0 border-t border-dashed border-[var(--border)]" aria-hidden="true" />
+                                    <span className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-[var(--border)]" aria-hidden="true" />
+                                    <span className="pointer-events-none absolute inset-x-0 bottom-6 border-t border-[var(--border)]" aria-hidden="true" />
+                                    {monthlyChartData.map((entry) => {
+                                        const billedHeight = maxMonthlyValue > 0 ? (entry.billed / maxMonthlyValue) * 100 : 0;
+                                        const collectedHeight = maxMonthlyValue > 0 ? (entry.collected / maxMonthlyValue) * 100 : 0;
+                                        const expenseHeight = maxMonthlyValue > 0 ? (entry.expenses / maxMonthlyValue) * 100 : 0;
+                                        const monthTotal = entry.billed + entry.collected + entry.expenses;
+                                        return (
+                                            <div key={`${entry.month}-chart`} className="z-[1] flex min-w-0 flex-1 flex-col items-center gap-2">
+                                                <div className="hidden h-4 text-[10px] font-medium tabular-nums text-[var(--text-muted)] sm:block" title={`Total activity ${formatINR(monthTotal)}`}>
+                                                    {monthTotal > 0 ? formatINR(monthTotal) : ''}
+                                                </div>
+                                                <div className="flex h-[calc(100%-1.5rem)] w-full items-end justify-center gap-1" aria-label={`${chartMonthLabel(entry.month)} invoiced ${formatINR(entry.billed)}, collected ${formatINR(entry.collected)}, expenses ${formatINR(entry.expenses)}`}>
+                                                    <span className="block w-1/3 rounded-t-md bg-[var(--chart-1)] opacity-85" style={{ height: `${billedHeight}%` }} title={`Invoiced ${formatINR(entry.billed)}`} />
+                                                    <span className="block w-1/3 rounded-t-md bg-[var(--chart-2)] opacity-85" style={{ height: `${collectedHeight}%` }} title={`Collected ${formatINR(entry.collected)}`} />
+                                                    <span className="block w-1/3 rounded-t-md bg-[var(--chart-3)] opacity-85" style={{ height: `${expenseHeight}%` }} title={`Expenses ${formatINR(entry.expenses)}`} />
+                                                </div>
+                                                <span className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{chartMonthLabel(entry.month)}</span>
                                             </div>
-                                            <span className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{chartMonthLabel(entry.month)}</span>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
                     )}
                 </PremiumCard>
 
-                <PremiumCard className="min-w-0 overflow-hidden">
-                    <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
-                        <div>
-                            <h2 className="text-base font-semibold text-[var(--text)]">Projects</h2>
-                            <p className="mt-1 text-xs text-[var(--text-muted)]">Prioritized by overdue balances, overrun risk, and recent activity.</p>
-                        </div>
-                        <button type="button" onClick={() => navigate('/projects')} className="shrink-0 rounded-md text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                            View all
-                        </button>
-                    </div>
-
-                    <div className="border-b border-[var(--border)] px-5 py-3">
-                        <div className="flex flex-wrap gap-2">
-                            {projectFilterOptions.map((option) => (
-                                <button
-                                    key={option.value}
-                                    type="button"
-                                    onClick={() => setProjectFilter(option.value)}
-                                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${projectFilter === option.value ? 'bg-[var(--primary)] text-white' : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:bg-[var(--border)]'}`}
-                                >
-                                    {option.label}
+                <div className="grid gap-4 print:break-inside-avoid xl:col-span-2 xl:grid-cols-2">
+                    {/* Projects sidebar — retains the original project list card */}
+                    <PremiumCard className="min-w-0 overflow-hidden print:break-inside-avoid">
+                        <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
+                            <div>
+                                <h2 className="flex items-center gap-2 text-base font-semibold text-[var(--text)]">
+                                    <Building2 className="h-4 w-4 text-[var(--primary)]" aria-hidden="true" />
+                                    {isAllProjectsView ? 'Projects' : 'Project Details'}
+                                </h2>
+                                <p className="mt-1 text-xs text-[var(--text-muted)]">
+                                    {isAllProjectsView ? 'Sorted by overdue payments and budget overruns.' : 'Operational details for the selected project.'}
+                                </p>
+                            </div>
+                            {isAllProjectsView ? (
+                                <button type="button" onClick={() => navigate('/projects')} className="shrink-0 rounded-md text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                                    View all
                                 </button>
-                            ))}
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (selectedProjectRecord) navigate(`/projects/${selectedProjectRecord.id}`);
+                                    }}
+                                    className="shrink-0 rounded-md text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                                >
+                                    Open project
+                                </button>
+                            )}
                         </div>
-                    </div>
 
-                    {loadingDashboard ? (
-                        <div className="divide-y divide-[var(--border)]" aria-busy="true" aria-label="Loading projects">
-                            {[0, 1, 2].map((i) => (
-                                <div key={i} className="flex items-center justify-between gap-4 px-5 py-4">
-                                    <div className="space-y-2">
-                                        <SkeletonRow className="h-4 w-40" />
-                                        <SkeletonRow className="h-3 w-28" />
+                        {isAllProjectsView ? (
+                            <>
+                                <div className="border-b border-[var(--border)] px-4 py-2.5">
+                                    <div className="flex flex-wrap gap-2">
+                                        {projectFilterOptions.map((option) => (
+                                            <button
+                                                key={option.value}
+                                                type="button"
+                                                onClick={() => setProjectFilter(option.value)}
+                                                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${projectFilter === option.value ? 'bg-[var(--primary)] text-white' : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:bg-[var(--border)]'}`}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        ))}
                                     </div>
-                                    <SkeletonRow className="h-4 w-20" />
                                 </div>
-                            ))}
-                        </div>
-                    ) : visibleProjects.length === 0 ? (
-                        <div className="p-5">
-                            <EmptyState
-                                icon={<FolderKanban className="h-6 w-6" />}
-                                title="No matching projects"
-                                description="There are no active projects in this filter right now."
-                                action={
-                                    <AppButton variant="secondary" onClick={openCreateProject}>
-                                        <Plus className="h-4 w-4" />
-                                        New project
-                                    </AppButton>
-                                }
-                            />
-                        </div>
-                    ) : (
-                        <ol className="divide-y divide-[var(--border)]">
-                            {visibleProjects.map((project, index) => (
-                                <li key={project.id}>
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate(`/projects/${project.id}`)}
-                                        className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-[var(--surface-soft)] focus-visible:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]"
-                                    >
-                                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-muted)] text-xs font-semibold text-[var(--text-secondary)]" aria-hidden="true">
-                                            {index + 1}
-                                        </span>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <p className="truncate text-sm font-semibold text-[var(--text)]">{project.name}</p>
-                                                {project.isOverdue && <StatusPill label="Overdue" tone="warning" />}
-                                                {project.actualCost > project.budgetValue && project.budgetValue > 0 && <StatusPill label="Over budget" tone="warning" />}
+
+                                {loadingDashboard ? (
+                                    <div className="divide-y divide-[var(--border)]" aria-busy="true" aria-label="Loading projects">
+                                        {[0, 1, 2].map((i) => (
+                                            <div key={i} className="flex items-center justify-between gap-4 px-4 py-3">
+                                                <div className="space-y-2">
+                                                    <SkeletonRow className="h-4 w-40" />
+                                                    <SkeletonRow className="h-3 w-28" />
+                                                </div>
+                                                <SkeletonRow className="h-4 w-20" />
                                             </div>
-                                            <p className="mt-0.5 truncate text-xs text-[var(--text-muted)]">
-                                                {project.projectTypeSnapshot || 'General'} • {project.businessModel ? BUSINESS_MODEL_FORM_CONFIG[project.businessModel].contractValueLabel : 'Project value'}
-                                            </p>
-                                        </div>
-                                        <div className="hidden shrink-0 text-right sm:block">
-                                            <p className="text-sm font-semibold tabular-nums text-[var(--text)]">{project.projectValue?.value != null ? formatCurrencyValue(project.projectValue.value) : 'N/A'}</p>
-                                            <p className="text-xs text-[var(--text-muted)]">
-                                                {project.customerOutstanding > 0
-                                                    ? `${formatCurrencyValue(project.customerOutstanding)} outstanding`
-                                                    : project.customerCollections > 0
-                                                        ? 'Collections up to date'
-                                                        : 'No billing yet'}
-                                            </p>
-                                        </div>
-                                        <ChevronRight className="hidden h-4 w-4 shrink-0 text-[var(--text-subtle)] sm:block" aria-hidden="true" />
-                                    </button>
-                                </li>
-                            ))}
-                        </ol>
-                    )}
-                </PremiumCard>
+                                        ))}
+                                    </div>
+                                ) : visibleProjectsSidebar.length === 0 ? (
+                                    <div className="p-5">
+                                        <EmptyState
+                                            icon={<FolderKanban className="h-6 w-6" />}
+                                            title="No projects found"
+                                            description="No projects match this filter."
+                                            action={
+                                                <AppButton variant="secondary" onClick={openCreateProject}>
+                                                    <Plus className="h-4 w-4" />
+                                                    New project
+                                                </AppButton>
+                                            }
+                                        />
+                                    </div>
+                                ) : (
+                                    <ol className="divide-y divide-[var(--border)]">
+                                        {visibleProjectsSidebar.map((project, index) => (
+                                            <li key={project.id}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(`/projects/${project.id}`)}
+                                                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--surface-soft)] focus-visible:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]"
+                                                >
+                                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-muted)] text-xs font-semibold text-[var(--text-secondary)]" aria-hidden="true">
+                                                        {index + 1}
+                                                    </span>
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="truncate text-sm font-semibold text-[var(--text)]">{project.name}</p>
+                                                            {project.customerOutstanding > 0 && project.priority === 0 && <StatusPill label="Payment due" tone="warning" />}
+                                                            {project.isOverBudget && <StatusPill label="Over budget" tone="warning" />}
+                                                            {project.hasOverdueExpected && !project.isOverBudget && <StatusPill label="Delayed" tone="warning" />}
+                                                        </div>
+                                                        <p className="mt-0.5 truncate text-xs text-[var(--text-muted)]">
+                                                            {project.projectTypeSnapshot || 'General'} • {formatStatus(project.status)}
+                                                        </p>
+                                                    </div>
+                                                    <div className="hidden shrink-0 text-right sm:block">
+                                                        <p className="text-xs text-[var(--text-muted)]">
+                                                            {project.customerOutstanding > 0
+                                                                ? `${formatCurrencyValue(project.customerOutstanding)} due`
+                                                                : project.actualCost > 0
+                                                                    ? `${formatCurrencyValue(project.actualCost)} spent`
+                                                                    : 'No activity yet'}
+                                                        </p>
+                                                    </div>
+                                                    <ChevronRight className="hidden h-4 w-4 shrink-0 text-[var(--text-subtle)] sm:block" aria-hidden="true" />
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ol>
+                                )}
+                            </>
+                        ) : (
+                            <div className="space-y-2 p-4">
+                                <SnapshotRow
+                                    icon={<FolderKanban className="h-4 w-4 text-[var(--primary)]" />}
+                                    label="Project Type"
+                                    value={selectedProjectRecord?.projectTypeSnapshot || 'General'}
+                                />
+                                <SnapshotRow
+                                    icon={<CalendarClock className="h-4 w-4 text-[var(--primary)]" />}
+                                    label="Expected Completion"
+                                    value={selectedProjectSummary?.expectedEndDate ? formatDate(selectedProjectSummary.expectedEndDate) : 'Not set'}
+                                />
+                                <SnapshotRow
+                                    icon={<WalletCards className="h-4 w-4 text-[var(--danger-fg)]" />}
+                                    label="Budget Utilization"
+                                    value={selectedProjectSummary?.budgetUtilization != null ? `${selectedProjectSummary.budgetUtilization.toFixed(1)}%` : '—'}
+                                />
+                                <SnapshotRow
+                                    icon={<Wallet className="h-4 w-4 text-[var(--warning-fg)]" />}
+                                    label="Supplier Payments Due"
+                                    value={formatCurrencyValue(visiblePendingSupplierPayments.reduce((sum, row) => sum + Number(row.outstanding ?? 0), 0))}
+                                />
+                            </div>
+                        )}
+                    </PremiumCard>
+
+                    {/* ── F. Management Attention ── */}
+                    <PremiumCard className="overflow-hidden print:break-inside-avoid">
+                        <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
+                            <div>
+                                <h2 className="flex items-center gap-2 text-base font-semibold text-[var(--text)]">
+                                    <AlertTriangle className="h-4 w-4 text-[var(--warning-fg)]" aria-hidden="true" />
+                                    Needs Attention
+                                </h2>
+                                <p className="mt-1 text-xs text-[var(--text-muted)]">Items that need follow-up action.</p>
+                            </div>
+                            {managementAlerts.length > 0 && (
+                                <StatusPill label={`${managementAlerts.length} item${managementAlerts.length !== 1 ? 's' : ''}`} tone="warning" />
+                            )}
+                        </div>
+
+                        {loadingDashboard ? (
+                            <div className="divide-y divide-[var(--border)] px-4 py-1.5">
+                                {[0, 1, 2].map((i) => (
+                                    <div key={i} className="flex items-center justify-between gap-4 py-2.5">
+                                        <SkeletonRow className="h-4 w-64" />
+                                        <SkeletonRow className="h-4 w-20" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : managementAlerts.length === 0 ? (
+                            <div className="p-5 text-sm text-[var(--text-muted)]">
+                                All projects are on track. Nothing needs attention right now.
+                            </div>
+                        ) : (
+                            <ol className="divide-y divide-[var(--border)]">
+                                {managementAlerts.map((alert) => (
+                                    <li key={alert.key}>
+                                        <button
+                                            type="button"
+                                            onClick={alert.navigate}
+                                            className="flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left transition-colors hover:bg-[var(--surface-soft)] focus-visible:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]"
+                                        >
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${alert.tone === 'danger' ? 'bg-[var(--danger-soft)] text-[var(--danger-fg)]' : alert.tone === 'warning' ? 'bg-[color-mix(in_oklab,var(--warning)_18%,white)] text-[var(--warning-fg)]' : 'bg-[var(--primary-soft)] text-[var(--primary)]'}`}>
+                                                    {alert.icon}
+                                                </span>
+                                                <span className="text-sm leading-5 text-[var(--text)]">{alert.label}</span>
+                                            </div>
+                                            <div className="flex shrink-0 items-center gap-3">
+                                                {alert.value && (
+                                                    <span className="text-sm font-semibold tabular-nums text-[var(--text)]">{alert.value}</span>
+                                                )}
+                                                <ChevronRight className="h-4 w-4 text-[var(--text-subtle)]" aria-hidden="true" />
+                                            </div>
+                                        </button>
+                                    </li>
+                                ))}
+                            </ol>
+                        )}
+                    </PremiumCard>
+                </div>
             </div>
 
-            <PremiumCard className="overflow-hidden">
-                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
+            {/* ── G. Recent Transactions ── */}
+            <PremiumCard className="overflow-hidden print:break-inside-avoid">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
                     <div>
-                        <h2 className="text-base font-semibold text-[var(--text)]">Recent transactions</h2>
-                        <p className="mt-1 text-xs text-[var(--text-muted)]">Cash movements from receipts, expenses and investor contributions.</p>
+                        <h2 className="flex items-center gap-2 text-base font-semibold text-[var(--text)]">
+                            <ReceiptText className="h-4 w-4 text-[var(--primary)]" aria-hidden="true" />
+                            Recent transactions
+                        </h2>
+                        <p className="mt-1 text-xs text-[var(--text-muted)]">Selected-period activity: customer receipts, expense bills and investor contributions.</p>
                     </div>
                     <button type="button" onClick={() => navigate('/reports')} className="shrink-0 rounded-md text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
                         View all
@@ -955,13 +1458,13 @@ export default function DashboardPage() {
                 </div>
 
                 {transactionError && (
-                    <div role="alert" className="border-b border-[var(--danger-border)] bg-[var(--danger-soft)] px-5 py-3 text-sm text-[var(--danger-fg)]">{transactionError}</div>
+                    <div role="alert" className="border-b border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-2.5 text-sm text-[var(--danger-fg)]">{transactionError}</div>
                 )}
 
                 {loadingTransactions ? (
-                    <div className="divide-y divide-[var(--border)] px-5 py-2" aria-busy="true" aria-label="Loading transactions">
+                    <div className="divide-y divide-[var(--border)] px-4 py-1.5" aria-busy="true" aria-label="Loading transactions">
                         {[0, 1, 2, 3].map((i) => (
-                            <div key={i} className="flex items-center justify-between gap-4 py-3">
+                            <div key={i} className="flex items-center justify-between gap-4 py-2.5">
                                 <div className="space-y-2">
                                     <SkeletonRow className="h-4 w-44" />
                                     <SkeletonRow className="h-3 w-28" />
@@ -1003,10 +1506,11 @@ export default function DashboardPage() {
                                         }
                                         navigate(row.kind === 'expense' ? '/expenses' : '/reports');
                                     }}
-                                    className="flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-[var(--surface-soft)] focus-visible:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]"
+                                    className="flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left transition-colors hover:bg-[var(--surface-soft)] focus-visible:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]"
                                 >
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
+                                            <span className={`h-2 w-2 rounded-full ${row.kind === 'investment' ? 'bg-[var(--primary)]' : row.kind === 'collection' ? 'bg-[var(--success)]' : 'bg-[var(--danger-fg)]'}`} aria-hidden="true" />
                                             <p className="truncate text-sm font-semibold text-[var(--text)]">{row.reference}</p>
                                             <StatusPill
                                                 label={row.kind === 'collection' ? 'Collection' : row.kind === 'investment' ? 'Investment' : 'Expense'}
@@ -1015,7 +1519,7 @@ export default function DashboardPage() {
                                             {row.isCompanyLevel && <StatusPill label="Company-level" tone="neutral" />}
                                             {dateValue(row.occurredOn) > Date.now() && <StatusPill label="Future date" tone="warning" />}
                                         </div>
-                                        <p className="mt-1 truncate text-xs text-[var(--text-muted)]">
+                                        <p className="mt-0.5 truncate text-xs leading-4 text-[var(--text-muted)]">
                                             {row.counterparty} • {row.projectName} • {row.occurredOn ? `${formatDate(row.occurredOn)} ${formatTime(row.occurredOn)}` : 'Date not set'}
                                         </p>
                                     </div>
@@ -1050,6 +1554,28 @@ function SnapshotRow({ icon, label, value }: { icon: ReactNode; label: string; v
             ) : (
                 <span className="shrink-0 text-sm font-semibold tabular-nums text-[var(--text)]">{value}</span>
             )}
+        </div>
+    );
+}
+
+function SnapshotMetricCard({ item }: { item: SnapshotMetric }) {
+    const toneClass = item.tone === 'danger'
+        ? 'text-[var(--danger-fg)]'
+        : item.tone === 'warning'
+            ? 'text-[var(--warning-fg)]'
+            : item.tone === 'success'
+                ? 'text-[var(--success)]'
+                : 'text-[var(--text)]';
+
+    return (
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+                <div className="inline-flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+                    {item.icon}
+                    <span>{item.label}</span>
+                </div>
+                <span className={`text-sm font-semibold tabular-nums ${toneClass}`}>{item.value}</span>
+            </div>
         </div>
     );
 }

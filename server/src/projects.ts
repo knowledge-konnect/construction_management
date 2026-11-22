@@ -1281,6 +1281,7 @@ export async function createProjectReceiptForProject(projectId: string, companyI
 
     const receiptPayload = {
         project_id: projectId,
+        company_id: companyId,
         receipt_number: String(payload?.receiptNumber ?? '').trim() || `RCPT-${Date.now()}`,
         amount: Number(payload?.amount ?? 0),
         received_date: payload?.receivedDate ?? null,
@@ -1825,7 +1826,9 @@ export async function deleteProjectUnitRow(id: string, companyId: string) {
         error.statusCode = 403;
         throw error;
     }
-    if (existing.project?.business_model !== 'property_development') {
+
+    const project = existing.project;
+    if (project.business_model !== 'property_development') {
         const error: any = new Error('Project flat inventory is only supported for property development projects.');
         error.statusCode = 400;
         throw error;
@@ -1839,7 +1842,6 @@ export async function deleteProjectUnitRow(id: string, companyId: string) {
 
     const { error } = await supabaseAdmin.from('project_units').delete().eq('id', id);
     if (error) throw error;
-    return true;
 }
 
 export async function listProjectStagesForProject(projectId: string, companyId: string) {

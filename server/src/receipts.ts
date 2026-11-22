@@ -1,4 +1,5 @@
 import { supabaseAdmin } from './auth.js';
+import { mapReceiptAllocationResult } from './receiptAllocationResult.js';
 
 export type ReceiptPaymentMethod = 'cash' | 'upi' | 'bank_transfer' | 'cheque' | 'other';
 export type ReceiptVisibility = 'internal' | 'published';
@@ -119,9 +120,9 @@ async function getInvoiceRowById(invoiceId: string): Promise<any | null> {
     return data ?? null;
 }
 
-function mapReceiptRow(row: any) {
-    const project = Array.isArray(row?.projects) ? row.projects[0] ?? null : row?.projects ?? null;
-    const customer = Array.isArray(row?.customers) ? row.customers[0] ?? null : row?.customers ?? null;
+function mapReceiptRow(row: any, relations?: { project?: any | null; customer?: any | null }) {
+    const project = relations?.project ?? (Array.isArray(row?.projects) ? row.projects[0] ?? null : row?.projects ?? null);
+    const customer = relations?.customer ?? (Array.isArray(row?.customers) ? row.customers[0] ?? null : row?.customers ?? null);
 
     return {
         id: row.id,
@@ -168,7 +169,7 @@ function mapAllocationRow(row: any) {
 export async function listReceiptsForCompany(companyId: string, filters: { projectId?: string | null; customerId?: string | null } = {}) {
     let query = supabaseAdmin
         .from('project_receipts')
-        .select('*, projects!project_id(id, name, project_number, company_id), customers!customer_id(id, name, mobile, email)')
+        .select('*')
         .eq('company_id', companyId)
         .order('received_date', { ascending: false });
 
@@ -186,10 +187,11 @@ export async function listReceiptsForCompany(companyId: string, filters: { proje
     if (error) throw error;
 
     const rows = data ?? [];
+    const relationsById = await getReceiptRelations(rows);
     const mapped = await Promise.all(rows.map(async (row: any) => {
         const allocatedAmount = await getReceiptAllocatedAmount(row.id);
         return {
-            ...mapReceiptRow(row),
+            ...mapReceiptRow(row, relationsById.get(row.id)),
             allocatedAmount: roundCurrency(allocatedAmount),
             unallocatedAmount: roundCurrency(Math.max(0, Number(row.amount ?? 0) - allocatedAmount)),
         };
@@ -201,7 +203,7 @@ export async function listReceiptsForCompany(companyId: string, filters: { proje
 export async function getReceiptRowById(id: string) {
     const { data, error } = await supabaseAdmin
         .from('project_receipts')
-        .select('*, projects!project_id(id, name, project_number, company_id), customers!customer_id(id, name, mobile, email)')
+        .select('*')
         .eq('id', id)
         .maybeSingle();
 
@@ -210,8 +212,9 @@ export async function getReceiptRowById(id: string) {
 
     const allocatedAmount = await getReceiptAllocatedAmount(data.id);
     const amount = Number(data.amount ?? 0);
+    const relations = await getReceiptRelations([data]);
     return {
-        ...mapReceiptRow(data),
+        ...mapReceiptRow(data, relations.get(data.id)),
         allocatedAmount: roundCurrency(allocatedAmount),
         unallocatedAmount: roundCurrency(Math.max(0, amount - allocatedAmount)),
     };
@@ -301,12 +304,13 @@ export async function createReceiptForCompany(companyId: string, payload: any, u
     const { data, error } = await supabaseAdmin
         .from('project_receipts')
         .insert(insertPayload)
-        .select('*, projects!project_id(id, name, project_number, company_id), customers!customer_id(id, name, mobile, email)')
+        .select('*')
         .single();
 
     if (error) throw error;
+    const relations = await getReceiptRelations([data]);
     return {
-        ...mapReceiptRow(data),
+        ...mapReceiptRow(data, relations.get(data.id)),
         allocatedAmount: 0,
         unallocatedAmount: roundCurrency(Number(data.amount ?? 0)),
     };
@@ -357,13 +361,14 @@ export async function updateReceiptRow(id: string, companyId: string, payload: a
         .from('project_receipts')
         .update(updates)
         .eq('id', id)
-        .select('*, projects!project_id(id, name, project_number, company_id), customers!customer_id(id, name, mobile, email)')
+        .select('*')
         .single();
 
     if (error) throw error;
     const allocatedAmount = await getReceiptAllocatedAmount(id);
+    const relations = await getReceiptRelations([data]);
     return {
-        ...mapReceiptRow(data),
+        ...mapReceiptRow(data, relations.get(data.id)),
         allocatedAmount: roundCurrency(allocatedAmount),
         unallocatedAmount: roundCurrency(Math.max(0, Number(data.amount ?? 0) - allocatedAmount)),
     };
@@ -476,14 +481,49 @@ export async function createReceiptAllocationForInvoice(receiptId: string, invoi
 
     const result = data ?? {};
     const allocationRow = result.allocation ?? null;
-    const receiptRemaining = roundCurrency(Number(result.receiptRemaining ?? 0));
-    const invoiceOutstanding = roundCurrency(Number(result.invoiceOutstanding ?? 0));
-    const allocatedAmount = roundCurrency(Number(result.allocatedAmount ?? 0));
+    const {
+        receiptRemaining,
+        invoiceOutstanding,
+        receiptRemainingAfter,
+        invoiceOutstandingAfter,
+        allocatedAmount,
+    } = mapReceiptAllocationResult(result);
 
     return {
         allocation: allocationRow ? mapAllocationRow(allocationRow) : null,
         receiptRemaining,
         invoiceOutstanding,
+        receiptRemainingAfter,
+        invoiceOutstandingAfter,
         allocatedAmount,
     };
+}
+
+async function getReceiptRelations(rows: any[]): Promise<Map<string, { project?: any | null; customer?: any | null }>> {
+    const projectIds = [...new Set(rows.map((row) => row.project_id).filter((id): id is string => typeof id === 'string' && id.length > 0))];
+    const customerIds = [...new Set(rows.map((row) => row.customer_id).filter((id): id is string => typeof id === 'string' && id.length > 0))];
+
+    const [projectsResult, customersResult] = await Promise.all([
+        projectIds.length > 0
+            ? supabaseAdmin.from('projects').select('id, name, project_number, company_id').in('id', projectIds)
+            : Promise.resolve({ data: [] as any[], error: null }),
+        customerIds.length > 0
+            ? supabaseAdmin.from('customers').select('id, name, mobile, email').in('id', customerIds)
+            : Promise.resolve({ data: [] as any[], error: null }),
+    ]);
+
+    if (projectsResult.error) throw projectsResult.error;
+    if (customersResult.error) throw customersResult.error;
+
+    const projectsById = new Map((projectsResult.data ?? []).map((row: any) => [row.id, row]));
+    const customersById = new Map((customersResult.data ?? []).map((row: any) => [row.id, row]));
+    const relations = new Map<string, { project?: any | null; customer?: any | null }>();
+
+    for (const row of rows) {
+        relations.set(row.id, {
+            project: row.project_id ? projectsById.get(row.project_id) ?? null : null,
+            customer: row.customer_id ? customersById.get(row.customer_id) ?? null : null,
+        });
+    }
+    return relations;
 }

@@ -1,22 +1,22 @@
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { DocumentGenerationLoader } from '@/components/loading/Loaders';
-import PdfPreviewModal from '@/components/quotation/PdfPreviewModal';
 import StatusBadge from '@/components/StatusBadge';
-import { AppButton } from '@/components/ui/DesignSystem';
 import DataTable, { CellText, RowActionButton, RowActions, type Column } from '@/components/ui/DataTable';
+import { AppButton } from '@/components/ui/DesignSystem';
 import { useAuth } from '@/context/AuthContext';
 import { useCompany } from '@/context/CompanyContext';
 import { useToast } from '@/context/ToastContext';
 import { QUOTATION_STATUSES } from '@/lib/constants';
 import type { Quotation, QuotationStatus } from '@/lib/models';
-import { downloadQuotationPDF } from '@/lib/pdf';
 import { formatDate, formatINR } from '@/lib/utils';
 import { deleteDocument, nextSequence, saveDocument } from '@/services/document.service';
 import { createProjectFromQuotation } from '@/services/project.service';
 import { Copy, Eye, FileDown, FileText, FolderKanban, MessageCircle, Pencil, Plus, Search, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
+
+const PdfPreviewModal = lazy(() => import('@/components/quotation/PdfPreviewModal'));
 
 interface Props {
   quotations: Quotation[];
@@ -108,6 +108,7 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
     if (generatingPdfId) return;
     setGeneratingPdfId(q.id);
     try {
+      const { downloadQuotationPDF } = await import('@/lib/pdf');
       await downloadQuotationPDF(q, settings);
       push('success', 'Quotation PDF downloaded successfully.');
     } catch (e) {
@@ -351,11 +352,13 @@ export default function QuotationTable({ quotations, onRefresh, showCreate = tru
       />
 
       {previewQuotation && settings && (
-        <PdfPreviewModal
-          quotation={previewQuotation}
-          settings={settings}
-          onClose={() => setPreviewQuotation(null)}
-        />
+        <Suspense fallback={<DocumentGenerationLoader label="Loading PDF preview…" />}>
+          <PdfPreviewModal
+            quotation={previewQuotation}
+            settings={settings}
+            onClose={() => setPreviewQuotation(null)}
+          />
+        </Suspense>
       )}
     </div>
   );
